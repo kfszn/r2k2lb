@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>R2Ktwo | Rainbet Leaderboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Exclusive wager races on Rainbet for code R2K2!">
+    <meta property="og:image"
+        content="/assets/logo.png">
+    <link rel="icon" type="image/jpg" href="/assets/logo.png">
+    <link rel="stylesheet" type="text/css" href="/css/app.css">
+    <link rel="stylesheet" type="text/css" href="/css/lb.css">
+    <link rel="stylesheet" type="text/css" href="/css/vendor.css">
+    <script src="/js/countdown-roobet.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/toast.css">
+    <style>
+        .warning-message {
+            width: 90%;
+            max-width: 500px;
+            margin: 10px auto;
+            background-color: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff4444;
+            border-radius: 4px;
+            padding: 15px;
+            color: #ff4444;
+            font-weight: bold;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        @media screen and (max-width: 768px) {
+            .warning-message {
+                width: 95%;
+                padding: 12px;
+                font-size: 14px;
+                margin: 10px auto;
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            margin: 10% auto;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            transform: translateY(-20px);
+            transition: transform 0.5s ease;
+            position: relative;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        .modal-body {
+            color: #d1d5db;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .modal-body li {
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .modal-body ul {
+            padding-left: 20px;
+        }
+
+        .prev-lb-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgb(39, 117, 202);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(39, 117, 202, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prev-lb-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            background: rgb(39, 117, 202);
+            box-shadow: 0 6px 20px rgba(39, 117, 202, 0.4);
+            border-color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            color: black;
+        }
+
+        .prev-lb-btn:hover svg {
+            transform: scale(1.1);
+            stroke: black;
+        }
+
+        .prev-lb-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .prev-lb-btn svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.2s ease;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px) scaleX(1) rotate(20deg);
+            }
+
+            50% {
+                transform: translateY(-10px) scaleX(1) rotate(20deg);
+            }
+
+            100% {
+                transform: translateY(0px) scaleX(1) rotate(20deg);
+            }
+        }
+
+        @keyframes floatLeft {
+            0% {
+                transform: translateY(0px) scaleX(-1) rotate(20deg);
+            }
+
+            50% {
+                transform: translateY(-10px) scaleX(-1) rotate(20deg);
+            }
+
+            100% {
+                transform: translateY(0px) scaleX(-1) rotate(20deg);
+            }
+        }
+
+        .coin-container {
+            position: relative;
+            height: 0;
+            margin: 0;
+        }
+
+        .coin-left,
+        .coin-right {
+            position: absolute;
+            height: 100px;
+            width: auto;
+            opacity: 0.7;
+            top: -50px;
+        }
+
+        .coin-left {
+            left: 22%;
+            animation: floatLeft 3s ease-in-out infinite;
+        }
+
+        .coin-right {
+            right: 25%;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @media screen and (max-width: 768px) {
+            .coin-container {
+                display: none;
+            }
+        }
+    
+        #countdown {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 0 10px #00eaff, 0 0 20px #00eaff, 0 0 40px #00eaff;
+        }
+
+        @media (max-width: 768px) {
+            #countdown {
+                font-size: 2rem;
+            }
+        }
+
+</style>
+</head>
+
+<body>
+    <div id="toast">
+        <span id="message"></span>
+    </div>
+    <div id="rulesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Leaderboard Rules</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Every time you place a bet using the code, it brings you one step closer in the exciting wager race!</p>
+                <p><strong>Important:</strong> Must be on code R2K2.</p>
+            </div>
+        </div>
+    </div>
+    <canvas id="particleCanvas"></canvas>
+    <div class="glow-container">
+        <div class="left-glow"></div>
+        <div class="right-glow"></div>
+    </div>
+    <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%">
+    </object>
+    <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%">
+    </object>
+    <header>
+        <nav>
+            <div class="logo-title">
+                <img src="/assets/logo.png" alt="Site logo" class="logo">
+                <h1 class="title">R2Ktwo</h1>
+            </div>
+            <ul class="nav-links">
+                
+                <li><a href="/">HOME</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="toggle-images" style="margin-top: 50px;">
+        <img class="game-image roobet-image" id="roobetImage" src="/assets/rainbet.png"
+            style="cursor: pointer;opacity: 1;" onclick="window.location.href='/leaderboard/rainbet'">
+    </div>
+    <br>
+    <div data-v-1d580398="" data-v-e4097664="" id="appContent">
+        <div data-v-1d580398="">
+            <div data-v-1d580398="" class="row text">
+                <span data-v-1d580398="" class="title">
+                    <div data-v-1d580398="" class="price-wrapper glow">
+                        $ 400
+                    </div> MONTHLY CODE <span class="glow">R2K2</span> Leaderboard!
+                </span>
+                <span data-v-1d580398="" class="subtitle" style="color: #FFF;">Every <b>BET</b> on Rainbet under Code
+                    <b>R2K2</b>
+                    counts towards your score. <br>
+                    <i>The leaderboard updates every 15 minutes.</i><br>
+                    <div class="warning-message">
+                        Every Bet Counts!
+                    </div>
+                        <button id="rulesButton" class="prev-lb-btn"
+                            style="background: #ff8e3c; cursor: pointer; border: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            RULES
+                        </button>
+<button id="prevLeaderboardBtn" class="prev-lb-btn" style="margin-left: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l2 2h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2z"></path>
+    </svg>
+    PREVIOUS LEADERBOARD
+</button>
+
+<button id="currentLeaderboardBtn" class="prev-lb-btn"
+    style="margin-left: 12px; display: none; background: #22c55e;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12h18M3 6h18M3 18h18"></path>
+    </svg>
+    CURRENT LEADERBOARD
+</button>
+                    </div>
+                </span>
+<div class="css-esk2ah">
+  <div class="css-2w2ovy">
+    <!-- Top 3 Player Cards -->
+    <div class="css-gqrafh" id="top3-cards">
+      <!-- Top 3 inserted via JS -->
+    </div>
+
+    <!-- Countdown Timer -->
+    <div class="countdown" id="countdownWrapper">
+      <div>
+        <span class="title"><span class="glow" style="color: #FFF">ENDING</span> IN </span>
+        <span class="subtitle" id="countdown">X Days XX:XX:XX</span>
+      </div>
+    </div>
+  </div>
+  <!-- Player Rows (4-10) -->
+  <div id="leaderboard-rows"></div>
+</div>
+    <div data-v-5867ad71="" class="row inner-footer">
+        <div data-v-5867ad71="" class="col-5">
+            <div data-v-5867ad71="" class="content">
+                <div data-v-5867ad71="" class="company"></div><br data-v-5867ad71=""><span data-v-5867ad71=""
+                    class="copyright">R2Ktwo<br data-v-5867ad71=""> All Right Reserved 2025.</span>
+            </div>
+        </div>
+        <style>
+  .footer-socials {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 10px;
+  }
+
+  .footer-socials a.social {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    transition: transform 0.2s;
+  }
+
+  .footer-socials a.social:hover {
+    transform: translateX(4px);
+  }
+
+  .footer-socials .social-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+  }
+</style>
+
+<div class="col">
+    <span class="title">Socials</span>
+    <div class="footer-socials">
+        <a href="https://kick.com/R2Ktwo" target="_blank" class="social">
+            <img src="/assets/kick.png" alt="Kick Logo" class="social-img">
+            <span>Kick</span>
+        </a>
+        <a href="https://discord.gg/DwpA8vaGPj" target="_blank" class="social">
+            <img src="/assets/discord.png" alt="Discord Logo" class="social-img">
+            <span>Discord</span>
+        </a>
+    </div>
+</div>
+
+        <div data-v-5867ad71="" class="col">
+            <span data-v-5867ad71="" class="title">BeGambleAware.com</span>
+            <span data-v-5867ad71="" class="subtitle" style="font-size: 9px;">Responsible Gambling Advisory: While
+                gambling can be entertaining,
+                it's crucial to be aware of the associated risks. Exercise self-control,
+                set limits, and seek support if needed. Enjoy the excitement responsibly
+                and prioritize your well-being.</span>
+        </div>
+    </div>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
+</body>
+<script>
+    var modal = document.getElementById("rulesModal");
+    var btn = document.getElementById("rulesButton");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function () {
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden";
+        setTimeout(() => {
+            modal.classList.add("show");
+        }, 10);
+    }
+
+    span.onclick = closeModal;
+
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    function closeModal() {
+        modal.classList.remove("show");
+        setTimeout(() => {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+        }, 500);
+    }
+
+</script>
+<script src="/js/app.js"></script>
+<script src="/js/particles.js"></script>
+<script src="/js/toast.js"></script>
+<script>
+const CURRENT_API_URL = 'https://r2k2data.onrender.com/leaderboard/top14';
+const PREVIOUS_API_URL = 'https://r2k2data.onrender.com/leaderboard/prev';
+const roobetLogo = '/assets/rainbetlogo.png';
+const rewards = [100, 200, 50, 20, 15, 10, 5];
+const top3Glows = ['0 0 40px #C0C0C0', '0 0 40px #FFD700', '0 0 40px #CD7F32'];
+
+function updateCountdown() {
+  const el = document.getElementById("countdown");
+  const now = new Date();
+
+  // Convert to JST
+  const jstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
+  // Get this month's 22nd 23:59:59 JST in UTC time
+  const year = jstNow.getUTCFullYear();
+  const month = jstNow.getUTCMonth();
+  const endTargetJST = new Date(Date.UTC(year, month, 22, 14, 59, 59)); // 23:59:59 JST = 14:59:59 UTC
+
+  const diff = endTargetJST - now;
+
+  if (diff <= 0) return el.textContent = "Ended";
+
+  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const m = Math.floor((diff / (1000 * 60)) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+
+  el.textContent = `${d}d ${h}h ${m}m ${s}s`;
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+
+async function loadLeaderboard(apiURL = CURRENT_API_URL) {
+  const res = await fetch(apiURL);
+  const data = await res.json();
+  const top3Container = document.querySelector(".css-gqrafh");
+  const rowsContainer = document.getElementById("leaderboard-rows");
+  top3Container.innerHTML = '';
+  rowsContainer.innerHTML = '';
+
+  data.forEach((entry, index) => {
+    const place = index + 1;
+    const reward = index < rewards.length ? `$ ${rewards[index]}` : '$ 0';
+    const wagered = `$ ${Number(entry.wagered).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+    const username = entry.username;
+
+    if (index < 3) {
+      const card = document.createElement('div');
+      card.className = 'css-jehefp';
+      card.style.boxShadow = top3Glows[index];
+      card.style.position = 'relative';
+      if (index === 1) card.style.transform = 'translateY(25px) scale(1.2)';
+      if (index === 2) card.style.transform = 'translateY(25px)';
+      card.innerHTML = `
+        <img src="${roobetLogo}" style="width: 96px; height: auto; border-radius: 12px;">
+        <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${username}</span></div>
+        <div class="css-7ahevu ejrykqo0"><span class="css-1vqddgv">Wagered: </span>
+          <span class="css-18icuxn"><div class="css-1y0ox2o"><span class="css-114dvlx">${wagered}</span></div></span>
+        </div>
+        <span class="css-v4675v"><div class="css-1y0ox2o"><span class="css-114dvlx glow">${reward}</span></div></span>
+      `;
+      top3Container.appendChild(card);
+    } else {
+      const row = document.createElement('div');
+      row.className = 'row list row-cols-5';
+      row.setAttribute('data-v-1d580398', '');
+      row.innerHTML = `
+        <div class="hide-mobile col-2"><b style="font-size: 18px;">#${place}</b></div>
+        <div class="col-5">
+          <img src="${roobetLogo}" width="22" style="margin-right: 8px;">
+          <span style="font-weight:bold; font-size: 16px;">${username}</span>
+        </div>
+        <div class="col-2">
+          <div class="price-wrapper glow" style="font-weight:bold; font-size: 15px;">${reward}</div>
+        </div>
+        <div class="col-3">
+          <div class="price-wrapper" style="color: #FFF; font-weight:bold; font-size: 15px;">${wagered}</div>
+        </div>
+      `;
+      const wrapper = document.createElement("div");
+      wrapper.className = "leaderboard-row-wrapper";
+      wrapper.appendChild(row);
+      rowsContainer.appendChild(wrapper);
+    }
+  });
+}
+
+const prevBtn = document.getElementById("prevLeaderboardBtn");
+const currBtn = document.getElementById("currentLeaderboardBtn");
+const countdownWrapper = document.getElementById("countdownWrapper");
+
+// 🔁 Toggle between current and previous
+prevBtn?.addEventListener("click", () => {
+  loadLeaderboard(PREVIOUS_API_URL);
+  prevBtn.style.display = "none";
+  currBtn.style.display = "inline-flex";
+  countdownWrapper.style.visibility = "hidden";
+  countdownWrapper.style.height = "0";
+  countdownWrapper.style.overflow = "hidden";
+});
+
+currBtn?.addEventListener("click", () => {
+  loadLeaderboard(CURRENT_API_URL);
+  currBtn.style.display = "none";
+  prevBtn.style.display = "inline-flex";
+  countdownWrapper.style.visibility = "visible";
+  countdownWrapper.style.height = "auto";
+  countdownWrapper.style.overflow = "visible";
+});
+
+// ✅ Initial load
+loadLeaderboard();
+</script>

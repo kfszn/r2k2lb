@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <title>R2Ktwo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Exclusive wager races on Rainbet for code R2K2!">
+    <meta property="og:image"
+        content="/assets/logo.png">
+    <link rel="icon" type="image/jpg" href="/assets/logo.png">
+    <link rel="stylesheet" type="text/css" href="/css/app.css">
+    <link rel="stylesheet" type="text/css" href="/css/lb.css">
+    <link rel="stylesheet" type="text/css" href="/css/vendor.css">
+    <link rel="stylesheet" type="text/css" href="/css/cards.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/toast.css">
+    <style>
+        .draggable {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            width: 350px;
+            height: 250px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1000;
+            background: white;
+            border: 2px solid #2775ca;
+            box-shadow: 0 0 100px rgba(39, 117, 202, 1);
+        }
+
+.controls {
+        display: flex;
+        align-items: center;
+        background-color: #333;
+        padding: 5px;
+        cursor: move;
+    }
+
+    .drag-handle {
+        flex-grow: 1;
+        text-align: left;
+        color: #2775ca;
+        font-size: 20px;
+        font-weight: 900;
+        box-shadow: 0 0 100px rgba(39, 117, 202, 1);
+        padding: 0 15px;
+    }
+
+    .close-btn {
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #2775ca;
+        font-size: 20px;
+        font-weight: 900;
+        line-height: 30px;
+        box-shadow: 0 0 100px rgba(39, 117, 202, 1);
+        padding: 0 20px;
+    }
+
+    iframe {
+        width: 100%;
+        height: calc(100% - 40px);
+        border: none;
+    }
+
+    .minimized-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        bottom: 15px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+        border-radius: 25px;
+        /* Makes it round */
+        background-color: #333;
+        color: white;
+        font-size: 30px;
+        z-index: 1001;
+        /* Should be above the draggable player */
+        cursor: pointer;
+        box-shadow: 0 0 100px rgba(39, 117, 202, 1);
+    }
+
+    .open-btn {
+        background: none;
+        border: none;
+        color: #2775ca;
+        font-size: 20px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    @media (max-width: 570px) {
+
+        /* center the player on mobile */
+        .draggable {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .code-description-container {
+            flex-direction: column;
+        }
+
+        .code-description-card,
+        .code-image {
+            min-width: 100%;
+        }
+
+        .code-image {
+            order: -1;
+            margin-bottom: 20px;
+        }
+    }
+
+    .code-description-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(39, 117, 202, 0.5);
+    }
+
+    @keyframes float {
+        0% {
+            transform: translateY(0px) scaleX(1) rotate(20deg);
+        }
+
+        50% {
+            transform: translateY(-10px) scaleX(1) rotate(20deg);
+        }
+
+        100% {
+            transform: translateY(0px) scaleX(1) rotate(20deg);
+        }
+    }
+
+    @keyframes floatLeft {
+        0% {
+            transform: translateY(0px) scaleX(-1) rotate(20deg);
+        }
+
+        50% {
+            transform: translateY(-10px) scaleX(-1) rotate(20deg);
+        }
+
+        100% {
+            transform: translateY(0px) scaleX(-1) rotate(20deg);
+        }
+    }
+
+    .coin-container {
+        position: relative;
+        height: 0;
+        margin: 0;
+    }
+
+    .coin-left,
+    .coin-right {
+        position: absolute;
+        height: 100px;
+        width: auto;
+        opacity: 0.7;
+        top: -50px;
+    }
+
+    .coin-left {
+        left: 22%;
+        animation: floatLeft 3s ease-in-out infinite;
+    }
+
+    .coin-right {
+        right: 25%;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @media screen and (max-width: 768px) {
+        .coin-container {
+            display: none;
+        }
+    }
+</style>
+
+
+</head>
+
+<body>
+    <div id="toast">
+        <span id="message"></span>
+    </div>
+    <div id="draggable-player" class="draggable">
+        <div id="controls" class="controls">
+            <div id="drag-handle" class="drag-handle">&#x2630;</div>
+            <button id="close-btn" class="close-btn">&times;</button>
+        </div>
+        <iframe src="https://player.kick.com/R2Ktwo" frameborder="0" allow="autoplay; fullscreen" allowfullscreen>
+        </iframe>
+    </div>
+    <canvas id="particleCanvas"></canvas>
+    <div class="glow-container">
+        <div class="left-glow"></div>
+        <div class="right-glow"></div>
+    </div>
+    <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%">
+    </object>
+    <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%">
+    </object>
+    <header>
+        <nav>
+            <div class="logo-title">
+                <img src="/assets/logo.png" alt="Site logo" class="logo">
+                <h1 class="title">R2Ktwo</h1>
+            </div>
+            <ul class="nav-links">
+
+<li><a href="/leaderboard/rainbet">LEADERBOARDS</a></li>
+        </ul>
+    </nav>
+</header>
+<br>
+<br>
+<div data-v-1d580398="" data-v-e4097664="" id="appContent">
+    <div data-v-1d580398="" class="row text" style="margin-top: 50px;">
+        <span data-v-1d580398="" class="title">COMPETE ON OUR LEADERBOARDs!</span>
+        <div class="toggle-images" style="margin-top: 20px;">
+            <div class="image-wrapper">
+                <img class="game-image clash-image" id="clashImage2" src="/assets/rainbet.png"
+                    style="cursor: pointer;opacity: 1;" onclick="window.location.href='/leaderboard/rainbet'">
+                <div class="label">
+                    <div data-v-1d580398="" class="price-wrapper glow" style="font-size: 26px;">
+                        $ 400
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div data-v-1d580398="" class="row text" style="margin-top: 80px;">
+        <!-- <span data-v-1d580398="" class="title">SUPPORT ME!</span> -->
+    </div>
+<div class="card-container">
+  <a href="https://rainbet.com/?r=KCAZ" class="card-link" target="_blank">
+    <div class="MuiBox-root css-1o7r9kk">
+      <div class="MuiBox-root css-1t0wa4v">
+        <img src="/assets/rainbet.png" alt="">
+      </div>
+      <div class="code-container MuiBox-root css-0">
+        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1rmbjih" focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="KeyboardDoubleArrowRightIcon">
+          <path d="M6.41 6 5 7.41 9.58 12 5 16.59 6.41 18l6-6z"></path>
+          <path d="m13 6-1.41 1.41L16.17 12l-4.58 4.59L13 18l6-6z"></path>
+        </svg>
+        <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root" style="font-size: 24px;">Code</p>
+        <p class="MuiTypography-root MuiTypography-body1 code css-rmwyl-MuiTypography-root">R2K2</p>
+        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1m8kjhh" focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="KeyboardDoubleArrowLeftIcon">
+          <path d="M17.59 18 19 16.59 14.42 12 19 7.41 17.59 6l-6 6z"></path>
+          <path d="m11 18 1.41-1.41L7.83 12l4.58-4.59L11 6l-6 6z"></path>
+        </svg>
+      </div>
+      <div class="MuiBox-root css-18dqm7l">
+        <div class="description MuiBox-root css-0">
+          <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="CheckCircleOutlineIcon">
+            <path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
+          </svg>
+          <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">EXCLUSIVE REWARDS</p>
+        </div>
+        <div class="description MuiBox-root css-0">
+          <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="CheckCircleOutlineIcon">
+            <path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
+          </svg>
+          <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">MONTHLY LEADERBOARD</p>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 16px;">
+          <a class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root signup-button css-sbgg6k-MuiButtonBase-root-MuiButton-root" tabindex="0" href="https://rainbet.com/?r=R2K2" target="_blank">
+            Sign up
+            <span class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"></span>
+          </a>
+          <a class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root signup-button css-sbgg6k-MuiButtonBase-root-MuiButton-root" tabindex="0" href="/leaderboard/rainbet" target="_blank">
+            Leaderboard
+            <span class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </a>
+</div>
+<div data-v-1d580398="" class="row text" style="margin-top: 50px;">
+  <span data-v-1d580398="" class="title">Our Socials!</span>
+</div>
+
+<style>
+  .social-media-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+  }
+
+  .social-media-cards .card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    transition: transform 0.2s;
+  }
+
+  .social-media-cards .card:hover {
+    transform: translateY(-3px);
+  }
+
+  .social-media-cards .icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+</style>
+
+<div class="social-media-cards">
+    <a href="https://kick.com/R2Ktwo" target="_blank" class="card kick">
+        <img src="/assets/kick.png" alt="Kick Logo" class="icon" />
+        <span>@R2Ktwo</span>
+    <a href="https://discord.gg/DwpA8vaGPj" target="_blank" class="card discord">
+        <img src="/assets/discord.png" alt="Discord Logo" class="icon" />
+        <span>@R2Ktwo</span>
+    </a>
+</div>
+
+<!-- <div data-v-1d580398="" class="row text" style="margin-top: 50px;">
+    <span data-v-1d580398="" class="title">My Last Uploads!</span>
+    <div class="cards-container-videos">
+        
+    </div>
+</div> -->
+
+<div data-v-5867ad71="" class="row inner-footer">
+    <div data-v-5867ad71="" class="col-5">
+        <div data-v-5867ad71="" class="content">
+            <div data-v-5867ad71="" class="company"></div><br data-v-5867ad71=""><span data-v-5867ad71=""
+                class="copyright">R2Ktwo<br data-v-5867ad71=""> All Right Reserved 2025.</span>
+        </div>
+    </div>
+
+    <div data-v-5867ad71="" class="col">
+        <span data-v-5867ad71="" class="title">Info</span>
+
+        <a data-v-5867ad71="" href="/" class=""><span data-v-5867ad71="" class="subtitle">Terms of
+                Service</span></a>
+        <a data-v-5867ad71="" href="/" class=""><span data-v-5867ad71="" class="subtitle">Privacy
+                Policy</span></a>
+    </div>
+
+
+<style>
+  .footer-socials {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 10px;
+  }
+
+  .footer-socials a.social {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    transition: transform 0.2s;
+  }
+
+  .footer-socials a.social:hover {
+    transform: translateX(4px);
+  }
+
+  .footer-socials .social-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+  }
+</style>
+
+<div class="col">
+    <span class="title">Socials</span>
+    <div class="footer-socials">
+        <a href="https://kick.com/R2Ktwo" target="_blank" class="social">
+            <img src="/assets/kick.png" alt="Kick Logo" class="social-img">
+            <span>Kick</span>
+        </a>
+        <a href="https://discord.gg/DwpA8vaGPj" target="_blank" class="social">
+            <img src="/assets/discord.png" alt="Discord Logo" class="social-img">
+            <span>Discord</span>
+        </a>
+    </div>
+</div>
+
+<div data-v-5867ad71="" class="col">
+        <span data-v-5867ad71="" class="title">BeGambleAware.com</span>
+        <span data-v-5867ad71="" class="subtitle" style="font-size: 9px;">Responsible Gambling Advisory: While
+            gambling can be entertaining,
+            it's crucial to be aware of the associated risks. Exercise self-control,
+            set limits, and seek support if needed. Enjoy the excitement responsibly
+            and prioritize your well-being. We are not responsible for any losses or damages caused by gambling.
+        </span>
+    </div>
+</div>
+
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"93f5c327eff14c77","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
+
+</body>
+<script src="/js/app.js"></script>
+<script src="/js/particles.js"></script>
+<script src="/js/toast.js"></script>
+
+<script>
+    window.onload = function () {
+        var player = document.getElementById('draggable-player');
+        var dragHandle = document.getElementById('drag-handle');
+        var closeBtn = document.getElementById('close-btn');
+
+        dragHandle.onmousedown = function (event) {
+            event.preventDefault();
+            var startX = event.clientX - player.offsetLeft;
+            var startY = event.clientY - player.offsetTop;
+
+            function onMouseMove(event) {
+                player.style.left = event.clientX - startX + 'px';
+                player.style.top = event.clientY - startY + 'px';
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+
+            document.onmouseup = function () {
+                document.removeEventListener('mousemove', onMouseMove);
+            };
+        };
+
+
+        var minimizedIcon = document.getElementById('minimized-icon');
+        var openBtn = document.getElementById('open-btn');
+
+        // Hide the player and show the minimized icon when close button is clicked
+        closeBtn.onclick = function () {
+            player.style.display = 'none';
+            minimizedIcon.style.display = 'flex'; // Show the minimized icon
+        };
+
+        // Add click event to the minimized icon to show the player again
+        openBtn.onclick = function () {
+            player.style.display = 'block';
+            minimizedIcon.style.display = 'none'; // Hide the minimized icon
+        };
+    };
+</script>
