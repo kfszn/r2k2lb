@@ -577,30 +577,3 @@ currBtn?.addEventListener("click", () => {
 /* Initial load */
 loadLeaderboard();
 </script>
-
-const prevBtn = document.getElementById("prevLeaderboardBtn");
-const currBtn = document.getElementById("currentLeaderboardBtn");
-const countdownWrapper = document.getElementById("countdownWrapper");
-
-// 🔁 Toggle between current and previous
-prevBtn?.addEventListener("click", () => {
-  loadLeaderboard(PREVIOUS_API_URL);
-  prevBtn.style.display = "none";
-  currBtn.style.display = "inline-flex";
-  countdownWrapper.style.visibility = "hidden";
-  countdownWrapper.style.height = "0";
-  countdownWrapper.style.overflow = "hidden";
-});
-
-currBtn?.addEventListener("click", () => {
-  loadLeaderboard(CURRENT_API_URL);
-  currBtn.style.display = "none";
-  prevBtn.style.display = "inline-flex";
-  countdownWrapper.style.visibility = "visible";
-  countdownWrapper.style.height = "auto";
-  countdownWrapper.style.overflow = "visible";
-});
-
-// ✅ Initial load
-loadLeaderboard();
-</script>
