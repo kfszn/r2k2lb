@@ -3,8 +3,12 @@ import fetch from "node-fetch";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 🔑 Your Rainbet affiliate key
+const API_KEY = "OjwJ62YWj7gveE0OkmkrCvRM4U3Omh16";
+
+// Self-URL (keep same so your self-ping doesn’t break)
 const SELF_URL = "https://r2k2data.onrender.com/leaderboard/top14";
-const API_KEY = "9emj7LErCZydUlTRZpHCuiWdn64atsNF";
 
 let cachedData = [];
 
@@ -17,25 +21,24 @@ app.use((req, res, next) => {
 });
 
 function maskUsername(username) {
+  if (!username) return "Unknown";
   if (username.length <= 4) return username;
   return username.slice(0, 2) + "***" + username.slice(-2);
 }
 
+// === NEW DATE CALCULATOR: 18th → 18th (UTC) ===
 function getDynamicApiUrl() {
   const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth(); // 0-indexed
+  let end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 18, 23, 59, 59));
+  if (now > end) end.setUTCMonth(end.getUTCMonth() + 1, 18);
 
-  // If today is before the 23rd, use 23rd of previous month to 22nd of this one
-  const start = new Date(Date.UTC(year, month - (now.getUTCDate() < 23 ? 1 : 0), 23));
-  const end = new Date(Date.UTC(year, month + (now.getUTCDate() < 23 ? 0 : 1), 22));
+  const start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 1, 18, 0, 0, 0));
 
   const startStr = start.toISOString().slice(0, 10);
   const endStr = end.toISOString().slice(0, 10);
 
   return `https://services.rainbet.com/v1/external/affiliates?start_at=${startStr}&end_at=${endStr}&key=${API_KEY}`;
 }
-
 
 async function fetchAndCacheData() {
   try {
@@ -68,16 +71,22 @@ setInterval(fetchAndCacheData, 5 * 60 * 1000); // every 5 minutes
 app.get("/leaderboard/top14", (req, res) => {
   res.json(cachedData);
 });
+
 app.get("/leaderboard/prev", async (req, res) => {
   try {
+    // === PREVIOUS PERIOD also adjusted to 18th→18th ===
     const now = new Date();
-    const currentStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (now.getUTCDate() < 23 ? 1 : 0), 23));
-    
-    const prevStart = new Date(currentStart);
-    prevStart.setUTCMonth(prevStart.getUTCMonth() - 1);
+    let currentEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 18, 23, 59, 59));
+    if (now > currentEnd) currentEnd.setUTCMonth(currentEnd.getUTCMonth() + 1, 18);
+    const currentStart = new Date(Date.UTC(currentEnd.getUTCFullYear(), currentEnd.getUTCMonth() - 1, 18));
+
     const prevEnd = new Date(currentStart);
-    prevEnd.setUTCDate(22);
-    prevEnd.setUTCMonth(prevEnd.getUTCMonth() - 0);
+    prevEnd.setUTCDate(18);
+    prevEnd.setUTCHours(23,59,59);
+
+    const prevStart = new Date(prevEnd);
+    prevStart.setUTCMonth(prevStart.getUTCMonth() - 1, 18);
+    prevStart.setUTCHours(0,0,0);
 
     const startStr = prevStart.toISOString().slice(0, 10);
     const endStr = prevEnd.toISOString().slice(0, 10);
@@ -108,8 +117,7 @@ app.get("/leaderboard/prev", async (req, res) => {
   }
 });
 
-
-
+// Keepalive ping
 setInterval(() => {
   fetch(SELF_URL)
     .then(() => console.log(`[🔁] Self-pinged ${SELF_URL}`))
