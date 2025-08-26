@@ -435,61 +435,85 @@
 <script src="/js/particles.js"></script>
 <script src="/js/toast.js"></script>
 <script>
-const CURRENT_API_URL = 'https://r2k2data.onrender.com/leaderboard/top14';
-const PREVIOUS_API_URL = 'https://r2k2data.onrender.com/leaderboard/prev';
+/* === USE YOUR RAINBET KEY + 18→18 WINDOW === */
+const RAINBET_KEY = "OjwJ62YWj7gveE0OkmkrCvRM4U3Omh16";
 const roobetLogo = '/assets/rainbetlogo.png';
 const rewards = [100, 200, 50, 20, 15, 10, 5];
 const top3Glows = ['0 0 40px #C0C0C0', '0 0 40px #FFD700', '0 0 40px #CD7F32'];
 
-function updateCountdown() {
-  const el = document.getElementById("countdown");
+/* 18th (00:00:00 UTC) → next 18th (23:59:59 UTC) */
+function getCurrentCycle() {
   const now = new Date();
-
-  // Convert to JST
-  const jstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-
-  // Get this month's 22nd 23:59:59 JST in UTC time
-  const year = jstNow.getUTCFullYear();
-  const month = jstNow.getUTCMonth();
-  const endTargetJST = new Date(Date.UTC(year, month, 22, 14, 59, 59)); // 23:59:59 JST = 14:59:59 UTC
-
-  const diff = endTargetJST - now;
-
-  if (diff <= 0) return el.textContent = "Ended";
-
-  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const m = Math.floor((diff / (1000 * 60)) % 60);
-  const s = Math.floor((diff / 1000) % 60);
-
-  el.textContent = `${d}d ${h}h ${m}m ${s}s`;
+  let end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 18, 23, 59, 59, 999));
+  if (now > end) end.setUTCMonth(end.getUTCMonth() + 1, 18);
+  const start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 1, 18, 0, 0, 0, 0));
+  const fmt = d => d.toISOString().slice(0,10);
+  return { startISO: fmt(start), endISO: fmt(end), endDate: end };
 }
 
+/* previous cycle = one month earlier (18→18) */
+function getPreviousCycle() {
+  const { startISO: curStartISO } = getCurrentCycle();
+  const curStart = new Date(curStartISO + "T00:00:00Z"); // 18th 00:00:00
+  const prevEnd = new Date(Date.UTC(curStart.getUTCFullYear(), curStart.getUTCMonth(), 18, 23, 59, 59, 999));
+  const prevStart = new Date(Date.UTC(prevEnd.getUTCFullYear(), prevEnd.getUTCMonth() - 1, 18, 0, 0, 0, 0));
+  const fmt = d => d.toISOString().slice(0,10);
+  return { startISO: fmt(prevStart), endISO: fmt(prevEnd) };
+}
+
+const { startISO, endISO, endDate } = getCurrentCycle();
+const CURRENT_API_URL = `https://services.rainbet.com/v1/external/affiliates?start_at=${startISO}&end_at=${endISO}&key=${encodeURIComponent(RAINBET_KEY)}`;
+const { startISO: prevStartISO, endISO: prevEndISO } = getPreviousCycle();
+const PREVIOUS_API_URL = `https://services.rainbet.com/v1/external/affiliates?start_at=${prevStartISO}&end_at=${prevEndISO}&key=${encodeURIComponent(RAINBET_KEY)}`;
+
+/* countdown to the end of the current cycle (next 18th @ 23:59:59 UTC) */
+function updateCountdown() {
+  const el = document.getElementById("countdown");
+  const diff = endDate - new Date();
+  if (diff <= 0) { el.textContent = "Ended"; return; }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  el.textContent = `${d}d ${h}h ${m}m ${s}s`;
+}
 setInterval(updateCountdown, 1000);
 updateCountdown();
 
-
+/* render + fetch; supports:
+   - direct Rainbet JSON: { affiliates: [{ username, wagered_amount }, ...] }
+   - or your old array shape: [{ username, wagered, ... }, ...]
+*/
 async function loadLeaderboard(apiURL = CURRENT_API_URL) {
-  const res = await fetch(apiURL);
-  const data = await res.json();
+  const res = await fetch(apiURL, { cache: "no-store" });
+  const json = await res.json();
+
+  // Normalize to [{ username, wagered }]
+  let rows = Array.isArray(json) ? json : (json.affiliates || []).map(a => ({
+    username: a.username,
+    wagered: Number(a.wagered_amount || 0)
+  }));
+
+  // Filter > 0, sort desc, top 10
+  rows = rows.filter(r => r.wagered > 0)
+             .sort((a,b) => b.wagered - a.wagered)
+             .slice(0, 10);
+
   const top3Container = document.querySelector(".css-gqrafh");
   const rowsContainer = document.getElementById("leaderboard-rows");
   top3Container.innerHTML = '';
   rowsContainer.innerHTML = '';
 
-  data.forEach((entry, index) => {
+  rows.forEach((entry, index) => {
     const place = index + 1;
     const reward = index < rewards.length ? `$ ${rewards[index]}` : '$ 0';
-    const wagered = `$ ${Number(entry.wagered).toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })}`;
-    const username = entry.username;
+    const wagered = `$ ${entry.wagered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const username = entry.username || "Unknown";
 
     if (index < 3) {
       const card = document.createElement('div');
       card.className = 'css-jehefp';
-      card.style.boxShadow = top3Glows[index];
+      card.style.boxShadow = top3Glows[index] || '';
       card.style.position = 'relative';
       if (index === 1) card.style.transform = 'translateY(25px) scale(1.2)';
       if (index === 2) card.style.transform = 'translateY(25px)';
@@ -526,6 +550,33 @@ async function loadLeaderboard(apiURL = CURRENT_API_URL) {
     }
   });
 }
+
+/* Toggle current vs previous (unchanged) */
+const prevBtn = document.getElementById("prevLeaderboardBtn");
+const currBtn = document.getElementById("currentLeaderboardBtn");
+const countdownWrapper = document.getElementById("countdownWrapper");
+
+prevBtn?.addEventListener("click", () => {
+  loadLeaderboard(PREVIOUS_API_URL);
+  prevBtn.style.display = "none";
+  currBtn.style.display = "inline-flex";
+  countdownWrapper.style.visibility = "hidden";
+  countdownWrapper.style.height = "0";
+  countdownWrapper.style.overflow = "hidden";
+});
+
+currBtn?.addEventListener("click", () => {
+  loadLeaderboard(CURRENT_API_URL);
+  currBtn.style.display = "none";
+  prevBtn.style.display = "inline-flex";
+  countdownWrapper.style.visibility = "visible";
+  countdownWrapper.style.height = "auto";
+  countdownWrapper.style.overflow = "visible";
+});
+
+/* Initial load */
+loadLeaderboard();
+</script>
 
 const prevBtn = document.getElementById("prevLeaderboardBtn");
 const currBtn = document.getElementById("currentLeaderboardBtn");
