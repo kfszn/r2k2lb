@@ -5,7 +5,7 @@ const CURRENT_API_URL  = "/api/leaderboard";        // current 18→18
 const PREVIOUS_API_URL = "/api/leaderboard?prev=1"; // previous 18→18
 
 const logoSrc   = "/assets/rainbetlogo.png";
-const rewards   = [400, 200, 100, 40, 30, 20, 10]; // 1st → 7th
+const rewards   = [450, 250, 130, 75, 50, 30, 15]; // 1st → 7th
 const top3Glows = ["0 0 40px #FFD700", "0 0 40px #C0C0C0", "0 0 40px #CD7F32"]; // Gold, Silver, Bronze
 
 /* ===== Countdown (to next 18th 23:59:59 UTC) ===== */
