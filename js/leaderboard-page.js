@@ -45,6 +45,17 @@ function currency(n) {
   return `$ ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+/* Mask usernames: keep first 2 chars + last char, mask the middle with * */
+function maskName(name) {
+  if (!name) return "Unknown";
+  const s = String(name).trim();
+  if (s.length <= 3) return s; // too short to meaningfully mask
+  const firstTwo = s.slice(0, 2);
+  const lastChar = s.slice(-1);
+  const middle = "*".repeat(s.length - 3);
+  return firstTwo + middle + lastChar;
+}
+
 /* ===== Rendering ===== */
 function renderLeaderboard(rows) {
   const top3 = document.querySelector(".css-gqrafh");
@@ -57,6 +68,7 @@ function renderLeaderboard(rows) {
   rows.forEach((entry, idx) => {
     const place   = idx + 1;
     const user    = entry.username || "Unknown";
+    const masked  = maskName(user);
     const wagered = currency(entry.wagered || 0);
     const prize   = idx < rewards.length ? `$ ${rewards[idx]}` : "$ 0";
 
@@ -72,7 +84,7 @@ function renderLeaderboard(rows) {
         <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
                     padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
         <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
-        <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${user}</span></div>
+        <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
         <div class="css-7ahevu ejrykqo0">
           <span class="css-1vqddgv">Wagered: </span>
           <span class="css-18icuxn"><div class="css-1y0ox2o"><span class="css-114dvlx">${wagered}</span></div></span>
@@ -88,7 +100,7 @@ function renderLeaderboard(rows) {
         <div class="hide-mobile col-2"><b style="font-size:18px;">#${place}</b></div>
         <div class="col-5">
           <img src="${logoSrc}" width="22" style="margin-right:8px;">
-          <span style="font-weight:bold; font-size:16px;">${user}</span>
+          <span style="font-weight:bold; font-size:16px;">${masked}</span>
         </div>
         <div class="col-2">
           <div class="price-wrapper glow" style="font-weight:bold; font-size:15px;">${prize}</div>
