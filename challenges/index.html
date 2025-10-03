@@ -1,1 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>R2K2 | Slot Challenges</title>
+  <meta name="description" content="Win prizes with R2K2 weekly slot challenges." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0b0f13;
+      --panel:#11161c;
+      --muted:#8b98a5;
+      --text:#e8eef4;
+
+      /* Rainbet theme */
+      --accent:#00C2FF;      /* blue */
+      --accent-soft:#59FFA6; /* green */
+      --success:#59FFA6;
+
+      --radius:18px;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --border:1px solid rgba(255,255,255,.08);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(0,194,255,.10), transparent),
+        var(--bg);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    }
+    a{color:var(--text);text-decoration:none}
+
+    .wrap{max-width:1180px;margin:0 auto;padding:24px}
+
+    /* Header */
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img{width:40px;height:40px;border-radius:10px}
+    .brand h1{font-size:18px;margin:0;letter-spacing:.3px;color:#cbd5e1}
+    nav{display:flex;gap:14px;flex-wrap:wrap}
+    nav a{opacity:.9}
+    nav a:hover{opacity:1}
+
+    /* Hero */
+    .hero{margin:24px 0 18px;text-align:center}
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
+      background:rgba(255,255,255,.06);border:var(--border);
+      font-size:12px;color:#c8d0da
+    }
+    .title{margin:14px 0 8px;font-weight:800;font-size:clamp(28px,4.2vw,44px);letter-spacing:.3px;text-transform:uppercase}
+    .title .glow{
+      color:#fff;
+      text-shadow:
+        0 0 22px rgba(0,194,255,.55),
+        0 0 44px rgba(89,255,166,.45);
+    }
+    .subtitle{margin:0;color:var(--muted)}
+
+    .hero-actions{margin:18px 0 6px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:12px 16px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);color:#fff;font-weight:700;
+      transition:transform .12s ease, background .12s ease, border-color .12s ease
+    }
+    .btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+    .btn.primary{
+      background:var(--accent);border-color:transparent;color:#041018;box-shadow:var(--shadow)
+    }
+    .btn.primary:hover{filter:brightness(1.05)}
+
+    /* Tabs */
+    .tabs{margin:20px auto 6px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .tab{
+      padding:10px 14px;border-radius:999px;background:#0f141a;border:var(--border);
+      color:#d6deea;font-weight:700;transition:background .12s ease, color .12s ease, border-color .12s ease
+    }
+    .tab:hover{background:rgba(255,255,255,.06)}
+    .tab.active{background:var(--accent);color:#041018;border-color:transparent}
+
+    /* Cards */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:14px}
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0));
+      border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
+      overflow:hidden;display:flex;flex-direction:column
+    }
+    .thumb{position:relative;height:170px;background:#0e1116}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .slot-title{
+      position:absolute;left:14px;bottom:12px;font-weight:800;font-size:22px;letter-spacing:.4px;text-transform:uppercase
+    }
+    .slot-title span{display:block;background:rgba(0,0,0,.5);padding:4px 8px;border-radius:8px}
+
+    .body{padding:14px 16px;display:grid;gap:8px}
+    .slug{font-size:13px;color:#cdd6e3}
+    .row{display:flex;align-items:center;gap:10px;color:#e8eef4}
+    .row .lab{width:86px;color:var(--muted);font-size:13px}
+    .price-row{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+    .price{font-size:22px;font-weight:800;color:var(--accent-soft)}
+    .status{
+      padding:6px 10px;border-radius:999px;
+      background:rgba(89,255,166,.12);color:#b6ffdb;font-weight:800;font-size:12px;
+      border:1px solid rgba(89,255,166,.28)
+    }
+    .status.inactive{background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.32);color:#cbd5e1}
+
+    .cta{margin:12px 16px 16px}
+    .play{
+      width:100%;display:inline-flex;align-items:center;justify-content:center;
+      padding:12px 14px;border-radius:12px;background:var(--accent);color:#041018;font-weight:800;
+      transition:filter .12s ease
+    }
+    .play:hover{filter:brightness(1.06)}
+
+    /* Responsive */
+    @media (max-width:1020px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:620px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <img src="/assets/logo.png" alt="R2K2"/>
+        <h1>R2K2 Challenges</h1>
+      </div>
+      <nav>
+        <a href="/index.html">Home</a>
+        <a href="/leaderboard/index.html">Leaderboard</a>
+        <a href="#" style="opacity:.7;pointer-events:none">Challenges</a>
+      </nav>
+      <a class="btn primary" href="https://kick.com/R2Ktwo" target="_blank" rel="noopener">Watch Stream</a>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">Complete challenges, win prizes</div>
+      <h2 class="title"><span class="glow">WIN PRIZES WITH CODE R2K2 CHALLENGES!</span></h2>
+      <p class="subtitle">Complete challenges on Rainbet with code <strong>R2K2</strong> to win cash rewards. Challenges update regularly.</p>
+      <div class="hero-actions">
+        <a class="btn" href="#how">How it works</a>
+        <a class="btn" href="/leaderboard/index.html">Leaderboard</a>
+        <a class="btn primary" href="https://rainbet.com/?code=R2K2" target="_blank" rel="noopener">Play Now</a>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-filter="all">All Challenges</button>
+        <button class="tab" data-filter="active">Active</button>
+        <button class="tab" data-filter="completed">Completed</button>
+      </div>
+    </section>
+
+    <section id="cards" class="grid" aria-live="polite"></section>
+
+    <section id="how" style="margin:28px 0 8px">
+      <div class="card"><div class="body">
+        <h3 style="margin:0 0 6px">How it works</h3>
+        <ol style="margin:0 0 6px 18px">
+          <li>Play the listed slot during an <strong>Active</strong> challenge window.</li>
+          <li>Meet the requirement (e.g., hit the required multiplier).</li>
+          <li>Submit proof via Discord ticket with your Rainbet username.</li>
+          <li>We verify and pay winners fast. Ties go to earliest timestamp.</li>
+        </ol>
+        <small style="color:var(--muted)">Min bet applies to qualify. Suspicious entries may be disqualified.</small>
+      </div></div>
+    </section>
+
+    <footer style="margin:26px 0 0;opacity:.9">
+      <p style="color:#9aa6b2;font-size:12px">Gambling carries risk. Over time, your expected return is negative. Only gamble what you can afford to lose.</p>
+    </footer>
+  </div>
+
+<script>
+/* ======== Challenge data (edit weekly) ======== */
+const challenges = [
+  {
+    id: 'tome',
+    title: 'Tome of Madness',
+    providerSlug: 'playngo:tomeofmadness',
+    image: '/assets/challenges/tome.jpg',
+    rewardUSD: 25,
+    required: '200x multiplier',
+    minBet: 0.40,
+    addedAgo: '3 months ago',
+    status: 'active'
+  },
+  {
+    id: 'miner',
+    title: 'Mining Madness',
+    providerSlug: 'pragmatic:vszominerush',
+    image: '/assets/challenges/miners.jpg',
+    rewardUSD: 25,
+    required: '200x multiplier',
+    minBet: 0.40,
+    addedAgo: '3 months ago',
+    status: 'active'
+  },
+  {
+    id: 'waves',
+    title: 'Waves of Power',
+    providerSlug: 'pragmatic:vs20bigmass',
+    image: '/assets/challenges/waves.jpg',
+    rewardUSD: 25,
+    required: '200x multiplier',
+    minBet: 0.40,
+    addedAgo: '3 months ago',
+    status: 'active'
+  },
+  {
+    id: 'sweet',
+    title: 'Sweet Bonanza',
+    providerSlug: 'pragmatic:sweetbonanza',
+    image: '/assets/challenges/sweet.jpg',
+    rewardUSD: 50,
+    required: 'Highest multiplier',
+    minBet: 0.20,
+    addedAgo: 'last month',
+    status: 'completed'
+  }
+];
+
+const cardsEl = document.getElementById('cards');
+const tabs = Array.from(document.querySelectorAll('.tab'));
+
+function usd(n){return `$${n.toFixed(2)}`}
+
+function makeCard(c){
+  const el = document.createElement('article');
+  el.className = 'card';
+  el.setAttribute('data-status', c.status);
+  el.innerHTML = `
+    <div class="thumb">
+      <img src="${c.image}" alt="${c.title}">
+      <div class="slot-title"><span>${c.title.toUpperCase()}</span></div>
+    </div>
+    <div class="body">
+      <div class="slug">${c.providerSlug}</div>
+      <div class="row"><div class="lab">Reward:</div><div>${usd(c.rewardUSD)}</div></div>
+      <div class="row"><div class="lab">Required:</div><div>${c.required}</div></div>
+      <div class="row"><div class="lab">Min Bet:</div><div>$${c.minBet.toFixed(2)}</div></div>
+      <div class="row"><div class="lab">Added:</div><div>${c.addedAgo}</div></div>
+      <div class="price-row">
+        <div class="price">${usd(c.rewardUSD)}</div>
+        <div class="status ${c.status==='active' ? '' : 'inactive'}">${c.status.toUpperCase()}</div>
+      </div>
+    </div>
+    <div class="cta"><a class="play" href="https://rainbet.com/?code=R2K2" target="_blank" rel="noopener">Play Now</a></div>
+  `;
+  return el;
+}
+
+function render(filter='all'){
+  cardsEl.innerHTML = '';
+  challenges
+    .filter(c => filter==='all' ? true : c.status===filter)
+    .forEach(c => cardsEl.appendChild(makeCard(c)));
+}
+
+tabs.forEach(t => t.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  render(t.dataset.filter);
+}));
+
+render();
+</script>
+</body>
+</html>
 
