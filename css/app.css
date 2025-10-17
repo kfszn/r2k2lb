@@ -25870,26 +25870,4 @@ tr:hover {
   animation: slideInUp 0.8s ease forwards;
 }
 
-/* ==== R2K2.gg • Rainbet Blue Background ==== */
-:root{
-  --r2-bg-dark:#060a12;
-  --r2-bg-panel:#0b1018;
-  --r2-blue:#00C2FF;
-  --r2-blue-glow:0 0 12px rgba(0,194,255,.25), 0 0 32px rgba(0,194,255,.12);
-  --r2-blue-line:1px solid rgba(0,194,255,.25);
-}
 
-#particleCanvas,
-#leftsvg,
-#rightsvg,
-.glow-container { display:none !important; }
-
-body{
-  background-color: var(--r2-bg-dark) !important;
-  background-image:
-    radial-gradient(900px 520px at 50% -10%, rgba(0,194,255,.12), transparent 60%),
-    radial-gradient(1000px 600px at 50% 120%, rgba(0,194,255,.10), transparent 62%),
-    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
-  color:#eaf7ff;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-}
