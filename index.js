@@ -5,7 +5,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 🔑 Your Rainbet affiliate key
-const API_KEY = "OjwJ62YWj7gveE0OkmkrCvRM4U3Omh16";
+const API_KEY = "";
 
 // Self-URL (keep same so your self-ping doesn’t break)
 const SELF_URL = "https://r2k2data.onrender.com/leaderboard/top14";
