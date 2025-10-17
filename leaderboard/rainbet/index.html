@@ -13,123 +13,66 @@
   <script src="/js/countdown-roobet.js"></script>
   <link rel="stylesheet" type="text/css" href="/css/toast.css">
     <style>
-    :root{
-      --bg:#0b0f13;
-      --panel:#11161c;
-      --muted:#8b98a5;
-      --text:#e8eef4;
-
-      /* Rainbet theme */
-      --accent:#00C2FF;      /* blue */
-      --accent-soft:#59FFA6; /* green */
-      --success:#59FFA6;
-
-      --radius:18px;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --border:1px solid rgba(255,255,255,.08);
+    .warning-message {
+      width: 90%;
+      max-width: 500px;
+      margin: 10px auto;
+      background-color: rgba(255,0,0,0.1);
+      border: 2px solid #ff4444;
+      border-radius: 4px;
+      padding: 15px;
+      color: #ff4444;
+      font-weight: bold;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    @media screen and (max-width: 768px) {
+      .warning-message { width:95%; padding:12px; font-size:14px; margin:10px auto; }
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:
-        radial-gradient(1200px 600px at 80% -10%, rgba(0,194,255,.10), transparent),
-        var(--bg);
-      color:var(--text);
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    /* Modal Styles */
+    .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.7); opacity:0; transition:opacity .5s ease; }
+    .modal.show { opacity:1; }
+    .modal-content {
+      background: linear-gradient(135deg,#1f2937,#111827);
+      margin: 10% auto; padding:25px; border:1px solid rgba(255,255,255,0.1); border-radius:12px;
+      width:80%; max-width:600px; box-shadow:0 10px 25px rgba(0,0,0,.5);
+      transform: translateY(-20px); transition: transform .5s ease; position:relative;
     }
-    a{color:var(--text);text-decoration:none}
+    .modal.show .modal-content { transform: translateY(0); }
+    .modal-header {
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px; margin-bottom:15px;
+    }
+    .modal-title { font-size:24px; font-weight:700; color:#fff; margin:0; }
+    .close { color:#aaa; font-size:28px; font-weight:bold; cursor:pointer; transition:color .2s ease; }
+    .close:hover { color:#fff; }
+    .modal-body { color:#d1d5db; font-size:16px; line-height:1.6; }
+    .modal-body li { margin-bottom:10px; text-align:left; }
+    .modal-body ul { padding-left:20px; }
 
-    .wrap{max-width:1180px;margin:0 auto;padding:24px}
+    .prev-lb-btn {
+      display:inline-flex; align-items:center; gap:8px; background:rgb(39,117,202); color:#000;
+      padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;
+      transition:all .2s cubic-bezier(0.4,0,0.2,1); border:2px solid rgba(255,255,255,0.2);
+      box-shadow:0 4px 15px rgba(39,117,202,0.2); position:relative; overflow:hidden;
+    }
+    .prev-lb-btn:hover { transform: translateY(-2px) scale(1.02); background:rgb(39,117,202); box-shadow:0 6px 20px rgba(39,117,202,0.4); border-color:rgba(255,255,255,0.4); text-decoration:none; color:black; }
+    .prev-lb-btn:hover svg { transform:scale(1.1); stroke:black; }
+    .prev-lb-btn:active { transform: translateY(0) scale(0.98); }
+    .prev-lb-btn svg { width:18px; height:18px; transition: transform .2s ease; }
 
-    /* Header */
-    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .brand img{width:40px;height:40px;border-radius:10px}
-    .brand h1{font-size:18px;margin:0;letter-spacing:.3px;color:#cbd5e1}
-    nav{display:flex;gap:14px;flex-wrap:wrap}
-    nav a{opacity:.9}
-    nav a:hover{opacity:1}
+    @keyframes float { 0%{transform:translateY(0) scaleX(1) rotate(20deg);} 50%{transform:translateY(-10px) scaleX(1) rotate(20deg);} 100%{transform:translateY(0) scaleX(1) rotate(20deg);} }
+    @keyframes floatLeft { 0%{transform:translateY(0) scaleX(-1) rotate(20deg);} 50%{transform:translateY(-10px) scaleX(-1) rotate(20deg);} 100%{transform:translateY(0) scaleX(-1) rotate(20deg);} }
 
-    /* Hero */
-    .hero{margin:24px 0 18px;text-align:center}
-    .eyebrow{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border-radius:999px;
-      background:rgba(255,255,255,.06);border:var(--border);
-      font-size:12px;color:#c8d0da
-    }
-    .title{margin:14px 0 8px;font-weight:800;font-size:clamp(28px,4.2vw,44px);letter-spacing:.3px;text-transform:uppercase}
-    .title .glow{
-      color:#fff;
-      text-shadow:
-        0 0 22px rgba(0,194,255,.55),
-        0 0 44px rgba(89,255,166,.45);
-    }
-    .subtitle{margin:0;color:var(--muted)}
+    .coin-container { position:relative; height:0; margin:0; }
+    .coin-left, .coin-right { position:absolute; height:100px; width:auto; opacity:.7; top:-50px; }
+    .coin-left { left:22%; animation: floatLeft 3s ease-in-out infinite; }
+    .coin-right { right:25%; animation: float 3s ease-in-out infinite; }
+    @media screen and (max-width: 768px) { .coin-container { display:none; } }
 
-    .hero-actions{margin:18px 0 6px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-    .btn{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:12px 16px;border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);color:#fff;font-weight:700;
-      transition:transform .12s ease, background .12s ease, border-color .12s ease
-    }
-    .btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
-    .btn.primary{
-      background:var(--accent);border-color:transparent;color:#041018;box-shadow:var(--shadow)
-    }
-    .btn.primary:hover{filter:brightness(1.05)}
-
-    /* Tabs */
-    .tabs{margin:20px auto 6px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-    .tab{
-      padding:10px 14px;border-radius:999px;background:#0f141a;border:var(--border);
-      color:#d6deea;font-weight:700;transition:background .12s ease, color .12s ease, border-color .12s ease
-    }
-    .tab:hover{background:rgba(255,255,255,.06)}
-    .tab.active{background:var(--accent);color:#041018;border-color:transparent}
-
-    /* Cards */
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:14px}
-    .card{
-      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0));
-      border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
-      overflow:hidden;display:flex;flex-direction:column
-    }
-    .thumb{position:relative;height:170px;background:#0e1116}
-    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
-    .slot-title{
-      position:absolute;left:14px;bottom:12px;font-weight:800;font-size:22px;letter-spacing:.4px;text-transform:uppercase
-    }
-    .slot-title span{display:block;background:rgba(0,0,0,.5);padding:4px 8px;border-radius:8px}
-
-    .body{padding:14px 16px;display:grid;gap:8px}
-    .slug{font-size:13px;color:#cdd6e3}
-    .row{display:flex;align-items:center;gap:10px;color:#e8eef4}
-    .row .lab{width:86px;color:var(--muted);font-size:13px}
-    .price-row{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
-    .price{font-size:22px;font-weight:800;color:var(--accent-soft)}
-    .status{
-      padding:6px 10px;border-radius:999px;
-      background:rgba(89,255,166,.12);color:#b6ffdb;font-weight:800;font-size:12px;
-      border:1px solid rgba(89,255,166,.28)
-    }
-    .status.inactive{background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.32);color:#cbd5e1}
-
-    .cta{margin:12px 16px 16px}
-    .play{
-      width:100%;display:inline-flex;align-items:center;justify-content:center;
-      padding:12px 14px;border-radius:12px;background:var(--accent);color:#041018;font-weight:800;
-      transition:filter .12s ease
-    }
-    .play:hover{filter:brightness(1.06)}
-
-    /* Responsive */
-    @media (max-width:1020px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:620px){.grid{grid-template-columns:1fr}}
+    #countdown { font-size:3rem; font-weight:800; color:#ffffff; text-shadow:0 0 10px #00eaff, 0 0 20px #00eaff, 0 0 40px #00eaff; }
+    @media (max-width:768px){ #countdown { font-size:2rem; } }
   </style>
 </head>
 <body>
