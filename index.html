@@ -218,19 +218,42 @@
     </object>
     <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%">
     </object>
-    <header>
-        <nav>
-            <div class="logo-title">
-                <img src="/assets/logo.png" alt="Site logo" class="logo">
-                <h1 class="title">R2K2</h1>
-            </div>
-            <ul class="nav-links">
+    <header class="r2-header">
+  <div class="r2-header__bar">
+    <a class="r2-brand" href="/">
+      <img src="/assets/logo.png" alt="R2K2" class="r2-brand__logo">
+      <span class="r2-brand__text">R2K2</span>
+    </a>
 
-<li><a href="/leaderboard/rainbet">LEADERBOARDS</a></li>
-<li><a href="/challenges/">SLOT CHALLENGES</a></li>
-        </ul>
+    <button class="r2-nav__toggle" aria-controls="r2-nav" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav id="r2-nav" class="r2-nav">
+      <ul class="r2-nav__menu">
+        <li><a href="/">Home</a></li>
+        <li><a href="/leaderboard/rainbet">Leaderboard</a></li>
+        <li class="has-dd">
+          <button class="dd-btn" type="button">Rewards ▾</button>
+          <div class="dd">
+            <a href="/rewards">Overview</a>
+            <a href="/rewards/faq">FAQ</a>
+          </div>
+        </li>
+        <li><a href="/instructions">Instructions</a></li>
+      </ul>
+
+      <div class="r2-nav__cta">
+        <a class="r2-btn r2-btn--ghost" href="/register">Register</a>
+        <a class="r2-btn r2-btn--primary" href="https://rainbet.com/?r=R2K2" target="_blank">
+          <span class="rb-dot">ℝ</span> Join Rainbet
+        </a>
+      </div>
     </nav>
+  </div>
+  <div class="r2-header__underline"></div>
 </header>
+
 <br>
 <br>
 <div data-v-1d580398="" data-v-e4097664="" id="appContent">
