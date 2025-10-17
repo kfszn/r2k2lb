@@ -349,3 +349,10 @@ footer, #footer{
 }
 .social-media-cards .card:hover{ transform:translateY(-3px); border-color:rgba(39,117,202,.45); box-shadow:var(--glow-1); }
 
+/* Fix content not showing (overlay layering) */
+body * {
+  position: relative;
+  z-index: 2;
+}
+
+
