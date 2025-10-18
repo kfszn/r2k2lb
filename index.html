@@ -63,15 +63,35 @@
       #r2kHeader .actions{display:none}
     }
     #r2kHeader::after{content:"";display:block;height:2px;width:100%;background:linear-gradient(90deg,transparent,rgba(19,152,255,.6),transparent)}
-    /* Kill the thin line under the header */
-#r2kHeader::after { display: none !important; }       /* if still present */
-#r2kHeader,
-#r2kHeader .h-inner,
-#r2kHeader nav {
-  border-bottom: 0 !important;                        /* override our own border */
-  box-shadow: none !important;                         /* in case a shadow reads as a line */
-  background-image: none !important;                   /* guard against gradient underlines */
+     /* --- R2K: persistent neon separator under header --- */
+#r2kHeader { 
+  position: sticky;            /* keep your sticky header */
+  top: 0;
+  z-index: 2000;               /* above canvases/particles */
+  position: relative;          /* create positioning context for ::after */
+  border-bottom: 0 !important; /* kill any existing border lines */
+  box-shadow: none !important;
 }
+
+#r2kHeader::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;                /* sits just outside, not through the header */
+  height: 2px;                 /* thickness of the separator */
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,0) 0%,
+    rgba(19,152,255,0.35) 10%,
+    rgba(19,152,255,0.85) 50%,
+    rgba(19,152,255,0.35) 90%,
+    rgba(0,0,0,0) 100%
+  );
+  box-shadow: 0 0 18px rgba(19,152,255,0.45); /* glow so it stays distinct on scroll */
+  pointer-events: none;        /* don’t block clicks */
+}
+
 
   </style>
 </head>
