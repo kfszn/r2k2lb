@@ -17,7 +17,6 @@
   <!-- Existing countdown -->
   <script src="/js/countdown-roobet.js"></script>
 
-  <!-- Inline styles (kept from your file) -->
   <style>
     .warning-message {
       width: 90%;
@@ -62,11 +61,16 @@
       padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;
       transition:all .2s cubic-bezier(0.4,0,0.2,1); border:2px solid rgba(255,255,255,0.2);
       box-shadow:0 4px 15px rgba(39,117,202,0.2); position:relative; overflow:hidden;
+      margin: 10px 10px 10px 0; /* a little breathing room */
     }
     .prev-lb-btn:hover { transform: translateY(-2px) scale(1.02); background:rgb(39,117,202); box-shadow:0 6px 20px rgba(39,117,202,0.4); border-color:rgba(255,255,255,0.4); text-decoration:none; color:black; }
     .prev-lb-btn:hover svg { transform:scale(1.1); stroke:black; }
     .prev-lb-btn:active { transform: translateY(0) scale(0.98); }
     .prev-lb-btn svg { width:18px; height:18px; transition: transform .2s ease; }
+
+    @media (max-width:768px){
+      .prev-lb-btn { width:100%; margin-right:0; text-align:center; justify-content:center; }
+    }
 
     @keyframes float { 0%{transform:translateY(0) scaleX(1) rotate(20deg);} 50%{transform:translateY(-10px) scaleX(1) rotate(20deg);} 100%{transform:translateY(0) scaleX(1) rotate(20deg);} }
     @keyframes floatLeft { 0%{transform:translateY(0) scaleX(-1) rotate(20deg);} 50%{transform:translateY(-10px) scaleX(-1) rotate(20deg);} 100%{transform:translateY(0) scaleX(-1) rotate(20deg);} }
@@ -81,40 +85,70 @@
     @media (max-width:768px){ #countdown { font-size:2rem; } }
 
     /* ------------------------------------------- */
-    /* R2K ADDED: Totals cards (scoped styles)     */
+    /* Totals cards + progress (scoped styles)     */
     /* ------------------------------------------- */
     .r2k-totals {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-      margin: 16px auto 10px;
-      width: min(1080px, 92%);
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+      flex-wrap:wrap;
+      gap:30px;
+      margin: 28px auto 10px;
+      width:min(1080px, 92%);
     }
     .r2k-total-card {
-      background: #0b0f17;
-      border: 1px solid #0e2038;
-      border-radius: 14px;
-      padding: 14px 16px;
-      box-shadow: 0 0 18px rgba(0, 153, 255, 0.25);
+      flex:0 1 360px;
+      background:#0b0f17;
+      border:1px solid #0e2038;
+      border-radius:14px;
+      padding:18px 20px;
+      box-shadow:0 0 18px rgba(0,153,255,0.25);
     }
     .r2k-total-label {
-      font-size: 12px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: #87c8ff;
-      opacity: .9;
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#87c8ff;
+      opacity:.9;
     }
     .r2k-total-value {
-      margin-top: 6px;
-      font-weight: 700;
-      font-size: 22px;
-      line-height: 1.2;
-      color: #e9f5ff;
-      text-shadow: 0 0 10px rgba(0, 153, 255, 0.35);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      margin-top:6px;
+      font-weight:700;
+      font-size:22px;
+      line-height:1.2;
+      color:#e9f5ff;
+      text-shadow:0 0 10px rgba(0,153,255,0.35);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
+
+    /* Progress bars */
+    .r2k-progress { margin-top:10px; }
+    .r2k-progress-bar {
+      height:10px;
+      background:rgba(8,20,35,0.9);
+      border:1px solid #0e2038;
+      border-radius:999px;
+      overflow:hidden;
+      box-shadow: inset 0 0 10px rgba(0,153,255,0.15), 0 0 14px rgba(0,153,255,0.15);
+    }
+    .r2k-progress-fill {
+      height:100%;
+      width:0;
+      transition: width 900ms ease-in-out;
+      background:linear-gradient(90deg, #1398ff, #48c7ff);
+      box-shadow:0 0 12px rgba(0,153,255,0.55);
+    }
+    .r2k-progress-fill.over {
+      background:linear-gradient(90deg, #22c55e, #86efac);
+      box-shadow:0 0 12px rgba(34,197,94,0.55);
+    }
+    .r2k-progress-meta {
+      display:flex; justify-content:space-between; align-items:center;
+      font-size:12px; color:#87c8ff; opacity:.95; margin-top:6px;
+    }
+    .r2k-progress-meta .strong { color:#e9f5ff; font-weight:700; }
   </style>
 </head>
 <body>
@@ -140,7 +174,7 @@
     </div>
   </div>
 
-  <!-- Background elements (kept) -->
+  <!-- Background -->
   <canvas id="particleCanvas"></canvas>
   <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
   <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
@@ -189,14 +223,14 @@
             RULES
           </button>
 
-          <button id="prevLeaderboardBtn" class="prev-lb-btn" style="margin-left:12px;">
+          <button id="prevLeaderboardBtn" class="prev-lb-btn">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l2 2h5a2 2 0 0 1 2 2v12a2 2 0 0 1 2 2z"></path>
             </svg>
             PREVIOUS LEADERBOARD
           </button>
 
-          <button id="currentLeaderboardBtn" class="prev-lb-btn" style="margin-left:12px; display:none; background:#22c55e;">
+          <button id="currentLeaderboardBtn" class="prev-lb-btn" style="display:none; background:#22c55e;">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12h18M3 6h18M3 18h18"></path>
             </svg>
@@ -206,15 +240,36 @@
       </div>
     </div>
 
-    <!-- R2K Totals cards -->
+    <!-- Totals + Goals -->
     <div class="r2k-totals">
+      <!-- Deal card -->
       <div class="r2k-total-card">
         <div class="r2k-total-label">Current Deal Wager</div>
         <div class="r2k-total-value" id="r2kDealWager">$0</div>
+        <div class="r2k-progress" aria-label="Deal goal progress">
+          <div class="r2k-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="r2kDealBar">
+            <div class="r2k-progress-fill" id="r2kDealFill"></div>
+          </div>
+          <div class="r2k-progress-meta">
+            <span id="r2kDealPct" class="strong">0%</span>
+            <span id="r2kDealMeta">$0 / $0</span>
+          </div>
+        </div>
       </div>
+
+      <!-- LB card -->
       <div class="r2k-total-card">
         <div class="r2k-total-label">Current LB Total</div>
         <div class="r2k-total-value" id="r2kLbWager">$0</div>
+        <div class="r2k-progress" aria-label="Leaderboard goal progress">
+          <div class="r2k-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="r2kLbBar">
+            <div class="r2k-progress-fill" id="r2kLbFill"></div>
+          </div>
+          <div class="r2k-progress-meta">
+            <span id="r2kLbPct" class="strong">0%</span>
+            <span id="r2kLbMeta">$0 / $0</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -273,7 +328,7 @@
     </div>
   </div>
 
-  <!-- Cloudflare beacon (kept) -->
+  <!-- Cloudflare beacon -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
           integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
           data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
@@ -316,25 +371,16 @@
   <script src="/js/toast.js"></script>
   <script src="/js/leaderboard-page.js"></script>
 
-  <!-- R2K ADDED: Totals script (frontend calls your secure /api/leaderboard) -->
+  <!-- Totals + Progress script (frontend calls your secure /api/leaderboard) -->
   <script>
     (function () {
       const R2K_API_ROUTE = "/api/leaderboard";
 
-      const r2kFormatMoney = (n) => {
-        try { return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 }); }
-        catch { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
-      };
+      // Goals (as requested)
+      const R2K_DEAL_GOAL = 600000; // $600,000
+      const R2K_LB_GOAL   = 500000; // $500,000
 
-      async function r2kGetTotalWagered(startISO, endISO) {
-        const url = `${R2K_API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`API ${res.status}`);
-        const data = await res.json();
-        const affiliates = Array.isArray(data?.affiliates) ? data.affiliates : [];
-        return affiliates.reduce((sum, a) => sum + Number(a?.wagered_amount || 0), 0);
-      }
-
+      // Periods
       // Deal period: 2025-10-02 → 2025-11-01 (30 days)
       const R2K_DEAL_START = "2025-10-02";
       const R2K_DEAL_END   = "2025-11-01";
@@ -343,30 +389,75 @@
       const R2K_LB_START = "2025-09-18";
       const R2K_LB_END   = "2025-10-18";
 
-      async function r2kRenderTotals() {
+      const fmtMoney = (n) => {
+        try { return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 }); }
+        catch { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
+      };
+
+      async function fetchTotal(startISO, endISO) {
+        const url = `${R2K_API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error(`API ${res.status}`);
+        const data = await res.json();
+        const affiliates = Array.isArray(data?.affiliates) ? data.affiliates : [];
+        return affiliates.reduce((sum, a) => sum + Number(a?.wagered_amount || 0), 0);
+      }
+
+      function renderProgress({ total, goal, fillId, pctId, metaId, barId }) {
+        const fill = document.getElementById(fillId);
+        const pctEl = document.getElementById(pctId);
+        const metaEl = document.getElementById(metaId);
+        const bar = document.getElementById(barId);
+        if (!fill || !pctEl || !metaEl || !bar) return;
+
+        const pct = goal > 0 ? Math.min((total / goal) * 100, 100) : 0;
+        fill.style.width = pct + "%";
+        if (pct >= 100) fill.classList.add("over"); else fill.classList.remove("over");
+        pctEl.textContent = Math.round(pct) + "%";
+        metaEl.textContent = `${fmtMoney(total)} / ${fmtMoney(goal)}`;
+        bar.setAttribute("aria-valuenow", Math.round(pct));
+      }
+
+      async function initTotals() {
         const dealEl = document.getElementById("r2kDealWager");
         const lbEl   = document.getElementById("r2kLbWager");
         if (dealEl) dealEl.textContent = "…";
         if (lbEl)   lbEl.textContent   = "…";
 
         try {
-          const dealTotal = await r2kGetTotalWagered(R2K_DEAL_START, R2K_DEAL_END);
-          if (dealEl) dealEl.textContent = r2kFormatMoney(dealTotal);
+          const dealTotal = await fetchTotal(R2K_DEAL_START, R2K_DEAL_END);
+          if (dealEl) dealEl.textContent = fmtMoney(dealTotal);
+          renderProgress({
+            total: dealTotal,
+            goal: R2K_DEAL_GOAL,
+            fillId: "r2kDealFill",
+            pctId: "r2kDealPct",
+            metaId: "r2kDealMeta",
+            barId: "r2kDealBar"
+          });
         } catch (e) {
           if (dealEl) dealEl.textContent = "—";
           console.error("Deal total error:", e);
         }
 
         try {
-          const lbTotal = await r2kGetTotalWagered(R2K_LB_START, R2K_LB_END);
-          if (lbEl) lbEl.textContent = r2kFormatMoney(lbTotal);
+          const lbTotal = await fetchTotal(R2K_LB_START, R2K_LB_END);
+          if (lbEl) lbEl.textContent = fmtMoney(lbTotal);
+          renderProgress({
+            total: lbTotal,
+            goal: R2K_LB_GOAL,
+            fillId: "r2kLbFill",
+            pctId: "r2kLbPct",
+            metaId: "r2kLbMeta",
+            barId: "r2kLbBar"
+          });
         } catch (e) {
           if (lbEl) lbEl.textContent = "—";
           console.error("LB total error:", e);
         }
       }
 
-      document.addEventListener("DOMContentLoaded", r2kRenderTotals);
+      document.addEventListener("DOMContentLoaded", initTotals);
     })();
   </script>
 </body>
