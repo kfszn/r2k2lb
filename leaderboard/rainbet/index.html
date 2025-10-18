@@ -7,12 +7,18 @@
   <meta name="description" content="Exclusive wager races on Rainbet for code R2K2!">
   <meta property="og:image" content="/assets/logo.png">
   <link rel="icon" type="image/jpg" href="/assets/logo.png">
+
+  <!-- Existing CSS -->
   <link rel="stylesheet" type="text/css" href="/css/app.css">
   <link rel="stylesheet" type="text/css" href="/css/lb.css">
   <link rel="stylesheet" type="text/css" href="/css/vendor.css">
-  <script src="/js/countdown-roobet.js"></script>
   <link rel="stylesheet" type="text/css" href="/css/toast.css">
-    <style>
+
+  <!-- Existing countdown -->
+  <script src="/js/countdown-roobet.js"></script>
+
+  <!-- Inline styles (kept from your file) -->
+  <style>
     .warning-message {
       width: 90%;
       max-width: 500px;
@@ -73,6 +79,42 @@
 
     #countdown { font-size:3rem; font-weight:800; color:#ffffff; text-shadow:0 0 10px #00eaff, 0 0 20px #00eaff, 0 0 40px #00eaff; }
     @media (max-width:768px){ #countdown { font-size:2rem; } }
+
+    /* ------------------------------------------- */
+    /* R2K ADDED: Totals cards (scoped styles)     */
+    /* ------------------------------------------- */
+    .r2k-totals {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 16px auto 10px;
+      width: min(1080px, 92%);
+    }
+    .r2k-total-card {
+      background: #0b0f17;
+      border: 1px solid #0e2038;
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 0 18px rgba(0, 153, 255, 0.25);
+    }
+    .r2k-total-label {
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #87c8ff;
+      opacity: .9;
+    }
+    .r2k-total-value {
+      margin-top: 6px;
+      font-weight: 700;
+      font-size: 22px;
+      line-height: 1.2;
+      color: #e9f5ff;
+      text-shadow: 0 0 10px rgba(0, 153, 255, 0.35);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   </style>
 </head>
 <body>
@@ -98,11 +140,13 @@
     </div>
   </div>
 
+  <!-- Background elements (kept) -->
   <canvas id="particleCanvas"></canvas>
   <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
   <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
   <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%"></object>
 
+  <!-- Header -->
   <header>
     <nav>
       <div class="logo-title">
@@ -116,10 +160,12 @@
     </nav>
   </header>
 
+  <!-- Provider toggle -->
   <div class="toggle-images" style="margin-top: 50px;">
     <img class="game-image roobet-image" id="roobetImage" src="/assets/rainbet.png" style="cursor:pointer;opacity:1;" onclick="window.location.href='/leaderboard/rainbet'">
   </div>
-  
+
+  <!-- Main content -->
   <div data-v-1d580398 data-v-e4097664 id="appContent">
     <div data-v-1d580398>
       <div data-v-1d580398 class="row text">
@@ -160,6 +206,18 @@
       </div>
     </div>
 
+    <!-- R2K Totals cards -->
+    <div class="r2k-totals">
+      <div class="r2k-total-card">
+        <div class="r2k-total-label">Current Deal Wager</div>
+        <div class="r2k-total-value" id="r2kDealWager">$0</div>
+      </div>
+      <div class="r2k-total-card">
+        <div class="r2k-total-label">Current LB Total</div>
+        <div class="r2k-total-value" id="r2kLbWager">$0</div>
+      </div>
+    </div>
+
     <div class="css-esk2ah">
       <div class="css-2w2ovy">
         <!-- Top 3 Player Cards -->
@@ -179,6 +237,7 @@
     </div>
   </div>
 
+  <!-- Footer -->
   <div data-v-5867ad71 class="row inner-footer">
     <div data-v-5867ad71 class="col-5">
       <div data-v-5867ad71 class="content">
@@ -214,12 +273,13 @@
     </div>
   </div>
 
+  <!-- Cloudflare beacon (kept) -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
           integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
           data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
           crossorigin="anonymous"></script>
 
-  <!-- modal behavior -->
+  <!-- Modal behavior -->
   <script>
     const modal = document.getElementById("rulesModal");
     const btn = document.getElementById("rulesButton");
@@ -245,16 +305,69 @@
       if (event.target === modal) closeModal();
     }
 
-    // Optional: close on Esc
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && modal.style.display === 'block') closeModal();
     });
   </script>
 
-  <!-- your existing JS includes -->
+  <!-- Existing JS includes -->
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
   <script src="/js/leaderboard-page.js"></script>
+
+  <!-- R2K ADDED: Totals script (frontend calls your secure /api/leaderboard) -->
+  <script>
+    (function () {
+      const R2K_API_ROUTE = "/api/leaderboard";
+
+      const r2kFormatMoney = (n) => {
+        try { return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 }); }
+        catch { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
+      };
+
+      async function r2kGetTotalWagered(startISO, endISO) {
+        const url = `${R2K_API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error(`API ${res.status}`);
+        const data = await res.json();
+        const affiliates = Array.isArray(data?.affiliates) ? data.affiliates : [];
+        return affiliates.reduce((sum, a) => sum + Number(a?.wagered_amount || 0), 0);
+      }
+
+      // Deal period: 2025-10-02 → 2025-11-01 (30 days)
+      const R2K_DEAL_START = "2025-10-02";
+      const R2K_DEAL_END   = "2025-11-01";
+
+      // Leaderboard period: ends 2025-10-18; begin = 30 days prior → 2025-09-18
+      const R2K_LB_START = "2025-09-18";
+      const R2K_LB_END   = "2025-10-18";
+
+      async function r2kRenderTotals() {
+        const dealEl = document.getElementById("r2kDealWager");
+        const lbEl   = document.getElementById("r2kLbWager");
+        if (dealEl) dealEl.textContent = "…";
+        if (lbEl)   lbEl.textContent   = "…";
+
+        try {
+          const dealTotal = await r2kGetTotalWagered(R2K_DEAL_START, R2K_DEAL_END);
+          if (dealEl) dealEl.textContent = r2kFormatMoney(dealTotal);
+        } catch (e) {
+          if (dealEl) dealEl.textContent = "—";
+          console.error("Deal total error:", e);
+        }
+
+        try {
+          const lbTotal = await r2kGetTotalWagered(R2K_LB_START, R2K_LB_END);
+          if (lbEl) lbEl.textContent = r2kFormatMoney(lbTotal);
+        } catch (e) {
+          if (lbEl) lbEl.textContent = "—";
+          console.error("LB total error:", e);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", r2kRenderTotals);
+    })();
+  </script>
 </body>
 </html>
