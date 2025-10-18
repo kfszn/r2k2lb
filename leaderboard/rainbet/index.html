@@ -6,72 +6,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Exclusive wager races on Rainbet for code R2K2!">
   <meta property="og:image" content="/assets/logo.png">
-  <link rel="icon" type="image/jpg" href="/assets/logo.png">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
 
-  <!-- (Optional) Your existing global CSS files still load, but we won't rely on editing them -->
-  <link rel="stylesheet" type="text/css" href="/css/app.css">
-  <link rel="stylesheet" type="text/css" href="/css/lb.css">
-  <link rel="stylesheet" type="text/css" href="/css/vendor.css">
-  <link rel="stylesheet" type="text/css" href="/css/toast.css">
+  <!-- (Optional) Your existing global CSS (left intact) -->
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/lb.css">
+  <link rel="stylesheet" href="/css/vendor.css">
+  <link rel="stylesheet" href="/css/toast.css">
 
   <script src="/js/countdown-roobet.js"></script>
 
-  <!-- ===== Page-scoped styles (kept + new header + totals/progress) ===== -->
+  <!-- ===== Page-scoped styles (header + totals/progress + in-card countdowns) ===== -->
   <style>
-    .warning-message {
-      width: 90%; max-width: 500px; margin: 10px auto;
-      background-color: rgba(255,0,0,0.1); border: 2px solid #ff4444; border-radius: 4px;
-      padding: 15px; color: #ff4444; font-weight: bold; text-align: center; box-sizing: border-box;
+    .warning-message{
+      width:90%;max-width:500px;margin:10px auto;background:rgba(255,0,0,.1);
+      border:2px solid #ff4444;border-radius:4px;padding:15px;color:#ff4444;font-weight:700;
+      text-align:center;box-sizing:border-box;
     }
-    @media (max-width: 768px) { .warning-message { width:95%; padding:12px; font-size:14px; margin:10px auto; } }
+    @media (max-width:768px){.warning-message{width:95%;padding:12px;font-size:14px;margin:10px auto}}
 
     /* Modal */
-    .modal { display:none; position:fixed; z-index:1000; inset:0; overflow:auto; background-color:rgba(0,0,0,0.7); opacity:0; transition:opacity .5s ease; }
-    .modal.show { opacity:1; }
-    .modal-content {
-      background: linear-gradient(135deg,#1f2937,#111827); margin: 10% auto; padding:25px;
-      border:1px solid rgba(255,255,255,0.1); border-radius:12px; width:80%; max-width:600px;
-      box-shadow:0 10px 25px rgba(0,0,0,.5); transform: translateY(-20px); transition: transform .5s ease; position:relative;
+    .modal{display:none;position:fixed;z-index:1000;inset:0;overflow:auto;background:rgba(0,0,0,.7);opacity:0;transition:opacity .5s}
+    .modal.show{opacity:1}
+    .modal-content{
+      background:linear-gradient(135deg,#1f2937,#111827);margin:10% auto;padding:25px;border:1px solid rgba(255,255,255,.1);
+      border-radius:12px;width:80%;max-width:600px;box-shadow:0 10px 25px rgba(0,0,0,.5);transform:translateY(-20px);transition:.5s;position:relative
     }
-    .modal.show .modal-content { transform: translateY(0); }
-    .modal-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px; margin-bottom:15px; }
-    .modal-title { font-size:24px; font-weight:700; color:#fff; margin:0; }
-    .close { color:#aaa; font-size:28px; font-weight:bold; cursor:pointer; transition:color .2s ease; }
-    .close:hover { color:#fff; }
-    .modal-body { color:#d1d5db; font-size:16px; line-height:1.6; }
-    .modal-body li { margin-bottom:10px; text-align:left; }
-    .modal-body ul { padding-left:20px; }
+    .modal.show .modal-content{transform:translateY(0)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:15px;margin-bottom:15px}
+    .modal-title{font-size:24px;font-weight:700;color:#fff;margin:0}
+    .close{color:#aaa;font-size:28px;font-weight:700;cursor:pointer;transition:color .2s}
+    .close:hover{color:#fff}
+    .modal-body{color:#d1d5db;font-size:16px;line-height:1.6}
+    .modal-body li{margin-bottom:10px;text-align:left}
+    .modal-body ul{padding-left:20px}
 
-    /* ===== R2K Inline Header (Rainbet blue) ===== */
+    /* ===== Header (Rainbet blue) ===== */
     #r2kHeader{position:sticky;top:0;z-index:100;background:rgba(7,10,16,.92);backdrop-filter:blur(6px);border-bottom:1px solid rgba(19,152,255,.15);box-shadow:0 0 24px rgba(19,152,255,.15)}
     #r2kHeader .h-inner{max-width:1200px;margin:0 auto;padding:14px 20px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
     #r2kHeader .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
     #r2kHeader .brand .logo{width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(19,152,255,.35)}
     #r2kHeader .brand .name{font-size:22px;font-weight:800;letter-spacing:.2px;color:#fff}
     #r2kHeader .brand .name .accent{color:#1398ff;text-shadow:0 0 10px rgba(19,152,255,.5)}
-
     #r2kHeader .nav{display:flex;justify-content:center;gap:26px}
-    #r2kHeader .nav a,
-    #r2kHeader .nav button.nav-btn{color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;padding:8px 6px;border-radius:8px;transition:.18s ease}
-    #r2kHeader .nav a:hover,
-    #r2kHeader .nav button.nav-btn:hover{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.45)}
-
+    #r2kHeader .nav a,#r2kHeader .nav button.nav-btn{color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;padding:8px 6px;border-radius:8px;transition:.18s}
+    #r2kHeader .nav a:hover,#r2kHeader .nav button.nav-btn:hover{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.45)}
     #r2kHeader .dropdown{position:relative}
     #r2kHeader .menu{position:absolute;top:120%;left:50%;transform:translateX(-50%);background:#0b0f17;border:1px solid #0e2038;border-radius:12px;min-width:200px;box-shadow:0 12px 30px rgba(0,0,0,.45),0 0 16px rgba(19,152,255,.2);padding:8px;display:none}
     #r2kHeader .menu a{display:block;padding:10px 12px;border-radius:8px;color:#cfe9ff;text-decoration:none;font-weight:600}
     #r2kHeader .menu a:hover{background:#0e2038;color:#fff}
-
     #r2kHeader .actions{display:flex;justify-content:flex-end;gap:12px}
-    #r2kHeader .btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid rgba(19,152,255,.25);color:#0a1626;background:linear-gradient(90deg,#22b1ff,#1398ff);box-shadow:0 6px 20px rgba(19,152,255,.35),inset 0 0 10px rgba(255,255,255,.08);transition:transform .15s ease,box-shadow .15s ease,filter .15s ease}
+    #r2kHeader .btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid rgba(19,152,255,.25);color:#0a1626;background:linear-gradient(90deg,#22b1ff,#1398ff);box-shadow:0 6px 20px rgba(19,152,255,.35),inset 0 0 10px rgba(255,255,255,.08);transition:transform .15s,box-shadow .15s,filter .15s}
     #r2kHeader .btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 26px rgba(19,152,255,.5)}
     #r2kHeader .btn.outline{background:transparent;color:#e8f4ff;border-color:rgba(19,152,255,.45);box-shadow:0 0 16px rgba(19,152,255,.25) inset}
     #r2kHeader .btn.outline:hover{background:rgba(19,152,255,.08);color:#fff}
-
     #r2kHeader .hamburger{display:none;justify-self:end;cursor:pointer}
     #r2kHeader .hamburger span{display:block;width:24px;height:3px;margin:4px 0;background:#e8f4ff;border-radius:2px}
     @media (max-width:900px){
       #r2kHeader .h-inner{grid-template-columns:1fr auto auto}
-      #r2kHeader .nav{display:none;position:absolute;top:60px;left:0;right:0;background:#080f19;border-top:1px solid rgba(19,152,255,.15);padding:12px 20px;justify-content:flex-start;gap:16px;flex-direction:column}
+      #r2kHeader .nav{display:none;position:absolute;top:60px;left:0;right:0;background:#080f19;border-top:1px solid rgba(19,152,255,.15);padding:12px 20px;gap:16px;flex-direction:column}
       #r2kHeader .nav.show{display:flex}
       #r2kHeader .hamburger{display:flex}
       #r2kHeader .actions{display:none}
@@ -79,51 +72,41 @@
     #r2kHeader::after{content:"";display:block;height:2px;width:100%;background:linear-gradient(90deg,transparent,rgba(19,152,255,.6),transparent)}
 
     /* Totals + progress */
-    .r2k-totals {
-      display:flex; justify-content:center; align-items:stretch; flex-wrap:wrap;
-      gap:30px; margin: 28px auto 10px; width:min(1080px, 92%);
-    }
-    .r2k-total-card {
-      flex:0 1 360px; background:#0b0f17; border:1px solid #0e2038; border-radius:14px;
-      padding:18px 20px; box-shadow:0 0 18px rgba(0,153,255,0.25);
-    }
-    .r2k-total-label { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#87c8ff; opacity:.9; }
-    .r2k-total-value { margin-top:6px; font-weight:700; font-size:22px; line-height:1.2; color:#e9f5ff; text-shadow:0 0 10px rgba(0,153,255,0.35); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .r2k-totals{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:30px;margin:28px auto 10px;width:min(1080px,92%)}
+    .r2k-total-card{flex:0 1 360px;background:#0b0f17;border:1px solid #0e2038;border-radius:14px;padding:18px 20px;box-shadow:0 0 18px rgba(0,153,255,.25)}
+    .r2k-total-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#87c8ff;opacity:.9}
+    .r2k-total-value{margin-top:6px;font-weight:700;font-size:22px;line-height:1.2;color:#e9f5ff;text-shadow:0 0 10px rgba(0,153,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .r2k-progress{margin-top:10px}
+    .r2k-progress-bar{height:10px;background:rgba(8,20,35,.9);border:1px solid #0e2038;border-radius:999px;overflow:hidden;box-shadow:inset 0 0 10px rgba(0,153,255,.15),0 0 14px rgba(0,153,255,.15)}
+    .r2k-progress-fill{height:100%;width:0;transition:width 900ms ease-in-out;background:linear-gradient(90deg,#1398ff,#48c7ff);box-shadow:0 0 12px rgba(0,153,255,.55)}
+    .r2k-progress-fill.over{background:linear-gradient(90deg,#22c55e,#86efac);box-shadow:0 0 12px rgba(34,197,94,.55)}
+    .r2k-progress-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#87c8ff;opacity:.95;margin-top:6px}
+    .r2k-progress-meta .strong{color:#e9f5ff;font-weight:700}
 
-    .r2k-progress { margin-top:10px; }
-    .r2k-progress-bar {
-      height:10px; background:rgba(8,20,35,0.9); border:1px solid #0e2038; border-radius:999px;
-      overflow:hidden; box-shadow: inset 0 0 10px rgba(0,153,255,0.15), 0 0 14px rgba(0,153,255,0.15);
-    }
-    .r2k-progress-fill { height:100%; width:0; transition: width 900ms ease-in-out; background:linear-gradient(90deg, #1398ff, #48c7ff); box-shadow:0 0 12px rgba(0,153,255,0.55); }
-    .r2k-progress-fill.over { background:linear-gradient(90deg, #22c55e, #86efac); box-shadow:0 0 12px rgba(34,197,94,0.55); }
-    .r2k-progress-meta { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#87c8ff; opacity:.95; margin-top:6px; }
-    .r2k-progress-meta .strong { color:#e9f5ff; font-weight:700; }
+    /* In-card countdown row */
+    .tmr{display:flex;align-items:center;gap:10px;margin-top:12px}
+    .tmr-label{color:#b6d9ff;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 0 10px rgba(19,152,255,.45)}
+    .tmr-value{color:#fff;font-weight:900;letter-spacing:.5px;font-size:18px;text-shadow:0 0 16px rgba(19,152,255,.8),0 0 25px rgba(19,152,255,.4)}
+    @media (max-width:640px){.tmr-value{font-size:16px}}
 
-    /* Button spacing under the red banner */
-    .prev-lb-btn { display:inline-flex; align-items:center; gap:8px; background:rgb(39,117,202); color:#000;
-      padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; border:2px solid rgba(255,255,255,0.2);
-      box-shadow:0 4px 15px rgba(39,117,202,0.2); position:relative; overflow:hidden; margin:10px 10px 10px 0;
-      transition:all .2s cubic-bezier(0.4,0,0.2,1);
-    }
-    .prev-lb-btn:hover { transform: translateY(-2px) scale(1.02); background:rgb(39,117,202); box-shadow:0 6px 20px rgba(39,117,202,0.4); border-color:rgba(255,255,255,0.4); color:black; text-decoration:none; }
-    .prev-lb-btn svg { width:18px; height:18px; }
-    @media (max-width:768px){ .prev-lb-btn { width:100%; margin-right:0; text-align:center; justify-content:center; } }
+    /* Buttons under the red banner */
+    .prev-lb-btn{display:inline-flex;align-items:center;gap:8px;background:#2775ca;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;border:2px solid rgba(255,255,255,.2);box-shadow:0 4px 15px rgba(39,117,202,.2);position:relative;overflow:hidden;margin:10px 10px 10px 0;transition:all .2s cubic-bezier(.4,0,.2,1)}
+    .prev-lb-btn:hover{transform:translateY(-2px) scale(1.02);background:#2775ca;box-shadow:0 6px 20px rgba(39,117,202,.4);border-color:rgba(255,255,255,.4);color:#000;text-decoration:none}
+    .prev-lb-btn svg{width:18px;height:18px}
+    @media (max-width:768px){.prev-lb-btn{width:100%;margin-right:0;text-align:center;justify-content:center}}
   </style>
 </head>
 <body>
   <div id="toast"><span id="message"></span></div>
 
-  <!-- ===== New Header ===== -->
+  <!-- ===== Header ===== -->
   <header id="r2kHeader">
     <div class="h-inner">
-      <!-- Brand -->
       <a href="/" class="brand" aria-label="R2K2 Home">
         <img src="/assets/logo.png" alt="R2K2 Logo" class="logo">
         <div class="name">R2K<span class="accent">2</span></div>
       </a>
 
-      <!-- Center nav -->
       <nav class="nav" id="r2kNav">
         <a href="/">Home</a>
         <a href="/leaderboard/rainbet">Leaderboard</a>
@@ -136,15 +119,14 @@
           </div>
         </div>
         <a href="/instructions">Instructions</a>
+        <a href="/raffle">Raffle</a>
       </nav>
 
-      <!-- Right actions -->
       <div class="actions">
         <a class="btn outline" href="/register">Register</a>
         <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
       </div>
 
-      <!-- Mobile -->
       <div class="hamburger" id="hamburger" aria-label="Open menu" aria-controls="r2kNav" aria-expanded="false">
         <span></span><span></span><span></span>
       </div>
@@ -167,18 +149,17 @@
       <div class="modal-body">
         <p>Your wagers on Rainbet will count towards the leaderboard at the following weights based on the games you are playing. This helps prevent leaderboard abuse:</p>
         <ul>
-          <li>🎮 Games with an <strong>RTP of 97% or less</strong> will contribute <strong>100%</strong> of the amount wagered to the leaderboard.</li>
-          <li>🎮 Games with an <strong>RTP above 97%</strong> will contribute <strong>50%</strong> of the amount wagered to the leaderboard.</li>
-          <li>🎮 Games with an <strong>RTP of 98% and above</strong> will contribute <strong>10%</strong> of the amount wagered to the leaderboard.</li>
+          <li>🎮 Games with an <strong>RTP ≤ 97%</strong> contribute <strong>100%</strong> of wagered.</li>
+          <li>🎮 Games with an <strong>RTP &gt; 97%</strong> contribute <strong>50%</strong> of wagered.</li>
+          <li>🎮 Games with an <strong>RTP ≥ 98%</strong> contribute <strong>10%</strong> of wagered.</li>
         </ul>
-        <p style="color:red; font-weight:bold;">⚠️ Only wagers from slots and Rainbet originals will work (NO DICE).</p>
-        <p>We are fair to our users, please do not abuse the leaderboard. Attempts to abuse the leaderboard will be voided and banned. Please play responsibly and fairly.</p>
+        <p style="color:red;font-weight:bold;">⚠️ Only wagers from slots and Rainbet originals will work (NO DICE).</p>
       </div>
     </div>
   </div>
 
   <!-- Provider toggle -->
-  <div class="toggle-images" style="margin-top: 50px;">
+  <div class="toggle-images" style="margin-top:50px;">
     <img class="game-image roobet-image" id="roobetImage" src="/assets/rainbet.png" style="cursor:pointer;opacity:1;" onclick="window.location.href='/leaderboard/rainbet'">
   </div>
 
@@ -195,18 +176,17 @@
           <i>The leaderboard updates every 15 minutes.</i><br>
           <div class="warning-message">It Only Takes One!</div>
 
-          <button id="rulesButton" class="prev-lb-btn" style="background:#ff8e3c; cursor:pointer; border:none;">
-            <!-- icon -->
+          <button id="rulesButton" class="prev-lb-btn" style="background:#ff8e3c;cursor:pointer;border:none;">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             RULES
           </button>
 
           <button id="prevLeaderboardBtn" class="prev-lb-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l2 2h5a2 2 0 0 1 2 2v12a2 2 0 0 1 2 2z"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l2 2h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2z"></path></svg>
             PREVIOUS LEADERBOARD
           </button>
 
-          <button id="currentLeaderboardBtn" class="prev-lb-btn" style="display:none; background:#22c55e;">
+          <button id="currentLeaderboardBtn" class="prev-lb-btn" style="display:none;background:#22c55e;">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
             CURRENT LEADERBOARD
           </button>
@@ -229,6 +209,11 @@
             <span id="r2kDealMeta">$0 / $0</span>
           </div>
         </div>
+        <!-- in-card countdown -->
+        <div class="tmr">
+          <span class="tmr-label">ENDING IN</span>
+          <span id="deal-remaining" class="tmr-value">--</span>
+        </div>
       </div>
 
       <!-- LB card -->
@@ -244,6 +229,11 @@
             <span id="r2kLbMeta">$0 / $0</span>
           </div>
         </div>
+        <!-- in-card countdown -->
+        <div class="tmr">
+          <span class="tmr-label">ENDING IN</span>
+          <span id="lb-remaining" class="tmr-value">--</span>
+        </div>
       </div>
     </div>
 
@@ -252,7 +242,7 @@
         <!-- Top 3 Player Cards -->
         <div class="css-gqrafh" id="top3-cards"></div>
 
-        <!-- Countdown Timer -->
+        <!-- Page’s big countdown (left as-is) -->
         <div class="countdown" id="countdownWrapper">
           <div>
             <span class="title"><span class="glow" style="color:#FFF">ENDING</span> IN </span>
@@ -276,10 +266,10 @@
     </div>
 
     <style>
-      .footer-socials { display:flex; flex-direction:column; gap:14px; margin-top:10px; }
-      .footer-socials a.social { display:flex; align-items:center; gap:10px; text-decoration:none; color:white; font-weight:bold; font-size:14px; transition:transform .2s; }
-      .footer-socials a.social:hover { transform: translateX(4px); }
-      .footer-socials .social-img { width:22px; height:22px; object-fit:contain; }
+      .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+      .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;font-size:14px;transition:transform .2s}
+      .footer-socials a.social:hover{transform:translateX(4px)}
+      .footer-socials .social-img{width:22px;height:22px;object-fit:contain}
     </style>
 
     <div class="col">
@@ -296,9 +286,7 @@
 
     <div data-v-5867ad71 class="col">
       <span data-v-5867ad71 class="title">ResponsibleGambling.org</span>
-      <span data-v-5867ad71 class="subtitle" style="font-size: 9px;">
-        Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.
-      </span>
+      <span data-v-5867ad71 class="subtitle" style="font-size:9px;">Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.</span>
     </div>
   </div>
 
@@ -314,21 +302,11 @@
     const btn = document.getElementById("rulesButton");
     const span = document.getElementsByClassName("close")[0];
 
-    btn.onclick = function () {
-      modal.style.display = "block";
-      document.body.style.overflow = "hidden";
-      setTimeout(() => { modal.classList.add("show"); }, 10);
-    }
-    function closeModal() {
-      modal.classList.remove("show");
-      setTimeout(() => {
-        modal.style.display = "none";
-        document.body.style.overflow = "auto";
-      }, 500);
-    }
+    btn.onclick = function(){ modal.style.display="block"; document.body.style.overflow="hidden"; setTimeout(()=>modal.classList.add("show"),10) }
+    function closeModal(){ modal.classList.remove("show"); setTimeout(()=>{ modal.style.display="none"; document.body.style.overflow="auto"; },500) }
     span.onclick = closeModal;
-    window.onclick = function (event) { if (event.target === modal) closeModal(); }
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.style.display === 'block') closeModal(); });
+    window.onclick = (e)=>{ if(e.target===modal) closeModal(); }
+    document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal.style.display==='block') closeModal(); });
   </script>
 
   <!-- Existing JS includes -->
@@ -339,103 +317,123 @@
 
   <!-- Header interactivity (dropdown + mobile) -->
   <script>
-    // Rewards dropdown
     (function(){
       const btn = document.getElementById('rewardsBtn');
       const menu = document.getElementById('rewardsMenu');
-      if(!btn||!menu) return;
-      btn.addEventListener('click', () => {
-        const open = menu.style.display === 'block';
-        menu.style.display = open ? 'none' : 'block';
-        btn.setAttribute('aria-expanded', String(!open));
-      });
-      document.addEventListener('click', (e) => {
-        if (!menu.contains(e.target) && e.target !== btn) {
-          menu.style.display = 'none';
-          btn.setAttribute('aria-expanded','false');
-        }
-      });
-    })();
-    // Mobile hamburger
-    (function(){
+      if(btn && menu){
+        btn.addEventListener('click', ()=>{
+          const open = menu.style.display==='block';
+          menu.style.display = open ? 'none' : 'block';
+          btn.setAttribute('aria-expanded', String(!open));
+        });
+        document.addEventListener('click',(e)=>{
+          if(!menu.contains(e.target) && e.target!==btn){
+            menu.style.display='none';
+            btn.setAttribute('aria-expanded','false');
+          }
+        });
+      }
       const burger = document.getElementById('hamburger');
       const nav = document.getElementById('r2kNav');
-      if(!burger||!nav) return;
-      burger.addEventListener('click', () => {
-        const isOpen = nav.classList.toggle('show');
-        burger.setAttribute('aria-expanded', String(isOpen));
-      });
+      if(burger && nav){
+        burger.addEventListener('click', ()=>{
+          const isOpen = nav.classList.toggle('show');
+          burger.setAttribute('aria-expanded', String(isOpen));
+        });
+      }
     })();
   </script>
 
-  <!-- Totals + Progress script (uses your secure /api/leaderboard) -->
+  <!-- Totals + Progress + In-Card Countdowns (uses your /api/leaderboard) -->
   <script>
-    (function () {
+    (function(){
       const R2K_API_ROUTE = "/api/leaderboard";
 
       // Goals
       const R2K_DEAL_GOAL = 600000; // $600k
       const R2K_LB_GOAL   = 500000; // $500k
 
-      // Periods
+      // Fixed periods provided earlier
       const R2K_DEAL_START = "2025-10-02"; // deal: 30 days
       const R2K_DEAL_END   = "2025-11-01";
       const R2K_LB_START   = "2025-09-18"; // LB: 30 days ending 10/18/2025
       const R2K_LB_END     = "2025-10-18";
 
-      const fmtMoney = (n) => {
-        try { return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 }); }
-        catch { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
+      const fmtMoney = (n)=> {
+        try{ return n.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:2}); }
+        catch{ return "$" + (Math.round(n*100)/100).toFixed(2); }
       };
 
-      async function fetchTotal(startISO, endISO) {
+      async function fetchTotal(startISO,endISO){
         const url = `${R2K_API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`API ${res.status}`);
+        const res = await fetch(url,{cache:"no-store"});
+        if(!res.ok) throw new Error(`API ${res.status}`);
         const data = await res.json();
         const affiliates = Array.isArray(data?.affiliates) ? data.affiliates : [];
-        return affiliates.reduce((sum, a) => sum + Number(a?.wagered_amount || 0), 0);
+        return affiliates.reduce((sum,a)=>sum + Number(a?.wagered_amount||0), 0);
       }
 
-      function renderProgress({ total, goal, fillId, pctId, metaId, barId }) {
+      function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
         const fill = document.getElementById(fillId);
         const pctEl = document.getElementById(pctId);
         const metaEl = document.getElementById(metaId);
         const bar = document.getElementById(barId);
-        if (!fill || !pctEl || !metaEl || !bar) return;
+        if(!fill||!pctEl||!metaEl||!bar) return;
 
-        const pct = goal > 0 ? Math.min((total / goal) * 100, 100) : 0;
+        const pct = goal>0 ? Math.min((total/goal)*100,100) : 0;
         fill.style.width = pct + "%";
-        if (pct >= 100) fill.classList.add("over"); else fill.classList.remove("over");
+        fill.classList.toggle("over", pct>=100);
         pctEl.textContent = Math.round(pct) + "%";
         metaEl.textContent = `${fmtMoney(total)} / ${fmtMoney(goal)}`;
         bar.setAttribute("aria-valuenow", Math.round(pct));
       }
 
-      async function initTotals() {
-        const dealEl = document.getElementById("r2kDealWager");
-        const lbEl   = document.getElementById("r2kLbWager");
-        if (dealEl) dealEl.textContent = "…";
-        if (lbEl)   lbEl.textContent   = "…";
-
-        try {
-          const dealTotal = await fetchTotal(R2K_DEAL_START, R2K_DEAL_END);
-          if (dealEl) dealEl.textContent = fmtMoney(dealTotal);
-          renderProgress({ total: dealTotal, goal: R2K_DEAL_GOAL, fillId: "r2kDealFill", pctId: "r2kDealPct", metaId: "r2kDealMeta", barId: "r2kDealBar" });
-        } catch (e) {
-          if (dealEl) dealEl.textContent = "—"; console.error("Deal total error:", e);
-        }
-
-        try {
-          const lbTotal = await fetchTotal(R2K_LB_START, R2K_LB_END);
-          if (lbEl) lbEl.textContent = fmtMoney(lbTotal);
-          renderProgress({ total: lbTotal, goal: R2K_LB_GOAL, fillId: "r2kLbFill", pctId: "r2kLbPct", metaId: "r2kLbMeta", barId: "r2kLbBar" });
-        } catch (e) {
-          if (lbEl) lbEl.textContent = "—"; console.error("LB total error:", e);
-        }
+      // === In-card countdowns (use same windows) ===
+      function fmtRemaining(endDate){
+        const ms = Math.max(0, new Date(endDate).getTime() - Date.now());
+        const s = Math.floor(ms/1000);
+        const d = Math.floor(s/86400);
+        const h = Math.floor((s%86400)/3600);
+        const m = Math.floor((s%3600)/60);
+        const ss = s%60;
+        if(d>0) return `${d}d ${h}h ${m}m`;
+        if(h>0) return `${h}h ${m}m ${ss}s`;
+        if(m>0) return `${m}m ${ss}s`;
+        return `${ss}s`;
+      }
+      function paintCountdowns(){
+        const dealSpan = document.getElementById('deal-remaining');
+        const lbSpan   = document.getElementById('lb-remaining');
+        if(dealSpan) dealSpan.textContent = fmtRemaining(R2K_DEAL_END + "T23:59:59Z");
+        if(lbSpan)   lbSpan.textContent   = fmtRemaining(R2K_LB_END   + "T23:59:59Z");
       }
 
-      document.addEventListener("DOMContentLoaded", initTotals);
+      async function initTotals(){
+        const dealEl = document.getElementById("r2kDealWager");
+        const lbEl   = document.getElementById("r2kLbWager");
+        if(dealEl) dealEl.textContent = "…";
+        if(lbEl)   lbEl.textContent   = "…";
+
+        try{
+          const dealTotal = await fetchTotal(R2K_DEAL_START, R2K_DEAL_END);
+          if(dealEl) dealEl.textContent = fmtMoney(dealTotal);
+          renderProgress({ total: dealTotal, goal: R2K_DEAL_GOAL, fillId: "r2kDealFill", pctId: "r2kDealPct", metaId: "r2kDealMeta", barId: "r2kDealBar" });
+        }catch(e){ if(dealEl) dealEl.textContent="—"; console.error("Deal total error:", e); }
+
+        try{
+          const lbTotal = await fetchTotal(R2K_LB_START, R2K_LB_END);
+          if(lbEl) lbEl.textContent = fmtMoney(lbTotal);
+          renderProgress({ total: lbTotal, goal: R2K_LB_GOAL, fillId: "r2kLbFill", pctId: "r2kLbPct", metaId: "r2kLbMeta", barId: "r2kLbBar" });
+        }catch(e){ if(lbEl) lbEl.textContent="—"; console.error("LB total error:", e); }
+      }
+
+      // Kick everything off
+      document.addEventListener("DOMContentLoaded", ()=>{
+        initTotals();
+        paintCountdowns();
+        clearInterval(window.__r2kBoxTimers);
+        window.__r2kBoxTimers = setInterval(paintCountdowns, 1000); // tick each second
+      });
     })();
   </script>
 </body>
