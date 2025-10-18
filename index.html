@@ -91,6 +91,37 @@
   box-shadow: 0 0 18px rgba(19,152,255,0.45); /* glow so it stays distinct on scroll */
   pointer-events: none;        /* don’t block clicks */
 }
+    /* Make the header slightly darker and the separator distinct */
+#r2kHeader {
+  background: rgba(5, 8, 13, 0.96);   /* darker tone than before */
+  backdrop-filter: blur(8px);         /* smooth subtle depth */
+  border-bottom: none !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);  /* subtle shadow for separation */
+  position: sticky;
+  top: 0;
+  z-index: 2000;
+}
+
+/* Clean, glowing Rainbet-blue line at bottom */
+#r2kHeader::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,0) 0%,
+    rgba(19,152,255,0.5) 25%,
+    rgba(19,152,255,0.9) 50%,
+    rgba(19,152,255,0.5) 75%,
+    rgba(0,0,0,0) 100%
+  );
+  box-shadow: 0 0 16px rgba(19,152,255,0.45);
+  pointer-events: none;
+}
+
 
 
   </style>
