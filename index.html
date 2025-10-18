@@ -62,29 +62,12 @@
       #r2kHeader .hamburger{display:flex}
       #r2kHeader .actions{display:none}
     }
-    #r2kHeader::after{content:"";display:block;height:2px;width:100%;background:linear-gradient(90deg,transparent,rgba(19,152,255,.6),transparent)}
-    /* --- R2K Header visual fix --- */
-#r2kHeader {
-  position: sticky;
-  top: 0;
-  z-index: 2000;
-  background: linear-gradient(
-    180deg,
-    rgba(3, 6, 10, 0.98) 0%,   /* darker top */
-    rgba(7, 10, 15, 0.98) 100% /* consistent full fill */
-  );
-  backdrop-filter: blur(8px);
-  border: none !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* clean blue line at bottom */
-#r2kHeader::after {
+    #r2kHeader::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: -4px; /* moved below the header */
   height: 2px;
   background: linear-gradient(
     90deg,
@@ -94,8 +77,9 @@
     rgba(19,152,255,0.45) 80%,
     rgba(0,0,0,0) 100%
   );
-  box-shadow: 0 0 15px rgba(19,152,255,0.4);
+  box-shadow: 0 0 18px rgba(19,152,255,0.4);
   pointer-events: none;
+  z-index: 100;
 }
 
 
