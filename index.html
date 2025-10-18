@@ -1,84 +1,60 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>R2K2 | Rainbet Leaderboard</title>
+  <title>R2K2</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Exclusive wager races on Rainbet for code R2K2!">
   <meta property="og:image" content="/assets/logo.png">
   <link rel="icon" type="image/jpg" href="/assets/logo.png">
 
-  <!-- (Optional) existing global CSS — not modified here -->
+  <!-- Your existing CSS (kept) -->
   <link rel="stylesheet" type="text/css" href="/css/app.css">
   <link rel="stylesheet" type="text/css" href="/css/lb.css">
   <link rel="stylesheet" type="text/css" href="/css/vendor.css">
+  <link rel="stylesheet" type="text/css" href="/css/cards.css">
   <link rel="stylesheet" type="text/css" href="/css/toast.css">
-
-  <script src="/js/countdown-roobet.js"></script>
-
-  <!-- ===== Page-scoped styles ===== -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  
   <style>
-    .warning-message {
-      width: 90%; max-width: 500px; margin: 10px auto;
-      background-color: rgba(255,0,0,0.1); border: 2px solid #ff4444; border-radius: 4px;
-      padding: 15px; color: #ff4444; font-weight: bold; text-align: center; box-sizing: border-box;
-    }
-    @media (max-width: 768px) { .warning-message { width:95%; padding:12px; font-size:14px; margin:10px auto; } }
+    /* ==== Existing page styles (kept) ==== */
+    .draggable{position:fixed;bottom:15px;right:15px;width:350px;height:250px;border-radius:8px;overflow:hidden;z-index:1000;background:#fff;border:2px solid #2775ca;box-shadow:0 0 100px rgba(39,117,202,1)}
+    .controls{display:flex;align-items:center;background:#333;padding:5px;cursor:move}
+    .drag-handle{flex-grow:1;text-align:left;color:#2775ca;font-size:20px;font-weight:900;box-shadow:0 0 100px rgba(39,117,202,1);padding:0 15px}
+    .close-btn{cursor:pointer;background:none;border:none;color:#2775ca;font-size:20px;font-weight:900;line-height:30px;box-shadow:0 0 100px rgba(39,117,202,1);padding:0 20px}
+    iframe{width:100%;height:calc(100% - 40px);border:none}
+    .minimized-icon{display:none;align-items:center;justify-content:center;position:fixed;bottom:15px;right:15px;width:50px;height:50px;border-radius:25px;background:#333;color:#fff;font-size:30px;z-index:1001;cursor:pointer;box-shadow:0 0 100px rgba(39,117,202,1)}
+    .open-btn{background:none;border:none;color:#2775ca;font-size:20px;font-weight:900;cursor:pointer}
+    @media (max-width:570px){.draggable{left:50%;transform:translateX(-50%)}}
+    @keyframes float{0%{transform:translateY(0) scaleX(1) rotate(20deg)}50%{transform:translateY(-10px) scaleX(1) rotate(20deg)}100%{transform:translateY(0) scaleX(1) rotate(20deg)}}
+    @keyframes floatLeft{0%{transform:translateY(0) scaleX(-1) rotate(20deg)}50%{transform:translateY(-10px) scaleX(-1) rotate(20deg)}100%{transform:translateY(0) scaleX(-1) rotate(20deg)}}
+    .coin-container{position:relative;height:0;margin:0}
+    .coin-left,.coin-right{position:absolute;height:100px;width:auto;opacity:.7;top:-50px}
+    .coin-left{left:22%;animation:floatLeft 3s ease-in-out infinite}
+    .coin-right{right:25%;animation:float 3s ease-in-out infinite}
+    @media screen and (max-width:768px){.coin-container{display:none}}
 
-    /* Modal */
-    .modal { display:none; position:fixed; z-index:1000; inset:0; overflow:auto; background-color:rgba(0,0,0,0.7); opacity:0; transition:opacity .5s ease; }
-    .modal.show { opacity:1; }
-    .modal-content {
-      background: linear-gradient(135deg,#1f2937,#111827); margin: 10% auto; padding:25px;
-      border:1px solid rgba(255,255,255,0.1); border-radius:12px; width:80%; max-width:600px;
-      box-shadow:0 10px 25px rgba(0,0,0,.5); transform: translateY(-20px); transition: transform .5s ease; position:relative;
-    }
-    .modal.show .modal-content { transform: translateY(0); }
-    .modal-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px; margin-bottom:15px; }
-    .modal-title { font-size:24px; font-weight:700; color:#fff; margin:0; }
-    .close { color:#aaa; font-size:28px; font-weight:bold; cursor:pointer; transition:color .2s ease; }
-    .close:hover { color:#fff; }
-    .modal-body { color:#d1d5db; font-size:16px; line-height:1.6; }
-    .modal-body li { margin-bottom:10px; text-align:left; }
-    .modal-body ul { padding-left:20px; }
-
-    /* ===== R2K Header (fixed) ===== */
-    #r2kHeader{
-      position: sticky; top: 0; z-index: 2000;
-      /* solid full-height look via vertical gradient */
-      background: linear-gradient(
-        180deg,
-        rgba(7,10,16,0.98) 0%,
-        rgba(5,8,13,0.98) 85%,
-        rgba(3,5,9,1) 100%
-      );
-      backdrop-filter: blur(6px);
-      border: none !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    }
+    /* ==== New: R2K Inline Header (Rainbet blue, scoped) ==== */
+    #r2kHeader{position:sticky;top:0;z-index:100;background:rgba(7,10,16,.92);backdrop-filter:blur(6px);border-bottom:1px solid rgba(19,152,255,.15);box-shadow:0 0 24px rgba(19,152,255,.15)}
     #r2kHeader .h-inner{max-width:1200px;margin:0 auto;padding:14px 20px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
     #r2kHeader .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
     #r2kHeader .brand .logo{width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(19,152,255,.35)}
     #r2kHeader .brand .name{font-size:22px;font-weight:800;letter-spacing:.2px;color:#fff}
     #r2kHeader .brand .name .accent{color:#1398ff;text-shadow:0 0 10px rgba(19,152,255,.5)}
-
     #r2kHeader .nav{display:flex;justify-content:center;gap:26px}
-    #r2kHeader .nav a,
-    #r2kHeader .nav button.nav-btn{color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;padding:8px 6px;border-radius:8px;transition:.18s ease}
-    #r2kHeader .nav a:hover,
-    #r2kHeader .nav button.nav-btn:hover{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.45)}
-
+    #r2kHeader .nav a,#r2kHeader .nav button.nav-btn{color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;padding:8px 6px;border-radius:8px;transition:.18s ease}
+    #r2kHeader .nav a:hover,#r2kHeader .nav button.nav-btn:hover{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.45)}
     #r2kHeader .dropdown{position:relative}
     #r2kHeader .menu{position:absolute;top:120%;left:50%;transform:translateX(-50%);background:#0b0f17;border:1px solid #0e2038;border-radius:12px;min-width:200px;box-shadow:0 12px 30px rgba(0,0,0,.45),0 0 16px rgba(19,152,255,.2);padding:8px;display:none}
     #r2kHeader .menu a{display:block;padding:10px 12px;border-radius:8px;color:#cfe9ff;text-decoration:none;font-weight:600}
     #r2kHeader .menu a:hover{background:#0e2038;color:#fff}
-
     #r2kHeader .actions{display:flex;justify-content:flex-end;gap:12px}
     #r2kHeader .btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid rgba(19,152,255,.25);color:#0a1626;background:linear-gradient(90deg,#22b1ff,#1398ff);box-shadow:0 6px 20px rgba(19,152,255,.35),inset 0 0 10px rgba(255,255,255,.08);transition:transform .15s ease,box-shadow .15s ease,filter .15s ease}
     #r2kHeader .btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 26px rgba(19,152,255,.5)}
     #r2kHeader .btn.outline{background:transparent;color:#e8f4ff;border-color:rgba(19,152,255,.45);box-shadow:0 0 16px rgba(19,152,255,.25) inset}
     #r2kHeader .btn.outline:hover{background:rgba(19,152,255,.08);color:#fff}
-
     #r2kHeader .hamburger{display:none;justify-self:end;cursor:pointer}
     #r2kHeader .hamburger span{display:block;width:24px;height:3px;margin:4px 0;background:#e8f4ff;border-radius:2px}
     @media (max-width:900px){
@@ -88,50 +64,52 @@
       #r2kHeader .hamburger{display:flex}
       #r2kHeader .actions{display:none}
     }
+    #r2kHeader::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px; /* moved below the header */
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,0) 0%,
+    rgba(19,152,255,0.45) 20%,
+    rgba(19,152,255,0.9) 50%,
+    rgba(19,152,255,0.45) 80%,
+    rgba(0,0,0,0) 100%
+  );
+  box-shadow: 0 0 18px rgba(19,152,255,0.4);
+  pointer-events: none;
+  z-index: 100;
+}
 
-    /* Blue glow separator positioned below header */
-    #r2kHeader::after{
-      content:""; position:absolute; left:0; right:0; bottom:-4px; height:2px;
-      background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(19,152,255,0.45) 20%, rgba(19,152,255,0.9) 50%, rgba(19,152,255,0.45) 80%, rgba(0,0,0,0) 100%);
-      box-shadow: 0 0 18px rgba(19,152,255,0.4); pointer-events:none; z-index:100;
-    }
 
-    /* Totals + progress */
-    .r2k-totals {
-      display:flex; justify-content:center; align-items:stretch; flex-wrap:wrap;
-      gap:30px; margin: 28px auto 10px; width:min(1080px, 92%);
-    }
-    .r2k-total-card {
-      flex:0 1 360px; background:#0b0f17; border:1px solid #0e2038; border-radius:14px;
-      padding:18px 20px; box-shadow:0 0 18px rgba(0,153,255,0.25);
-    }
-    .r2k-total-label { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#87c8ff; opacity:.9; }
-    .r2k-total-value { margin-top:6px; font-weight:700; font-size:22px; line-height:1.2; color:#e9f5ff; text-shadow:0 0 10px rgba(0,153,255,0.35); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-    .r2k-progress { margin-top:10px; }
-    .r2k-progress-bar {
-      height:10px; background:rgba(8,20,35,0.9); border:1px solid #0e2038; border-radius:999px;
-      overflow:hidden; box-shadow: inset 0 0 10px rgba(0,153,255,0.15), 0 0 14px rgba(0,153,255,0.15);
-    }
-    .r2k-progress-fill { height:100%; width:0; transition: width 900ms ease-in-out; background:linear-gradient(90deg, #1398ff, #48c7ff); box-shadow:0 0 12px rgba(0,153,255,0.55); }
-    .r2k-progress-fill.over { background:linear-gradient(90deg, #22c55e, #86efac); box-shadow:0 0 12px rgba(34,197,94,0.55); }
-    .r2k-progress-meta { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#87c8ff; opacity:.95; margin-top:6px; }
-    .r2k-progress-meta .strong { color:#e9f5ff; font-weight:700; }
-
-    .prev-lb-btn { display:inline-flex; align-items:center; gap:8px; background:rgb(39,117,202); color:#000;
-      padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; border:2px solid rgba(255,255,255,0.2);
-      box-shadow:0 4px 15px rgba(39,117,202,0.2); position:relative; overflow:hidden; margin:10px 10px 10px 0;
-      transition:all .2s cubic-bezier(0.4,0,0.2,1);
-    }
-    .prev-lb-btn:hover { transform: translateY(-2px) scale(1.02); background:rgb(39,117,202); box-shadow:0 6px 20px rgba(39,117,202,0.4); border-color:rgba(255,255,255,0.4); color:black; text-decoration:none; }
-    .prev-lb-btn svg { width:18px; height:18px; }
-    @media (max-width:768px){ .prev-lb-btn { width:100%; margin-right:0; text-align:center; justify-content:center; } }
   </style>
 </head>
+
 <body>
   <div id="toast"><span id="message"></span></div>
 
-  <!-- Header -->
+  <!-- Stream player + minimized icon -->
+  <div id="draggable-player" class="draggable">
+    <div id="controls" class="controls">
+      <div id="drag-handle" class="drag-handle">&#x2630;</div>
+      <button id="close-btn" class="close-btn" aria-label="Minimize player">&times;</button>
+    </div>
+    <iframe src="https://player.kick.com/R2Ktwo" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  </div>
+  <div id="minimized-icon" class="minimized-icon" title="Open player">
+    <button id="open-btn" class="open-btn" aria-label="Open player">▶</button>
+  </div>
+
+  <!-- Background visuals -->
+  <canvas id="particleCanvas"></canvas>
+  <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
+  <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
+  <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%"></object>
+
+  <!-- ===== New Header (same as leaderboard page) ===== -->
   <header id="r2kHeader">
     <div class="h-inner">
       <!-- Brand -->
@@ -168,134 +146,98 @@
     </div>
   </header>
 
-  <!-- Background elements -->
-  <canvas id="particleCanvas"></canvas>
-  <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
-  <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
-  <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%"></object>
-
-  <!-- Rules Modal -->
-  <div id="rulesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="rulesTitle" class="modal-title">Leaderboard Rules</h2>
-        <span class="close" aria-label="Close">&times;</span>
-      </div>
-      <div class="modal-body">
-        <p>Your wagers on Rainbet will count towards the leaderboard at the following weights based on the games you are playing. This helps prevent leaderboard abuse:</p>
-        <ul>
-          <li>🎮 Games with an <strong>RTP of 97% or less</strong> will contribute <strong>100%</strong> of the amount wagered to the leaderboard.</li>
-          <li>🎮 Games with an <strong>RTP above 97%</strong> will contribute <strong>50%</strong> of the amount wagered to the leaderboard.</li>
-          <li>🎮 Games with an <strong>RTP of 98% and above</strong> will contribute <strong>10%</strong> of the amount wagered to the leaderboard.</li>
-        </ul>
-        <p style="color:red; font-weight:bold;">⚠️ Only wagers from slots and Rainbet originals will work (NO DICE).</p>
-        <p>We are fair to our users, please do not abuse the leaderboard. Attempts to abuse the leaderboard will be voided and banned. Please play responsibly and fairly.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Provider toggle -->
-  <div class="toggle-images" style="margin-top: 50px;">
-    <img class="game-image roobet-image" id="roobetImage" src="/assets/rainbet.png" style="cursor:pointer;opacity:1;" onclick="window.location.href='/leaderboard/rainbet'">
-  </div>
-
   <!-- Main content -->
-  <div data-v-1d580398 data-v-e4097664 id="appContent">
-    <div data-v-1d580398>
-      <div data-v-1d580398 class="row text">
-        <span data-v-1d580398 class="title">
-          <div data-v-1d580398 class="price-wrapper glow">$1,000</div>
-          MONTHLY CODE <span class="glow">R2K2</span> Leaderboard!
-        </span>
-        <span data-v-1d580398 class="subtitle" style="color:#FFF;">
-          Every <b>BET</b> on Rainbet under Code <b>R2K2</b> counts towards your score. <br>
-          <i>The leaderboard updates every 15 minutes.</i><br>
-          <div class="warning-message">It Only Takes One!</div>
-
-          <button id="rulesButton" class="prev-lb-btn" style="background:#ff8e3c; cursor:pointer; border:none;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            RULES
-          </button>
-
-          <button id="prevLeaderboardBtn" class="prev-lb-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l2 2h5a2 2 0 0 1 2 2v12a2 2 0 0 1 2 2z"></path></svg>
-            PREVIOUS LEADERBOARD
-          </button>
-
-          <button id="currentLeaderboardBtn" class="prev-lb-btn" style="display:none; background:#22c55e;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
-            CURRENT LEADERBOARD
-          </button>
-        </span>
-      </div>
-    </div>
-
-    <!-- Totals + Goals -->
-    <div class="r2k-totals">
-      <!-- Deal card -->
-      <div class="r2k-total-card">
-        <div class="r2k-total-label">Current Deal Wager</div>
-        <div class="r2k-total-value" id="r2kDealWager">$0</div>
-        <div class="r2k-progress" aria-label="Deal goal progress">
-          <div class="r2k-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="r2kDealBar">
-            <div class="r2k-progress-fill" id="r2kDealFill"></div>
-          </div>
-          <div class="r2k-progress-meta">
-            <span id="r2kDealPct" class="strong">0%</span>
-            <span id="r2kDealMeta">$0 / $0</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- LB card -->
-      <div class="r2k-total-card">
-        <div class="r2k-total-label">Current LB Total</div>
-        <div class="r2k-total-value" id="r2kLbWager">$0</div>
-        <div class="r2k-progress" aria-label="Leaderboard goal progress">
-          <div class="r2k-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="r2kLbBar">
-            <div class="r2k-progress-fill" id="r2kLbFill"></div>
-          </div>
-          <div class="r2k-progress-meta">
-            <span id="r2kLbPct" class="strong">0%</span>
-            <span id="r2kLbMeta">$0 / $0</span>
+  <br><br>
+  <div id="appContent" data-v-1d580398 data-v-e4097664>
+    <div class="row text" data-v-1d580398 style="margin-top: 50px;">
+      <span class="title" data-v-1d580398>COMPETE ON OUR LEADERBOARDs!</span>
+      <div class="toggle-images" style="margin-top: 20px;">
+        <div class="image-wrapper">
+          <img class="game-image clash-image" id="clashImage2" src="/assets/rainbet.png" style="cursor:pointer;opacity:1;" onclick="window.location.href='/leaderboard/rainbet'">
+          <div class="label">
+            <div class="price-wrapper glow" data-v-1d580398 style="font-size: 26px;">$1,000</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="css-esk2ah">
-      <div class="css-2w2ovy">
-        <!-- Top 3 Player Cards -->
-        <div class="css-gqrafh" id="top3-cards"></div>
+    <div class="row text" data-v-1d580398 style="margin-top: 80px;"></div>
 
-        <!-- Countdown Timer -->
-        <div class="countdown" id="countdownWrapper">
-          <div>
-            <span class="title"><span class="glow" style="color:#FFF">ENDING</span> IN </span>
-            <span class="subtitle" id="countdown">X Days XX:XX:XX</span>
+    <!-- Card CTA -->
+    <div class="card-container">
+      <a href="https://rainbet.com/?r=KCAZ" class="card-link" target="_blank">
+        <div class="MuiBox-root css-1o7r9kk">
+          <div class="MuiBox-root css-1t0wa4v">
+            <img src="/assets/rainbet.png" alt="">
+          </div>
+          <div class="code-container MuiBox-root css-0">
+            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1rmbjih" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.41 6 5 7.41 9.58 12 5 16.59 6.41 18l6-6z"></path><path d="m13 6-1.41 1.41L16.17 12l-4.58 4.59L13 18l6-6z"></path></svg>
+            <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root" style="font-size:24px;">Code</p>
+            <p class="MuiTypography-root MuiTypography-body1 code css-rmwyl-MuiTypography-root">R2K2</p>
+            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1m8kjhh" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.59 18 19 16.59 14.42 12 19 7.41 17.59 6l-6 6z"></path><path d="m11 18 1.41-1.41L7.83 12l4.58-4.59L11 6l-6 6z"></path></svg>
+          </div>
+          <div class="MuiBox-root css-18dqm7l">
+            <div class="description MuiBox-root css-0">
+              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
+              <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">EXCLUSIVE REWARDS</p>
+            </div>
+            <div class="description MuiBox-root css-0">
+              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
+              <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">MONTHLY LEADERBOARD</p>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px;">
+              <a class="MuiButton-root MuiButton-contained signup-button" href="https://rainbet.com/?r=R2K2" target="_blank">Sign up</a>
+              <a class="MuiButton-root MuiButton-contained signup-button" href="/leaderboard/rainbet" target="_blank">Leaderboard</a>
+            </div>
           </div>
         </div>
-      </div>
+      </a>
+    </div>
 
-      <!-- Player Rows (4-10) -->
-      <div id="leaderboard-rows"></div>
+    <!-- Socials -->
+    <div class="row text" data-v-1d580398 style="margin-top: 50px;">
+      <span class="title" data-v-1d580398>Our Socials!</span>
+    </div>
+
+    <style>
+      .social-media-cards{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-top:30px}
+      .social-media-cards .card{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);padding:10px 15px;border-radius:8px;text-decoration:none;color:#fff;font-weight:500;transition:transform .2s}
+      .social-media-cards .card:hover{transform:translateY(-3px)}
+      .social-media-cards .icon{width:24px;height:24px;object-fit:contain}
+    </style>
+
+    <div class="social-media-cards">
+      <a href="https://kick.com/R2Ktwo" target="_blank" class="card kick">
+        <img src="/assets/kick.png" alt="Kick Logo" class="icon">
+        <span>@R2Ktwo</span>
+      </a>
+      <a href="https://discord.gg/DwpA8vaGPj" target="_blank" class="card discord">
+        <img src="/assets/discord.png" alt="Discord Logo" class="icon">
+        <span>@R2Ktwo</span>
+      </a>
     </div>
   </div>
 
   <!-- Footer -->
-  <div data-v-5867ad71 class="row inner-footer">
-    <div data-v-5867ad71 class="col-5">
-      <div data-v-5867ad71 class="content">
-        <div data-v-5867ad71 class="company"></div><br data-v-5867ad71>
-        <span data-v-5867ad71 class="copyright">R2Ktwo<br data-v-5867ad71> All Right Reserved 2025.</span>
+  <div class="row inner-footer" data-v-5867ad71>
+    <div class="col-5" data-v-5867ad71>
+      <div class="content" data-v-5867ad71>
+        <div class="company" data-v-5867ad71></div><br data-v-5867ad71>
+        <span class="copyright" data-v-5867ad71>R2K2<br data-v-5867ad71> All Right Reserved 2025.</span>
       </div>
     </div>
 
+    <div class="col" data-v-5867ad71>
+      <span class="title" data-v-5867ad71>Info</span>
+      <a href="/" class=""><span class="subtitle" data-v-5867ad71>Terms of Service</span></a>
+      <a href="/" class=""><span class="subtitle" data-v-5867ad71>Privacy Policy</span></a>
+    </div>
+
     <style>
-      .footer-socials { display:flex; flex-direction:column; gap:14px; margin-top:10px; }
-      .footer-socials a.social { display:flex; align-items:center; gap:10px; text-decoration:none; color:white; font-weight:bold; font-size:14px; transition:transform .2s; }
-      .footer-socials a.social:hover { transform: translateX(4px); }
-      .footer-socials .social-img { width:22px; height:22px; object-fit:contain; }
+      .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+      .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:bold;font-size:14px;transition:transform .2s}
+      .footer-socials a.social:hover{transform:translateX(4px)}
+      .footer-socials .social-img{width:22px;height:22px;object-fit:contain}
     </style>
 
     <div class="col">
@@ -310,48 +252,22 @@
       </div>
     </div>
 
-    <div data-v-5867ad71 class="col">
-      <span data-v-5867ad71 class="title">ResponsibleGambling.org</span>
-      <span data-v-5867ad71 class="subtitle" style="font-size: 9px;">
-        Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.
-      </span>
+    <div class="col" data-v-5867ad71>
+      <span class="title" data-v-5867ad71>ResponsibleGambling.org</span>
+      <span class="subtitle" style="font-size:9px;" data-v-5867ad71>Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.</span>
     </div>
   </div>
 
   <!-- Cloudflare beacon -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
           integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
-          data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
+          data-cf-beacon='{"rayId":"93f5c327eff14c77","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
           crossorigin="anonymous"></script>
 
-  <!-- Modal behavior -->
-  <script>
-    const modal = document.getElementById("rulesModal");
-    const btn = document.getElementById("rulesButton");
-    const span = document.getElementsByClassName("close")[0];
-
-    btn.onclick = function () {
-      modal.style.display = "block";
-      document.body.style.overflow = "hidden";
-      setTimeout(() => { modal.classList.add("show"); }, 10);
-    }
-    function closeModal() {
-      modal.classList.remove("show");
-      setTimeout(() => {
-        modal.style.display = "none";
-        document.body.style.overflow = "auto";
-      }, 500);
-    }
-    span.onclick = closeModal;
-    window.onclick = function (event) { if (event.target === modal) closeModal(); }
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.style.display === 'block') closeModal(); });
-  </script>
-
-  <!-- Existing JS includes -->
+  <!-- Scripts -->
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
-  <script src="/js/leaderboard-page.js"></script>
 
   <!-- Header interactivity (dropdown + mobile) -->
   <script>
@@ -372,6 +288,7 @@
         }
       });
     })();
+
     // Mobile hamburger
     (function(){
       const burger = document.getElementById('hamburger');
@@ -384,75 +301,38 @@
     })();
   </script>
 
-  <!-- Totals + Progress script (uses your secure /api/leaderboard) -->
+  <!-- Draggable/minimize player behavior -->
   <script>
-    (function () {
-      const R2K_API_ROUTE = "/api/leaderboard";
+    window.onload = function () {
+      const player = document.getElementById('draggable-player');
+      const dragHandle = document.getElementById('drag-handle');
+      const closeBtn = document.getElementById('close-btn');
+      const minimizedIcon = document.getElementById('minimized-icon');
+      const openBtn = document.getElementById('open-btn');
 
-      // Goals
-      const R2K_DEAL_GOAL = 600000; // $600k
-      const R2K_LB_GOAL   = 500000; // $500k
-
-      // Periods
-      const R2K_DEAL_START = "2025-10-02"; // deal: 30 days
-      const R2K_DEAL_END   = "2025-11-01";
-      const R2K_LB_START   = "2025-09-18"; // LB: 30 days ending 10/18/2025
-      const R2K_LB_END     = "2025-10-18";
-
-      const fmtMoney = (n) => {
-        try { return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 }); }
-        catch { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
+      // Drag
+      dragHandle.onmousedown = function (event) {
+        event.preventDefault();
+        const startX = event.clientX - player.offsetLeft;
+        const startY = event.clientY - player.offsetTop;
+        function onMouseMove(e) {
+          player.style.left = e.clientX - startX + 'px';
+          player.style.top  = e.clientY - startY + 'px';
+        }
+        document.addEventListener('mousemove', onMouseMove);
+        document.onmouseup = function () { document.removeEventListener('mousemove', onMouseMove); };
       };
 
-      async function fetchTotal(startISO, endISO) {
-        const url = `${R2K_API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`API ${res.status}`);
-        const data = await res.json();
-        const affiliates = Array.isArray(data?.affiliates) ? data.affiliates : [];
-        return affiliates.reduce((sum, a) => sum + Number(a?.wagered_amount || 0), 0);
-      }
-
-      function renderProgress({ total, goal, fillId, pctId, metaId, barId }) {
-        const fill = document.getElementById(fillId);
-        const pctEl = document.getElementById(pctId);
-        const metaEl = document.getElementById(metaId);
-        const bar = document.getElementById(barId);
-        if (!fill || !pctEl || !metaEl || !bar) return;
-
-        const pct = goal > 0 ? Math.min((total / goal) * 100, 100) : 0;
-        fill.style.width = pct + "%";
-        if (pct >= 100) fill.classList.add("over"); else fill.classList.remove("over");
-        pctEl.textContent = Math.round(pct) + "%";
-        metaEl.textContent = `${fmtMoney(total)} / ${fmtMoney(goal)}`;
-        bar.setAttribute("aria-valuenow", Math.round(pct));
-      }
-
-      async function initTotals() {
-        const dealEl = document.getElementById("r2kDealWager");
-        const lbEl   = document.getElementById("r2kLbWager");
-        if (dealEl) dealEl.textContent = "…";
-        if (lbEl)   lbEl.textContent   = "…";
-
-        try {
-          const dealTotal = await fetchTotal(R2K_DEAL_START, R2K_DEAL_END);
-          if (dealEl) dealEl.textContent = fmtMoney(dealTotal);
-          renderProgress({ total: dealTotal, goal: R2K_DEAL_GOAL, fillId: "r2kDealFill", pctId: "r2kDealPct", metaId: "r2kDealMeta", barId: "r2kDealBar" });
-        } catch (e) {
-          if (dealEl) dealEl.textContent = "—"; console.error("Deal total error:", e);
-        }
-
-        try {
-          const lbTotal = await fetchTotal(R2K_LB_START, R2K_LB_END);
-          if (lbEl) lbEl.textContent = fmtMoney(lbTotal);
-          renderProgress({ total: lbTotal, goal: R2K_LB_GOAL, fillId: "r2kLbFill", pctId: "r2kLbPct", metaId: "r2kLbMeta", barId: "r2kLbBar" });
-        } catch (e) {
-          if (lbEl) lbEl.textContent = "—"; console.error("LB total error:", e);
-        }
-      }
-
-      document.addEventListener("DOMContentLoaded", initTotals);
-    })();
+      // Minimize / restore
+      closeBtn.onclick = function () {
+        player.style.display = 'none';
+        minimizedIcon.style.display = 'flex';
+      };
+      openBtn.onclick = function () {
+        player.style.display = 'block';
+        minimizedIcon.style.display = 'none';
+      };
+    };
   </script>
 </body>
 </html>
