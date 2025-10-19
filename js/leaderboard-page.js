@@ -1,24 +1,58 @@
 // /js/leaderboard-page.js
 // Fetches from your Vercel proxy (no CORS), renders Top 10, supports Previous toggle.
+// Uses rolling 30-day cycles that start at 8:00 PM America/New_York, anchored at 2025-10-18.
 
-const CURRENT_API_URL  = "/api/leaderboard";        // current 18→18
-const PREVIOUS_API_URL = "/api/leaderboard?prev=1"; // previous 18→18
+const CURRENT_API_URL  = "/api/leaderboard";        // current rolling 30d @ 8PM ET
+const PREVIOUS_API_URL = "/api/leaderboard?prev=1"; // previous rolling 30d
+
+const ANCHOR_DATE = "2025-10-18"; // first 8PM ET reset
+const WINDOW_DAYS = 30;
 
 const logoSrc   = "/assets/rainbetlogo.png";
 const rewards   = [600, 350, 200, 125, 100, 75, 50]; // 1st → 7th
 const top3Glows = ["0 0 40px #FFD700", "0 0 40px #C0C0C0", "0 0 40px #CD7F32"]; // Gold, Silver, Bronze
 
-/* ===== Countdown (to next 18th 23:59:59 UTC) ===== */
-(function updateCountdown() {
+/* ===== Countdown (rolling 30d from 8PM ET ANCHOR_DATE) ===== */
+(function updateCountdownRolling() {
   const el = document.getElementById("countdown");
   if (!el) return;
 
-  const now = new Date();
-  let end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 18, 23, 59, 59, 999));
-  if (now > end) end.setUTCMonth(end.getUTCMonth() + 1, 18);
+  function nyParts(date = new Date()) {
+    const f = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      year: "numeric", month: "numeric", day: "numeric",
+      hour: "numeric", minute: "numeric", second: "numeric",
+      hour12: false
+    });
+    const parts = f.formatToParts(date);
+    const get = t => Number(parts.find(p => p.type === t)?.value);
+    return { y: get("year"), m1: get("month"), d: get("day"), hh: get("hour"), mm: get("minute") || 0, ss: get("second") || 0 };
+  }
 
-  const diff = end - now;
-  if (diff <= 0) { el.textContent = "Ended"; return; }
+  // Build UTC time corresponding to "y-m1-d at 20:00 ET"
+  function boundaryUTC(y, m1, d) {
+    // Get what NY "midnight" of that calendar day looks like in UTC:
+    const nyMid = nyParts(new Date(`${y}-${String(m1).padStart(2,"0")}-${String(d).padStart(2,"0")}T00:00:00`));
+    const baseUTC = Date.UTC(nyMid.y, nyMid.m1 - 1, nyMid.d, 0, 0, 0, 0);
+    return new Date(baseUTC + 20 * 3600 * 1000); // +20h → 8PM ET
+  }
+
+  const [ay, am1, ad] = ANCHOR_DATE.split("-").map(Number);
+  const anchorUTC = boundaryUTC(ay, am1, ad);
+  const msWin = WINDOW_DAYS * 86400000;
+
+  const now = new Date();
+  let k = Math.floor((now - anchorUTC) / msWin);
+  // end of current window (exclusive)
+  const nextEndUTC = new Date(anchorUTC.getTime() + (k + 1) * msWin);
+  const diff = nextEndUTC - now;
+
+  if (diff <= 0) {
+    // Flip to next window: refresh leaderboard + tick again
+    loadLeaderboard(CURRENT_API_URL);
+    setTimeout(updateCountdownRolling, 1000);
+    return;
+  }
 
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
@@ -26,7 +60,7 @@ const top3Glows = ["0 0 40px #FFD700", "0 0 40px #C0C0C0", "0 0 40px #CD7F32"]; 
   const s = Math.floor((diff % 60000) / 1000);
   el.textContent = `${d}d ${h}h ${m}m ${s}s`;
 
-  setTimeout(updateCountdown, 1000);
+  setTimeout(updateCountdownRolling, 1000);
 })();
 
 /* ===== Helpers ===== */
