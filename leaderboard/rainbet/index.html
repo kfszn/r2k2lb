@@ -95,7 +95,54 @@
     .prev-lb-btn:hover{transform:translateY(-2px) scale(1.02);background:#2775ca;box-shadow:0 6px 20px rgba(39,117,202,.4);border-color:rgba(255,255,255,.4);color:#000;text-decoration:none}
     .prev-lb-btn svg{width:18px;height:18px}
     @media (max-width:768px){.prev-lb-btn{width:100%;margin-right:0;text-align:center;justify-content:center}}
-    
+    /* Make the header a stacking context for our paint layer */
+#r2kHeader{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: transparent !important;   /* we'll paint with ::before */
+  overflow: visible;
+}
+
+/* FULL-HEIGHT gradient UNDER the content (covers 100% of header) */
+#r2kHeader::before{
+  content: "";
+  position: absolute;
+  inset: 0;                              /* left:0; right:0; top:0; bottom:0 */
+  z-index: 0;
+  pointer-events: none;
+  /* <<< put whatever gradient you want here >>> */
+  background: linear-gradient(
+    180deg,
+    #121825 0%,
+    #0f1521 50%,
+    #0b0f17 100%
+  );
+  /* If you want it darker: replace stops with darker hexes, or add opacity. */
+}
+
+/* Keep the blue underline but also under the content */
+#r2kHeader::after{
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 2px;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg,transparent,rgba(19,152,255,.6),transparent);
+}
+
+/* Ensure all header content sits ABOVE the paint layers */
+#r2kHeader .h-inner,
+#r2kHeader .brand,
+#r2kHeader .nav,
+#r2kHeader .actions,
+#r2kHeader .btn,
+#r2kHeader .nav a{
+  position: relative;
+  z-index: 1;
+}
+
 
   </style>
 </head>
