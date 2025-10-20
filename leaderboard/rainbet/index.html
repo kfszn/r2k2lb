@@ -14,10 +14,8 @@
   <link rel="stylesheet" href="/css/vendor.css">
   <link rel="stylesheet" href="/css/toast.css">
 
-  <!-- Optional script you already load -->
   <script src="/js/countdown-roobet.js"></script>
 
-  <!-- ===== Page-scoped styles ===== -->
   <style>
     .warning-message{
       width:90%;max-width:500px;margin:10px auto;background:rgba(255,0,0,.1);
@@ -26,7 +24,7 @@
     }
     @media (max-width:768px){.warning-message{width:95%;padding:12px;font-size:14px;margin:10px auto}}
 
-    /* Modal */
+    /* ===== Modal ===== */
     .modal{display:none;position:fixed;z-index:1000;inset:0;overflow:auto;background:rgba(0,0,0,.7);opacity:0;transition:opacity .5s}
     .modal.show{opacity:1}
     .modal-content{
@@ -42,8 +40,41 @@
     .modal-body li{margin-bottom:10px;text-align:left}
     .modal-body ul{padding-left:20px}
 
-    /* Header */
-    #r2kHeader{position:sticky;top:0;z-index:100;background:rgba(7,10,16,.92);backdrop-filter:blur(6px);border-bottom:1px solid rgba(19,152,255,.15);box-shadow:0 0 24px rgba(19,152,255,.15)}
+    /* ===== Header (fixed & solid gradient below content) ===== */
+    #r2kHeader{
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: transparent !important; /* we'll paint with ::before */
+      border-bottom: 1px solid rgba(19,152,255,.15);
+      box-shadow: 0 0 24px rgba(19,152,255,.15);
+      overflow: visible;
+    }
+    /* Full-height gradient paint layer */
+    #r2kHeader::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      background: linear-gradient(180deg,#121825 0%, #0f1521 50%, #0b0f17 100%);
+    }
+    /* Blue accent line under the content */
+    #r2kHeader::after{
+      content:"";
+      position:absolute;
+      left:0;right:0;bottom:0;height:2px;
+      z-index:0;
+      pointer-events:none;
+      background: linear-gradient(90deg,transparent,rgba(19,152,255,.6),transparent);
+    }
+
+    /* Header content sits above paint layers */
+    #r2kHeader .h-inner,
+    #r2kHeader .brand,
+    #r2kHeader .nav,
+    #r2kHeader .actions{ position:relative; z-index:1; }
+
     #r2kHeader .h-inner{max-width:1200px;margin:0 auto;padding:14px 20px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
     #r2kHeader .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
     #r2kHeader .brand .logo{width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(19,152,255,.35)}
@@ -70,9 +101,8 @@
       #r2kHeader .hamburger{display:flex}
       #r2kHeader .actions{display:none}
     }
-    #r2kHeader::after{content:"";display:block;height:4px;width:100%;background:linear-gradient(100deg,transparent,rgba(19,152,255,.6),transparent)}
 
-    /* Totals + progress */
+    /* ===== Totals + progress ===== */
     .r2k-totals{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:30px;margin:28px auto 10px;width:min(1080px,92%)}
     .r2k-total-card{flex:0 1 360px;background:#0b0f17;border:1px solid #0e2038;border-radius:14px;padding:18px 20px;box-shadow:0 0 18px rgba(0,153,255,.25)}
     .r2k-total-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#87c8ff;opacity:.9}
@@ -84,66 +114,15 @@
     .r2k-progress-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#87c8ff;opacity:.95;margin-top:6px}
     .r2k-progress-meta .strong{color:#e9f5ff;font-weight:700}
 
-    /* In-card countdown row */
     .tmr{display:flex;align-items:center;gap:10px;margin-top:12px}
     .tmr-label{color:#b6d9ff;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 0 10px rgba(19,152,255,.45)}
     .tmr-value{color:#fff;font-weight:900;letter-spacing:.5px;font-size:18px;text-shadow:0 0 16px rgba(19,152,255,.8),0 0 25px rgba(19,152,255,.4)}
     @media (max-width:640px){.tmr-value{font-size:16px}}
 
-    /* Buttons under the red banner */
     .prev-lb-btn{display:inline-flex;align-items:center;gap:8px;background:#2775ca;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;border:2px solid rgba(255,255,255,.2);box-shadow:0 4px 15px rgba(39,117,202,.2);position:relative;overflow:hidden;margin:10px 10px 10px 0;transition:all .2s cubic-bezier(.4,0,.2,1)}
     .prev-lb-btn:hover{transform:translateY(-2px) scale(1.02);background:#2775ca;box-shadow:0 6px 20px rgba(39,117,202,.4);border-color:rgba(255,255,255,.4);color:#000;text-decoration:none}
     .prev-lb-btn svg{width:18px;height:18px}
     @media (max-width:768px){.prev-lb-btn{width:100%;margin-right:0;text-align:center;justify-content:center}}
-    /* Make the header a stacking context for our paint layer */
-#r2kHeader{
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: transparent !important;   /* we'll paint with ::before */
-  overflow: visible;
-}
-
-/* FULL-HEIGHT gradient UNDER the content (covers 100% of header) */
-#r2kHeader::before{
-  content: "";
-  position: absolute;
-  inset: 0;                              /* left:0; right:0; top:0; bottom:0 */
-  z-index: 0;
-  pointer-events: none;
-  /* <<< put whatever gradient you want here >>> */
-  background: linear-gradient(
-    180deg,
-    #121825 0%,
-    #0f1521 50%,
-    #0b0f17 100%
-  );
-  /* If you want it darker: replace stops with darker hexes, or add opacity. */
-}
-
-/* Keep the blue underline but also under the content */
-#r2kHeader::after{
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 2px;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(90deg,transparent,rgba(19,152,255,.6),transparent);
-}
-
-/* Ensure all header content sits ABOVE the paint layers */
-#r2kHeader .h-inner,
-#r2kHeader .brand,
-#r2kHeader .nav,
-#r2kHeader .actions,
-#r2kHeader .btn,
-#r2kHeader .nav a{
-  position: relative;
-  z-index: 1;
-}
-
-
   </style>
 </head>
 <body>
@@ -189,25 +168,6 @@
   <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
   <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%"></object>
 
-  <!-- Rules Modal -->
-  <div id="rulesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="rulesTitle" class="modal-title">Leaderboard Rules</h2>
-        <span class="close" aria-label="Close">&times;</span>
-      </div>
-      <div class="modal-body">
-        <p>Your wagers on Rainbet will count towards the leaderboard at the following weights based on the games you are playing. This helps prevent leaderboard abuse:</p>
-        <ul>
-          <li>🎮 Games with an <strong>RTP ≤ 97%</strong> contribute <strong>100%</strong> of wagered.</li>
-          <li>🎮 Games with an <strong>RTP &gt; 97%</strong> contribute <strong>50%</strong> of wagered.</li>
-          <li>🎮 Games with an <strong>RTP ≥ 98%</strong> contribute <strong>10%</strong> of wagered.</li>
-        </ul>
-        <p style="color:red;font-weight:bold;">⚠️ Only wagers from slots and Rainbet originals will work (NO DICE).</p>
-      </div>
-    </div>
-  </div>
-
   <!-- Provider toggle -->
   <div class="toggle-images" style="margin-top:50px;">
     <img class="game-image roobet-image" id="roobetImage" src="/assets/rainbet.png" style="cursor:pointer;opacity:1;" onclick="window.location.href='/leaderboard/rainbet'">
@@ -246,7 +206,6 @@
 
     <!-- Totals + Goals -->
     <div class="r2k-totals">
-      <!-- Deal card -->
       <div class="r2k-total-card">
         <div class="r2k-total-label">Current Deal Wager</div>
         <div class="r2k-total-value" id="r2kDealWager">$0</div>
@@ -265,7 +224,6 @@
         </div>
       </div>
 
-      <!-- LB card -->
       <div class="r2k-total-card">
         <div class="r2k-total-label">Current LB Total</div>
         <div class="r2k-total-value" id="r2kLbWager">$0</div>
@@ -287,10 +245,7 @@
 
     <div class="css-esk2ah">
       <div class="css-2w2ovy">
-        <!-- Top 3 Player Cards -->
         <div class="css-gqrafh" id="top3-cards"></div>
-
-        <!-- Player Rows (4-10) -->
         <div id="leaderboard-rows"></div>
       </div>
     </div>
@@ -330,7 +285,6 @@
     </div>
   </div>
 
-  <!-- Cloudflare beacon -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
           integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
           data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
@@ -341,7 +295,6 @@
     const modal = document.getElementById("rulesModal");
     const btn = document.getElementById("rulesButton");
     const span = document.getElementsByClassName("close")[0];
-
     btn.onclick = function(){ modal.style.display="block"; document.body.style.overflow="hidden"; setTimeout(()=>modal.classList.add("show"),10) }
     function closeModal(){ modal.classList.remove("show"); setTimeout(()=>{ modal.style.display="none"; document.body.style.overflow="auto"; },500) }
     span.onclick = closeModal;
@@ -353,27 +306,37 @@
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
-  <!-- NOTE: we intentionally DO NOT include /js/leaderboard-page.js to avoid conflicts -->
+  <!-- NOTE: do NOT include /js/leaderboard-page.js to avoid conflicts -->
+
+  <!-- ===== Push content below the sticky header ===== -->
+  <script>
+    (function(){
+      function pushBelowHeader(){
+        const header = document.getElementById('r2kHeader');
+        const app = document.getElementById('appContent');
+        if(header && app){
+          app.style.marginTop = header.offsetHeight + 'px';
+        }
+      }
+      window.addEventListener('load', pushBelowHeader);
+      window.addEventListener('resize', pushBelowHeader);
+    })();
+  </script>
 
   <!-- ===== Leaderboard logic (rolling 30d @ 8PM ET) ===== -->
   <script>
     (function(){
       const API_ROUTE = "/api/leaderboard";
+      const DEAL_GOAL = 600000;
+      const LB_GOAL   = 500000;
 
-      // Goals
-      const DEAL_GOAL = 600000; // $600k
-      const LB_GOAL   = 500000; // $500k
-
-      // Deal window (fixed example — change if needed)
       const DEAL_START = "2025-10-02";
       const DEAL_END   = "2025-11-01";
 
-      // Rolling Leaderboard window settings
       const LB_ANCHOR = "2025-10-18"; // first reset at 8:00 PM ET
       const LB_DAYS   = 30;
       const MS_DAY    = 86400000;
 
-      /* ===== Time helpers ===== */
       function nyParts(date = new Date()){
         const f = new Intl.DateTimeFormat("en-US",{
           timeZone:"America/New_York",
@@ -385,18 +348,15 @@
         const get = t => Number(parts.find(p=>p.type===t)?.value);
         return { y:get("year"), m1:get("month"), d:get("day"), hh:get("hour"), mm:get("minute")||0, ss:get("second")||0 };
       }
-      // UTC instant that corresponds to "y-m1-d at 20:00 ET"
       function boundaryUTC(y,m1,d){
         const nyMid = nyParts(new Date(`${y}-${String(m1).padStart(2,"0")}-${String(d).padStart(2,"0")}T00:00:00`));
         const baseUTC = Date.UTC(nyMid.y, nyMid.m1-1, nyMid.d, 0,0,0,0);
         return new Date(baseUTC + 20*3600*1000);
       }
       const isoDate = (d)=> d.toISOString().slice(0,10);
-      // Rainbet date-only param for an 8PM ET boundary (always next UTC date)
       function apiDateFromBoundary(boundaryUTC){
         return isoDate(new Date(Date.UTC(boundaryUTC.getUTCFullYear(), boundaryUTC.getUTCMonth(), boundaryUTC.getUTCDate() + 1)));
       }
-
       function currentLBWindow(){
         const [ay,am1,ad] = LB_ANCHOR.split("-").map(Number);
         const anchorUTC = boundaryUTC(ay,am1,ad);
@@ -405,11 +365,7 @@
         const k = Math.floor((now - anchorUTC)/msWin);
         const startUTC = new Date(anchorUTC.getTime() + k*msWin);
         const endUTC   = new Date(startUTC.getTime() + msWin);
-        return {
-          startISO: apiDateFromBoundary(startUTC),
-          endISO:   apiDateFromBoundary(endUTC),
-          endInstantUTC: endUTC
-        };
+        return { startISO: apiDateFromBoundary(startUTC), endISO: apiDateFromBoundary(endUTC), endInstantUTC: endUTC };
       }
       function previousLBWindow(){
         const [ay,am1,ad] = LB_ANCHOR.split("-").map(Number);
@@ -419,14 +375,9 @@
         const k = Math.floor((now - anchorUTC)/msWin) - 1;
         const startUTC = new Date(anchorUTC.getTime() + k*msWin);
         const endUTC   = new Date(startUTC.getTime() + msWin);
-        return {
-          startISO: apiDateFromBoundary(startUTC),
-          endISO:   apiDateFromBoundary(endUTC),
-          endInstantUTC: endUTC
-        };
+        return { startISO: apiDateFromBoundary(startUTC), endISO: apiDateFromBoundary(endUTC), endInstantUTC: endUTC };
       }
 
-      /* ===== Helpers ===== */
       function fmtMoney(n){
         try{ return n.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:2}); }
         catch{ return "$" + (Math.round(n*100)/100).toFixed(2); }
@@ -439,7 +390,6 @@
         const metaEl= document.getElementById(metaId);
         const bar   = document.getElementById(barId);
         if(!fill||!pctEl||!metaEl||!bar) return;
-
         const pct = goal>0 ? Math.min((total/goal)*100,100) : 0;
         fill.style.width = pct + "%";
         fill.classList.toggle("over", pct>=100);
@@ -473,7 +423,6 @@
         return `${ss}s`;
       }
 
-      /* ===== Fetchers ===== */
       async function fetchTotal(startISO,endISO){
         const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
         const res = await fetch(url,{cache:"no-store"});
@@ -495,11 +444,10 @@
         return raw
           .map(a => ({ username: a.username || "Unknown", wagered: toNum(a.wagered_amount ?? a.wagered) }))
           .filter(r => r.wagered > 0)
-          .sort((a, b) => b.wagered - a.wagered) // highest first
+          .sort((a, b) => b.wagered - a.wagered)
           .slice(0, 10);
       }
 
-      /* ===== Renderers ===== */
       const logoSrc   = "/assets/rainbetlogo.png";
       const rewards   = [600, 350, 200, 125, 100, 75, 50];
       const top3Glows = ["0 0 40px #FFD700", "0 0 40px #C0C0C0", "0 0 40px #CD7F32"];
@@ -526,7 +474,6 @@
             card.style.position = "relative";
             if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
             if (idx === 2) card.style.transform = "translateY(25px)";
-
             card.innerHTML = `
               <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
                           padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
@@ -564,15 +511,13 @@
         });
       }
 
-      /* ===== UI wiring & countdowns ===== */
       const prevBtn = document.getElementById("prevLeaderboardBtn");
       const currBtn = document.getElementById("currentLeaderboardBtn");
 
-      let lbWindow = currentLBWindow(); // track current window for countdown
-      let showingPrev = false;          // which list is shown
+      let lbWindow = currentLBWindow();
+      let showingPrev = false;
 
       async function paintTotals(){
-        // Deal box (fixed dates)
         const dealEl = document.getElementById("r2kDealWager");
         if(dealEl) dealEl.textContent = "…";
         try{
@@ -581,11 +526,9 @@
           renderProgress({ total: dealTotal, goal: DEAL_GOAL, fillId: "r2kDealFill", pctId: "r2kDealPct", metaId: "r2kDealMeta", barId: "r2kDealBar" });
         }catch(e){ if(dealEl) dealEl.textContent="—"; console.error("Deal total error:", e); }
 
-        // Leaderboard box (rolling 30d)
         const lbEl = document.getElementById("r2kLbWager");
         if(lbEl) lbEl.textContent = "…";
         try{
-          // Recompute window at fetch time
           lbWindow = currentLBWindow();
           const lbTotal = await fetchTotal(lbWindow.startISO, lbWindow.endISO);
           if(lbEl) lbEl.textContent = fmtMoney(lbTotal);
@@ -616,23 +559,19 @@
       }
 
       function tickCountdowns(){
-        // Deal countdown to 23:59:59Z of DEAL_END (leave as-is)
         const dealSpan = document.getElementById('deal-remaining');
         if(dealSpan){
           const ms = new Date(DEAL_END + "T23:59:59Z").getTime() - Date.now();
           dealSpan.textContent = fmtRemaining(ms);
         }
-
-        // LB countdown to 8PM ET boundary (lbWindow.endInstantUTC)
         const lbSpan = document.getElementById('lb-remaining');
         if(lbSpan){
           const msLeft = lbWindow.endInstantUTC.getTime() - Date.now();
           lbSpan.textContent = fmtRemaining(msLeft);
           if(msLeft <= 0){
-            // flip to new window
             lbWindow = currentLBWindow();
             paintTotals();
-            if(!showingPrev) paintListCurrent(); // only auto-refresh current view
+            if(!showingPrev) paintListCurrent();
           }
         }
       }
@@ -651,7 +590,6 @@
         await paintListCurrent();
       });
 
-      // Header interactions (dropdown + mobile)
       (function(){
         const btn = document.getElementById('rewardsBtn');
         const menu = document.getElementById('rewardsMenu');
@@ -678,7 +616,6 @@
         }
       })();
 
-      // Bootstrap
       document.addEventListener("DOMContentLoaded", async ()=>{
         await paintTotals();
         await paintListCurrent();
