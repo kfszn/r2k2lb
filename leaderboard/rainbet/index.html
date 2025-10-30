@@ -50,11 +50,11 @@
       box-shadow: 0 0 24px rgba(19,152,255,.15);
       overflow: visible;
     }
-    /* Full-height gradient paint layer */
+    /* Full-height gradient paint layer + 10px bleed */
     #r2kHeader::before{
       content:"";
       position:absolute;
-      inset:0;
+      top:0; left:0; right:0; bottom:-10px; /* extends the gradient 10px below */
       z-index:0;
       pointer-events:none;
       background: linear-gradient(180deg,#121825 0%, #0f1521 50%, #0b0f17 100%);
@@ -133,22 +133,15 @@
     <div class="h-inner">
       <a href="/" class="brand" aria-label="R2K2 Home">
         <img src="/assets/logo.png" alt="R2K2 Logo" class="logo">
-        <div class="name">R2K<span class="accent">2</span></div>
+        <!-- both 2's blue -->
+        <div class="name">R<span class="accent">2</span>K<span class="accent">2</span></div>
       </a>
 
+      <!-- simplified desktop + mobile nav -->
       <nav class="nav" id="r2kNav">
         <a href="/">Home</a>
-        <a href="/leaderboard/rainbet">Leaderboard</a>
-        <div class="dropdown">
-          <button class="nav-btn" id="rewardsBtn" aria-haspopup="true" aria-expanded="false">Rewards ▾</button>
-          <div class="menu" id="rewardsMenu" role="menu" aria-label="Rewards Menu">
-            <a href="/rewards#monthly" role="menuitem">Monthly Leaderboard</a>
-            <a href="/rewards#weekly" role="menuitem">Weekly Slot Tournaments</a>
-            <a href="/rewards#lossback" role="menuitem">Lossback</a>
-          </div>
-        </div>
-        <a href="/instructions">Instructions</a>
-        <a href="/raffle">Raffle</a>
+        <a href="/leaderboard/rainbet/">Leaderboard</a>
+        <a href="/challenges/">Challenges</a>
       </nav>
 
       <div class="actions">
