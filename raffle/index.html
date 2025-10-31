@@ -24,38 +24,33 @@
     }
     html,body{background:var(--bg-deep);color:var(--ink);margin:0}
 
-    /* ===== Centered Header ===== */
+    /* ===== Enlarged Header ===== */
     #r2kHeader{
       position:sticky; top:0; z-index:2000;
       background:linear-gradient(180deg, rgba(7,10,16,0.98) 0%, rgba(5,8,13,0.98) 85%, rgba(3,5,9,1) 100%);
       backdrop-filter:blur(6px);
       border:none !important;
       box-shadow:0 4px 12px rgba(0,0,0,.4);
-      min-height:88px;
+      min-height:88px; /* increased min height for full logo visibility */
+      /* Remove max-width constraint for full-width header */
       width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
     #r2kHeader .h-inner{
       width: 100%;
       max-width: none;
-      margin: 0 auto;
-      padding: 22px 32px;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;   /* Center horizontally */
-      gap: 36px;
+      margin:0 auto;
+      padding:22px 32px;  /* increased vertical and horizontal padding */
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      gap:36px;
       box-sizing: border-box;
-      position: relative;
     }
     #r2kHeader .brand{
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      text-decoration: none;
-      flex-shrink: 0;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      text-decoration:none;
     }
     #r2kHeader .brand .logo{
       width:54px;
@@ -76,10 +71,9 @@
     #r2kHeader .nav{
       display:flex;
       justify-content:center;
-      align-items: center;
       gap:36px;
+      flex:1 1 auto;
       min-width:0;
-      flex: 1 1 auto;
     }
     #r2kHeader .nav a, #r2kHeader .nav button{
       color:#e8f4ff;
@@ -100,11 +94,9 @@
     }
     #r2kHeader .actions{
       display:flex;
-      align-items: center;
-      justify-content: flex-end;
+      justify-content:flex-end;
       gap:18px;
       min-width:220px;
-      flex-shrink: 0;
     }
     #r2kHeader .btn{
       display:inline-flex;
@@ -124,6 +116,7 @@
       filter:brightness(1.08);
       box-shadow:0 8px 26px rgba(19,152,255,.5)
     }
+    /* Remove Register button completely */
     #r2kHeader .btn.outline { display: none !important; }
     #r2kHeader .hamburger{display:none;justify-self:end;cursor:pointer}
     #r2kHeader .hamburger span{display:block;width:24px;height:3px;margin:4px 0;background:#e8f4ff;border-radius:2px}
@@ -134,11 +127,8 @@
       height:2px;
       background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(19,152,255,.45) 20%,rgba(19,152,255,.9) 50%,rgba(19,152,255,.45) 80%,rgba(0,0,0,0) 100%)
     }
-    @media (max-width:1200px){
-      #r2kHeader .h-inner{padding:18px 16px;}
-    }
     @media (max-width:900px){
-      #r2kHeader .h-inner{flex-wrap:wrap;flex-direction:column;align-items:center;padding:14px 6px;gap:12px;}
+      #r2kHeader .h-inner{flex-wrap:wrap;flex-direction:column;align-items:stretch;padding:18px 8px;gap:12px;}
       #r2kHeader .nav{flex-wrap:wrap;justify-content:center;gap:18px;}
       #r2kHeader .actions{justify-content:center;gap:8px;min-width:0;}
       #r2kHeader .brand .logo{width:44px;height:44px;}
@@ -250,6 +240,7 @@
       </nav>
 
       <div class="actions">
+        <!-- Register button removed -->
         <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
       </div>
 
