@@ -49,6 +49,7 @@
     #r2kHeader .hamburger{display:none;justify-self:end;cursor:pointer}
     #r2kHeader .hamburger span{display:block;width:24px;height:3px;margin:4px 0;background:#e8f4ff;border-radius:2px}
     #r2kHeader::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(19,152,255,.45) 20%,rgba(19,152,255,.9) 50%,rgba(19,152,255,.45) 80%,rgba(0,0,0,0) 100%);box-shadow:0 0 18px rgba(19,152,255,.4);pointer-events:none;z-index:100}
+    /* Mobile */
     @media (max-width:900px){
       #r2kHeader .h-inner{grid-template-columns:auto auto auto}
       #r2kHeader .nav{
@@ -62,6 +63,7 @@
       #r2kHeader .hamburger span{
         display:block; width:26px; height:3px; background:#e8f4ff; border-radius:2px;
       }
+    }
 
     /* ===== Page layout & tabs ===== */
     .wrap{max-width:1200px;margin:0 auto;padding:24px 20px}
