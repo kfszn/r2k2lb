@@ -50,12 +50,18 @@
     #r2kHeader .hamburger span{display:block;width:24px;height:3px;margin:4px 0;background:#e8f4ff;border-radius:2px}
     #r2kHeader::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(19,152,255,.45) 20%,rgba(19,152,255,.9) 50%,rgba(19,152,255,.45) 80%,rgba(0,0,0,0) 100%);box-shadow:0 0 18px rgba(19,152,255,.4);pointer-events:none;z-index:100}
     @media (max-width:900px){
-      #r2kHeader .h-inner{grid-template-columns:1fr auto auto}
-      #r2kHeader .nav{display:none;position:absolute;top:60px;left:0;right:0;background:#080f19;border-top:1px solid rgba(19,152,255,.15);padding:12px 20px;gap:16px;flex-direction:column}
+      #r2kHeader .h-inner{grid-template-columns:auto auto auto}
+      #r2kHeader .nav{
+        display:none; position:absolute; top:60px; left:0; right:0;
+        background:#080f19; border-top:1px solid rgba(19,152,255,.15);
+        padding:12px 20px; gap:16px; flex-direction:column;
+      }
       #r2kHeader .nav.show{display:flex}
-      #r2kHeader .hamburger{display:flex}
       #r2kHeader .actions{display:none}
-    }
+      #r2kHeader .hamburger{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px}
+      #r2kHeader .hamburger span{
+        display:block; width:26px; height:3px; background:#e8f4ff; border-radius:2px;
+      }
 
     /* ===== Page layout & tabs ===== */
     .wrap{max-width:1200px;margin:0 auto;padding:24px 20px}
