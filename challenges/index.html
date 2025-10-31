@@ -36,8 +36,10 @@
       padding: 32px 20px 28px 20px;
     }
 
-    /* Header (matches universal site) - no local header/nav! */
-    #r2kHeader { margin-bottom: 26px; }
+    /* Use universal header layout */
+    #r2kHeader {
+      margin-bottom: 26px;
+    }
 
     /* Hero section */
     .hero {
@@ -104,6 +106,11 @@
       border: 1px solid #2b2466;
       font-weight: 800;
       transition: filter 0.14s;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
     }
     .btn:hover { filter: brightness(1.08); }
 
