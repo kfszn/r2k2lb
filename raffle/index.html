@@ -8,25 +8,24 @@
   <meta property="og:image" content="/assets/logo.png" />
   <link rel="icon" type="image/png" href="/assets/logo.png" />
 
-  <!-- Optional site CSS (kept untouched) -->
+  <!-- Keep your site CSS exactly as-is -->
   <link rel="stylesheet" href="/css/app.css" />
   <link rel="stylesheet" href="/css/vendor.css" />
   <link rel="stylesheet" href="/css/toast.css" />
 
   <style>
     :root{
-      --bg-deep:#070b12;         /* page bg */
-      --card:#0b0f17;            /* card bg */
-      --border:#1b2a40;          /* subtle border */
-      --ink:#e9f5ff;             /* text on dark */
-      --muted:#a6c9ef;           /* muted text */
-      --accent:#6b5cff;          /* purple accent */
-      --blue:#1398ff;            /* rainbet blue */
+      --bg-deep:#070b12;
+      --card:#0b0f17;
+      --border:#1b2a40;
+      --ink:#e9f5ff;
+      --muted:#a6c9ef;
+      --blue:#1398ff;
+      --purple:#6b5cff;
     }
-
     html,body{background:var(--bg-deep);color:var(--ink);margin:0}
 
-    /* ======= Header (same styling we fixed earlier) ======= */
+    /* ===== Header (unchanged visual language; no Raffle link) ===== */
     #r2kHeader{
       position:sticky; top:0; z-index:2000;
       background:linear-gradient(180deg, rgba(7,10,16,0.98) 0%, rgba(5,8,13,0.98) 85%, rgba(3,5,9,1) 100%);
@@ -58,13 +57,25 @@
       #r2kHeader .actions{display:none}
     }
 
-    /* ======= Page layout ======= */
+    /* ===== Page layout & tabs ===== */
     .wrap{max-width:1200px;margin:0 auto;padding:24px 20px}
     .hero-title{font-weight:900;font-size:42px;text-align:center;margin-top:18px}
     .hero-sub{font-size:14px;color:var(--muted);text-align:center;margin-top:6px}
-    .accent{color:#a99dff}
 
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:26px}
+    .tabs{
+      display:flex;justify-content:center;gap:10px;margin-top:20px;flex-wrap:wrap
+    }
+    .tab-btn{
+      background:#0c1320;border:1px solid var(--border);color:#cfe9ff;
+      padding:10px 14px;border-radius:999px;font-weight:800;cursor:pointer;
+      transition:.15s
+    }
+    .tab-btn.active{background:linear-gradient(90deg,#22b1ff,#1398ff);color:#08111a;border-color:#0f5da1}
+    .panel{display:none;margin-top:24px}
+    .panel.active{display:block}
+
+    /* Cards */
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px}
     @media (max-width:980px){.grid{grid-template-columns:1fr}}
     .card{
       background:var(--card);
@@ -73,29 +84,14 @@
       padding:20px;
       box-shadow:0 0 24px rgba(107,92,255,.07);
     }
-    .card-glow{
-      position:relative;
-      overflow:hidden;
-    }
-    .card-glow::before{
-      content:"";
-      position:absolute;inset:-2px;
-      background:radial-gradient(120px 120px at 70px 70px, rgba(125,107,255,.15), transparent 60%),
-                 radial-gradient(140px 140px at 85% 20%, rgba(19,152,255,.10), transparent 60%);
-      pointer-events:none;
-    }
-
-    .prize{font-size:46px;font-weight:900;text-shadow:0 0 14px rgba(255,255,255,.25);text-align:center;margin-top:6px}
+    .prize{font-size:46px;font-weight:900;text-align:center;margin-top:6px}
     .prize-label{text-align:center;color:var(--muted);font-weight:800;letter-spacing:.08em;margin-top:6px}
-
     .pill-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+    @media (max-width:520px){.pill-row{grid-template-columns:1fr}}
     .pill{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
     .pill .big{font-weight:900}
     .pill .cap{font-size:12px;color:var(--muted);margin-top:4px}
-
-    .row{display:flex;gap:10px;align-items:center;justify-content:center}
     .stat{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;margin-top:18px}
-    .stat .count{font-weight:900}
     .btn{
       display:inline-flex;align-items:center;justify-content:center;gap:10px;
       width:100%; padding:14px 16px; border-radius:12px; margin-top:18px;
@@ -105,33 +101,28 @@
     .btn:hover{filter:brightness(1.07);box-shadow:0 0 18px rgba(107,92,255,.25) inset}
     .btn.alt{border-color:#0f5da1;background:linear-gradient(90deg,#22b1ff,#1398ff);color:#08111a;box-shadow:0 6px 20px rgba(19,152,255,.35)}
 
-    .progress{margin-top:14px}
     .bar{height:12px;background:#081321;border:1px solid var(--border);border-radius:999px;overflow:hidden}
     .fill{height:100%;width:0;background:linear-gradient(90deg,#1398ff,#48c7ff);box-shadow:0 0 12px rgba(0,153,255,.55);transition:width .8s ease}
     .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
     .meta .strong{color:#fff;font-weight:800}
 
-    .tick-icon{
-      display:inline-flex;align-items:center;justify-content:center;
-      width:60px;height:60px;border-radius:16px;
-      background:radial-gradient(60px 60px at 50% 50%, rgba(125,107,255,.22), rgba(125,107,255,.08));
-      box-shadow:0 4px 30px rgba(125,107,255,.3) inset, 0 0 20px rgba(125,107,255,.15);
-      margin:0 auto 6px;
-    }
-    .tick-icon svg{width:30px;height:30px;opacity:.95}
-
-    /* Modal */
+    /* Draw modal + spinner */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:3000}
-    .modal .sheet{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:600px;width:92%;padding:18px}
-    .list{max-height:340px;overflow:auto;border:1px dashed var(--border);border-radius:10px;margin-top:10px}
-    .list-item{display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #0f1c2c}
-    .list-item:nth-child(odd){background:#0a131f}
+    .modal .sheet{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:640px;width:92%;padding:18px}
     .close-x{background:transparent;border:1px solid var(--border);padding:8px 12px;border-radius:10px;color:#cfe9ff;cursor:pointer}
-
-    /* Tiny helper for small screens */
-    @media (max-width:520px){
-      .pill-row{grid-template-columns:1fr}
+    .roller{
+      margin:16px auto 8px; height:48px; overflow:hidden; border:1px solid var(--border); border-radius:10px; background:#0a101a;
     }
+    .roller .strip{
+      display:flex; flex-direction:column; gap:6px; padding:10px; transform:translateY(0);
+      transition:transform 2.2s cubic-bezier(.2,.7,0,1);
+    }
+    .strip .name{line-height:28px; text-align:center; font-weight:800}
+
+    /* Winners table */
+    table.wins{width:100%; border-collapse:collapse; margin-top:10px; font-size:14px}
+    .wins th,.wins td{border-bottom:1px solid #0f1c2c; padding:10px 8px; text-align:left}
+    .wins th{color:#cfe9ff; font-weight:900}
   </style>
 </head>
 <body>
@@ -146,7 +137,7 @@
       <nav class="nav" id="r2kNav">
         <a href="/">Home</a>
         <a href="/leaderboard/rainbet">Leaderboard</a>
-        <a href="/raffle" aria-current="page">Raffle</a>
+        <!-- (No Raffle link yet, per your request) -->
       </nav>
 
       <div class="actions">
@@ -161,96 +152,130 @@
   </header>
 
   <main class="wrap">
-    <h1 class="hero-title"><span class="accent">Active</span> Raffles</h1>
-    <p class="hero-sub">Wager to automatically enter and win amazing prizes!</p>
+    <h1 class="hero-title">R2K2 <span style="color:var(--blue);text-shadow:0 0 10px rgba(19,152,255,.45)">Raffles</span></h1>
+    <p class="hero-sub">One ticket per qualified entrant. Draws run automatically. Good luck! ✨</p>
 
-    <section class="grid">
-      <!-- ===== Card 1: Bonus Buy ===== -->
-      <article class="card card-glow" data-id="bonus-buy">
-        <div class="tick-icon">
-          <!-- gift icon -->
-          <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M20 12v8a2 2 0 0 1-2 2h-5v-10h7zm-9 10H6a2 2 0 0 1-2-2v-8h7v10zM4 9h16v2H4V9zm4-7a3 3 0 0 1 3 3v1h-1a3 3 0 0 1-2-5zm8 0a3 3 0 0 1-2 5h-1V5a3 3 0 0 1 3-3z"/></svg>
-        </div>
-        <div class="prize" id="p1-amount">$60.00</div>
-        <div class="prize-label">BONUS BUY (50/50 PROFIT)</div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="weekly">Weekly</button>
+      <button class="tab-btn" data-tab="monthly">Monthly</button>
+      <button class="tab-btn" data-tab="previous">Previous Winners</button>
+    </div>
 
-        <div class="pill-row">
-          <div class="pill">
-            <div class="big" id="p1-min">$5,000.00</div>
-            <div class="cap">Min Wager</div>
+    <!-- WEEKLY -->
+    <section class="panel active" id="panel-weekly">
+      <div class="grid">
+        <article class="card">
+          <div class="prize" id="w-prize">$25.00</div>
+          <div class="prize-label">WEEKLY CASH • 1 WINNER</div>
+
+          <div class="pill-row">
+            <div class="pill">
+              <div class="big" id="w-min">$250.00</div>
+              <div class="cap">Min Wager (7 days)</div>
+            </div>
+            <div class="pill">
+              <div class="big" id="w-remaining">--</div>
+              <div class="cap">Remaining (CST)</div>
+            </div>
           </div>
-          <div class="pill">
-            <div class="big" id="p1-remaining">--</div>
-            <div class="cap">Remaining (CST)</div>
+
+          <div class="stat">
+            <div class="count" id="w-participants">0</div>
+            <div class="cap">Qualified Entrants</div>
           </div>
-        </div>
 
-        <div class="stat">
-          <div class="count" id="p1-participants">15</div>
-          <div class="cap">Participants Entered</div>
-        </div>
-
-        <div class="progress">
-          <div class="bar"><div class="fill" id="p1-fill" style="width:0%"></div></div>
-          <div class="meta"><span id="p1-pct">0%</span><span id="p1-meta">$0 / $0</span></div>
-        </div>
-
-        <button class="btn" data-open="bonus-buy">✓ Auto-Entry Enabled<br><span style="font-weight:600">Wager $5,000.00+ to be automatically entered!</span></button>
-        <a class="btn alt" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
-
-        <button class="btn" data-view="bonus-buy">👥 View Participants</button>
-      </article>
-
-      <!-- ===== Card 2: Cash Prize ===== -->
-      <article class="card card-glow" data-id="cash-prize">
-        <div class="tick-icon">
-          <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M20 12v8a2 2 0 0 1-2 2h-5v-10h7zm-9 10H6a2 2 0 0 1-2-2v-8h7v10zM4 9h16v2H4V9zm4-7a3 3 0 0 1 3 3v1h-1a3 3 0 0 1-2-5zm8 0a3 3 0 0 1-2 5h-1V5a3 3 0 0 1 3-3z"/></svg>
-        </div>
-        <div class="prize" id="p2-amount">$24.99</div>
-        <div class="prize-label">CASH PRIZE</div>
-
-        <div class="pill-row">
-          <div class="pill">
-            <div class="big" id="p2-min">$100.00</div>
-            <div class="cap">Min Wager</div>
+          <div class="meta" style="margin-top:10px">
+            <span>Window:</span>
+            <span id="w-window">—</span>
           </div>
-          <div class="pill">
-            <div class="big" id="p2-remaining">--</div>
-            <div class="cap">Remaining (CST)</div>
+
+          <button class="btn alt" id="w-view">👥 View Entrants</button>
+          <button class="btn" id="w-force">🎬 Force Draw (admin)</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- MONTHLY -->
+    <section class="panel" id="panel-monthly">
+      <div class="grid">
+        <article class="card">
+          <div class="prize" id="m-prize">$100.00</div>
+          <div class="prize-label">MONTHLY CASH • 1 WINNER</div>
+
+          <div class="pill-row">
+            <div class="pill">
+              <div class="big" id="m-min">$5,000.00</div>
+              <div class="cap">Min Wager (30 days)</div>
+            </div>
+            <div class="pill">
+              <div class="big" id="m-remaining">--</div>
+              <div class="cap">Remaining (CST)</div>
+            </div>
           </div>
-        </div>
 
-        <div class="stat">
-          <div class="count" id="p2-participants">45</div>
-          <div class="cap">Participants Entered</div>
-        </div>
+          <div class="stat">
+            <div class="count" id="m-participants">0</div>
+            <div class="cap">Qualified Entrants</div>
+          </div>
 
-        <div class="progress">
-          <div class="bar"><div class="fill" id="p2-fill" style="width:0%"></div></div>
-          <div class="meta"><span id="p2-pct">0%</span><span id="p2-meta">$0 / $0</span></div>
-        </div>
+          <div class="meta" style="margin-top:10px">
+            <span>Window:</span>
+            <span id="m-window">—</span>
+          </div>
 
-        <button class="btn" data-open="cash-prize">✓ Auto-Entry Enabled<br><span style="font-weight:600">Wager $100.00+ to be automatically entered!</span></button>
-        <a class="btn alt" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
+          <button class="btn alt" id="m-view">👥 View Entrants</button>
+          <button class="btn" id="m-force">🎬 Force Draw (admin)</button>
+        </article>
+      </div>
+    </section>
 
-        <button class="btn" data-view="cash-prize">👥 View Participants</button>
+    <!-- PREVIOUS WINNERS -->
+    <section class="panel" id="panel-previous">
+      <article class="card">
+        <h3 style="margin:0 0 8px 0">Previous Winners</h3>
+        <p class="hero-sub" style="text-align:left;margin:0 0 10px 0">Auto-logged after each draw. Server entries shown first.</p>
+        <table class="wins" id="wins-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Raffle</th>
+              <th>Winner</th>
+              <th>Prize</th>
+              <th>Entries</th>
+              <th>Tx</th>
+            </tr>
+          </thead>
+          <tbody id="wins-body">
+            <tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">Loading…</td></tr>
+          </tbody>
+        </table>
       </article>
     </section>
   </main>
 
-  <!-- Participants Modal -->
-  <div class="modal" id="participantsModal" aria-hidden="true">
+  <!-- Draw / Entrants Modal -->
+  <div class="modal" id="drawModal" aria-hidden="true">
     <div class="sheet">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <h3 style="margin:0">Participants</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3 id="drawTitle" style="margin:0">Drawing…</h3>
         <button class="close-x" id="closeModal">Close</button>
       </div>
-      <div class="list" id="participantsList"></div>
+
+      <!-- roller -->
+      <div class="roller" id="roller" style="display:none">
+        <div class="strip" id="strip"></div>
+      </div>
+
+      <!-- entrants list -->
+      <div id="entrantList" style="max-height:360px;overflow:auto;border:1px dashed var(--border);border-radius:10px;margin-top:10px;padding:8px 0"></div>
+
+      <div id="winnerLine" style="margin-top:12px;font-weight:900;font-size:18px"></div>
     </div>
   </div>
 
+  <!-- ====== JS ====== -->
   <script>
-    // Mobile menu toggle (if you add hamburger later)
+    /* ========== Mobile hamburger (kept behavior) ========== */
     (function(){
       const burger=document.getElementById('hamburger');
       const nav=document.getElementById('r2kNav');
@@ -259,96 +284,373 @@
       }
     })();
 
-    // -------- Demo Data + Timers (Replace with your API later) --------
-    const raffles = {
-      "bonus-buy": {
-        prizeUSD: 60.00,
-        minWager: 5000,
-        endAt: new Date(Date.now() + (2*24+15)*3600*1000).toISOString(), // 2d 15h from now
-        participants: 15,
-        goalUSD: 6000, // for progress bar demo
-        currentUSD: 4200,
-        people: Array.from({length:15},(_,i)=>({name:`Player#${i+1}`, tickets: 1}))
+    /* ==================== Config ==================== */
+    const TZ = "America/Mexico_City"; // your local time
+    const API_LB = "/api/leaderboard"; // existing endpoint
+    const API_LOG = "/api/raffle/log"; // server log (we POST here)
+    const API_WINS = "/api/raffle/winners?limit=50"; // optional server history
+
+    const WEEKLY = { label:"Weekly", days:7,   min:250,  prize:25.00, key:"raffle_anchor_weekly"  };
+    const MONTHLY= { label:"Monthly",days:30,  min:5000, prize:100.00,key:"raffle_anchor_monthly" };
+
+    /* ================== Time helpers ================== */
+    const fmtUsd = n=>n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
+    const pad2 = n => String(n).padStart(2,"0");
+    const isoDate = d => d.toISOString().slice(0,10);
+
+    function inTZ(date, tz=TZ){
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz,
+        year:'numeric', month:'2-digit', day:'2-digit',
+        hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+      }).formatToParts(date);
+      const get = t => parts.find(p => p.type===t)?.value;
+      return { y:+get('year'), m:+get('month'), d:+get('day'), hh:+get('hour'), mm:+get('minute'), ss:+get('second') };
+    }
+
+    // Rolling window from anchor (stored) with length days
+    function windowFromAnchor(anchorISO, days){
+      const start = new Date(anchorISO+"T00:00:00Z");
+      const now = new Date();
+      const len = days*86400000;
+      const k = Math.floor((now - start)/len);
+      const startK = new Date(start.getTime() + k*len);
+      const endK   = new Date(startK.getTime() + len);
+      return { start:startK, end:endK };
+    }
+
+    function humanWindow(start, end){
+      const s = inTZ(start); const e = inTZ(end);
+      return `${s.y}-${pad2(s.m)}-${pad2(s.d)} → ${e.y}-${pad2(e.m)}-${pad2(e.d)}`;
+    }
+
+    function remaining(end){
+      const ms = end.getTime() - Date.now();
+      const S = Math.max(0, Math.floor(ms/1000));
+      const d = Math.floor(S/86400), h = Math.floor((S%86400)/3600), m = Math.floor((S%3600)/60);
+      if(d>0) return `${d}d ${h}h`;
+      return `${h}h ${m}m`;
+    }
+
+    /* ============== Anchors (persisted) ============== */
+    function getOrInitAnchor(key){
+      let v = localStorage.getItem(key);
+      if(!v){
+        // First launch: anchor = today in TZ (locks your schedule from now)
+        const now = inTZ(new Date());
+        v = `${now.y}-${pad2(now.m)}-${pad2(now.d)}`;
+        localStorage.setItem(key, v);
+      }
+      return v;
+    }
+
+    /* ============== Entrants (from leaderboard API) ============== */
+    async function fetchEntrants(startISO,endISO,minUSD){
+      // Use your existing /api/leaderboard to get affiliates with wagered amounts
+      const url = `${API_LB}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
+      const res = await fetch(url,{cache:"no-store"});
+      if(!res.ok){
+        // tolerate array or object result differences
+        const txt = await res.text().catch(()=> "");
+        throw new Error(`Leaderboard API ${res.status}\n${txt.slice(0,200)}`);
+      }
+      const json = await res.json();
+      const arr = Array.isArray(json) ? json : (json.affiliates || []);
+      // 1 ticket per qualifying entrant: just filter unique usernames by min wager
+      const byUser = new Map();
+      for(const a of arr){
+        const name = (a.username||"").trim();
+        const amt = Number(a.wagered_amount ?? a.wagered ?? 0);
+        if(!name) continue;
+        const prev = byUser.get(name) || 0;
+        byUser.set(name, prev + (Number.isFinite(amt)?amt:0));
+      }
+      const entrants = [];
+      byUser.forEach((sum, name)=>{
+        if(sum >= minUSD) entrants.push({ name, wagered: sum });
+      });
+      // sort just for nicer display
+      entrants.sort((a,b)=> b.wagered - a.wagered);
+      return entrants;
+    }
+
+    /* ============== Crypto RNG selection ============== */
+    function securePick(n){
+      // returns integer in [0, n-1] using crypto.getRandomValues
+      if(n<=1) return 0;
+      const max = Math.floor(0x100000000 / n) * n;
+      const buf = new Uint32Array(1);
+      while(true){
+        crypto.getRandomValues(buf);
+        const x = buf[0];
+        if(x < max) return x % n;
+      }
+    }
+
+    /* ============== Modal helpers ============== */
+    const modal = document.getElementById("drawModal");
+    const closeModalBtn = document.getElementById("closeModal");
+    const drawTitle = document.getElementById("drawTitle");
+    const entrantList = document.getElementById("entrantList");
+    const roller = document.getElementById("roller");
+    const strip = document.getElementById("strip");
+    const winnerLine = document.getElementById("winnerLine");
+    closeModalBtn.addEventListener('click', ()=> hideModal());
+    function showModal(){ modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); }
+    function hideModal(){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); strip.style.transform='translateY(0)'; }
+
+    function renderEntrantList(entrants){
+      entrantList.innerHTML = entrants.length
+        ? entrants.map(e => `<div style="padding:8px 12px;border-bottom:1px solid #0f1c2c;display:flex;justify-content:space-between"><span>${escapeHtml(e.name)}</span><span style="color:#a6c9ef">${fmtUsd(e.wagered)}</span></div>`).join("")
+        : `<div style="padding:10px 12px;color:#a6c9ef">No qualified entrants yet.</div>`;
+    }
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
+
+    /* ============== Spinner animation ============== */
+    async function spinAndPick(raffleKey, entrants){
+      roller.style.display = 'block';
+      strip.innerHTML = "";
+      winnerLine.textContent = "";
+
+      // Build a tall list so it "spins"
+      const names = entrants.map(e=>e.name);
+      const repeats = Math.max(30, names.length*3);
+      const full = [];
+      for(let i=0;i<repeats;i++){
+        const name = names[i % names.length];
+        full.push(`<div class="name">${escapeHtml(name)}</div>`);
+      }
+      strip.innerHTML = full.join("");
+
+      // Decide winner securely
+      const idx = securePick(entrants.length);
+      const chosen = entrants[idx].name;
+
+      // Compute the line index to stop on (near the end)
+      const stopIndex = full.length - Math.floor(full.length/5) + (idx % Math.floor(full.length/5));
+      const rowH = 34; // approx .name line height + gap
+      const targetY = -(stopIndex * rowH);
+
+      // Animate
+      requestAnimationFrame(()=>{
+        strip.style.transition = "transform 2.2s cubic-bezier(.2,.7,0,1)";
+        strip.style.transform = `translateY(${targetY}px)`;
+      });
+
+      // Wait for animation to finish
+      await new Promise(r => setTimeout(r, 2300));
+      winnerLine.textContent = `🏆 Winner: ${chosen}`;
+      return chosen;
+    }
+
+    /* ============== Logging winners ============== */
+    function saveLocalWin(entry){
+      const key = "raffle_local_wins";
+      const arr = JSON.parse(localStorage.getItem(key) || "[]");
+      arr.unshift(entry);
+      localStorage.setItem(key, JSON.stringify(arr.slice(0,200)));
+    }
+
+    async function logWinServer(entry){
+      try{
+        const res = await fetch(API_LOG, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(entry)
+        });
+        if(!res.ok) throw new Error("Server log failed "+res.status);
+        return true;
+      }catch(err){
+        console.warn("Server log failed; saving locally.", err);
+        saveLocalWin({ ...entry, source:"local" });
+        return false;
+      }
+    }
+
+    async function loadWinners(){
+      const tbody = document.getElementById("wins-body");
+      const local = JSON.parse(localStorage.getItem("raffle_local_wins") || "[]");
+
+      let server = [];
+      try{
+        const res = await fetch(API_WINS, {cache:"no-store"});
+        if(res.ok) server = await res.json();
+      }catch{}
+
+      // Normalize shapes: expect array of {date, raffle, winner, prize, entrants, txid?}
+      const rows = [...server.map(x=>({ ...x, source:"server" })), ...local];
+
+      if(rows.length === 0){
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">No winners recorded yet.</td></tr>`;
+        return;
+      }
+
+      // Sort descending by date
+      rows.sort((a,b)=> new Date(b.date) - new Date(a.date));
+
+      tbody.innerHTML = rows.map(r=>{
+        const d = new Date(r.date);
+        const ds = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+        return `<tr>
+          <td>${ds}</td>
+          <td>${escapeHtml(r.raffle||"")}</td>
+          <td>${escapeHtml(r.winner||"")}</td>
+          <td>${fmtUsd(Number(r.prize||0))}</td>
+          <td>${Number(r.entries||0)}</td>
+          <td>${r.txid ? escapeHtml(r.txid) : "—"}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    /* ============== Draw orchestration ============== */
+    async function runDraw(kind){
+      // kind = WEEKLY or MONTHLY
+      const anchorISO = getOrInitAnchor(kind.key);
+      const win = windowFromAnchor(anchorISO, kind.days);
+      const startISO = isoDate(win.start);
+      const endISO   = isoDate(win.end);
+
+      drawTitle.textContent = `${kind.label} Draw • ${startISO} → ${endISO}`;
+      winnerLine.textContent = "";
+      roller.style.display = 'none';
+      strip.innerHTML = "";
+      entrantList.innerHTML = `<div style="padding:10px 12px;color:#a6c9ef">Loading entrants…</div>`;
+      showModal();
+
+      let entrants = [];
+      try{
+        entrants = await fetchEntrants(startISO, endISO, kind.min);
+      }catch(err){
+        entrantList.innerHTML = `<div style="padding:10px 12px;color:#ffaaaa;white-space:pre-wrap">Error loading entrants.\n${String(err).slice(0,200)}</div>`;
+        return;
+      }
+
+      renderEntrantList(entrants);
+
+      if(entrants.length === 0){
+        winnerLine.textContent = "No qualified entrants this window.";
+        return;
+      }
+
+      // Spin & pick
+      const winner = await spinAndPick(kind.key, entrants);
+
+      // Log
+      const entry = {
+        date: new Date().toISOString(),
+        raffle: kind.label,
+        winner,
+        prize: kind.prize,
+        entries: entrants.length,
+        window: { start: startISO, end: endISO }
+      };
+      await logWinServer(entry);
+
+      // Advance the anchor to the next window (so future auto-draws move forward)
+      const nextStart = new Date(win.end.getTime());
+      const nextISO = isoDate(nextStart);
+      localStorage.setItem(kind.key, nextISO);
+
+      // Refresh previous winners tab silently
+      loadWinners();
+    }
+
+    /* ============== Auto draw scheduler ============== */
+    function scheduleAuto(kind, ui){
+      const tick = async ()=>{
+        const anchorISO = getOrInitAnchor(kind.key);
+        const win = windowFromAnchor(anchorISO, kind.days);
+        // If window ended in the past, trigger draw and move on
+        if(Date.now() >= win.end.getTime()){
+          await runDraw(kind);
+          await paintPanel(kind, ui); // repaint panel with new window & entrants
+        }
+      };
+      setInterval(tick, 60_000); // check every minute
+      tick(); // initial check
+    }
+
+    /* ============== Panels / UI painting ============== */
+    async function paintPanel(kind, ui){
+      const anchorISO = getOrInitAnchor(kind.key);
+      const win = windowFromAnchor(anchorISO, kind.days);
+      const startISO = isoDate(win.start);
+      const endISO   = isoDate(win.end);
+      ui.window.textContent = humanWindow(win.start, win.end);
+      ui.remaining.textContent = remaining(win.end);
+
+      // update every minute
+      if(ui.__int) clearInterval(ui.__int);
+      ui.__int = setInterval(()=> ui.remaining.textContent = remaining(win.end), 60_000);
+
+      // entrants count
+      try{
+        const entrants = await fetchEntrants(startISO, endISO, kind.min);
+        ui.participants.textContent = entrants.length;
+        ui.viewBtn.onclick = () => {
+          drawTitle.textContent = `${kind.label} Entrants • ${startISO} → ${endISO}`;
+          roller.style.display = 'none';
+          strip.innerHTML = "";
+          winnerLine.textContent = "";
+          renderEntrantList(entrants);
+          showModal();
+        };
+      }catch{
+        ui.participants.textContent = "—";
+        ui.viewBtn.onclick = () => {
+          drawTitle.textContent = `${kind.label} Entrants • ${startISO} → ${endISO}`;
+          roller.style.display = 'none';
+          strip.innerHTML = "";
+          winnerLine.textContent = "";
+          entrantList.innerHTML = `<div style="padding:10px 12px;color:#ffaaaa">Failed to load entrants.</div>`;
+          showModal();
+        };
+      }
+
+      // Admin force-draw
+      ui.forceBtn.onclick = () => runDraw(kind);
+    }
+
+    /* ============== Boot ============== */
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+        document.getElementById('panel-'+tab).classList.add('active');
+        if(tab==='previous') loadWinners();
+      });
+    });
+
+    // Hook up panel elements
+    const UI = {
+      weekly: {
+        remaining: document.getElementById('w-remaining'),
+        participants: document.getElementById('w-participants'),
+        window: document.getElementById('w-window'),
+        viewBtn: document.getElementById('w-view'),
+        forceBtn: document.getElementById('w-force'),
       },
-      "cash-prize": {
-        prizeUSD: 24.99,
-        minWager: 100,
-        endAt: new Date(Date.now() + (1*24+15)*3600*1000).toISOString(), // 1d 15h from now
-        participants: 45,
-        goalUSD: 2500,
-        currentUSD: 1625,
-        people: Array.from({length:45},(_,i)=>({name:`User_${i+1}`, tickets: 1}))
+      monthly: {
+        remaining: document.getElementById('m-remaining'),
+        participants: document.getElementById('m-participants'),
+        window: document.getElementById('m-window'),
+        viewBtn: document.getElementById('m-view'),
+        forceBtn: document.getElementById('m-force'),
       }
     };
 
-    const $ = (sel)=>document.querySelector(sel);
-    const $$ = (sel)=>document.querySelectorAll(sel);
+    // Initial paint
+    paintPanel(WEEKLY, UI.weekly);
+    paintPanel(MONTHLY, UI.monthly);
 
-    function money(n){ return n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2}); }
-    function timeLeft(iso){
-      const end = new Date(iso).getTime(), now = Date.now();
-      const s = Math.max(0, Math.floor((end-now)/1000));
-      const d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60);
-      return d>0 ? `${d}d ${h}h` : `${h}h ${m}m`;
-    }
+    // Auto schedules (runs every minute; picks if window ended)
+    scheduleAuto(WEEKLY, UI.weekly);
+    scheduleAuto(MONTHLY, UI.monthly);
 
-    function setFill(idPrefix, current, goal){
-      const pct = Math.max(0, Math.min(100, goal? (current/goal)*100 : 0));
-      $(`#${idPrefix}-fill`).style.width = pct + '%';
-      $(`#${idPrefix}-pct`).textContent = Math.round(pct) + '%';
-      $(`#${idPrefix}-meta`).textContent = `${money(current)} / ${money(goal)}`;
-    }
-
-    function render(){
-      // Card 1
-      const r1 = raffles["bonus-buy"];
-      $("#p1-amount").textContent = money(r1.prizeUSD);
-      $("#p1-min").textContent = money(r1.minWager);
-      $("#p1-participants").textContent = r1.participants;
-      $("#p1-remaining").textContent = timeLeft(r1.endAt);
-      setFill('p1', r1.currentUSD, r1.goalUSD);
-
-      // Card 2
-      const r2 = raffles["cash-prize"];
-      $("#p2-amount").textContent = money(r2.prizeUSD);
-      $("#p2-min").textContent = money(r2.minWager);
-      $("#p2-participants").textContent = r2.participants;
-      $("#p2-remaining").textContent = timeLeft(r2.endAt);
-      setFill('p2', r2.currentUSD, r2.goalUSD);
-    }
-
-    // Update countdown every minute
-    setInterval(()=>{
-      $("#p1-remaining").textContent = timeLeft(raffles["bonus-buy"].endAt);
-      $("#p2-remaining").textContent = timeLeft(raffles["cash-prize"].endAt);
-    }, 60000);
-    render();
-
-    // Participants modal
-    const modal = $("#participantsModal");
-    const list  = $("#participantsList");
-    $("#closeModal").addEventListener('click', ()=> (modal.style.display='none', modal.setAttribute('aria-hidden','true')));
-
-    $$('button[data-view]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-view');
-        const rows = (raffles[id]?.people || []).map(p=>{
-          const name = String(p.name).replace(/[<>]/g,'');
-          return `<div class="list-item"><span>${name}</span><span>🎟️ ${p.tickets||1}</span></div>`;
-        }).join('') || `<div class="list-item"><span>No entries yet.</span><span></span></div>`;
-        list.innerHTML = rows;
-        modal.style.display='flex';
-        modal.setAttribute('aria-hidden','false');
-      });
-    });
-
-    // “Auto-Entry Enabled” buttons – you can swap to rules/info action later
-    $$('button[data-open]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-open');
-        alert('Auto-entry is enabled on wagers that meet the minimum for this raffle.\n\nRaffle: ' + id);
-      });
-    });
+    // Load previous winners initially (in case user starts on that tab later)
+    loadWinners();
   </script>
 </body>
 </html>
