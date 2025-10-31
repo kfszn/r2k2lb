@@ -39,16 +39,16 @@
     #r2kHeader .brand .name{font-size:22px;font-weight:800;color:#fff}
     #r2kHeader .brand .name .accent{color:var(--blue);text-shadow:0 0 10px rgba(19,152,255,.5)}
     #r2kHeader .nav{display:flex;justify-content:center;gap:26px}
-    #r2kHeader .nav a, #r2kHeader .nav button{color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;padding:8px 6px;border-radius:8px;transition:.18s}
+    #r2kHeader .nav a, #r2kHeader .nav button{color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;padding:8px 6px;border-radius:8px}
     #r2kHeader .nav a:hover, #r2kHeader .nav button:hover{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.45)}
     #r2kHeader .actions{display:flex;justify-content:flex-end;gap:12px}
-    #r2kHeader .btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid rgba(19,152,255,.25);color:#0a1626;background:linear-gradient(90deg,#22b1ff,#1398ff);box-shadow:0 6px 20px rgba(19,152,255,.35),inset 0 0 10px rgba(255,255,255,.08);transition:transform .15s,box-shadow .15s,filter .15s}
+    #r2kHeader .btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid rgba(19,152,255,.25);color:#e8f4ff;background:linear-gradient(90deg,#1b6fff,#1985ff)}
     #r2kHeader .btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 26px rgba(19,152,255,.5)}
     #r2kHeader .btn.outline{background:transparent;color:#e8f4ff;border-color:rgba(19,152,255,.45);box-shadow:0 0 16px rgba(19,152,255,.25) inset}
     #r2kHeader .btn.outline:hover{background:rgba(19,152,255,.08);color:#fff}
     #r2kHeader .hamburger{display:none;justify-self:end;cursor:pointer}
     #r2kHeader .hamburger span{display:block;width:24px;height:3px;margin:4px 0;background:#e8f4ff;border-radius:2px}
-    #r2kHeader::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(19,152,255,.45) 20%,rgba(19,152,255,.9) 50%,rgba(19,152,255,.45) 80%,rgba(0,0,0,0) 100%);box-shadow:0 0 18px rgba(19,152,255,.4);pointer-events:none;z-index:100}
+    #r2kHeader::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(19,152,255,.45) 20%,rgba(19,152,255,.9) 50%,rgba(19,152,255,.45) 80%,rgba(0,0,0,0) 100%)}
     @media (max-width:900px){
       #r2kHeader .h-inner{grid-template-columns:1fr auto auto}
       #r2kHeader .nav{display:none;position:absolute;top:60px;left:0;right:0;background:#080f19;border-top:1px solid rgba(19,152,255,.15);padding:12px 20px;gap:16px;flex-direction:column}
@@ -75,15 +75,29 @@
     .panel.active{display:block}
 
     /* Cards */
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px}
-    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    /* Changed .grid from CSS Grid to a centered Flex container so card(s)
+       are always horizontally centered regardless of page gutters/layouts. */
+    .grid{
+      display:flex;
+      justify-content:center;  /* center card(s) horizontally */
+      align-items:flex-start;
+      flex-wrap:wrap;
+      gap:24px;
+      margin-top:8px;
+    }
     .card{
       background:var(--card);
       border:1px solid var(--border);
       border-radius:18px;
       padding:20px;
       box-shadow:0 0 24px rgba(107,92,255,.07);
+
+      /* Constrain width so cards are centered and consistent */
+      width:720px;
+      max-width:96%;
+      box-sizing:border-box;
     }
+
     .prize{font-size:46px;font-weight:900;text-align:center;margin-top:6px}
     .prize-label{text-align:center;color:var(--muted);font-weight:800;letter-spacing:.08em;margin-top:6px}
     .pill-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
@@ -123,6 +137,18 @@
     table.wins{width:100%; border-collapse:collapse; margin-top:10px; font-size:14px}
     .wins th,.wins td{border-bottom:1px solid #0f1c2c; padding:10px 8px; text-align:left}
     .wins th{color:#cfe9ff; font-weight:900}
+
+    /* Responsive behavior */
+    @media (max-width:980px){
+      /* keep width limits smaller screens */
+      .card{width:640px}
+    }
+    @media (max-width:600px){
+      .card{width:100%; padding:16px; border-radius:12px}
+      .pill-row{grid-template-columns:1fr}
+      .prize{font-size:36px}
+      .meta{flex-direction:column;gap:8px;align-items:flex-start}
+    }
   </style>
 </head>
 <body>
@@ -164,6 +190,7 @@
 
     <!-- WEEKLY -->
     <section class="panel active" id="panel-weekly">
+      <!-- .grid is now a centered flex container -->
       <div class="grid">
         <article class="card">
           <div class="prize" id="w-prize">$25.00</div>
