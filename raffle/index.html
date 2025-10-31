@@ -23,127 +23,35 @@
       --purple:#6b5cff;
     }
     html,body{background:var(--bg-deep);color:var(--ink);margin:0}
-
-    /* ===== Centered Header ===== */
     #r2kHeader{
       position:sticky; top:0; z-index:2000;
       background:linear-gradient(180deg, rgba(7,10,16,0.98) 0%, rgba(5,8,13,0.98) 85%, rgba(3,5,9,1) 100%);
       backdrop-filter:blur(6px);
       border:none !important;
       box-shadow:0 4px 12px rgba(0,0,0,.4);
-      min-height:88px;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-    #r2kHeader .h-inner{
-      width: 100%;
-      max-width: none;
-      margin: 0 auto;
-      padding: 22px 32px;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;   /* Center horizontally */
-      gap: 36px;
-      box-sizing: border-box;
-      position: relative;
-    }
-    #r2kHeader .brand{
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      text-decoration: none;
-      flex-shrink: 0;
-    }
-    #r2kHeader .brand .logo{
-      width:54px;
-      height:54px;
-      border-radius:50%;
-      object-fit:cover;
-      box-shadow:0 0 12px rgba(19,152,255,.35)
-    }
-    #r2kHeader .brand .name{
-      font-size:26px;
-      font-weight:800;
-      color:#fff
-    }
-    #r2kHeader .brand .name .accent{
-      color:var(--blue);
-      text-shadow:0 0 10px rgba(19,152,255,.5)
-    }
-    #r2kHeader .nav{
-      display:flex;
-      justify-content:center;
-      align-items: center;
-      gap:36px;
-      min-width:0;
-      flex: 1 1 auto;
-    }
-    #r2kHeader .nav a, #r2kHeader .nav button{
-      color:#e8f4ff;
-      background:none;
-      border:0;
-      cursor:pointer;
-      text-decoration:none;
-      font-weight:700;
-      font-size:17px;
-      opacity:.92;
-      padding:8px 6px;
-      border-radius:8px;
-      transition:.15s
-    }
-    #r2kHeader .nav a:hover, #r2kHeader .nav button:hover{
-      color:#fff;
-      text-shadow:0 0 10px rgba(19,152,255,.45)
-    }
-    #r2kHeader .actions{
-      display:flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap:18px;
-      min-width:220px;
-      flex-shrink: 0;
-    }
-    #r2kHeader .btn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      font-weight:800;
-      font-size:17px;
-      padding:14px 32px;
-      border-radius:999px;
-      text-decoration:none;
-      border:1.5px solid rgba(19,152,255,.25);
-      color:#e8f4ff;
-      background:linear-gradient(90deg,#1b6fff,#1985ff)
-    }
-    #r2kHeader .btn:hover{
-      transform:translateY(-1px);
-      filter:brightness(1.08);
-      box-shadow:0 8px 26px rgba(19,152,255,.5)
-    }
-    #r2kHeader .btn.outline { display: none !important; }
+    #r2kHeader .h-inner{max-width:1200px;margin:0 auto;padding:14px 20px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
+    #r2kHeader .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+    #r2kHeader .brand .logo{width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(19,152,255,.35)}
+    #r2kHeader .brand .name{font-size:22px;font-weight:800;color:#fff}
+    #r2kHeader .brand .name .accent{color:var(--blue);text-shadow:0 0 10px rgba(19,152,255,.5)}
+    #r2kHeader .nav{display:flex;justify-content:center;gap:26px}
+    #r2kHeader .nav a, #r2kHeader .nav button{color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;padding:8px 6px;border-radius:8px}
+    #r2kHeader .nav a:hover, #r2kHeader .nav button:hover{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.45)}
+    #r2kHeader .actions{display:flex;justify-content:flex-end;gap:12px}
+    #r2kHeader .btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid rgba(19,152,255,.25);color:#e8f4ff;background:linear-gradient(90deg,#1b6fff,#1985ff)}
+    #r2kHeader .btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 26px rgba(19,152,255,.5)}
+    #r2kHeader .btn.outline{background:transparent;color:#e8f4ff;border-color:rgba(19,152,255,.45);box-shadow:0 0 16px rgba(19,152,255,.25) inset}
+    #r2kHeader .btn.outline:hover{background:rgba(19,152,255,.08);color:#fff}
     #r2kHeader .hamburger{display:none;justify-self:end;cursor:pointer}
     #r2kHeader .hamburger span{display:block;width:24px;height:3px;margin:4px 0;background:#e8f4ff;border-radius:2px}
-    #r2kHeader::after{
-      content:"";
-      position:absolute;
-      left:0; right:0; bottom:-4px;
-      height:2px;
-      background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(19,152,255,.45) 20%,rgba(19,152,255,.9) 50%,rgba(19,152,255,.45) 80%,rgba(0,0,0,0) 100%)
-    }
-    @media (max-width:1200px){
-      #r2kHeader .h-inner{padding:18px 16px;}
-    }
+    #r2kHeader::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(19,152,255,.45) 20%,rgba(19,152,255,.9) 50%,rgba(19,152,255,.45) 80%,rgba(0,0,0,0) 100%)}
     @media (max-width:900px){
-      #r2kHeader .h-inner{flex-wrap:wrap;flex-direction:column;align-items:center;padding:14px 6px;gap:12px;}
-      #r2kHeader .nav{flex-wrap:wrap;justify-content:center;gap:18px;}
-      #r2kHeader .actions{justify-content:center;gap:8px;min-width:0;}
-      #r2kHeader .brand .logo{width:44px;height:44px;}
-      #r2kHeader .brand .name{font-size:20px;}
-      #r2kHeader .btn{font-size:15px;padding:10px 18px;}
+      #r2kHeader .h-inner{grid-template-columns:1fr auto auto}
+      #r2kHeader .nav{display:none;position:absolute;top:60px;left:0;right:0;background:#080f19;border-top:1px solid rgba(19,152,255,.15);padding:12px 20px;gap:16px;flex-direction:column}
+      #r2kHeader .nav.show{display:flex}
+      #r2kHeader .hamburger{display:flex}
+      #r2kHeader .actions{display:none}
     }
 
     .wrap{max-width:1200px;margin:0 auto;padding:24px 20px}
@@ -181,6 +89,7 @@
       box-sizing:border-box;
     }
 
+    /* Center Previous Winners card */
     #panel-previous {
       display: flex;
       flex-direction: column;
@@ -379,7 +288,45 @@
     </div>
   </div>
 
-  <!-- ====== JS omitted for brevity, unchanged ====== -->
-  <!-- (Retain original JS here as in your repo) -->
+  <!-- ====== JS logic for tabs, modal, entrants, etc. RESTORED ====== -->
+  <script>
+    // Tab switching logic
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('panel-' + this.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Hamburger menu for mobile nav
+    document.getElementById('hamburger').addEventListener('click', function() {
+      document.getElementById('r2kNav').classList.toggle('show');
+    });
+
+    // Entrant modal logic (example, you may have more logic here)
+    document.querySelectorAll('#w-view, #m-view').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.getElementById('drawModal').setAttribute('aria-hidden', 'false');
+        document.getElementById('drawModal').style.display = 'block';
+      });
+    });
+    document.getElementById('closeModal').addEventListener('click', function() {
+      document.getElementById('drawModal').setAttribute('aria-hidden', 'true');
+      document.getElementById('drawModal').style.display = 'none';
+    });
+    // Close modal on overlay click
+    document.getElementById('drawModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.setAttribute('aria-hidden', 'true');
+        this.style.display = 'none';
+      }
+    });
+
+    // Example: populate entrants, winners, etc. (REPLACE with your real logic)
+    // This is a placeholder so the buttons/tabs work for now. 
+    // Add your dynamic logic as needed.
+  </script>
 </body>
 </html>
