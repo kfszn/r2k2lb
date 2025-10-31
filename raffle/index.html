@@ -15,46 +15,89 @@
 
   <style>
     :root{
-      --bg-deep:#070b12;         /* page bg */
-      --card:#0b0f17;            /* card bg */
-      --border:#1b2a40;          /* subtle border */
-      --ink:#e9f5ff;             /* text on dark */
-      --muted:#a6c9ef;           /* muted text */
-      --accent:#6b5cff;          /* purple accent */
-      --blue:#1398ff;            /* rainbet blue */
+      --bg-deep:#070b12;
+      --card:#0b0f17;
+      --border:#1b2a40;
+      --ink:#e9f5ff;
+      --muted:#a6c9ef;
+      --blue:#1398ff;
+      --blue2:#48c7ff;
+      --purple:#6b5cff;
+      --success:#22c55e;
     }
-
     html,body{background:var(--bg-deep);color:var(--ink);margin:0}
 
-    /* ===== Header (simplified) ===== */
+    /* ===== Background (same vibe as leaderboard) ===== */
+    #particleCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:-2}
+    .glow-container{pointer-events:none;position:fixed;inset:0;z-index:-1}
+    .glow-container .left-glow,
+    .glow-container .right-glow{
+      position:absolute;top:0;bottom:0;width:40vw;filter:blur(80px);opacity:.15;
+      background:radial-gradient(closest-side, var(--blue), transparent 70%);
+    }
+    .glow-container .left-glow{left:-10vw}
+    .glow-container .right-glow{right:-10vw}
+
+    /* ===== Header (updated, gradient under full height, mobile hamburger fixed) ===== */
     #r2kHeader{
       position:sticky; top:0; z-index:2000;
-      background:linear-gradient(180deg, rgba(7,10,16,0.98) 0%, rgba(5,8,13,0.98) 85%, rgba(3,5,9,1) 100%);
-      backdrop-filter:blur(6px);
-      border:none !important;
-      box-shadow:0 4px 12px rgba(0,0,0,.4);
+      background:transparent !important;
+      border-bottom:1px solid rgba(19,152,255,.15);
+      box-shadow:0 0 24px rgba(19,152,255,.15);
+      overflow:visible;
     }
-    #r2kHeader .h-inner{max-width:1200px;margin:0 auto;padding:14px 20px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;position:relative}
-    #r2kHeader .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+    #r2kHeader::before{
+      content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+      background:linear-gradient(180deg,#121825 0%, #0f1521 70%, #0b0f17 100%);
+    }
+    #r2kHeader::after{
+      content:""; position:absolute; left:0; right:0; bottom:-4px; height:2px; z-index:0;
+      background:linear-gradient(90deg,transparent,rgba(19,152,255,.6),transparent);
+      box-shadow:0 0 18px rgba(19,152,255,.35);
+      pointer-events:none;
+    }
+    #r2kHeader .h-inner{
+      position:relative; z-index:1;
+      max-width:1200px; margin:0 auto; padding:14px 20px;
+      display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:16px;
+    }
+    #r2kHeader .brand{display:flex; align-items:center; gap:10px; text-decoration:none}
     #r2kHeader .brand .logo{width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(19,152,255,.35)}
-    #r2kHeader .brand .name{font-size:22px;font-weight:800;color:#fff}
+    #r2kHeader .brand .name{font-size:22px;font-weight:800;color:#fff;letter-spacing:.2px}
+    /* Both 2’s blue */
     #r2kHeader .brand .name .accent{color:var(--blue);text-shadow:0 0 10px rgba(19,152,255,.5)}
     #r2kHeader .nav{display:flex;justify-content:center;gap:26px}
-    #r2kHeader .nav a{color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;padding:8px 6px;border-radius:8px;transition:.18s}
+    #r2kHeader .nav a{
+      color:#e8f4ff;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;
+      padding:8px 6px;border-radius:8px;transition:.18s;
+    }
     #r2kHeader .nav a:hover{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.45)}
-    #r2kHeader .nav a[aria-current="page"]{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.6)}
     #r2kHeader .actions{display:flex;justify-content:flex-end;gap:12px}
-    #r2kHeader .btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid rgba(19,152,255,.25);color:#0a1626;background:linear-gradient(90deg,#22b1ff,#1398ff);box-shadow:0 6px 20px rgba(19,152,255,.35),inset 0 0 10px rgba(255,255,255,.08);transition:transform .15s,box-shadow .15s,filter .15s}
+    #r2kHeader .btn{
+      display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;
+      text-decoration:none;border:1px solid rgba(19,152,255,.25);color:#0a1626;
+      background:linear-gradient(90deg,#22b1ff,#1398ff);
+      box-shadow:0 6px 20px rgba(19,152,255,.35), inset 0 0 10px rgba(255,255,255,.08);
+      transition:transform .15s,box-shadow .15s,filter .15s;
+    }
     #r2kHeader .btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 26px rgba(19,152,255,.5)}
     #r2kHeader .hamburger{display:none;justify-self:end;cursor:pointer}
-    #r2kHeader .hamburger span{display:block;width:24px;height:3px;margin:4px 0;background:#e8f4ff;border-radius:2px}
-    #r2kHeader::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(19,152,255,.45) 20%,rgba(19,152,255,.9) 50%,rgba(19,152,255,.45) 80%,rgba(0,0,0,0) 100%);box-shadow:0 0 18px rgba(19,152,255,.4);pointer-events:none;z-index:100}
+    #r2kHeader .hamburger{display:none}
+    #r2kHeader .hamburger{display:none}
+    /* Mobile */
     @media (max-width:900px){
-      #r2kHeader .h-inner{grid-template-columns:1fr auto auto}
-      #r2kHeader .nav{display:none;position:absolute;top:60px;left:0;right:0;background:#080f19;border-top:1px solid rgba(19,152,255,.15);padding:12px 20px;gap:16px;flex-direction:column}
+      #r2kHeader .h-inner{grid-template-columns:auto auto auto}
+      #r2kHeader .nav{
+        display:none; position:absolute; top:60px; left:0; right:0;
+        background:#080f19; border-top:1px solid rgba(19,152,255,.15);
+        padding:12px 20px; gap:16px; flex-direction:column;
+      }
       #r2kHeader .nav.show{display:flex}
-      #r2kHeader .hamburger{display:flex}
       #r2kHeader .actions{display:none}
+      #r2kHeader .hamburger{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px}
+      #r2kHeader .hamburger span{
+        display:block; width:26px; height:3px; background:#e8f4ff; border-radius:2px;
+      }
     }
 
     /* ===== Page layout ===== */
@@ -64,10 +107,13 @@
     .accent{color:#a99dff}
 
     /* Tabs */
-    .tabs{display:flex;gap:10px;justify-content:center;margin-top:18px}
-    .tab-btn{border:1px solid var(--border);background:#0c1320;color:#e9f5ff;padding:10px 16px;border-radius:999px;font-weight:800;cursor:pointer;opacity:.9}
-    .tab-btn.active{background:linear-gradient(90deg,#22b1ff,#1398ff);color:#08111a;border-color:#0f5da1;opacity:1}
-    .tab-panel{display:none;margin-top:22px}
+    .tabs{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+    .tab-btn{
+      background:#0c1320;border:1px solid var(--border);color:#cfe9ff;
+      padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer;transition:.18s;
+    }
+    .tab-btn[aria-selected="true"]{border-color:var(--blue);box-shadow:0 0 0 2px rgba(19,152,255,.15) inset}
+    .tab-panel{display:none;margin-top:24px}
     .tab-panel.active{display:block}
 
     /* Cards */
@@ -78,77 +124,63 @@
       border:1px solid var(--border);
       border-radius:18px;
       padding:20px;
-      box-shadow:0 0 24px rgba(107,92,255,.07);
+      box-shadow:0 0 24px rgba(19,152,255,.07);
     }
-    .card-glow{position:relative;overflow:hidden}
-    .card-glow::before{
-      content:"";
-      position:absolute;inset:-2px;
-      background:radial-gradient(120px 120px at 70px 70px, rgba(125,107,255,.15), transparent 60%),
-                 radial-gradient(140px 140px at 85% 20%, rgba(19,152,255,.10), transparent 60%);
-      pointer-events:none;
-    }
-
-    .prize{font-size:46px;font-weight:900;text-shadow:0 0 14px rgba(255,255,255,.25);text-align:center;margin-top:6px}
+    .prize{font-size:46px;font-weight:900;text-align:center;margin:8px 0 0;text-shadow:0 0 14px rgba(255,255,255,.15)}
     .prize-label{text-align:center;color:var(--muted);font-weight:800;letter-spacing:.08em;margin-top:6px}
-
     .pill-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+    @media (max-width:520px){.pill-row{grid-template-columns:1fr}}
     .pill{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
     .pill .big{font-weight:900}
     .pill .cap{font-size:12px;color:var(--muted);margin-top:4px}
-
     .stat{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;margin-top:18px}
     .stat .count{font-weight:900}
-
+    .progress{margin-top:14px}
+    .bar{height:12px;background:#081321;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+    .fill{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--blue2));box-shadow:0 0 12px rgba(0,153,255,.55);transition:width .8s ease}
+    .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
+    .meta .strong{color:#fff;font-weight:800}
     .btn{
       display:inline-flex;align-items:center;justify-content:center;gap:10px;
       width:100%; padding:14px 16px; border-radius:12px; margin-top:18px;
-      border:1px solid #2b2466; background:rgba(107,92,255,.1); color:#f0eaff; font-weight:800; cursor:pointer;
-      transition:.18s;
+      border:1px solid #0f5da1; background:linear-gradient(90deg,#22b1ff,#1398ff);
+      color:#08111a; font-weight:800; cursor:pointer; transition:.18s;
       text-decoration:none;
     }
-    .btn:hover{filter:brightness(1.07);box-shadow:0 0 18px rgba(107,92,255,.25) inset}
-    .btn.alt{border-color:#0f5da1;background:linear-gradient(90deg,#22b1ff,#1398ff);color:#08111a;box-shadow:0 6px 20px rgba(19,152,255,.35)}
+    .btn:hover{filter:brightness(1.07);box-shadow:0 0 18px rgba(19,152,255,.25) inset}
 
-    .progress{margin-top:14px}
-    .bar{height:12px;background:#081321;border:1px solid var(--border);border-radius:999px;overflow:hidden}
-    .fill{height:100%;width:0;background:linear-gradient(90deg,#1398ff,#48c7ff);box-shadow:0 0 12px rgba(0,153,255,.55);transition:width .8s ease}
-    .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
-    .meta .strong{color:#fff;font-weight:800}
+    /* Winners list */
+    .winners{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#09111b}
+    .w-row{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid #0f1c2c}
+    .w-row:nth-child(odd){background:#0a131f}
+    .w-date{color:var(--muted);font-weight:700}
+    .w-name{font-weight:900}
+    .w-type{font-weight:800;color:#9ad8ff}
 
-    .tick-icon{
-      display:inline-flex;align-items:center;justify-content:center;
-      width:60px;height:60px;border-radius:16px;
-      background:radial-gradient(60px 60px at 50% 50%, rgba(125,107,255,.22), rgba(125,107,255,.08));
-      box-shadow:0 4px 30px rgba(125,107,255,.3) inset, 0 0 20px rgba(125,107,255,.15);
-      margin:0 auto 6px;
-    }
-    .tick-icon svg{width:30px;height:30px;opacity:.95}
-
-    /* Modal */
+    /* Live draw modal */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:3000}
-    .modal .sheet{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:600px;width:92%;padding:18px}
-    .list{max-height:340px;overflow:auto;border:1px dashed var(--border);border-radius:10px;margin-top:10px}
-    .list-item{display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #0f1c2c}
-    .list-item:nth-child(odd){background:#0a131f}
-    .close-x{background:transparent;border:1px solid var(--border);padding:8px 12px;border-radius:10px;color:#cfe9ff;cursor:pointer}
+    .sheet{background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:560px;width:92%;padding:18px;box-shadow:0 10px 25px rgba(0,0,0,.5)}
+    .draw-title{font-weight:900;font-size:22px;margin:0 0 10px}
+    .drum{height:180px;border:1px dashed var(--border);border-radius:12px;overflow:hidden;background:#0a131f;display:flex;align-items:center;justify-content:center}
+    .drum-inner{will-change:transform}
+    .ticket{font-size:24px;font-weight:900;padding:8px 0;text-align:center}
+    .close-x{margin-top:14px;background:transparent;border:1px solid var(--border);padding:10px 14px;border-radius:10px;color:#cfe9ff;cursor:pointer;font-weight:800}
 
-    /* Winners table */
-    .winners{width:100%;border-collapse:collapse;margin-top:10px}
-    .winners th,.winners td{border:1px solid var(--border);padding:10px 12px;text-align:left}
-    .winners th{background:#0c1320;color:#e9f5ff}
-    .winners tr:nth-child(odd){background:#0a131f}
-
-    @media (max-width:520px){ .pill-row{grid-template-columns:1fr} }
+    /* Small helper margins */
+    .mt6{margin-top:6px}
   </style>
 </head>
 <body>
-  <!-- Header -->
+  <!-- Background -->
+  <canvas id="particleCanvas"></canvas>
+  <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
+
+  <!-- ===== Header ===== -->
   <header id="r2kHeader">
     <div class="h-inner">
       <a href="/" class="brand" aria-label="R2K2 Home">
         <img src="/assets/logo.png" class="logo" alt="R2K2">
-        <div class="name">R2K<span class="accent">2</span></div>
+        <div class="name">R<span class="accent">2</span>K<span class="accent">2</span></div>
       </a>
 
       <nav class="nav" id="r2kNav">
@@ -170,29 +202,26 @@
 
   <main class="wrap">
     <h1 class="hero-title"><span class="accent">Active</span> Raffles</h1>
-    <p class="hero-sub">Wager to automatically enter and win prizes. One ticket per eligible entrant — fair and simple.</p>
+    <p class="hero-sub">Wager to automatically enter and win prizes. One entry per eligible user.</p>
 
     <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="weekly">Weekly</button>
-      <button class="tab-btn" data-tab="monthly">Monthly</button>
-      <button class="tab-btn" data-tab="winners">Previous Winners</button>
+    <div class="tabs" role="tablist" aria-label="Raffle tabs">
+      <button class="tab-btn" role="tab" id="tab-weekly" aria-controls="panel-weekly" aria-selected="true">Weekly</button>
+      <button class="tab-btn" role="tab" id="tab-monthly" aria-controls="panel-monthly" aria-selected="false">Monthly</button>
+      <button class="tab-btn" role="tab" id="tab-winners" aria-controls="panel-winners" aria-selected="false">Previous Winners</button>
     </div>
 
-    <!-- WEEKLY -->
-    <section class="tab-panel active" id="panel-weekly">
+    <!-- Weekly panel -->
+    <section id="panel-weekly" class="tab-panel active" role="tabpanel" aria-labelledby="tab-weekly">
       <div class="grid">
-        <article class="card card-glow">
-          <div class="tick-icon">
-            <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M20 12v8a2 2 0 0 1-2 2h-5v-10h7zm-9 10H6a2 2 0 0 1-2-2v-8h7v10zM4 9h16v2H4V9zm4-7a3 3 0 0 1 3 3v1h-1a3 3 0 0 1-2-5zm8 0a3 3 0 0 1-2 5h-1V5a3 3 0 0 1 3-3z"/></svg>
-          </div>
+        <article class="card" data-id="weekly">
           <div class="prize" id="w-amount">$25.00</div>
-          <div class="prize-label">WEEKLY CASH — 1 winner</div>
+          <div class="prize-label">WEEKLY CASH GIVEAWAY</div>
 
           <div class="pill-row">
             <div class="pill">
               <div class="big" id="w-min">$250.00</div>
-              <div class="cap">Min Wager (7-day window)</div>
+              <div class="cap">Min Wager (7 days)</div>
             </div>
             <div class="pill">
               <div class="big" id="w-remaining">--</div>
@@ -202,7 +231,7 @@
 
           <div class="stat">
             <div class="count" id="w-participants">0</div>
-            <div class="cap">Eligible Participants</div>
+            <div class="cap">Eligible Entrants</div>
           </div>
 
           <div class="progress">
@@ -210,28 +239,22 @@
             <div class="meta"><span id="w-pct">0%</span><span id="w-meta">0 / 0</span></div>
           </div>
 
-          <button class="btn" id="w-view">👥 View Participants</button>
-          <!-- Former Force Draw -> Join Rainbet -->
-          <a class="btn alt" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
+          <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
         </article>
       </div>
-      <p class="hero-sub">Eligibility resets every 7 days. Auto-draw runs at the end of the window.</p>
     </section>
 
-    <!-- MONTHLY -->
-    <section class="tab-panel" id="panel-monthly">
+    <!-- Monthly panel -->
+    <section id="panel-monthly" class="tab-panel" role="tabpanel" aria-labelledby="tab-monthly">
       <div class="grid">
-        <article class="card card-glow">
-          <div class="tick-icon">
-            <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M20 12v8a2 2 0 0 1-2 2h-5v-10h7zm-9 10H6a2 2 0 0 1-2-2v-8h7v10zM4 9h16v2H4V9zm4-7a3 3 0 0 1 3 3v1h-1a3 3 0 0 1-2-5zm8 0a3 3 0 0 1-2 5h-1V5a3 3 0 0 1 3-3z"/></svg>
-          </div>
+        <article class="card" data-id="monthly">
           <div class="prize" id="m-amount">$100.00</div>
-          <div class="prize-label">MONTHLY CASH — 1 winner</div>
+          <div class="prize-label">MONTHLY CASH GIVEAWAY</div>
 
           <div class="pill-row">
             <div class="pill">
               <div class="big" id="m-min">$5,000.00</div>
-              <div class="cap">Min Wager (30-day window)</div>
+              <div class="cap">Min Wager (30 days)</div>
             </div>
             <div class="pill">
               <div class="big" id="m-remaining">--</div>
@@ -241,7 +264,7 @@
 
           <div class="stat">
             <div class="count" id="m-participants">0</div>
-            <div class="cap">Eligible Participants</div>
+            <div class="cap">Eligible Entrants</div>
           </div>
 
           <div class="progress">
@@ -249,229 +272,283 @@
             <div class="meta"><span id="m-pct">0%</span><span id="m-meta">0 / 0</span></div>
           </div>
 
-          <button class="btn" id="m-view">👥 View Participants</button>
-          <!-- Former Force Draw -> Join Rainbet -->
-          <a class="btn alt" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
+          <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
         </article>
       </div>
-      <p class="hero-sub">One entry per eligible user. Auto-draw runs when the 30-day window ends.</p>
     </section>
 
-    <!-- PREVIOUS WINNERS -->
-    <section class="tab-panel" id="panel-winners">
-      <article class="card card-glow">
-        <h3 style="margin:0 0 8px 0;">Previous Winners</h3>
-        <p class="hero-sub" style="margin-top:0">Auto-logged on draw. (This demo persists in your browser’s localStorage.)</p>
-        <table class="winners" id="winnersTable">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Raffle</th>
-              <th>Winner</th>
-              <th>Prize</th>
-              <th>TX / Note</th>
-            </tr>
-          </thead>
-          <tbody id="winnersBody">
-            <!-- rows injected -->
-          </tbody>
-        </table>
-      </article>
+    <!-- Winners panel -->
+    <section id="panel-winners" class="tab-panel" role="tabpanel" aria-labelledby="tab-winners">
+      <div class="card winners" id="winners-list">
+        <!-- Populated via JS -->
+      </div>
+      <p class="hero-sub mt6">Auto-updated after each draw. Shows last ~20 results.</p>
     </section>
   </main>
 
-  <!-- Participants Modal -->
-  <div class="modal" id="participantsModal" aria-hidden="true">
+  <!-- Live Draw Modal -->
+  <div class="modal" id="drawModal" aria-hidden="true">
     <div class="sheet">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <h3 style="margin:0">Participants</h3>
-        <button class="close-x" id="closeModal">Close</button>
-      </div>
-      <div class="list" id="participantsList"></div>
+      <h3 class="draw-title" id="drawTitle">Drawing…</h3>
+      <div class="drum"><div class="drum-inner" id="drumInner"></div></div>
+      <button class="close-x" id="closeDraw">Close</button>
     </div>
   </div>
 
+  <!-- Scripts -->
+  <script src="/js/app.js"></script>
+  <script src="/js/particles.js"></script>
+  <script src="/js/toast.js"></script>
+
   <script>
-    /* Mobile menu */
+    /* ===== Mobile menu toggle ===== */
     (function(){
       const burger=document.getElementById('hamburger');
       const nav=document.getElementById('r2kNav');
       if(burger&&nav){
         burger.addEventListener('click',()=>{
-          const open = nav.classList.toggle('show');
+          const open=nav.classList.toggle('show');
           burger.setAttribute('aria-expanded', String(open));
         });
       }
     })();
 
-    /* -------- Demo State (replace with API later) -------- */
-    // Windows: weekly (7 days) and monthly (30 days).
-    // One entry per eligible user (no ticket weighting).
-    // Auto-draw triggers when window ends; winner is recorded to "previous winners".
-    const STATE = {
-      weekly: {
-        prizeUSD: 25.00,
-        minWager: 250,
-        // roll every 7d — anchor to "now" for demo
-        startAt: Date.now(),
-        durationMs: 7*24*3600*1000,
-        participants: [], // {name}
-      },
-      monthly: {
-        prizeUSD: 100.00,
-        minWager: 5000,
-        startAt: Date.now(),
-        durationMs: 30*24*3600*1000,
-        participants: [],
-      },
-      // In real impl, winners should be stored server-side.
-      winners: JSON.parse(localStorage.getItem('r2k2_winners') || '[]')
+    /* ===== Tabs ===== */
+    (function(){
+      const tabs=[['tab-weekly','panel-weekly'],['tab-monthly','panel-monthly'],['tab-winners','panel-winners']];
+      tabs.forEach(([tId,pId])=>{
+        document.getElementById(tId).addEventListener('click',()=>{
+          tabs.forEach(([t,p])=>{
+            document.getElementById(t).setAttribute('aria-selected', t===tId ? 'true':'false');
+            document.getElementById(p).classList.toggle('active', p===pId);
+          });
+        });
+      });
+    })();
+
+    /* ===== Particles (background) – if your particles.js needs init, call here ===== */
+    if (typeof initParticles === 'function') { try { initParticles('particleCanvas'); } catch(e){} }
+
+    /* ===== API wiring (with safe local fallback) =====
+       Endpoints you can implement:
+       GET  /api/raffles
+         -> { weekly:{id,minWager,endAt,participants:[{name}],goalCount}, monthly:{...} }
+       GET  /api/winners?limit=20
+         -> [{date:"2025-10-31", type:"Weekly", winner:"UserX"}, ...]
+       POST /api/raffles/:id/draw
+         body: { winner, seed, proof }
+         -> { ok:true }
+    */
+    const API = {
+      raffles: '/api/raffles',
+      winners: '/api/winners?limit=20',
+      draw: (id)=> `/api/raffles/${encodeURIComponent(id)}/draw`
     };
 
-    /* Seed demo participants so UI isn't empty */
-    STATE.weekly.participants = Array.from({length:18},(_,i)=>({name:`WeeklyUser_${i+1}`}));
-    STATE.monthly.participants = Array.from({length:9},(_,i)=>({name:`MonthlyUser_${i+1}`}));
+    // Local fallback demo (used only if your API 404s/throws)
+    const fallbackData = {
+      weekly: {
+        id:'weekly', prizeUSD:25, minWager:250,
+        // next weekly end (example: 7 days from now at 20:00 CT)
+        endAt: new Date(Date.now() + 6*24*3600*1000 + 20*3600*1000).toISOString(),
+        participants: [{name:'Player1'},{name:'Player2'},{name:'Player3'},{name:'Player4'}],
+        goalCount: 50
+      },
+      monthly: {
+        id:'monthly', prizeUSD:100, minWager:5000,
+        // next monthly end 30d from now at 20:00 CT
+        endAt: new Date(Date.now() + 29*24*3600*1000 + 20*3600*1000).toISOString(),
+        participants: [{name:'HighRoller'},{name:'User_42'}],
+        goalCount: 200
+      },
+      winners: [
+        {date:'2025-10-24', type:'Weekly',  winner:'Player2'},
+        {date:'2025-09-30', type:'Monthly', winner:'HighRoller'},
+      ]
+    };
 
-    const $ = sel => document.querySelector(sel);
-    const $$ = sel => document.querySelectorAll(sel);
+    async function loadJSON(url){
+      const res = await fetch(url,{cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return res.json();
+    }
 
-    /* Tabs */
-    $$('.tab-btn').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        $$('.tab-btn').forEach(b=>b.classList.remove('active'));
-        $$('.tab-panel').forEach(p=>p.classList.remove('active'));
-        btn.classList.add('active');
-        $('#panel-'+btn.dataset.tab).classList.add('active');
-      });
-    });
+    async function getRaffles(){
+      try{
+        const data = await loadJSON(API.raffles);
+        // normalize
+        return {
+          weekly: data.weekly ?? fallbackData.weekly,
+          monthly: data.monthly ?? fallbackData.monthly
+        };
+      }catch{
+        return { weekly: fallbackData.weekly, monthly: fallbackData.monthly };
+      }
+    }
+    async function getWinners(){
+      try{
+        const data = await loadJSON(API.winners);
+        return Array.isArray(data) ? data : fallbackData.winners;
+      }catch{
+        return fallbackData.winners;
+      }
+    }
+    async function postDraw(id, payload){
+      try{
+        const res = await fetch(API.draw(id),{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        return res.ok;
+      }catch{ return false; }
+    }
 
-    /* Helpers */
-    const money = n => n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
-    function timeLeft(endMs){
-      const s = Math.max(0, Math.floor((endMs - Date.now())/1000));
+    /* ===== UI helpers ===== */
+    const $ = (s)=>document.querySelector(s);
+    function money(n){ return Number(n||0).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2}); }
+    function timeLeft(iso){
+      const end = new Date(iso).getTime(), now = Date.now();
+      const s = Math.max(0, Math.floor((end-now)/1000));
       const d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60);
       return d>0 ? `${d}d ${h}h` : `${h}h ${m}m`;
     }
-    function windowEnd(startAt,durationMs){ return startAt + durationMs; }
-
-    function setFill(prefix, current, goal){
-      const pct = Math.max(0, Math.min(100, goal? (current/goal)*100 : 0));
-      $('#'+prefix+'-fill').style.width = pct + '%';
-      $('#'+prefix+'-pct').textContent = Math.round(pct) + '%';
-      $('#'+prefix+'-meta').textContent = `${current} / ${goal}`;
+    function setProgress(prefix, currentCount, goalCount){
+      const pct = Math.max(0, Math.min(100, goalCount ? (currentCount/goalCount)*100 : 0));
+      $(`#${prefix}-fill`).style.width = pct + '%';
+      $(`#${prefix}-pct`).textContent = Math.round(pct) + '%';
+      $(`#${prefix}-meta`).textContent = `${currentCount} / ${goalCount}`;
     }
 
-    /* UI refs */
-    const UI = {
-      weekly: {
-        remaining: $('#w-remaining'),
-        participants: $('#w-participants'),
-        viewBtn: $('#w-view'),
-        fill: $('#w-fill'),
-        pct: $('#w-pct'),
-        meta: $('#w-meta')
-      },
-      monthly: {
-        remaining: $('#m-remaining'),
-        participants: $('#m-participants'),
-        viewBtn: $('#m-view'),
-        fill: $('#m-fill'),
-        pct: $('#m-pct'),
-        meta: $('#m-meta')
+    /* ===== Live draw animation (ticket spinner) ===== */
+    const drawModal = $('#drawModal');
+    const drumInner = $('#drumInner');
+    const drawTitle = $('#drawTitle');
+    $('#closeDraw').addEventListener('click', ()=> {
+      drawModal.style.display='none';
+      drawModal.setAttribute('aria-hidden','true');
+      drumInner.style.transform='translateY(0)';
+      drumInner.innerHTML='';
+    });
+
+    function openDraw(title, tickets, winnerIndex){
+      // Build ticket list (repeat to create a scroll illusion)
+      const rows = [];
+      for(let r=0;r<8;r++){
+        tickets.forEach((t,i)=>{
+          const el = document.createElement('div');
+          el.className='ticket';
+          el.textContent = `${String(i+1).padStart(3,'0')} • ${t.name}`;
+          rows.push(el);
+        });
       }
-    };
+      drumInner.innerHTML='';
+      rows.forEach(el=>drumInner.appendChild(el));
+      drawTitle.textContent = title;
+      drawModal.style.display='flex';
+      drawModal.setAttribute('aria-hidden','false');
 
-    /* Participants Modal */
-    const modal = $('#participantsModal');
-    const list  = $('#participantsList');
-    $('#closeModal').addEventListener('click', ()=> { modal.style.display='none'; modal.setAttribute('aria-hidden','true'); });
+      // Calculate final offset so the chosen winner lands in center
+      const per = 40; // px per row approx (depends on font; good enough visually)
+      const totalTickets = tickets.length;
+      const targetRow = (rows.length - totalTickets) + winnerIndex; // near the end
+      const finalY = -targetRow * per;
 
-    function openParticipants(kind){
-      const items = STATE[kind].participants;
-      const rows = items.length ? items.map(p=>{
-        const name = String(p.name).replace(/[<>]/g,'');
-        return `<div class="list-item"><span>${name}</span><span>🎟️ 1</span></div>`;
-      }).join('') : `<div class="list-item"><span>No entries yet.</span><span></span></div>`;
-      list.innerHTML = rows;
-      modal.style.display='flex';
-      modal.setAttribute('aria-hidden','false');
-    }
-    UI.weekly.viewBtn.onclick = ()=>openParticipants('weekly');
-    UI.monthly.viewBtn.onclick = ()=>openParticipants('monthly');
-
-    /* Render + timers */
-    function renderPanels(){
-      const wEnd = windowEnd(STATE.weekly.startAt, STATE.weekly.durationMs);
-      const mEnd = windowEnd(STATE.monthly.startAt, STATE.monthly.durationMs);
-
-      UI.weekly.remaining.textContent = timeLeft(wEnd);
-      UI.monthly.remaining.textContent = timeLeft(mEnd);
-
-      UI.weekly.participants.textContent = STATE.weekly.participants.length;
-      UI.monthly.participants.textContent = STATE.monthly.participants.length;
-
-      // Progress bars show participant count vs. an arbitrary goal for visuals (edit as you like)
-      setFill('w', STATE.weekly.participants.length, 50);
-      setFill('m', STATE.monthly.participants.length, 100);
+      // Spin effect
+      drumInner.animate(
+        [
+          { transform:'translateY(0)' },
+          { transform:`translateY(${finalY}px)` }
+        ],
+        { duration: 3800, easing: 'cubic-bezier(.15,.85,.2,1)', fill:'forwards' }
+      );
     }
 
-    function saveWinners(){ localStorage.setItem('r2k2_winners', JSON.stringify(STATE.winners)); }
-
-    function addWinner(kind, name, prize){
-      const dt = new Date();
-      const yyyy = dt.getFullYear();
-      const mm = String(dt.getMonth()+1).padStart(2,'0');
-      const dd = String(dt.getDate()).padStart(2,'0');
-      const label = `${mm}-${dd}-${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-      STATE.winners.unshift({ date: label, kind, name, prize });
-      STATE.winners = STATE.winners.slice(0, 200); // keep it tidy
-      saveWinners();
-      paintWinners();
+    // Verifiable(ish) pick using crypto + small proof
+    function pickWinner(participants){
+      // one ticket per entrant
+      const names = participants.slice(); // array of {name}
+      const seed = crypto.getRandomValues(new Uint32Array(4)); // client seed example
+      // simple hash-ish proof string
+      const proof = Array.from(seed).map(n=>n.toString(16).padStart(8,'0')).join('');
+      // derive index using seed sum
+      const sum = seed[0]^seed[1]^seed[2]^seed[3];
+      const idx = names.length ? (sum % names.length) : 0;
+      return { index: idx, winner: names[idx]?.name || 'Unknown', proof };
     }
 
-    function runDraw(kind){
-      const pool = STATE[kind].participants;
-      if(!pool.length){ 
-        addWinner(kind, 'No eligible entries', money(STATE[kind].prizeUSD));
-        return;
-      }
-      const idx = Math.floor(Math.random()*pool.length);
-      const winner = pool[idx]?.name || 'Unknown';
-      addWinner(kind, winner, money(STATE[kind].prizeUSD));
+    /* ===== Page bootstrap & auto-draw loop ===== */
+    (async function init(){
+      const { weekly, monthly } = await getRaffles();
 
-      // Reset window (anchor to now); clear participants (demo)
-      STATE[kind].startAt = Date.now();
-      STATE[kind].participants = [];
-    }
+      // Weekly UI
+      $('#w-amount').textContent = money(25);
+      $('#w-min').textContent = money(weekly.minWager);
+      $('#w-participants').textContent = weekly.participants.length;
+      $('#w-remaining').textContent = timeLeft(weekly.endAt);
+      setProgress('w', weekly.participants.length, weekly.goalCount || weekly.participants.length);
 
-    function checkAutoDraw(){
-      const now = Date.now();
-      if(now >= windowEnd(STATE.weekly.startAt, STATE.weekly.durationMs))  runDraw('weekly');
-      if(now >= windowEnd(STATE.monthly.startAt, STATE.monthly.durationMs)) runDraw('monthly');
-    }
+      // Monthly UI
+      $('#m-amount').textContent = money(100);
+      $('#m-min').textContent = money(monthly.minWager);
+      $('#m-participants').textContent = monthly.participants.length;
+      $('#m-remaining').textContent = timeLeft(monthly.endAt);
+      setProgress('m', monthly.participants.length, monthly.goalCount || monthly.participants.length);
 
-    function paintWinners(){
-      const tbody = $('#winnersBody');
-      if(!STATE.winners.length){
-        tbody.innerHTML = `<tr><td colspan="5" style="color:#a6c9ef">No winners recorded yet.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = STATE.winners.map(w=>{
-        const raffle = w.kind === 'weekly' ? 'Weekly' : 'Monthly';
-        return `<tr>
-          <td>${w.date}</td>
-          <td>${raffle}</td>
-          <td>${(w.name||'').replace(/[<>]/g,'')}</td>
-          <td>${w.prize}</td>
-          <td>-</td>
-        </tr>`;
-      }).join('');
-    }
+      // Winners UI
+      const winners = await getWinners();
+      const wl = $('#winners-list');
+      wl.innerHTML = winners.map(w => `
+        <div class="w-row">
+          <span class="w-date">${w.date}</span>
+          <span class="w-type">${w.type}</span>
+          <span class="w-name">${(w.winner||'').toString().replace(/[<>]/g,'')}</span>
+        </div>
+      `).join('') || `<div class="w-row"><span>No winners yet.</span><span></span><span></span></div>`;
 
-    // Initial paint + intervals
-    renderPanels();
-    paintWinners();
-    setInterval(()=>{ renderPanels(); checkAutoDraw(); }, 1000 * 30); // every 30s update timers/draws
+      // Countdown refresh
+      setInterval(()=>{
+        $('#w-remaining').textContent = timeLeft(weekly.endAt);
+        $('#m-remaining').textContent = timeLeft(monthly.endAt);
+      }, 60000);
+
+      // Auto-draw checker (every 20s)
+      setInterval(async ()=>{
+        const now = Date.now();
+
+        // WEEKLY
+        if(new Date(weekly.endAt).getTime() <= now && !weekly.__drawn){
+          weekly.__drawn = true;
+          if(weekly.participants.length > 0){
+            const pick = pickWinner(weekly.participants);
+            openDraw('Weekly Drawing', weekly.participants, pick.index);
+            // log to backend
+            postDraw(weekly.id, {
+              winner: pick.winner,
+              seed: pick.proof,
+              proof: pick.proof, // (you can replace with server seed proof later)
+              type: 'Weekly'
+            }).then(()=>{}).catch(()=>{});
+          }
+        }
+
+        // MONTHLY
+        if(new Date(monthly.endAt).getTime() <= now && !monthly.__drawn){
+          monthly.__drawn = true;
+          if(monthly.participants.length > 0){
+            const pick = pickWinner(monthly.participants);
+            openDraw('Monthly Drawing', monthly.participants, pick.index);
+            // log to backend
+            postDraw(monthly.id, {
+              winner: pick.winner,
+              seed: pick.proof,
+              proof: pick.proof,
+              type: 'Monthly'
+            }).then(()=>{}).catch(()=>{});
+          }
+        }
+      }, 20000);
+    })();
   </script>
 </body>
 </html>
