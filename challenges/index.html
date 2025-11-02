@@ -18,7 +18,6 @@
   <link rel="stylesheet" href="/css/vendor.css">
   <link rel="stylesheet" href="/css/toast.css">
 
-  <script src="/js/countdown-roobet.js"></script>
 
   <style>
     :root{
@@ -292,6 +291,21 @@ tabs.forEach(t => t.addEventListener('click', () => {
 }));
 
 render();
+</script>
+
+<script>
+  /* ========== Mobile hamburger ========== */
+    (function(){
+      const burger=document.getElementById('hamburger');
+      const nav=document.getElementById('r2kNav');
+      if(burger&&nav){
+        burger.addEventListener('click',()=>{
+          const open = nav.classList.toggle('show');
+          burger.setAttribute('aria-expanded', String(open));
+        });
+      }
+    })();
+    
 </script>
 </body>
 </html>
