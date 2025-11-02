@@ -40,57 +40,7 @@
     .modal-body li{margin-bottom:10px;text-align:left}
     .modal-body ul{padding-left:20px}
 
-    /* ===== Header (fixed & solid gradient below content) ===== */
-    #r2kHeader{
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background: transparent !important;
-      border-bottom: 1px solid rgba(19,152,255,.15);
-      box-shadow: 0 0 24px rgba(19,152,255,.15);
-      overflow: visible;
-    }
-    #r2kHeader::before{
-      content:"";
-      position:absolute; top:0; left:0; right:0; bottom:-10px;
-      z-index:0; pointer-events:none;
-      background: linear-gradient(180deg,#121825 0%, #0f1521 50%, #0b0f17 100%);
-    }
-    #r2kHeader::after{
-      content:""; position:absolute; left:0;right:0;bottom:0;height:2px; z-index:0; pointer-events:none;
-      background: linear-gradient(90deg,transparent,rgba(19,152,255,.6),transparent);
-    }
-    #r2kHeader .h-inner,
-    #r2kHeader .brand,
-    #r2kHeader .nav,
-    #r2kHeader .actions{ position:relative; z-index:1; }
-
-    #r2kHeader .h-inner{max-width:1200px;margin:0 auto;padding:14px 20px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
-    #r2kHeader .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-    #r2kHeader .brand .logo{width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(19,152,255,.35)}
-    #r2kHeader .brand .name{font-size:22px;font-weight:800;letter-spacing:.2px;color:#fff}
-    #r2kHeader .brand .name .accent{color:#1398ff;text-shadow:0 0 10px rgba(19,152,255,.5)}
-    #r2kHeader .nav{display:flex;justify-content:center;gap:26px}
-    #r2kHeader .nav a,#r2kHeader .nav button.nav-btn{color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;font-weight:700;font-size:14px;opacity:.92;padding:8px 6px;border-radius:8px;transition:.18s}
-    #r2kHeader .nav a:hover,#r2kHeader .nav button.nav-btn:hover{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.45)}
-    #r2kHeader .dropdown{position:relative}
-    #r2kHeader .menu{position:absolute;top:120%;left:50%;transform:translateX(-50%);background:#0b0f17;border:1px solid #0e2038;border-radius:12px;min-width:200px;box-shadow:0 12px 30px rgba(0,0,0,.45),0 0 16px rgba(19,152,255,.2);padding:8px;display:none}
-    #r2kHeader .menu a{display:block;padding:10px 12px;border-radius:8px;color:#cfe9ff;text-decoration:none;font-weight:600}
-    #r2kHeader .menu a:hover{background:#0e2038;color:#fff}
-    #r2kHeader .actions{display:flex;justify-content:flex-end;gap:12px}
-    #r2kHeader .btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid rgba(19,152,255,.25);color:#0a1626;background:linear-gradient(90deg,#22b1ff,#1398ff);box-shadow:0 6px 20px rgba(19,152,255,.35),inset 0 0 10px rgba(255,255,255,.08);transition:transform .15s,box-shadow .15s,filter .15s}
-    #r2kHeader .btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 26px rgba(19,152,255,.5)}
-    #r2kHeader .btn.outline{background:transparent;color:#e8f4ff;border-color:rgba(19,152,255,.45);box-shadow:0 0 16px rgba(19,152,255,.25) inset}
-    #r2kHeader .btn.outline:hover{background:rgba(19,152,255,.08);color:#fff}
-    #r2kHeader .hamburger{display:none;justify-self:end;cursor:pointer}
-    #r2kHeader .hamburger span{display:block;width:24px;height:3px;margin:4px 0;background:#e8f4ff;border-radius:2px}
-    @media (max-width:900px){
-      #r2kHeader .h-inner{grid-template-columns:1fr auto auto}
-      #r2kHeader .nav{display:none;position:absolute;top:60px;left:0;right:0;background:#080f19;border-top:1px solid rgba(19,152,255,.15);padding:12px 20px;gap:16px;flex-direction:column}
-      #r2kHeader .nav.show{display:flex}
-      #r2kHeader .hamburger{display:flex}
-      #r2kHeader .actions{display:none}
-    }
+    
 
     /* ===== Totals + progress ===== */
     .r2k-totals{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:30px;margin:28px auto 10px;width:min(1080px,92%)}
@@ -118,22 +68,25 @@
 <body>
   <div id="toast"><span id="message"></span></div>
 
-  <!-- ===== Header (REPLACED) ===== -->
+  <!-- Header -->
   <header id="r2kHeader">
     <div class="h-inner">
       <a href="/" class="brand" aria-label="R2K2 Home">
         <img src="/assets/logo.png" class="logo" alt="R2K2">
         <div class="name">R2K<span class="accent">2</span></div>
       </a>
+
       <nav class="nav" id="r2kNav">
         <a href="/">Home</a>
         <a href="/leaderboard/rainbet">Leaderboard</a>
         <a href="/raffle" aria-current="page">Raffle</a>
         <a href="/challenges">Challenges</a>
       </nav>
+
       <div class="actions">
         <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
       </div>
+
       <div class="hamburger" id="hamburger" aria-label="Menu" aria-controls="r2kNav" aria-expanded="false">
         <span></span><span></span><span></span>
       </div>

@@ -24928,6 +24928,90 @@ header {
   align-items: center;
 }
 
+#r2kHeader{
+  padding: 1.25rem 0.5rem;
+}
+
+
+    /* ===== Header ===== */
+    #r2kHeader{
+      position:sticky; top:0; z-index:2000;
+      background:linear-gradient(180deg, rgba(7,10,16,0.98) 0%, rgba(5,8,13,0.98) 85%, rgba(3,5,9,1) 100%);
+      backdrop-filter:blur(6px);
+      border:none !important;
+      box-shadow:0 4px 12px rgba(0,0,0,.4);
+    }
+    /* brand | NAV (flex) | actions */
+    #r2kHeader .h-inner{
+      max-width:1200px;
+      margin:0 auto;
+      padding:0px 10px;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      align-items:center;
+      gap:32px;
+    }
+    #r2kHeader .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+    #r2kHeader .brand .logo{width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(19,152,255,.35)}
+    #r2kHeader .brand .name{font-size:22px;font-weight:800;color:#fff; margin-top: 0;}
+    #r2kHeader .brand .name .accent{color:var(--blue);text-shadow:0 0 10px rgba(19,152,255,.5)}
+
+    /* Nav fits inside header */
+    #r2kHeader .nav{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:22px;               /* slightly tighter */
+      flex-wrap:nowrap;       /* keep a single row on desktop */
+      min-width:0;            /* allow flex shrink */
+    }
+    #r2kHeader .nav a, #r2kHeader .nav button{
+      color:#e8f4ff;background:none;border:0;cursor:pointer;text-decoration:none;
+      font-weight:700;font-size:clamp(12px,1.4vw,14px); /* gentle scale down on tighter widths */
+      opacity:.92;padding:8px 6px;border-radius:8px;transition:.18s;
+      white-space:nowrap;      /* prevent wrapping of each item */
+    }
+    #r2kHeader .nav a:hover, #r2kHeader .nav button:hover{color:#fff;text-shadow:0 0 10px rgba(19,152,255,.45)}
+
+    #r2kHeader .actions{display:flex;justify-content:flex-end;gap:12px}
+    #r2kHeader .btn{
+      display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px; margin-top: 0;
+      padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid rgba(19,152,255,.25);
+      color:#0a1626;background:linear-gradient(90deg,#22b1ff,#1398ff);
+      box-shadow:0 6px 20px rgba(19,152,255,.35),inset 0 0 10px rgba(255,255,255,.08);
+      transition:transform .15s,box-shadow .15s,filter .15s
+    }
+    #r2kHeader .btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 26px rgba(19,152,255,.5)}
+    #r2kHeader .btn.outline{background:transparent;color:#e8f4ff;border-color:rgba(19,152,255,.45);box-shadow:0 0 16px rgba(19,152,255,.25) inset}
+    #r2kHeader .btn.outline:hover{background:rgba(19,152,255,.08);color:#fff}
+
+    #r2kHeader .hamburger{display:none;justify-self:end;cursor:pointer}
+    #r2kHeader .hamburger{display:none; flex-direction:column; align-items:center; justify-content:center; gap:6px}
+    #r2kHeader .hamburger span{display:block;width:26px;height:3px;background:#e8f4ff;border-radius:2px}
+
+    #r2kHeader::after{
+      content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+      background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(19,152,255,.45) 20%,rgba(19,152,255,.9) 50%,rgba(19,152,255,.45) 80%,rgba(0,0,0,0) 100%);
+      box-shadow:0 0 18px rgba(19,152,255,.4);pointer-events:none;z-index:100
+    }
+
+    /* Tighten gaps a bit earlier so tabs don’t wrap before hamburger */
+    @media (max-width:1100px){
+      #r2kHeader .nav{ gap:16px; }
+    }
+
+    @media (max-width:900px){
+      #r2kHeader .h-inner{grid-template-columns:auto auto }
+      #r2kHeader .nav{
+        display:none;position:absolute;top:calc(100% + 12px);left:0;right:0;background:#080f19;
+        border-top:1px solid rgba(19,152,255,.15);padding:12px 20px;gap:16px;flex-direction:column
+      }
+      #r2kHeader .nav.show{display:flex}
+      #r2kHeader .hamburger{display:flex}
+      #r2kHeader .actions{display:none}
+    }
+
+
 .logo-title {
   position: absolute;
   top: 20px;
