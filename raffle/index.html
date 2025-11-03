@@ -63,7 +63,7 @@
     @media (max-width:520px){.pill-row{grid-template-columns:1fr}}
     .pill{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
     .pill .big{font-weight:900}
-    .pill .cap{font-size:12px;color:var(--muted);margin-top:4px}
+    .pill .cap{font-size:12px;color:#a6c9ef;margin-top:4px}
     .stat{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;margin-top:18px}
     .btn{
       display:inline-flex;align-items:center;justify-content:center;gap:10px;
@@ -76,7 +76,7 @@
 
     .bar{height:12px;background:#081321;border:1px solid var(--border);border-radius:999px;overflow:hidden}
     .fill{height:100%;width:0;background:linear-gradient(90deg,#1398ff,#48c7ff);box-shadow:0 0 12px rgba(0,153,255,.55);transition:width .8s ease}
-    .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
+    .meta{display:flex;justify-content:space-between;font-size:12px;color:#a6c9ef;margin-top:6px}
     .meta .strong{color:#fff;font-weight:800}
 
     /* Draw modal + spinner */
@@ -278,9 +278,15 @@
       return { y:+get('year'), m:+get('month'), d:+get('day'), hh:+get('hour'), mm:+get('minute'), ss:+get('second') };
     }
 
-    // Rolling window from anchor (stored) with length days
+    // TZ-safe YYYY-MM-DD based on your configured TZ
+    const isoDateTZ = (d, tz = TZ) => {
+      const p = inTZ(d, tz);
+      return `${p.y}-${pad2(p.m)}-${pad2(p.d)}`;
+    };
+
+    // Rolling window from anchor (stored) with length days — LOCAL midnight (no "Z")
     function windowFromAnchor(anchorISO, days){
-      const start = new Date(anchorISO+"T00:00:00Z");
+      const start = new Date(`${anchorISO}T00:00:00`); // local midnight
       const now = new Date();
       const len = days*86400000;
       const k = Math.floor((now - start)/len);
@@ -463,8 +469,8 @@
     async function runDraw(kind){
       const anchorISO = getOrInitAnchor(kind.key);
       const win = windowFromAnchor(anchorISO, kind.days);
-      const startISO = isoDate(win.start);
-      const endISO   = isoDate(win.end);
+      const startISO = isoDateTZ(win.start, TZ); // TZ-safe
+      const endISO   = isoDateTZ(win.end, TZ);   // TZ-safe
 
       drawTitle.textContent = `${kind.label} Draw • ${startISO} → ${endISO}`;
       winnerLine.textContent = "";
@@ -501,7 +507,7 @@
       await logWinServer(entry);
 
       const nextStart = new Date(win.end.getTime());
-      const nextISO = isoDate(nextStart);
+      const nextISO = isoDateTZ(nextStart, TZ); // store next anchor in local TZ
       localStorage.setItem(kind.key, nextISO);
 
       loadWinners();
@@ -525,8 +531,8 @@
     async function paintPanel(kind, ui){
       const anchorISO = getOrInitAnchor(kind.key);
       const win = windowFromAnchor(anchorISO, kind.days);
-      const startISO = isoDate(win.start);
-      const endISO   = isoDate(win.end);
+      const startISO = isoDateTZ(win.start, TZ); // TZ-safe
+      const endISO   = isoDateTZ(win.end, TZ);   // TZ-safe
       ui.window.textContent = humanWindow(win.start, win.end);
       ui.remaining.textContent = remaining(win.end);
 
