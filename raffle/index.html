@@ -14,13 +14,8 @@
 
   <style>
     :root{
-      --bg-deep:#070b12;
-      --card:#0b0f17;
-      --border:#1b2a40;
-      --ink:#e9f5ff;
-      --muted:#a6c9ef;
-      --blue:#1398ff;
-      --purple:#6b5cff;
+      --bg-deep:#070b12; --card:#0b0f17; --border:#1b2a40;
+      --ink:#e9f5ff; --muted:#a6c9ef; --blue:#1398ff; --purple:#6b5cff;
     }
     html,body{background:var(--bg-deep);color:var(--ink);margin:0}
 
@@ -37,23 +32,8 @@
     .panel{display:none;margin-top:24px}
     .panel.active{display:block}
 
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 520px));
-      justify-content:center;
-      gap:24px;
-      margin-top:8px;
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:20px;
-      box-shadow:0 0 24px rgba(107,92,255,.07);
-      width:100%;
-      max-width:520px;
-      margin:0 auto;
-    }
+    .grid{display:grid;grid-template-columns: repeat(auto-fit, minmax(320px, 520px));justify-content:center;gap:24px;margin-top:8px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:0 0 24px rgba(107,92,255,.07);width:100%;max-width:520px;margin:0 auto}
     .prize{font-size:46px;font-weight:900;text-align:center;margin-top:6px}
     .prize-label{text-align:center;color:var(--muted);font-weight:800;letter-spacing:.08em;margin-top:6px}
     .pill-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
@@ -62,12 +42,7 @@
     .pill .big{font-weight:900}
     .pill .cap{font-size:12px;color:#a6c9ef;margin-top:4px}
     .stat{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;margin-top:18px}
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;gap:10px;
-      width:100%; padding:14px 16px; border-radius:12px; margin-top:18px;
-      border:1px solid #2b2466; background:rgba(107,92,255,.1); color:#f0eaff; font-weight:800; cursor:pointer;
-      transition:.18s;
-    }
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 16px;border-radius:12px;margin-top:18px;border:1px solid #2b2466;background:rgba(107,92,255,.1);color:#f0eaff;font-weight:800;cursor:pointer;transition:.18s}
     .btn:hover{filter:brightness(1.07);box-shadow:0 0 18px rgba(107,92,255,.25) inset}
     .btn.alt{border-color:#0f5da1;background:linear-gradient(90deg,#22b1ff,#1398ff);color:#08111a;box-shadow:0 6px 20px rgba(19,152,255,.35)}
 
@@ -81,10 +56,7 @@
     .close-x{background:transparent;border:1px solid var(--border);padding:8px 12px;border-radius:10px;color:#cfe9ff;cursor:pointer}
     .roller{margin:16px auto 8px;height:48px;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#0a101a}
     .roller .strip{display:flex;flex-direction:column;gap:0;padding:10px;transform:translateY(0);transition:transform 2.2s cubic-bezier(.2,.7,0,1)}
-    .strip .name{
-      height:34px; line-height:34px; text-align:center; font-weight:800;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
+    .strip .name{height:34px;line-height:34px;text-align:center;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
     table.wins{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
     .wins th,.wins td{border-bottom:1px solid #0f1c2c;padding:10px 8px;text-align:left}
@@ -123,6 +95,13 @@
       <button class="tab-btn" data-tab="previous">Previous Winners</button>
     </div>
 
+    <!-- Admin controls -->
+    <div style="display:flex;justify-content:center;gap:10px;margin-top:12px">
+      <button id="adminUnlock" class="tab-btn" type="button" title="Unlock admin actions">🔒 Admin</button>
+      <button id="clearLocal" class="tab-btn" type="button" style="display:none" title="Clear local winners only">🧹 Clear Local Winners</button>
+      <button id="clearServer" class="tab-btn" type="button" style="display:none" title="Attempt to clear server winners (needs backend support)">🗑️ Clear Server Winners</button>
+    </div>
+
     <!-- WEEKLY -->
     <section class="panel active" id="panel-weekly">
       <div class="grid">
@@ -152,7 +131,7 @@
           </div>
 
           <button class="btn alt" id="w-view">👥 View Entrants</button>
-          <button class="btn" id="w-force">🎬 Force Draw (admin)</button>
+          <button class="btn" id="w-force" disabled title="Admin only">🎬 Force Draw (admin)</button>
         </article>
       </div>
     </section>
@@ -186,7 +165,7 @@
           </div>
 
           <button class="btn alt" id="m-view">👥 View Entrants</button>
-          <button class="btn" id="m-force">🎬 Force Draw (admin)</button>
+          <button class="btn" id="m-force" disabled title="Admin only">🎬 Force Draw (admin)</button>
         </article>
       </div>
     </section>
@@ -222,19 +201,17 @@
         <h3 id="drawTitle" style="margin:0">Drawing…</h3>
         <button class="close-x" id="closeModal">Close</button>
       </div>
-
       <div class="roller" id="roller" style="display:none">
         <div class="strip" id="strip"></div>
       </div>
-
       <div id="entrantList" style="max-height:360px;overflow:auto;border:1px dashed var(--border);border-radius:10px;margin-top:10px;padding:8px 0"></div>
-
       <div id="winnerLine" style="margin-top:12px;font-weight:900;font-size:18px"></div>
     </div>
   </div>
 
-  <!-- ====== JS (inline, ET, 10/30/2025 hard start, 23:59:59 draws) ====== -->
+  <!-- ====== JS (inline, ET, 10/30/2025 hard start, 23:59:59 draws, admin hash) ====== -->
   <script>
+    /* ========== Nav burger ========== */
     (function(){
       const burger=document.getElementById('hamburger');
       const nav=document.getElementById('r2kNav');
@@ -250,7 +227,7 @@
     const TZ = "America/New_York"; // ET with DST handling
 
     // Hard base: Oct 30, 2025 00:00 local ET.
-    // On 2025-10-30 ET is still DST (EDT, UTC-4), so midnight local = 04:00:00Z
+    // On 2025-10-30 ET is EDT (UTC-4), so midnight local = 04:00:00Z
     const BASE_DATE = new Date(Date.UTC(2025, 9, 30, 4, 0, 0));
 
     const API_LB  = "/api/leaderboard";
@@ -259,6 +236,10 @@
 
     const WEEKLY  = { label:"Weekly",  days:7,  min:250,  prize:25.00 };
     const MONTHLY = { label:"Monthly", days:30, min:5000, prize:100.00 };
+
+    // Admin token hash (SHA-256 hex of "R2^Access")
+    const ADMIN_TOKEN_HASH = "70dff427e907ed401784f867d458083753fea924732e7aa80c9e5d678e391643";
+    let IS_ADMIN = false;
 
     // Remove any legacy per-device anchors
     (()=>{
@@ -277,35 +258,24 @@
       const get = t => parts.find(p => p.type===t)?.value;
       return { y:+get('year'), m:+get('month'), d:+get('day'), hh:+get('hour'), mm:+get('minute'), ss:+get('second') };
     }
-
-    function isoDateTZ(d, tz = TZ){
-      const p = inTZ(d, tz);
-      return `${p.y}-${pad2(p.m)}-${pad2(p.d)}`;
-    }
+    function isoDateTZ(d, tz = TZ){ const p = inTZ(d, tz); return `${p.y}-${pad2(p.m)}-${pad2(p.d)}`; }
 
     // Compute rolling window from BASE with fixed-day buckets.
     // Returns: { start, endExclusive, drawAt }
     function windowFromBase(baseDate, days){
       const now = new Date();
       const len = days * 86400000; // exact-day period in ms
-
-      // Cycle index
       const k = (now < baseDate) ? 0 : Math.floor((now.getTime() - baseDate.getTime()) / len);
-
       const start = new Date(baseDate.getTime() + k * len);
-      const endExclusive = new Date(start.getTime() + len);     // next cycle 00:00:00 local-equivalent
-      const drawAt = new Date(endExclusive.getTime() - 1000);   // 23:59:59 of the final day
-
+      const endExclusive = new Date(start.getTime() + len);     // next cycle 00:00:00
+      const drawAt = new Date(endExclusive.getTime() - 1000);   // 23:59:59 of final day
       return { start, endExclusive, drawAt };
     }
-
     function humanWindow(start, endExclusive){
-      // Display through the final day (inclusive): end = endExclusive - 1s
       const endShown = new Date(endExclusive.getTime() - 1000);
       const s = inTZ(start); const e = inTZ(endShown);
       return `${s.y}-${pad2(s.m)}-${pad2(s.d)} → ${e.y}-${pad2(e.m)}-${pad2(e.d)}`;
     }
-
     function remaining(toMoment){
       const ms = toMoment.getTime() - Date.now();
       const S = Math.max(0, Math.floor(ms/1000));
@@ -315,7 +285,7 @@
 
     /* =============== Data fetch =============== */
     async function fetchEntrants(startISO,endISO,minUSD){
-      // NOTE: API uses start_at inclusive, end_at exclusive (endExclusive at 00:00 next day)
+      // API expects end exclusive (00:00 next day)
       const url = `${API_LB}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
       const res = await fetch(url,{cache:"no-store"});
       if(!res.ok){
@@ -340,7 +310,7 @@
       return entrants;
     }
 
-    /* =============== RNG & Spinner (deterministic) =============== */
+    /* =============== RNG & Spinner (data-first) =============== */
     function securePick(n){
       if(n<=1) return 0;
       const max = Math.floor(0x100000000 / n) * n;
@@ -443,7 +413,6 @@
         const res = await fetch(API_WINS, {cache:"no-store"});
         if(res.ok) server = await res.json();
       }catch{}
-
       const rows = [...server.map(x=>({ ...x, source:"server" })), ...local];
       if(rows.length === 0){
         tbody.innerHTML = `<tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">No winners recorded yet.</td></tr>`;
@@ -518,7 +487,6 @@
           await runDraw(kind);
           await paintPanel(kind, ui); // repaint next cycle
         }else{
-          // keep the countdown smooth
           ui.remaining.textContent = remaining(win.drawAt);
         }
       };
@@ -561,8 +529,55 @@
         };
       }
 
-      ui.forceBtn.onclick = () => { if (!SPIN_LOCK) runDraw(kind); };
+      // Only allow manual run if admin
+      ui.forceBtn.disabled = !IS_ADMIN;
+      ui.forceBtn.onclick = () => { if (IS_ADMIN && !SPIN_LOCK) runDraw(kind); };
     }
+
+    /* =============== Admin unlock + clear buttons =============== */
+    async function sha256Hex(s){
+      const d = new TextEncoder().encode(s);
+      const h = await crypto.subtle.digest('SHA-256', d);
+      return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    const adminUnlockBtn = document.getElementById('adminUnlock');
+    const clearLocalBtn  = document.getElementById('clearLocal');
+    const clearServerBtn = document.getElementById('clearServer');
+
+    adminUnlockBtn.onclick = async ()=>{
+      const token = prompt("Enter admin token:");
+      if(!token) return;
+      const hex = await sha256Hex(token);
+      if(hex === ADMIN_TOKEN_HASH){
+        IS_ADMIN = true;
+        alert("Admin unlocked.");
+        clearLocalBtn.style.display = "";
+        clearServerBtn.style.display = "";
+        // Enable force buttons if panels already painted
+        document.getElementById('w-force').disabled = false;
+        document.getElementById('m-force').disabled = false;
+      }else{
+        alert("Invalid token.");
+      }
+    };
+
+    clearLocalBtn.onclick = ()=>{
+      localStorage.removeItem("raffle_local_wins");
+      loadWinners();
+      alert("Local winners cleared on this device.");
+    };
+
+    clearServerBtn.onclick = async ()=>{
+      try{
+        const res = await fetch("/api/raffle/winners", { method:"DELETE" });
+        if(!res.ok) throw new Error("Server responded "+res.status);
+        loadWinners();
+        alert("Server winners cleared.");
+      }catch(e){
+        alert("Server clear failed (this is fine if your backend doesn't support it).");
+      }
+    };
 
     /* =============== Boot =============== */
     document.querySelectorAll('.tab-btn').forEach(btn=>{
