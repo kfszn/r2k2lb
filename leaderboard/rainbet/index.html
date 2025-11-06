@@ -24,7 +24,7 @@
     }
     @media (max-width:768px){.warning-message{width:95%;padding:12px;font-size:14px;margin:10px auto}}
 
-    /* ===== Modal (kept for RULES) ===== */
+    /* ===== Modal ===== */
     .modal{display:none;position:fixed;z-index:1000;inset:0;overflow:auto;background:rgba(0,0,0,.7);opacity:0;transition:opacity .5s}
     .modal.show{opacity:1}
     .modal-content{
@@ -40,7 +40,7 @@
     .modal-body li{margin-bottom:10px;text-align:left}
     .modal-body ul{padding-left:20px}
 
-    /* ===== Totals + progress (kept) ===== */
+    /* ===== Totals + progress ===== */
     .r2k-totals{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:30px;margin:28px auto 10px;width:min(1080px,92%)}
     .r2k-total-card{flex:0 1 360px;background:#0b0f17;border:1px solid #0e2038;border-radius:14px;padding:18px 20px;box-shadow:0 0 18px rgba(0,153,255,.25)}
     .r2k-total-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#87c8ff;opacity:.9}
@@ -62,70 +62,13 @@
     .prev-lb-btn svg{width:18px;height:18px}
     @media (max-width:768px){.prev-lb-btn{width:100%;margin-right:0;text-align:center;justify-content:center}}
 
-    /* ===== Leaderboard: Option B (R logo → rank → name → WAGERED → PRIZE) ===== */
-    #leaderboard-rows{
-      width:min(1120px,95%);
-      margin:18px auto 40px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-
-    /* Shared token styles */
-    .lb-chip{
-      display:inline-flex;align-items:center;justify-content:center;
-      min-width:48px;height:36px;padding:0 10px;border-radius:10px;
-      background:#0b1220;border:1px solid #143255;font-weight:900;color:#d6ecff;
-      letter-spacing:.02em;box-shadow:0 0 8px rgba(19,152,255,.25) inset;
-    }
-    .lb-money{
-      font-weight:900;letter-spacing:.3px;white-space:nowrap;
-      text-shadow:0 0 12px rgba(19,152,255,.35);
-    }
-    .lb-money.prize{color:#8ee7a7;text-shadow:0 0 14px rgba(34,197,94,.45)}
-    .lb-money.wager{color:#ffffff}
-
-    /* Top 3 “cards” (keep container; slight polish) */
-    #top3-cards{
-      display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
-      width:min(1120px,95%);margin:10px auto 24px;
-    }
-    .top-card-shadow-1{box-shadow:0 0 40px #FFD700}
-    .top-card-shadow-2{box-shadow:0 0 40px #C0C0C0}
-    .top-card-shadow-3{box-shadow:0 0 40px #CD7F32}
-
-    /* ===== Rows 4–10: WIDE / TALL boxes ===== */
-    .lb-row{
-      display:grid;
-      grid-template-columns: 54px 64px 1fr auto auto;
-      align-items:center;
-      gap:14px;
-      padding:16px 18px;
-      background:#0b0f17;border:1px solid #0e2038;border-radius:14px;
-      box-shadow:0 0 18px rgba(0,153,255,.15);
-    }
-    .lb-row--wide{padding:18px 22px}
-    .lb-rank{font-size:18px;font-weight:900;color:#e9f5ff}
-    .lb-name{font-size:16px;font-weight:800;color:#d6ecff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .lb-right{display:flex;align-items:baseline;gap:min(8vw,64px)} /* KEY: spacing between WAGERED and PRIZE */
-    .lb-label{font-size:12px;color:#9ac9ff;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-right:8px}
-
-    /* Amount sizes (wider/taller on 4–10) */
-    .lb-row .lb-money.wager{font-size:18px}
-    .lb-row .lb-money.prize{font-size:18px}
-    .lb-row--wide .lb-money.wager{font-size:20px}
-    .lb-row--wide .lb-money.prize{font-size:20px}
-
-    /* Mobile behavior */
-    @media (max-width:720px){
-      .lb-row{grid-template-columns:44px 54px 1fr;gap:10px}
-      .lb-right{
-        grid-column:1 / -1;justify-content:space-between;margin-top:8px;gap:22px;
-      }
-      .lb-row .lb-money.wager,.lb-row .lb-money.prize{font-size:17px}
-      .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:18px}
-      .lb-name{font-size:15px}
-      .lb-chip{height:32px;min-width:42px}
+    /* ===== PRIZE GREEN OVERRIDES (top-3 and rows) ===== */
+    .lb-prize,
+    #top3-cards .lb-prize,
+    #leaderboard-rows .lb-prize,
+    .price-wrapper.glow.lb-prize {
+      color:#22c55e !important;
+      text-shadow:0 0 14px rgba(34,197,94,.45) !important;
     }
   </style>
 </head>
@@ -318,7 +261,7 @@
     })();
   </script>
 
-  <!-- ===== Leaderboard logic (rolling 30d @ 8PM ET) with Option B rows ===== -->
+  <!-- ===== Leaderboard logic (rolling 30d @ 8PM ET) ===== -->
   <script>
     (function(){
       const API_ROUTE = "/api/leaderboard";
@@ -346,7 +289,7 @@
       function boundaryUTC(y,m1,d){
         const nyMid = nyParts(new Date(`${y}-${String(m1).padStart(2,"0")}-${String(d).padStart(2,"0")}T00:00:00`));
         const baseUTC = Date.UTC(nyMid.y, nyMid.m1-1, nyMid.d, 0,0,0,0);
-        return new Date(baseUTC + 20*3600*1000); // 8 PM ET
+        return new Date(baseUTC + 20*3600*1000); // 8PM ET
       }
       const isoDate = (d)=> d.toISOString().slice(0,10);
       function apiDateFromBoundary(boundaryUTC){
@@ -379,6 +322,45 @@
       }
       const toNum = v => Number.isFinite(Number(v)) ? Number(v) : 0;
 
+      function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
+        const fill  = document.getElementById(fillId);
+        const pctEl = document.getElementById(pctId);
+        const metaEl= document.getElementById(metaId);
+        const bar   = document.getElementById(barId);
+        if(!fill||!pctEl||!metaEl||!bar) return;
+        const pct = goal>0 ? Math.min((total/goal)*100,100) : 0;
+        fill.style.width = pct + "%";
+        fill.classList.toggle("over", pct>=100);
+        pctEl.textContent = Math.round(pct) + "%";
+        metaEl.textContent = `${fmtMoney(total)} / ${fmtMoney(goal)}`;
+        bar.setAttribute("aria-valuenow", Math.round(pct));
+      }
+
+      function maskName(name){
+        if(!name) return "Unknown";
+        const s = String(name).trim();
+        if(s.length <= 3) return s;
+        return s.slice(0,2) + "*".repeat(s.length-3) + s.slice(-1);
+      }
+
+      function showError(msg, detail = ""){
+        const rows = document.getElementById("leaderboard-rows");
+        if (!rows) return;
+        rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
+      }
+
+      function fmtRemaining(ms){
+        const s = Math.max(0, Math.floor(ms/1000));
+        const d = Math.floor(s/86400);
+        const h = Math.floor((s%86400)/3600);
+        const m = Math.floor((s%3600)/60);
+        const ss= s%60;
+        if(d>0) return `${d}d ${h}h ${m}m`;
+        if(h>0) return `${h}h ${m}m ${ss}s`;
+        if(m>0) return `${m}m ${ss}s`;
+        return `${ss}s`;
+      }
+
       async function fetchTotal(startISO,endISO){
         const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
         const res = await fetch(url,{cache:"no-store"});
@@ -387,6 +369,7 @@
         const affiliates = Array.isArray(data?.affiliates) ? data.affiliates : [];
         return affiliates.reduce((sum,a)=>sum + Number(a?.wagered_amount||0), 0);
       }
+
       async function fetchRows(startISO,endISO){
         const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
         const res = await fetch(url,{cache:"no-store"});
@@ -405,123 +388,69 @@
 
       const logoSrc   = "/assets/rainbetlogo.png";
       const rewards   = [800, 500, 375, 300, 250, 175, 100, 75, 50, 25];
+      const top3Glows = ["0 0 40px #FFD700", "0 0 40px #C0C0C0", "0 0 40px #CD7F32"];
 
-      function maskName(name){
-        if(!name) return "Unknown";
-        const s = String(name).trim();
-        if(s.length <= 3) return s;
-        return s.slice(0,2) + "*".repeat(s.length-3) + s.slice(-1);
-      }
-
-      function showError(msg, detail = ""){
-        const rows = document.getElementById("leaderboard-rows");
-        if (!rows) return;
-        rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
-      }
-
-      function renderTop3(rows){
+      function renderLeaderboard(rows){
         const top3 = document.getElementById("top3-cards");
-        if (!top3) return;
+        const list = document.getElementById("leaderboard-rows");
+        if (!top3 || !list) return;
+
         top3.innerHTML = "";
-        const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
-        rows.slice(0,3).forEach((entry, idx) => {
+        list.innerHTML = "";
+
+        rows.forEach((entry, idx) => {
           const place   = idx + 1;
           const user    = entry.username || "Unknown";
           const masked  = maskName(user);
           const wagered = fmtMoney(entry.wagered || 0);
           const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
-          const card = document.createElement("div");
-          card.className = `css-jehefp ${glows[idx]||""}`;
-          card.style.position = "relative";
-          if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
-          if (idx === 2) card.style.transform = "translateY(25px)";
-          card.innerHTML = `
-            <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
-                        padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
-            <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
-            <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
-            <div class="css-7ahevu ejrykqo0">
-              <span class="css-1vqddgv">Wagered: </span>
-              <span class="css-18icuxn"><div class="css-1y0ox2o"><span class="css-114dvlx">${wagered}</span></div></span>
-            </div>
-            <span class="css-v4675v"><div class="css-1y0ox2o"><span class="css-114dvlx glow">${prize}</span></div></span>
-          `;
-          top3.appendChild(card);
+          if (idx < 3) {
+            const card = document.createElement("div");
+            card.className = "css-jehefp";
+            card.style.boxShadow = top3Glows[idx] || "";
+            card.style.position = "relative";
+            if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
+            if (idx === 2) card.style.transform = "translateY(25px)";
+            card.innerHTML = `
+              <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
+                          padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
+              <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
+              <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
+              <div class="css-7ahevu ejrykqo0">
+                <span class="css-1vqddgv">Wagered: </span>
+                <span class="css-18icuxn"><div class="css-1y0ox2o"><span class="css-114dvlx">${wagered}</span></div></span>
+              </div>
+              <span class="lb-prize" style="display:inline-block;font-weight:800;margin-top:6px;">${prize}</span>
+            `;
+            top3.appendChild(card);
+          } else {
+            const row = document.createElement("div");
+            row.className = "row list row-cols-5";
+            row.setAttribute("data-v-1d580398", "");
+            row.innerHTML = `
+              <div class="hide-mobile col-2"><b style="font-size:18px;">#${place}</b></div>
+              <div class="col-5" style="display:flex;align-items:center;gap:8px;">
+                <img src="${logoSrc}" width="22" style="flex:0 0 22px">
+                <span style="font-weight:bold; font-size:16px;">${masked}</span>
+              </div>
+              <div class="col-2">
+                <div class="price-wrapper lb-prize" style="font-weight:bold; font-size:15px;">${prize}</div>
+              </div>
+              <div class="col-3">
+                <div class="price-wrapper" style="color:#FFF; font-weight:bold; font-size:15px;">${wagered}</div>
+              </div>
+            `;
+            const wrap = document.createElement("div");
+            wrap.className = "leaderboard-row-wrapper";
+            wrap.appendChild(row);
+            list.appendChild(wrap);
+          }
         });
       }
 
-      function renderRows(rows){
-        const list = document.getElementById("leaderboard-rows");
-        if (!list) return;
-        list.innerHTML = "";
-
-        rows.slice(3).forEach((entry, i) => {
-          const idx = i + 3; // 0-based offset → 3..9
-          const place   = idx + 1; // 4..10
-          const user    = entry.username || "Unknown";
-          const masked  = maskName(user);
-          const wagered = fmtMoney(entry.wagered || 0);
-          const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
-
-          const row = document.createElement("div");
-          row.className = `lb-row lb-row--wide`;
-          row.innerHTML = `
-            <img src="${logoSrc}" alt="R" style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover">
-            <div class="lb-rank">#${place}</div>
-            <div class="lb-name">${masked}</div>
-
-            <div class="lb-right">
-              <div>
-                <span class="lb-label">Wagered</span>
-                <span class="lb-money wager">${wagered}</span>
-              </div>
-              <div>
-                <span class="lb-label">Prize</span>
-                <span class="lb-money prize">${prize}</span>
-              </div>
-            </div>
-          `;
-          list.appendChild(row);
-        });
-      }
-
-      async function paintListCurrent(){
-        try{
-          const win = currentLBWindow();
-          const rows = await fetchRows(win.startISO, win.endISO);
-          renderTop3(rows);
-          renderRows(rows);
-        }catch(err){
-          console.error("Leaderboard load error:", err);
-          showError("Error loading leaderboard.", String(err));
-        }
-      }
-      async function paintListPrevious(){
-        try{
-          const prev = previousLBWindow();
-          const rows = await fetchRows(prev.startISO, prev.endISO);
-          renderTop3(rows);
-          renderRows(rows);
-        }catch(err){
-          console.error("Prev leaderboard load error:", err);
-          showError("Error loading previous leaderboard.", String(err));
-        }
-      }
-
-      function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
-        const fill  = document.getElementById(fillId);
-        const pctEl = document.getElementById(pctId);
-        const metaEl= document.getElementById(metaId);
-        const bar   = document.getElementById(barId);
-        if(!fill||!pctEl||!metaEl||!bar) return;
-        const pct = goal>0 ? Math.min((total/goal)*100,100) : 0;
-        fill.style.width = pct + "%";
-        fill.classList.toggle("over", pct>=100);
-        pctEl.textContent = Math.round(pct) + "%";
-        metaEl.textContent = `${fmtMoney(total)} / ${fmtMoney(goal)}`;
-        bar.setAttribute("aria-valuenow", Math.round(pct));
-      }
+      const prevBtn = document.getElementById("prevLeaderboardBtn");
+      const currBtn = document.getElementById("currentLeaderboardBtn");
 
       let lbWindow = currentLBWindow();
       let showingPrev = false;
@@ -545,16 +474,26 @@
         }catch(e){ if(lbEl) lbEl.textContent="—"; console.error("LB total error:", e); }
       }
 
-      function fmtRemaining(ms){
-        const s = Math.max(0, Math.floor(ms/1000));
-        const d = Math.floor(s/86400);
-        const h = Math.floor((s%86400)/3600);
-        const m = Math.floor((s%3600)/60);
-        const ss= s%60;
-        if(d>0) return `${d}d ${h}h ${m}m`;
-        if(h>0) return `${h}h ${m}m ${ss}s`;
-        if(m>0) return `${m}m ${ss}s`;
-        return `${ss}s`;
+      async function paintListCurrent(){
+        try{
+          lbWindow = currentLBWindow();
+          const rows = await fetchRows(lbWindow.startISO, lbWindow.endISO);
+          renderLeaderboard(rows);
+        }catch(err){
+          console.error("Leaderboard load error:", err);
+          showError("Error loading leaderboard.", String(err));
+        }
+      }
+
+      async function paintListPrevious(){
+        try{
+          const prev = previousLBWindow();
+          const rows = await fetchRows(prev.startISO, prev.endISO);
+          renderLeaderboard(rows);
+        }catch(err){
+          console.error("Prev leaderboard load error:", err);
+          showError("Error loading previous leaderboard.", String(err));
+        }
       }
 
       function tickCountdowns(){
@@ -575,14 +514,13 @@
         }
       }
 
-      const prevBtn = document.getElementById("prevLeaderboardBtn");
-      const currBtn = document.getElementById("currentLeaderboardBtn");
       prevBtn?.addEventListener("click", async () => {
         showingPrev = true;
         prevBtn.style.display = "none";
         if (currBtn) currBtn.style.display = "inline-flex";
         await paintListPrevious();
       });
+
       currBtn?.addEventListener("click", async () => {
         showingPrev = false;
         currBtn.style.display = "none";
