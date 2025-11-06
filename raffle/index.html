@@ -256,18 +256,21 @@
     })();
 
     /* ==================== Config ==================== */
-    const TZ = "America/Mexico_City"; // your local time
-    const API_LB = "/api/leaderboard"; // existing endpoint
-    const API_LOG = "/api/raffle/log"; // server log (we POST here)
-    const API_WINS = "/api/raffle/winners?limit=50"; // optional server history
+    const TZ = "America/Mexico_City"; // local time zone for display/windows
+    const API_LB = "/api/leaderboard";
+    const API_LOG = "/api/raffle/log";
+    const API_WINS = "/api/raffle/winners?limit=50";
 
-    const WEEKLY = { label:"Weekly", days:7,   min:250,  prize:25.00, key:"raffle_anchor_weekly"  };
-    const MONTHLY= { label:"Monthly",days:30,  min:5000, prize:100.00,key:"raffle_anchor_monthly" };
+    // HARD ANCHOR for BOTH raffles: Nov 2, 2025 00:00 in Mexico City time (UTC-06:00).
+    const BASE_ISO = "2025-11-02T00:00:00-06:00";
+    const BASE_DATE = new Date(BASE_ISO);
+
+    const WEEKLY  = { label:"Weekly",  days:7,  min:250,  prize:25.00 };
+    const MONTHLY = { label:"Monthly", days:30, min:5000, prize:100.00 };
 
     /* ================== Time helpers ================== */
     const fmtUsd = n=>n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
     const pad2 = n => String(n).padStart(2,"0");
-    const isoDate = d => d.toISOString().slice(0,10);
 
     function inTZ(date, tz=TZ){
       const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz,
@@ -278,21 +281,27 @@
       return { y:+get('year'), m:+get('month'), d:+get('day'), hh:+get('hour'), mm:+get('minute'), ss:+get('second') };
     }
 
-    // TZ-safe YYYY-MM-DD based on your configured TZ
-    const isoDateTZ = (d, tz = TZ) => {
+    // TZ-safe YYYY-MM-DD
+    function isoDateTZ(d, tz = TZ){
       const p = inTZ(d, tz);
       return `${p.y}-${pad2(p.m)}-${pad2(p.d)}`;
-    };
+    }
 
-    // Rolling window from anchor (stored) with length days — LOCAL midnight (no "Z")
-    function windowFromAnchor(anchorISO, days){
-      const start = new Date(`${anchorISO}T00:00:00`); // local midnight
+    // Rolling window from HARD base with fixed-length day buckets (no localStorage, no drift)
+    function windowFromBase(baseDate, days){
       const now = new Date();
-      const len = days*86400000;
-      const k = Math.floor((now - start)/len);
-      const startK = new Date(start.getTime() + k*len);
-      const endK   = new Date(startK.getTime() + len);
-      return { start:startK, end:endK };
+      const len = days * 86400000; // fixed-day periods
+      // If we're before the base, first window ends at base + len
+      if (now < baseDate){
+        const start = new Date(baseDate.getTime());
+        const end   = new Date(baseDate.getTime() + len);
+        return { start, end };
+      }
+      const elapsed = now.getTime() - baseDate.getTime();
+      const k = Math.floor(elapsed / len);
+      const start = new Date(baseDate.getTime() + k*len);
+      const end   = new Date(start.getTime() + len);
+      return { start, end };
     }
 
     function humanWindow(start, end){
@@ -303,20 +312,8 @@
     function remaining(end){
       const ms = end.getTime() - Date.now();
       const S = Math.max(0, Math.floor(ms/1000));
-      const d = Math.floor(S/86400), h = Math.floor((S%86400)/3600), m = Math.floor((S%3600)/60);
-      if(d>0) return `${d}d ${h}h`;
-      return `${h}h ${m}m`;
-    }
-
-    /* ============== Anchors (persisted) ============== */
-    function getOrInitAnchor(key){
-      let v = localStorage.getItem(key);
-      if(!v){
-        const now = inTZ(new Date());
-        v = `${now.y}-${pad2(now.m)}-${pad2(now.d)}`;
-        localStorage.setItem(key, v);
-      }
-      return v;
+      const d = Math.floor(S/86400), h = Math.floor((S%86400)/3600), m = Math.floor((S%3600)/60), s = S%60;
+      return `${pad2(d)}d ${pad2(h)}:${pad2(m)}:${pad2(s)}`;
     }
 
     /* ============== Entrants (from leaderboard API) ============== */
@@ -377,7 +374,7 @@
     const escapeHtml = s => String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
     /* ============== Spinner animation ============== */
-    async function spinAndPick(raffleKey, entrants){
+    async function spinAndPick(entrants){
       roller.style.display = 'block';
       strip.innerHTML = "";
       winnerLine.textContent = "";
@@ -465,12 +462,11 @@
       }).join("");
     }
 
-    /* ============== Draw orchestration ============== */
+    /* ============== Draw orchestration (ANCHOR-BASED, NO LOCALSTORAGE) ============== */
     async function runDraw(kind){
-      const anchorISO = getOrInitAnchor(kind.key);
-      const win = windowFromAnchor(anchorISO, kind.days);
-      const startISO = isoDateTZ(win.start, TZ); // TZ-safe
-      const endISO   = isoDateTZ(win.end, TZ);   // TZ-safe
+      const win = windowFromBase(BASE_DATE, kind.days);
+      const startISO = isoDateTZ(win.start, TZ);
+      const endISO   = isoDateTZ(win.end, TZ);
 
       drawTitle.textContent = `${kind.label} Draw • ${startISO} → ${endISO}`;
       winnerLine.textContent = "";
@@ -494,7 +490,7 @@
         return;
       }
 
-      const winner = await spinAndPick(kind.key, entrants);
+      const winner = await spinAndPick(entrants);
 
       const entry = {
         date: new Date().toISOString(),
@@ -506,18 +502,14 @@
       };
       await logWinServer(entry);
 
-      const nextStart = new Date(win.end.getTime());
-      const nextISO = isoDateTZ(nextStart, TZ); // store next anchor in local TZ
-      localStorage.setItem(kind.key, nextISO);
-
+      // NOTE: We do NOT advance any anchor here. Windows advance automatically from BASE_ISO.
       loadWinners();
     }
 
-    /* ============== Auto draw scheduler ============== */
+    /* ============== Auto scheduler (checks each minute) ============== */
     function scheduleAuto(kind, ui){
       const tick = async ()=>{
-        const anchorISO = getOrInitAnchor(kind.key);
-        const win = windowFromAnchor(anchorISO, kind.days);
+        const win = windowFromBase(BASE_DATE, kind.days);
         if(Date.now() >= win.end.getTime()){
           await runDraw(kind);
           await paintPanel(kind, ui);
@@ -529,15 +521,16 @@
 
     /* ============== Panels / UI painting ============== */
     async function paintPanel(kind, ui){
-      const anchorISO = getOrInitAnchor(kind.key);
-      const win = windowFromAnchor(anchorISO, kind.days);
-      const startISO = isoDateTZ(win.start, TZ); // TZ-safe
-      const endISO   = isoDateTZ(win.end, TZ);   // TZ-safe
+      const win = windowFromBase(BASE_DATE, kind.days);
+      const startISO = isoDateTZ(win.start, TZ);
+      const endISO   = isoDateTZ(win.end, TZ);
+
       ui.window.textContent = humanWindow(win.start, win.end);
       ui.remaining.textContent = remaining(win.end);
 
       if(ui.__int) clearInterval(ui.__int);
-      ui.__int = setInterval(()=> ui.remaining.textContent = remaining(win.end), 60_000);
+      // Update every second so the bottom timers never "freeze" or look like they reset
+      ui.__int = setInterval(()=> ui.remaining.textContent = remaining(win.end), 1000);
 
       try{
         const entrants = await fetchEntrants(startISO, endISO, kind.min);
@@ -594,6 +587,7 @@
       }
     };
 
+    // Paint + schedule using HARD-SET BASE_ISO (11-02-2025), continuous 7-day and 30-day cycles
     paintPanel(WEEKLY, UI.weekly);
     paintPanel(MONTHLY, UI.monthly);
     scheduleAuto(WEEKLY, UI.weekly);
