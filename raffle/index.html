@@ -261,8 +261,8 @@
     const API_LOG = "/api/raffle/log";
     const API_WINS = "/api/raffle/winners?limit=50";
 
-    // HARD ANCHOR for BOTH raffles: Nov 2, 2025 00:00 in Mexico City time (UTC-06:00).
-    const BASE_ISO = "2025-11-02T00:00:00-06:00";
+    // HARD ANCHOR for BOTH raffles: Oct 30, 2025 00:00 in Mexico City time (UTC-06:00).
+    const BASE_ISO = "2025-10-30T00:00:00-06:00";
     const BASE_DATE = new Date(BASE_ISO);
 
     const WEEKLY  = { label:"Weekly",  days:7,  min:250,  prize:25.00 };
@@ -587,7 +587,7 @@
       }
     };
 
-    // Paint + schedule using HARD-SET BASE_ISO (11-02-2025), continuous 7-day and 30-day cycles
+    // Paint + schedule using HARD-SET BASE_ISO (10-30-2025), continuous 7-day and 30-day cycles
     paintPanel(WEEKLY, UI.weekly);
     paintPanel(MONTHLY, UI.monthly);
     scheduleAuto(WEEKLY, UI.weekly);
