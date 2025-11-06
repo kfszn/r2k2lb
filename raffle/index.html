@@ -8,7 +8,6 @@
   <meta property="og:image" content="/assets/logo.png" />
   <link rel="icon" type="image/png" href="/assets/logo.png" />
 
-  <!-- Keep your site CSS exactly as-is -->
   <link rel="stylesheet" href="/css/app.css" />
   <link rel="stylesheet" href="/css/vendor.css" />
   <link rel="stylesheet" href="/css/toast.css" />
@@ -25,7 +24,6 @@
     }
     html,body{background:var(--bg-deep);color:var(--ink);margin:0}
 
-    /* ===== Page layout & tabs ===== */
     .wrap{max-width:1200px;margin:0 auto;padding:24px 20px}
     .hero-title{font-weight:900;font-size:42px;text-align:center;margin-top:18px}
     .hero-sub{font-size:14px;color:var(--muted);text-align:center;margin-top:6px}
@@ -39,7 +37,6 @@
     .panel{display:none;margin-top:24px}
     .panel.active{display:block}
 
-    /* ===== Cards (centered grid) ===== */
     .grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 520px));
@@ -79,49 +76,37 @@
     .meta{display:flex;justify-content:space-between;font-size:12px;color:#a6c9ef;margin-top:6px}
     .meta .strong{color:#fff;font-weight:800}
 
-    /* Draw modal + spinner */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:3000}
     .modal .sheet{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:640px;width:92%;padding:18px}
     .close-x{background:transparent;border:1px solid var(--border);padding:8px 12px;border-radius:10px;color:#cfe9ff;cursor:pointer}
     .roller{margin:16px auto 8px;height:48px;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#0a101a}
     .roller .strip{display:flex;flex-direction:column;gap:0;padding:10px;transform:translateY(0);transition:transform 2.2s cubic-bezier(.2,.7,0,1)}
-    /* IMPORTANT: fixed row height to match JS math */
     .strip .name{
-      height:34px;
-      line-height:34px;
-      text-align:center;
-      font-weight:800;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      height:34px; line-height:34px; text-align:center; font-weight:800;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
 
-    /* Winners table */
     table.wins{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
     .wins th,.wins td{border-bottom:1px solid #0f1c2c;padding:10px 8px;text-align:left}
     .wins th{color:#cfe9ff;font-weight:900}
   </style>
 </head>
 <body>
-  <!-- Header -->
   <header id="r2kHeader">
     <div class="h-inner">
       <a href="/" class="brand" aria-label="R2K2 Home">
         <img src="/assets/logo.png" class="logo" alt="R2K2">
         <div class="name">R2K<span class="accent">2</span></div>
       </a>
-
       <nav class="nav" id="r2kNav">
         <a href="/">Home</a>
         <a href="/leaderboard/rainbet">Leaderboard</a>
         <a href="/raffle" aria-current="page">Raffle</a>
         <a href="/challenges">Challenges</a>
       </nav>
-
       <div class="actions">
         <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
       </div>
-
       <div class="hamburger" id="hamburger" aria-label="Menu" aria-controls="r2kNav" aria-expanded="false">
         <span></span><span></span><span></span>
       </div>
@@ -152,7 +137,7 @@
             </div>
             <div class="pill">
               <div class="big" id="w-remaining">--</div>
-              <div class="cap">Remaining (EST)</div>
+              <div class="cap">Remaining (ET)</div>
             </div>
           </div>
 
@@ -186,7 +171,7 @@
             </div>
             <div class="pill">
               <div class="big" id="m-remaining">--</div>
-              <div class="cap">Remaining (EST)</div>
+              <div class="cap">Remaining (ET)</div>
             </div>
           </div>
 
@@ -238,21 +223,18 @@
         <button class="close-x" id="closeModal">Close</button>
       </div>
 
-      <!-- roller -->
       <div class="roller" id="roller" style="display:none">
         <div class="strip" id="strip"></div>
       </div>
 
-      <!-- entrants list -->
       <div id="entrantList" style="max-height:360px;overflow:auto;border:1px dashed var(--border);border-radius:10px;margin-top:10px;padding:8px 0"></div>
 
       <div id="winnerLine" style="margin-top:12px;font-weight:900;font-size:18px"></div>
     </div>
   </div>
 
-  <!-- ====== JS (inline, Safari-safe, ET, hard start 10/30/2025) ====== -->
+  <!-- ====== JS (inline, ET, 10/30/2025 hard start, 23:59:59 draws) ====== -->
   <script>
-    /* ========== Mobile hamburger ========== */
     (function(){
       const burger=document.getElementById('hamburger');
       const nav=document.getElementById('r2kNav');
@@ -264,11 +246,11 @@
       }
     })();
 
-    /* ==================== Config (ET, Safari-safe) ==================== */
-    const TZ = "America/New_York"; // display & window calc zone
+    /* =============== Config =============== */
+    const TZ = "America/New_York"; // ET with DST handling
 
-    // Hard base: Oct 30, 2025 00:00 in ET.
-    // On Oct 30, 2025, ET is still DST (EDT, UTC-4), so local midnight = 04:00:00Z.
+    // Hard base: Oct 30, 2025 00:00 local ET.
+    // On 2025-10-30 ET is still DST (EDT, UTC-4), so midnight local = 04:00:00Z
     const BASE_DATE = new Date(Date.UTC(2025, 9, 30, 4, 0, 0));
 
     const API_LB  = "/api/leaderboard";
@@ -278,12 +260,12 @@
     const WEEKLY  = { label:"Weekly",  days:7,  min:250,  prize:25.00 };
     const MONTHLY = { label:"Monthly", days:30, min:5000, prize:100.00 };
 
-    /* ===== One-time cleanup: remove any legacy per-device anchors ===== */
+    // Remove any legacy per-device anchors
     (()=>{
       ['raffle_anchor_weekly','raffle_anchor_monthly'].forEach(k => localStorage.removeItem(k));
     })();
 
-    /* ================== Time helpers ================== */
+    /* =============== Time helpers =============== */
     const fmtUsd = n=>n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
     const pad2 = n => String(n).padStart(2,"0");
 
@@ -301,36 +283,39 @@
       return `${p.y}-${pad2(p.m)}-${pad2(p.d)}`;
     }
 
-    // Rolling window from HARD base with fixed-length day buckets (no localStorage, no drift)
+    // Compute rolling window from BASE with fixed-day buckets.
+    // Returns: { start, endExclusive, drawAt }
     function windowFromBase(baseDate, days){
       const now = new Date();
-      const len = days * 86400000; // exact-day periods
-      if (now < baseDate){
-        const start = new Date(baseDate.getTime());
-        const end   = new Date(baseDate.getTime() + len);
-        return { start, end };
-      }
-      const elapsed = now.getTime() - baseDate.getTime();
-      const k = Math.floor(elapsed / len);
-      const start = new Date(baseDate.getTime() + k*len);
-      const end   = new Date(start.getTime() + len);
-      return { start, end };
+      const len = days * 86400000; // exact-day period in ms
+
+      // Cycle index
+      const k = (now < baseDate) ? 0 : Math.floor((now.getTime() - baseDate.getTime()) / len);
+
+      const start = new Date(baseDate.getTime() + k * len);
+      const endExclusive = new Date(start.getTime() + len);     // next cycle 00:00:00 local-equivalent
+      const drawAt = new Date(endExclusive.getTime() - 1000);   // 23:59:59 of the final day
+
+      return { start, endExclusive, drawAt };
     }
 
-    function humanWindow(start, end){
-      const s = inTZ(start); const e = inTZ(end);
+    function humanWindow(start, endExclusive){
+      // Display through the final day (inclusive): end = endExclusive - 1s
+      const endShown = new Date(endExclusive.getTime() - 1000);
+      const s = inTZ(start); const e = inTZ(endShown);
       return `${s.y}-${pad2(s.m)}-${pad2(s.d)} → ${e.y}-${pad2(e.m)}-${pad2(e.d)}`;
     }
 
-    function remaining(end){
-      const ms = end.getTime() - Date.now();
+    function remaining(toMoment){
+      const ms = toMoment.getTime() - Date.now();
       const S = Math.max(0, Math.floor(ms/1000));
       const d = Math.floor(S/86400), h = Math.floor((S%86400)/3600), m = Math.floor((S%3600)/60), s = S%60;
       return `${pad2(d)}d ${pad2(h)}:${pad2(m)}:${pad2(s)}`;
     }
 
-    /* ============== Entrants (from leaderboard API) ============== */
+    /* =============== Data fetch =============== */
     async function fetchEntrants(startISO,endISO,minUSD){
+      // NOTE: API uses start_at inclusive, end_at exclusive (endExclusive at 00:00 next day)
       const url = `${API_LB}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
       const res = await fetch(url,{cache:"no-store"});
       if(!res.ok){
@@ -355,7 +340,7 @@
       return entrants;
     }
 
-    /* ============== Crypto RNG selection ============== */
+    /* =============== RNG & Spinner (deterministic) =============== */
     function securePick(n){
       if(n<=1) return 0;
       const max = Math.floor(0x100000000 / n) * n;
@@ -367,7 +352,6 @@
       }
     }
 
-    /* ============== Modal helpers ============== */
     const modal = document.getElementById("drawModal");
     const closeModalBtn = document.getElementById("closeModal");
     const drawTitle = document.getElementById("drawTitle");
@@ -391,49 +375,43 @@
     }
     const escapeHtml = s => String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
-    /* ============== Spinner animation (deterministic, locked) ============== */
     let SPIN_LOCK = false;
     async function spinAndPick(entrants){
-      if (SPIN_LOCK) return null; // prevent overlap
+      if (SPIN_LOCK) return null;
       SPIN_LOCK = true;
 
       roller.style.display = 'block';
       strip.innerHTML = "";
       winnerLine.textContent = "";
 
-      // 1) Pick winner first
+      // Pick winner first (data truth)
       const winIdx = securePick(entrants.length);
       const winner = entrants[winIdx].name;
 
-      // 2) Build sequence that ends on the winner (so visual == data)
+      // Build sequence ending on winner (visual truth)
       const names = entrants.map(e=>e.name);
       const cycles = Math.max(40, names.length * 4);
       const filler = Array.from({length: cycles}, (_, i) => names[i % names.length]);
-      const tail = [winner, winner, winner]; // buffer for clear stop
+      const tail = [winner, winner, winner];
       const sequence = [...filler, ...tail];
-
       strip.innerHTML = sequence.map(n => `<div class="name">${escapeHtml(n)}</div>`).join("");
 
-      // 3) Deterministic stop at the very last item
-      const rowH = 34; // MUST match CSS
+      const rowH = 34;
       const targetY = -(sequence.length - 1) * rowH;
 
-      // reset then animate
       strip.style.transition = "none";
       strip.style.transform = "translateY(0)";
-      void strip.offsetHeight; // reflow
+      void strip.offsetHeight;
       strip.style.transition = "transform 2.2s cubic-bezier(.2,.7,0,1)";
       strip.style.transform = `translateY(${targetY}px)`;
 
-      // Wait for animation end for exact timing
       await new Promise(resolve => strip.addEventListener('transitionend', resolve, { once: true }));
-
       winnerLine.textContent = `🏆 Winner: ${winner}`;
       SPIN_LOCK = false;
       return winner;
     }
 
-    /* ============== Logging winners ============== */
+    /* =============== Winners log =============== */
     function saveLocalWin(entry){
       const key = "raffle_local_wins";
       const arr = JSON.parse(localStorage.getItem(key) || "[]");
@@ -460,7 +438,6 @@
     async function loadWinners(){
       const tbody = document.getElementById("wins-body");
       const local = JSON.parse(localStorage.getItem("raffle_local_wins") || "[]");
-
       let server = [];
       try{
         const res = await fetch(API_WINS, {cache:"no-store"});
@@ -468,14 +445,11 @@
       }catch{}
 
       const rows = [...server.map(x=>({ ...x, source:"server" })), ...local];
-
       if(rows.length === 0){
         tbody.innerHTML = `<tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">No winners recorded yet.</td></tr>`;
         return;
       }
-
       rows.sort((a,b)=> new Date(b.date) - new Date(a.date));
-
       tbody.innerHTML = rows.map(r=>{
         const d = new Date(r.date);
         const ds = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
@@ -490,13 +464,13 @@
       }).join("");
     }
 
-    /* ============== Draw orchestration (ANCHOR-BASED, NO LOCALSTORAGE) ============== */
+    /* =============== Draw orchestration =============== */
     async function runDraw(kind){
       const win = windowFromBase(BASE_DATE, kind.days);
       const startISO = isoDateTZ(win.start, TZ);
-      const endISO   = isoDateTZ(win.end, TZ);
+      const endISO   = isoDateTZ(win.endExclusive, TZ); // exclusive end for API
 
-      drawTitle.textContent = `${kind.label} Draw • ${startISO} → ${endISO}`;
+      drawTitle.textContent = `${kind.label} Draw • ${humanWindow(win.start, win.endExclusive)}`;
       winnerLine.textContent = "";
       roller.style.display = 'none';
       strip.innerHTML = "";
@@ -512,14 +486,13 @@
       }
 
       renderEntrantList(entrants);
-
       if(entrants.length === 0){
         winnerLine.textContent = "No qualified entrants this window.";
         return;
       }
 
       const winner = await spinAndPick(entrants);
-      if (!winner) return; // spin locked / aborted
+      if (!winner) return;
 
       const entry = {
         date: new Date().toISOString(),
@@ -527,44 +500,49 @@
         winner,
         prize: kind.prize,
         entries: entrants.length,
-        window: { start: startISO, end: endISO }
+        window: {
+          start: startISO,
+          end_inclusive: isoDateTZ(new Date(win.endExclusive.getTime()-1000), TZ),
+          end_exclusive: endISO
+        }
       };
       await logWinServer(entry);
-
-      // Windows advance automatically from the fixed base.
       loadWinners();
     }
 
-    /* ============== Auto scheduler (checks each minute) ============== */
+    /* =============== Auto scheduler (every minute) =============== */
     function scheduleAuto(kind, ui){
       const tick = async ()=>{
         const win = windowFromBase(BASE_DATE, kind.days);
-        if(Date.now() >= win.end.getTime()){
+        if(Date.now() >= win.drawAt.getTime()){
           await runDraw(kind);
-          await paintPanel(kind, ui);
+          await paintPanel(kind, ui); // repaint next cycle
+        }else{
+          // keep the countdown smooth
+          ui.remaining.textContent = remaining(win.drawAt);
         }
       };
       setInterval(tick, 60_000);
       tick();
     }
 
-    /* ============== Panels / UI painting ============== */
+    /* =============== Panel painting =============== */
     async function paintPanel(kind, ui){
       const win = windowFromBase(BASE_DATE, kind.days);
       const startISO = isoDateTZ(win.start, TZ);
-      const endISO   = isoDateTZ(win.end, TZ);
+      const endISO   = isoDateTZ(win.endExclusive, TZ);
 
-      ui.window.textContent = humanWindow(win.start, win.end);
-      ui.remaining.textContent = remaining(win.end);
+      ui.window.textContent = humanWindow(win.start, win.endExclusive);
+      ui.remaining.textContent = remaining(win.drawAt);
 
       if(ui.__int) clearInterval(ui.__int);
-      ui.__int = setInterval(()=> ui.remaining.textContent = remaining(win.end), 1000);
+      ui.__int = setInterval(()=> ui.remaining.textContent = remaining(win.drawAt), 1000);
 
       try{
         const entrants = await fetchEntrants(startISO, endISO, kind.min);
         ui.participants.textContent = entrants.length;
         ui.viewBtn.onclick = () => {
-          drawTitle.textContent = `${kind.label} Entrants • ${startISO} → ${endISO}`;
+          drawTitle.textContent = `${kind.label} Entrants • ${humanWindow(win.start, win.endExclusive)}`;
           roller.style.display = 'none';
           strip.innerHTML = "";
           winnerLine.textContent = "";
@@ -574,7 +552,7 @@
       }catch{
         ui.participants.textContent = "—";
         ui.viewBtn.onclick = () => {
-          drawTitle.textContent = `${kind.label} Entrants • ${startISO} → ${endISO}`;
+          drawTitle.textContent = `${kind.label} Entrants • ${humanWindow(win.start, win.endExclusive)}`;
           roller.style.display = 'none';
           strip.innerHTML = "";
           winnerLine.textContent = "";
@@ -583,13 +561,10 @@
         };
       }
 
-      ui.forceBtn.onclick = () => {
-        if (SPIN_LOCK) return;
-        runDraw(kind);
-      };
+      ui.forceBtn.onclick = () => { if (!SPIN_LOCK) runDraw(kind); };
     }
 
-    /* ============== Boot ============== */
+    /* =============== Boot =============== */
     document.querySelectorAll('.tab-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -618,7 +593,7 @@
       }
     };
 
-    // Paint + schedule using HARD-SET 10/30/2025 start (ET), rolling every 7 / 30 days
+    // Hard-start 10/30/2025 00:00 ET; draw at 23:59:59 on day 7 / day 30; next cycle 00:00 next day
     paintPanel(WEEKLY, UI.weekly);
     paintPanel(MONTHLY, UI.monthly);
     scheduleAuto(WEEKLY, UI.weekly);
