@@ -19,12 +19,11 @@
   <style>
     .warning-message{
       width:90%;max-width:500px;margin:10px auto;background:rgba(255,0,0,.1);
-      border:2px solid #ff4444;border-radius:4px;padding:15px;color:#ff4444;font-weight:700;
-      text-align:center;box-sizing:border-box;
+      border:2px solid #ff4444;border-radius:4px;padding:15px;color:#ff4444;font-weight:700;text-align:center;box-sizing:border-box;
     }
     @media (max-width:768px){.warning-message{width:95%;padding:12px;font-size:14px;margin:10px auto}}
 
-    /* ===== Modal (kept for RULES) ===== */
+    /* ===== Modal ===== */
     .modal{display:none;position:fixed;z-index:1000;inset:0;overflow:auto;background:rgba(0,0,0,.7);opacity:0;transition:opacity .5s}
     .modal.show{opacity:1}
     .modal-content{
@@ -40,7 +39,7 @@
     .modal-body li{margin-bottom:10px;text-align:left}
     .modal-body ul{padding-left:20px}
 
-    /* ===== Totals + progress (kept) ===== */
+    /* ===== Totals + progress ===== */
     .r2k-totals{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:30px;margin:28px auto 10px;width:min(1080px,92%)}
     .r2k-total-card{flex:0 1 360px;background:#0b0f17;border:1px solid #0e2038;border-radius:14px;padding:18px 20px;box-shadow:0 0 18px rgba(0,153,255,.25)}
     .r2k-total-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#87c8ff;opacity:.9}
@@ -62,38 +61,31 @@
     .prev-lb-btn svg{width:18px;height:18px}
     @media (max-width:768px){.prev-lb-btn{width:100%;margin-right:0;text-align:center;justify-content:center}}
 
-    /* ===== Leaderboard: Option B (R logo → rank → name → WAGERED → PRIZE) ===== */
+    /* ===== Leaderboard rows: Option B ===== */
     #leaderboard-rows{
-      width:min(1120px,95%);
-      margin:18px auto 40px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
+      width:min(1120px,95%);margin:18px auto 40px;
+      display:flex;flex-direction:column;gap:12px;
     }
 
-    /* Shared token styles */
-    .lb-chip{
-      display:inline-flex;align-items:center;justify-content:center;
-      min-width:48px;height:36px;padding:0 10px;border-radius:10px;
-      background:#0b1220;border:1px solid #143255;font-weight:900;color:#d6ecff;
-      letter-spacing:.02em;box-shadow:0 0 8px rgba(19,152,255,.25) inset;
-    }
     .lb-money{
       font-weight:900;letter-spacing:.3px;white-space:nowrap;
       text-shadow:0 0 12px rgba(19,152,255,.35);
     }
-    /* >>> Neon GREEN glow for prizes <<< */
+    /* Neon green PRIZE */
     .lb-money.prize{
       color:#39ff93;
-      text-shadow:
-        0 0 6px rgba(57,255,147,.85),
-        0 0 14px rgba(57,255,147,.55),
-        0 0 28px rgba(57,255,147,.35);
-      filter: drop-shadow(0 0 6px rgba(57,255,147,.35));
+      text-shadow:0 0 6px rgba(57,255,147,.85),0 0 14px rgba(57,255,147,.55),0 0 28px rgba(57,255,147,.35);
+      filter:drop-shadow(0 0 6px rgba(57,255,147,.35));
     }
-    .lb-money.wager{color:#ffffff}
+    /* Pure white WAGERED (iOS-safe) */
+    .lb-money.wager{
+      color:#fff!important;
+      -webkit-text-fill-color:#fff!important;
+      text-shadow:0 0 8px rgba(19,152,255,.25);
+      background:transparent!important;filter:none!important;
+    }
 
-    /* Top 3 container */
+    /* Top-3 cards container */
     #top3-cards{
       display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
       width:min(1120px,95%);margin:10px auto 24px;
@@ -102,26 +94,21 @@
     .top-card-shadow-2{box-shadow:0 0 40px #C0C0C0}
     .top-card-shadow-3{box-shadow:0 0 40px #CD7F32}
 
-    /* Rows 4–10: wider/taller */
+    /* Rows 4–10 */
     .lb-row{
-      display:grid;
-      grid-template-columns: 54px 64px 1fr auto auto;
-      align-items:center;
-      gap:14px;
-      padding:16px 18px;
-      background:#0b0f17;border:1px solid #0e2038;border-radius:14px;
-      box-shadow:0 0 18px rgba(0,153,255,.15);
+      display:grid;grid-template-columns:54px 64px 1fr auto auto;
+      align-items:center;gap:14px;padding:16px 18px;
+      background:#0b0f17;border:1px solid #0e2038;border-radius:14px;box-shadow:0 0 18px rgba(0,153,255,.15);
     }
     .lb-row--wide{padding:18px 22px}
     .lb-rank{font-size:18px;font-weight:900;color:#e9f5ff}
     .lb-name{font-size:16px;font-weight:800;color:#d6ecff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .lb-right{display:flex;align-items:baseline;gap:min(8vw,64px)} /* spacing between WAGERED and PRIZE */
+    .lb-right{display:flex;align-items:baseline;gap:min(8vw,64px)}
     .lb-label{font-size:12px;color:#9ac9ff;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-right:8px}
 
     .lb-row .lb-money.wager{font-size:18px}
     .lb-row .lb-money.prize{font-size:18px}
-    .lb-row--wide .lb-money.wager{font-size:20px}
-    .lb-row--wide .lb-money.prize{font-size:20px}
+    .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:20px}
 
     /* Mobile */
     @media (max-width:720px){
@@ -130,7 +117,6 @@
       .lb-row .lb-money.wager,.lb-row .lb-money.prize{font-size:17px}
       .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:18px}
       .lb-name{font-size:15px}
-      .lb-chip{height:32px;min-width:42px}
     }
   </style>
 </head>
@@ -162,7 +148,7 @@
     </div>
   </header>
 
-  <!-- Background elements (kept) -->
+  <!-- Background -->
   <canvas id="particleCanvas"></canvas>
   <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
   <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
@@ -260,12 +246,12 @@
       </div>
     </div>
 
-    <style>
-      .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
-      .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;font-size:14px;transition:transform .2s}
-      .footer-socials a.social:hover{transform:translateX(4px)}
-      .footer-socials .social-img{width:22px;height:22px;object-fit:contain}
-    </style>
+  <style>
+    .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+    .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;font-size:14px;transition:transform .2s}
+    .footer-socials a.social:hover{transform:translateX(4px)}
+    .footer-socials .social-img{width:22px;height:22px;object-fit:contain}
+  </style>
 
     <div class="col">
       <span class="title">Socials</span>
@@ -302,28 +288,25 @@
     document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal && modal.style.display==='block') closeModal(); });
   </script>
 
-  <!-- Existing JS includes (kept) -->
+  <!-- Core JS -->
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
-  <!-- NOTE: do NOT include /js/leaderboard-page.js to avoid conflicts -->
 
-  <!-- ===== Push content below the sticky header ===== -->
+  <!-- Push content below sticky header -->
   <script>
     (function(){
       function pushBelowHeader(){
         const header = document.getElementById('r2kHeader');
         const app = document.getElementById('appContent');
-        if(header && app){
-          app.style.marginTop = header.offsetHeight + 'px';
-        }
+        if(header && app){ app.style.marginTop = header.offsetHeight + 'px'; }
       }
       window.addEventListener('load', pushBelowHeader);
       window.addEventListener('resize', pushBelowHeader);
     })();
   </script>
 
-  <!-- ===== Leaderboard logic (rolling 30d @ 8PM ET) with Option B rows ===== -->
+  <!-- ===== Leaderboard logic (rolling 30d @ 8PM ET) ===== -->
   <script>
     (function(){
       const API_ROUTE = "/api/leaderboard";
@@ -338,12 +321,7 @@
       const MS_DAY    = 86400000;
 
       function nyParts(date = new Date()){
-        const f = new Intl.DateTimeFormat("en-US",{
-          timeZone:"America/New_York",
-          year:"numeric",month:"numeric",day:"numeric",
-          hour:"numeric",minute:"numeric",second:"numeric",
-          hour12:false
-        });
+        const f = new Intl.DateTimeFormat("en-US",{ timeZone:"America/New_York", year:"numeric", month:"numeric", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric", hour12:false });
         const parts = f.formatToParts(date);
         const get = t => Number(parts.find(p=>p.type===t)?.value);
         return { y:get("year"), m1:get("month"), d:get("day"), hh:get("hour"), mm:get("minute")||0, ss:get("second")||0 };
@@ -423,6 +401,7 @@
         rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
       }
 
+      /* ====== Renderers ====== */
       function renderTop3(rows){
         const top3 = document.getElementById("top3-cards");
         if (!top3) return;
@@ -430,8 +409,7 @@
         const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
         rows.slice(0,3).forEach((entry, idx) => {
           const place   = idx + 1;
-          const user    = entry.username || "Unknown";
-          const masked  = maskName(user);
+          const masked  = maskName(entry.username || "Unknown");
           const wagered = fmtMoney(entry.wagered || 0);
           const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
@@ -441,13 +419,12 @@
           if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
           if (idx === 2) card.style.transform = "translateY(25px)";
           card.innerHTML = `
-            <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
-                        padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
+            <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
             <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
             <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
             <div class="css-7ahevu ejrykqo0">
-              <span class="css-1vqddgv">Wagered: </span>
-              <span class="css-18icuxn"><div class="css-1y0ox2o"><span class="css-114dvlx">${wagered}</span></div></span>
+              <span class="lb-label">Wagered</span>
+              <span class="lb-money wager">${wagered}</span>
             </div>
             <span class="lb-money prize">${prize}</span>
           `;
@@ -461,10 +438,9 @@
         list.innerHTML = "";
 
         rows.slice(3).forEach((entry, i) => {
-          const idx = i + 3;             // 3..9
-          const place   = idx + 1;       // 4..10
-          const user    = entry.username || "Unknown";
-          const masked  = maskName(user);
+          const idx = i + 3;         // 3..9
+          const place   = idx + 1;   // 4..10
+          const masked  = maskName(entry.username || "Unknown");
           const wagered = fmtMoney(entry.wagered || 0);
           const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
@@ -474,16 +450,9 @@
             <img src="${logoSrc}" alt="R" style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover">
             <div class="lb-rank">#${place}</div>
             <div class="lb-name">${masked}</div>
-
             <div class="lb-right">
-              <div>
-                <span class="lb-label">Wagered</span>
-                <span class="lb-money wager">${wagered}</span>
-              </div>
-              <div>
-                <span class="lb-label">Prize</span>
-                <span class="lb-money prize">${prize}</span>
-              </div>
+              <div><span class="lb-label">Wagered</span> <span class="lb-money wager">${wagered}</span></div>
+              <div><span class="lb-label">Prize</span> <span class="lb-money prize">${prize}</span></div>
             </div>
           `;
           list.appendChild(row);
@@ -494,23 +463,15 @@
         try{
           const win = currentLBWindow();
           const rows = await fetchRows(win.startISO, win.endISO);
-          renderTop3(rows);
-          renderRows(rows);
-        }catch(err){
-          console.error("Leaderboard load error:", err);
-          showError("Error loading leaderboard.", String(err));
-        }
+          renderTop3(rows); renderRows(rows);
+        }catch(err){ console.error("Leaderboard load error:", err); showError("Error loading leaderboard.", String(err)); }
       }
       async function paintListPrevious(){
         try{
           const prev = previousLBWindow();
           const rows = await fetchRows(prev.startISO, prev.endISO);
-          renderTop3(rows);
-          renderRows(rows);
-        }catch(err){
-          console.error("Prev leaderboard load error:", err);
-          showError("Error loading previous leaderboard.", String(err));
-        }
+          renderTop3(rows); renderRows(rows);
+        }catch(err){ console.error("Prev leaderboard load error:", err); showError("Error loading previous leaderboard.", String(err)); }
       }
 
       function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
@@ -604,9 +565,8 @@
             btn.setAttribute('aria-expanded', String(!open));
           });
           document.addEventListener('click',(e)=>{
-            if(!menu.contains(e.target) && e.target!==btn){
-              menu.style.display='none';
-              btn.setAttribute('aria-expanded','false');
+            if(!menu?.contains(e.target) && e.target!==btn){
+              if(menu){ menu.style.display='none'; btn.setAttribute('aria-expanded','false'); }
             }
           });
         }
