@@ -61,21 +61,29 @@
     .prev-lb-btn svg{width:18px;height:18px}
     @media (max-width:768px){.prev-lb-btn{width:100%;margin-right:0;text-align:center;justify-content:center}}
 
-    /* ===== Leaderboard rows ===== */
+    /* ===== Leaderboard rows: Option B ===== */
     #leaderboard-rows{
       width:min(1120px,95%);margin:18px auto 40px;
       display:flex;flex-direction:column;gap:12px;
     }
 
-    .lb-money{font-weight:900;letter-spacing:.3px;white-space:nowrap;text-shadow:0 0 12px rgba(19,152,255,.35)}
-    /* Prize = glowing green */
+    .lb-money{
+      font-weight:900;letter-spacing:.3px;white-space:nowrap;
+      text-shadow:0 0 12px rgba(19,152,255,.35);
+    }
+    /* Neon green PRIZE */
     .lb-money.prize{
       color:#39ff93;
       text-shadow:0 0 6px rgba(57,255,147,.85),0 0 14px rgba(57,255,147,.55),0 0 28px rgba(57,255,147,.35);
       filter:drop-shadow(0 0 6px rgba(57,255,147,.35));
     }
-    /* Wagered = pure white (iOS-safe) */
-    .lb-money.wager{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 0 8px rgba(19,152,255,.25)}
+    /* Pure white WAGERED (iOS-safe) */
+    .lb-money.wager{
+      color:#fff!important;
+      -webkit-text-fill-color:#fff!important;
+      text-shadow:0 0 8px rgba(19,152,255,.25);
+      background:transparent!important;filter:none!important;
+    }
 
     /* Top-3 cards container */
     #top3-cards{
@@ -86,18 +94,6 @@
     .top-card-shadow-2{box-shadow:0 0 40px #C0C0C0}
     .top-card-shadow-3{box-shadow:0 0 40px #CD7F32}
 
-    /* Top-3: WAGERED pill */
-    .wagered-wrap{display:flex;align-items:center;gap:12px;justify-content:center;margin-top:8px}
-    .wager-label{font-size:12px;color:#9ac9ff;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-    .wager-box{
-      display:flex;align-items:center;justify-content:center;
-      min-width:220px;height:56px;padding:0 16px;border-radius:12px;
-      border:1px solid rgba(135,200,255,.25);
-      background:rgba(11,15,23,.6);
-      box-shadow:inset 0 0 12px rgba(19,152,255,.18),0 0 10px rgba(19,152,255,.15);
-    }
-    .wager-amount{line-height:1}
-
     /* Rows 4–10 */
     .lb-row{
       display:grid;grid-template-columns:54px 64px 1fr auto auto;
@@ -107,7 +103,7 @@
     .lb-row--wide{padding:18px 22px}
     .lb-rank{font-size:18px;font-weight:900;color:#e9f5ff}
     .lb-name{font-size:16px;font-weight:800;color:#d6ecff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .lb-right{display:flex;align-items:center;gap:min(8vw,64px)}
+    .lb-right{display:flex;align-items:baseline;gap:min(8vw,64px)}
     .lb-label{font-size:12px;color:#9ac9ff;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-right:8px}
 
     .lb-row .lb-money.wager{font-size:18px}
@@ -250,12 +246,12 @@
       </div>
     </div>
 
-    <style>
-      .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
-      .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;font-size:14px;transition:transform .2s}
-      .footer-socials a.social:hover{transform:translateX(4px)}
-      .footer-socials .social-img{width:22px;height:22px;object-fit:contain}
-    </style>
+  <style>
+    .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+    .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;font-size:14px;transition:transform .2s}
+    .footer-socials a.social:hover{transform:translateX(4px)}
+    .footer-socials .social-img{width:22px;height:22px;object-fit:contain}
+  </style>
 
     <div class="col">
       <span class="title">Socials</span>
@@ -269,9 +265,9 @@
       </div>
     </div>
 
-    <div class="col">
-      <span class="title">ResponsibleGambling.org</span>
-      <span class="subtitle" style="font-size:9px;">Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.</span>
+    <div data-v-5867ad71 class="col">
+      <span data-v-5867ad71 class="title">ResponsibleGambling.org</span>
+      <span data-v-5867ad71 class="subtitle" style="font-size:9px;">Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.</span>
     </div>
   </div>
 
@@ -411,7 +407,6 @@
         if (!top3) return;
         top3.innerHTML = "";
         const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
-
         rows.slice(0,3).forEach((entry, idx) => {
           const place   = idx + 1;
           const masked  = maskName(entry.username || "Unknown");
@@ -423,20 +418,15 @@
           card.style.position = "relative";
           if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
           if (idx === 2) card.style.transform = "translateY(25px)";
-
           card.innerHTML = `
             <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
             <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
             <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
-
-            <div class="wagered-wrap">
-              <span class="wager-label">WAGERED</span>
-              <span class="wager-box">
-                <span class="lb-money wager wager-amount">${wagered}</span>
-              </span>
+            <div class="css-7ahevu ejrykqo0">
+              <span class="lb-label">Wagered</span>
+              <span class="lb-money wager">${wagered}</span>
             </div>
-
-            <span class="lb-money prize" style="display:block;margin-top:8px;">${prize}</span>
+            <span class="lb-money prize">${prize}</span>
           `;
           top3.appendChild(card);
         });
