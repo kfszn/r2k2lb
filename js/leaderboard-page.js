@@ -9,7 +9,7 @@ const ANCHOR_DATE = "2025-10-18"; // first 8PM ET reset
 const WINDOW_DAYS = 30;
 
 const logoSrc   = "/assets/rainbetlogo.png";
-const rewards   = [800, 500, 375, 300, 250, 175, 100]; // 1st → 7th
+const rewards   = [800, 500, 375, 300, 250, 175, 100, 75, 50, 25]; // 1st → 10th
 const top3Glows = ["0 0 40px #FFD700", "0 0 40px #C0C0C0", "0 0 40px #CD7F32"]; // Gold, Silver, Bronze
 
 /* ===== Countdown (rolling 30d from 8PM ET ANCHOR_DATE) ===== */
