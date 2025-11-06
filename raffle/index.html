@@ -84,8 +84,17 @@
     .modal .sheet{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:640px;width:92%;padding:18px}
     .close-x{background:transparent;border:1px solid var(--border);padding:8px 12px;border-radius:10px;color:#cfe9ff;cursor:pointer}
     .roller{margin:16px auto 8px;height:48px;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#0a101a}
-    .roller .strip{display:flex;flex-direction:column;gap:6px;padding:10px;transform:translateY(0);transition:transform 2.2s cubic-bezier(.2,.7,0,1)}
-    .strip .name{line-height:28px;text-align:center;font-weight:800}
+    .roller .strip{display:flex;flex-direction:column;gap:0;padding:10px;transform:translateY(0);transition:transform 2.2s cubic-bezier(.2,.7,0,1)}
+    /* IMPORTANT: fixed row height to match JS math */
+    .strip .name{
+      height:34px;
+      line-height:34px;
+      text-align:center;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
 
     /* Winners table */
     table.wins{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
@@ -241,7 +250,7 @@
     </div>
   </div>
 
-  <!-- ====== JS (inline, Safari-safe, EST, hard start 10/30/2025) ====== -->
+  <!-- ====== JS (inline, Safari-safe, ET, hard start 10/30/2025) ====== -->
   <script>
     /* ========== Mobile hamburger ========== */
     (function(){
@@ -255,16 +264,12 @@
       }
     })();
 
-    /* ==================== Config (EST, Safari-safe) ==================== */
+    /* ==================== Config (ET, Safari-safe) ==================== */
     const TZ = "America/New_York"; // display & window calc zone
 
-    // Build the hard anchor without string parsing (Safari-proof).
-    // Target local moment: Oct 30, 2025 at 00:00 EST (UTC-05:00) -> 2025-10-30T05:00:00Z
-    function hardBaseEST() {
-      const utcMs = Date.UTC(2025, 9, 30, 5, 0, 0); // months are 0-indexed
-      return new Date(utcMs);
-    }
-    const BASE_DATE = hardBaseEST();
+    // Hard base: Oct 30, 2025 00:00 in ET.
+    // On Oct 30, 2025, ET is still DST (EDT, UTC-4), so local midnight = 04:00:00Z.
+    const BASE_DATE = new Date(Date.UTC(2025, 9, 30, 4, 0, 0));
 
     const API_LB  = "/api/leaderboard";
     const API_LOG = "/api/raffle/log";
@@ -273,8 +278,8 @@
     const WEEKLY  = { label:"Weekly",  days:7,  min:250,  prize:25.00 };
     const MONTHLY = { label:"Monthly", days:30, min:5000, prize:100.00 };
 
-    /* ===== One-time cleanup: nuke any legacy per-device anchors ===== */
-    (() => {
+    /* ===== One-time cleanup: remove any legacy per-device anchors ===== */
+    (()=>{
       ['raffle_anchor_weekly','raffle_anchor_monthly'].forEach(k => localStorage.removeItem(k));
     })();
 
@@ -372,7 +377,12 @@
     const winnerLine = document.getElementById("winnerLine");
     closeModalBtn.addEventListener('click', ()=> hideModal());
     function showModal(){ modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); }
-    function hideModal(){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); strip.style.transform='translateY(0)'; }
+    function hideModal(){
+      modal.style.display='none';
+      modal.setAttribute('aria-hidden','true');
+      strip.style.transition = "none";
+      strip.style.transform = 'translateY(0)';
+    }
 
     function renderEntrantList(entrants){
       entrantList.innerHTML = entrants.length
@@ -381,36 +391,46 @@
     }
     const escapeHtml = s => String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
-    /* ============== Spinner animation ============== */
+    /* ============== Spinner animation (deterministic, locked) ============== */
+    let SPIN_LOCK = false;
     async function spinAndPick(entrants){
+      if (SPIN_LOCK) return null; // prevent overlap
+      SPIN_LOCK = true;
+
       roller.style.display = 'block';
       strip.innerHTML = "";
       winnerLine.textContent = "";
 
+      // 1) Pick winner first
+      const winIdx = securePick(entrants.length);
+      const winner = entrants[winIdx].name;
+
+      // 2) Build sequence that ends on the winner (so visual == data)
       const names = entrants.map(e=>e.name);
-      const repeats = Math.max(30, names.length*3);
-      const full = [];
-      for(let i=0;i<repeats;i++){
-        const name = names[i % names.length];
-        full.push(`<div class="name">${escapeHtml(name)}</div>`);
-      }
-      strip.innerHTML = full.join("");
+      const cycles = Math.max(40, names.length * 4);
+      const filler = Array.from({length: cycles}, (_, i) => names[i % names.length]);
+      const tail = [winner, winner, winner]; // buffer for clear stop
+      const sequence = [...filler, ...tail];
 
-      const idx = securePick(entrants.length);
-      const chosen = entrants[idx].name;
+      strip.innerHTML = sequence.map(n => `<div class="name">${escapeHtml(n)}</div>`).join("");
 
-      const stopIndex = full.length - Math.floor(full.length/5) + (idx % Math.floor(full.length/5));
-      const rowH = 34;
-      const targetY = -(stopIndex * rowH);
+      // 3) Deterministic stop at the very last item
+      const rowH = 34; // MUST match CSS
+      const targetY = -(sequence.length - 1) * rowH;
 
-      requestAnimationFrame(()=>{
-        strip.style.transition = "transform 2.2s cubic-bezier(.2,.7,0,1)";
-        strip.style.transform = `translateY(${targetY}px)`;
-      });
+      // reset then animate
+      strip.style.transition = "none";
+      strip.style.transform = "translateY(0)";
+      void strip.offsetHeight; // reflow
+      strip.style.transition = "transform 2.2s cubic-bezier(.2,.7,0,1)";
+      strip.style.transform = `translateY(${targetY}px)`;
 
-      await new Promise(r => setTimeout(r, 2300));
-      winnerLine.textContent = `🏆 Winner: ${chosen}`;
-      return chosen;
+      // Wait for animation end for exact timing
+      await new Promise(resolve => strip.addEventListener('transitionend', resolve, { once: true }));
+
+      winnerLine.textContent = `🏆 Winner: ${winner}`;
+      SPIN_LOCK = false;
+      return winner;
     }
 
     /* ============== Logging winners ============== */
@@ -499,6 +519,7 @@
       }
 
       const winner = await spinAndPick(entrants);
+      if (!winner) return; // spin locked / aborted
 
       const entry = {
         date: new Date().toISOString(),
@@ -510,7 +531,7 @@
       };
       await logWinServer(entry);
 
-      // NOTE: We do NOT advance any anchor here. Windows advance automatically from the fixed base.
+      // Windows advance automatically from the fixed base.
       loadWinners();
     }
 
@@ -562,7 +583,10 @@
         };
       }
 
-      ui.forceBtn.onclick = () => runDraw(kind);
+      ui.forceBtn.onclick = () => {
+        if (SPIN_LOCK) return;
+        runDraw(kind);
+      };
     }
 
     /* ============== Boot ============== */
@@ -594,7 +618,7 @@
       }
     };
 
-    // Paint + schedule using HARD-SET 10/30/2025 start (EST), rolling every 7 / 30 days
+    // Paint + schedule using HARD-SET 10/30/2025 start (ET), rolling every 7 / 30 days
     paintPanel(WEEKLY, UI.weekly);
     paintPanel(MONTHLY, UI.monthly);
     scheduleAuto(WEEKLY, UI.weekly);
