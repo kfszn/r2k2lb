@@ -43,7 +43,7 @@
     .grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 520px));
-      justify-content:center;      /* center the columns */
+      justify-content:center;
       gap:24px;
       margin-top:8px;
     }
@@ -54,7 +54,7 @@
       padding:20px;
       box-shadow:0 0 24px rgba(107,92,255,.07);
       width:100%;
-      max-width:520px;             /* keep each card from stretching too wide */
+      max-width:520px;
       margin:0 auto;
     }
     .prize{font-size:46px;font-weight:900;text-align:center;margin-top:6px}
@@ -143,7 +143,7 @@
             </div>
             <div class="pill">
               <div class="big" id="w-remaining">--</div>
-              <div class="cap">Time Remaining</div>
+              <div class="cap">Remaining (EST)</div>
             </div>
           </div>
 
@@ -177,7 +177,7 @@
             </div>
             <div class="pill">
               <div class="big" id="m-remaining">--</div>
-              <div class="cap">Remaining (CST)</div>
+              <div class="cap">Remaining (EST)</div>
             </div>
           </div>
 
@@ -241,7 +241,7 @@
     </div>
   </div>
 
-  <!-- ====== JS ====== -->
+  <!-- ====== JS (inline, Safari-safe, EST, hard start 10/30/2025) ====== -->
   <script>
     /* ========== Mobile hamburger ========== */
     (function(){
@@ -255,18 +255,28 @@
       }
     })();
 
-    /* ==================== Config ==================== */
-    const TZ = "America/Mexico_City"; // local time zone for display/windows
-    const API_LB = "/api/leaderboard";
-    const API_LOG = "/api/raffle/log";
-    const API_WINS = "/api/raffle/winners?limit=50";
+    /* ==================== Config (EST, Safari-safe) ==================== */
+    const TZ = "America/New_York"; // display & window calc zone
 
-    // HARD ANCHOR for BOTH raffles: Oct 30, 2025 00:00 in Mexico City time (UTC-06:00).
-    const BASE_ISO = "2025-10-30T00:00:00-06:00";
-    const BASE_DATE = new Date(BASE_ISO);
+    // Build the hard anchor without string parsing (Safari-proof).
+    // Target local moment: Oct 30, 2025 at 00:00 EST (UTC-05:00) -> 2025-10-30T05:00:00Z
+    function hardBaseEST() {
+      const utcMs = Date.UTC(2025, 9, 30, 5, 0, 0); // months are 0-indexed
+      return new Date(utcMs);
+    }
+    const BASE_DATE = hardBaseEST();
+
+    const API_LB  = "/api/leaderboard";
+    const API_LOG = "/api/raffle/log";
+    const API_WINS= "/api/raffle/winners?limit=50";
 
     const WEEKLY  = { label:"Weekly",  days:7,  min:250,  prize:25.00 };
     const MONTHLY = { label:"Monthly", days:30, min:5000, prize:100.00 };
+
+    /* ===== One-time cleanup: nuke any legacy per-device anchors ===== */
+    (() => {
+      ['raffle_anchor_weekly','raffle_anchor_monthly'].forEach(k => localStorage.removeItem(k));
+    })();
 
     /* ================== Time helpers ================== */
     const fmtUsd = n=>n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
@@ -281,7 +291,6 @@
       return { y:+get('year'), m:+get('month'), d:+get('day'), hh:+get('hour'), mm:+get('minute'), ss:+get('second') };
     }
 
-    // TZ-safe YYYY-MM-DD
     function isoDateTZ(d, tz = TZ){
       const p = inTZ(d, tz);
       return `${p.y}-${pad2(p.m)}-${pad2(p.d)}`;
@@ -290,8 +299,7 @@
     // Rolling window from HARD base with fixed-length day buckets (no localStorage, no drift)
     function windowFromBase(baseDate, days){
       const now = new Date();
-      const len = days * 86400000; // fixed-day periods
-      // If we're before the base, first window ends at base + len
+      const len = days * 86400000; // exact-day periods
       if (now < baseDate){
         const start = new Date(baseDate.getTime());
         const end   = new Date(baseDate.getTime() + len);
@@ -502,7 +510,7 @@
       };
       await logWinServer(entry);
 
-      // NOTE: We do NOT advance any anchor here. Windows advance automatically from BASE_ISO.
+      // NOTE: We do NOT advance any anchor here. Windows advance automatically from the fixed base.
       loadWinners();
     }
 
@@ -529,7 +537,6 @@
       ui.remaining.textContent = remaining(win.end);
 
       if(ui.__int) clearInterval(ui.__int);
-      // Update every second so the bottom timers never "freeze" or look like they reset
       ui.__int = setInterval(()=> ui.remaining.textContent = remaining(win.end), 1000);
 
       try{
@@ -587,7 +594,7 @@
       }
     };
 
-    // Paint + schedule using HARD-SET BASE_ISO (10-30-2025), continuous 7-day and 30-day cycles
+    // Paint + schedule using HARD-SET 10/30/2025 start (EST), rolling every 7 / 30 days
     paintPanel(WEEKLY, UI.weekly);
     paintPanel(MONTHLY, UI.monthly);
     scheduleAuto(WEEKLY, UI.weekly);
