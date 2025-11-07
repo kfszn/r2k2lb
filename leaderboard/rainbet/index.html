@@ -19,7 +19,8 @@
   <style>
     .warning-message{
       width:90%;max-width:500px;margin:10px auto;background:rgba(255,0,0,.1);
-      border:2px solid #ff4444;border-radius:4px;padding:15px;color:#ff4444;font-weight:700;text-align:center;box-sizing:border-box;
+      border:2px solid #ff4444;border-radius:4px;padding:15px;color:#ff4444;font-weight:700;
+      text-align:center;box-sizing:border-box;
     }
     @media (max-width:768px){.warning-message{width:95%;padding:12px;font-size:14px;margin:10px auto}}
 
@@ -39,7 +40,7 @@
     .modal-body li{margin-bottom:10px;text-align:left}
     .modal-body ul{padding-left:20px}
 
-    /* ===== Totals + progress ===== */
+    /* ===== Totals + progress (kept) ===== */
     .r2k-totals{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:30px;margin:28px auto 10px;width:min(1080px,92%)}
     .r2k-total-card{flex:0 1 360px;background:#0b0f17;border:1px solid #0e2038;border-radius:14px;padding:18px 20px;box-shadow:0 0 18px rgba(0,153,255,.25)}
     .r2k-total-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#87c8ff;opacity:.9}
@@ -61,93 +62,74 @@
     .prev-lb-btn svg{width:18px;height:18px}
     @media (max-width:768px){.prev-lb-btn{width:100%;margin-right:0;text-align:center;justify-content:center}}
 
-    /* ===== Common money tokens ===== */
-    .lb-money{font-weight:900;letter-spacing:.3px;white-space:nowrap}
-    /* Pure white WAGERED, kill any vendor glow/outline */
-    .lb-money.wager,
-    #leaderboard-rows .lb-money.wager{
-      color:#ffffff!important;
-      -webkit-text-fill-color:#ffffff!important;
-      text-shadow:none!important;
-      -webkit-text-stroke:0!important;
-      filter:none!important;background:none!important;mix-blend-mode:normal!important;box-shadow:none!important;
-    }
-    /* Neon green PRIZE */
-    .lb-money.prize{
-      color:#39ff93;
-      text-shadow:0 0 6px rgba(57,255,147,.85),0 0 14px rgba(57,255,147,.55),0 0 28px rgba(57,255,147,.35);
-      filter:drop-shadow(0 0 6px rgba(57,255,147,.35));
-    }
-
-    /* ===== Top-3 cards (stacked vertically) ===== */
-    #top3-cards{
-      display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
-      width:min(1120px,95%);margin:10px auto 24px;
-    }
-    .top-card{
-      position:relative;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      width:min(100%,1040px);min-height:260px;padding:28px 20px;margin:4px 0;
-      background:#0b0f17;border:1px solid #0e2038;border-radius:14px;
-      box-shadow:0 0 18px rgba(0,153,255,.18);
-      overflow:hidden;
-    }
-    .top-card .rank-badge{
-      position:absolute;top:10px;left:10px;
-      background:rgba(0,0,0,.45);padding:6px 10px;border-radius:10px;font-weight:800;color:#d6ecff
-    }
-    .top-card .rlogo{width:96px;height:96px;border-radius:12px;object-fit:contain;margin-bottom:10px}
-    .top-card .name{font-weight:800;color:#d6ecff;font-size:18px;margin-bottom:8px}
-
-    .wagered-label{
-      font-size:12px;color:#9ac9ff;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-bottom:6px
-    }
-    .wager-pill{
-      display:inline-flex;align-items:center;justify-content:center;
-      min-width:220px; padding:10px 16px;border-radius:12px;
-      background:rgba(10,20,35,.85);
-      border:1px solid rgba(135,200,255,.18);
-      box-shadow:inset 0 2px 8px rgba(19,152,255,.15), 0 0 10px rgba(19,152,255,.15);
-      margin-bottom:10px;
-    }
-    .top-card .lb-money.wager{font-size:20px}
-
-    .top-card-shadow-1{box-shadow:0 0 40px #FFD700}
-    .top-card-shadow-2{box-shadow:0 0 40px #C0C0C0}
-    .top-card-shadow-3{box-shadow:0 0 40px #CD7F32}
-
-    /* ===== Rows 4–10 ===== */
+    /* ===== Leaderboard lists ===== */
     #leaderboard-rows{
-      width:min(1120px,95%);margin:18px auto 40px;
-      display:flex;flex-direction:column;gap:12px;
+      width:min(1120px,95%);
+      margin:18px auto 40px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
     }
+
+    /* ---------- ONLY rows #4–#10 styles ---------- */
     .lb-row{
-      display:grid;grid-template-columns:54px 64px 1fr auto auto;
-      align-items:center;gap:14px;padding:16px 18px;
-      background:#0b0f17;border:1px solid #0e2038;border-radius:14px;box-shadow:0 0 18px rgba(0,153,255,.15);
+      display:grid;
+      grid-template-columns: 54px 64px 1fr auto auto;
+      align-items:center;                 /* alignment fix */
+      gap:14px;
+      padding:16px 18px;
+      background:#0b0f17;
+      border:1px solid #0e2038;
+      border-radius:14px;
+      box-shadow:0 0 18px rgba(0,153,255,.15);
     }
     .lb-row--wide{padding:18px 22px}
     .lb-rank{font-size:18px;font-weight:900;color:#e9f5ff}
     .lb-name{font-size:16px;font-weight:800;color:#d6ecff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
     .lb-right{display:flex;align-items:baseline;gap:min(8vw,64px)}
     .lb-label{font-size:12px;color:#9ac9ff;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-right:8px}
 
+    /* Amount sizing */
     .lb-row .lb-money.wager{font-size:18px}
     .lb-row .lb-money.prize{font-size:18px}
     .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:20px}
 
-    /* Mobile */
+    /* Colors scoped to rows 4–10 (Top-3 untouched) */
+    .lb-row .lb-money.wager{
+      color:#ffffff !important;
+      -webkit-text-fill-color:#ffffff !important;  /* iOS */
+      text-shadow:0 0 8px rgba(19,152,255,.25);
+      background:transparent!important;
+      filter:none!important;
+    }
+    .lb-row .lb-money.prize{
+      color:#39ff93;
+      text-shadow:
+        0 0 6px rgba(57,255,147,.85),
+        0 0 14px rgba(57,255,147,.55),
+        0 0 28px rgba(57,255,147,.35);
+      filter: drop-shadow(0 0 6px rgba(57,255,147,.35));
+    }
+
+    /* Mobile for rows 4–10 */
     @media (max-width:720px){
-      .top-card{padding:24px 16px}
-      .top-card .rlogo{width:84px;height:84px}
-      .top-card .name{font-size:16px}
-      .wager-pill{min-width:200px}
       .lb-row{grid-template-columns:44px 54px 1fr;gap:10px}
       .lb-right{grid-column:1 / -1;justify-content:space-between;margin-top:8px;gap:22px}
       .lb-row .lb-money.wager,.lb-row .lb-money.prize{font-size:17px}
       .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:18px}
       .lb-name{font-size:15px}
     }
+    /* ---------- END rows #4–#10 styles ---------- */
+
+    /* Top-3 container spacing (unchanged look) */
+    #top3-cards{
+      display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+      width:min(1120px,95%);margin:10px auto 24px;
+    }
+    .top-card-shadow-1{box-shadow:0 0 40px #FFD700}
+    .top-card-shadow-2{box-shadow:0 0 40px #C0C0C0}
+    .top-card-shadow-3{box-shadow:0 0 40px #CD7F32}
   </style>
 </head>
 <body>
@@ -178,7 +160,7 @@
     </div>
   </header>
 
-  <!-- Background -->
+  <!-- Background elements (kept) -->
   <canvas id="particleCanvas"></canvas>
   <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
   <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
@@ -190,32 +172,34 @@
   </div>
 
   <!-- Main content -->
-  <div id="appContent">
-    <div class="row text">
-      <span class="title">
-        <div class="price-wrapper glow">$2,650</div>
-        MONTHLY CODE <span class="glow">R2K2</span> Leaderboard!
-      </span>
-      <span class="subtitle" style="color:#FFF;">
-        Every <b>BET</b> on Rainbet under Code <b>R2K2</b> counts towards your score. <br>
-        <i>The leaderboard updates every 15 minutes.</i><br>
-        <div class="warning-message">It Only Takes One!</div>
+  <div data-v-1d580398 data-v-e4097664 id="appContent">
+    <div data-v-1d580398>
+      <div data-v-1d580398 class="row text">
+        <span data-v-1d580398 class="title">
+          <div data-v-1d580398 class="price-wrapper glow">$2,650</div>
+          MONTHLY CODE <span class="glow">R2K2</span> Leaderboard!
+        </span>
+        <span data-v-1d580398 class="subtitle" style="color:#FFF;">
+          Every <b>BET</b> on Rainbet under Code <b>R2K2</b> counts towards your score. <br>
+          <i>The leaderboard updates every 15 minutes.</i><br>
+          <div class="warning-message">It Only Takes One!</div>
 
-        <button id="rulesButton" class="prev-lb-btn" style="background:#FFFFFF;cursor:pointer;border:none;color:#000;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          RULES
-        </button>
+          <button id="rulesButton" class="prev-lb-btn" style="background:#FFFFFF;cursor:pointer;border:none;color:#000;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            RULES
+          </button>
 
-        <button id="prevLeaderboardBtn" class="prev-lb-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l2 2h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2z"></path></svg>
-          PREVIOUS LEADERBOARD
-        </button>
+          <button id="prevLeaderboardBtn" class="prev-lb-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l2 2h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2z"></path></svg>
+            PREVIOUS LEADERBOARD
+          </button>
 
-        <button id="currentLeaderboardBtn" class="prev-lb-btn" style="display:none;background:#22c55e;color:#000;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
-          CURRENT LEADERBOARD
-        </button>
-      </span>
+          <button id="currentLeaderboardBtn" class="prev-lb-btn" style="display:none;background:#22c55e;color:#000;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
+            CURRENT LEADERBOARD
+          </button>
+        </span>
+      </div>
     </div>
 
     <!-- Totals + Goals -->
@@ -257,21 +241,22 @@
       </div>
     </div>
 
-    <!-- Top 3 + Rows -->
     <div class="css-esk2ah">
       <div class="css-2w2ovy">
-        <div id="top3-cards"></div>
+        <!-- Top 3 (unchanged look) -->
+        <div class="css-gqrafh" id="top3-cards"></div>
+        <!-- Rows 4–10 -->
         <div id="leaderboard-rows"></div>
       </div>
     </div>
   </div>
 
   <!-- Footer -->
-  <div class="row inner-footer">
-    <div class="col-5">
-      <div class="content">
-        <div class="company"></div><br>
-        <span class="copyright">R2Ktwo<br> All Right Reserved 2025.</span>
+  <div data-v-5867ad71 class="row inner-footer">
+    <div data-v-5867ad71 class="col-5">
+      <div data-v-5867ad71 class="content">
+        <div data-v-5867ad71 class="company"></div><br data-v-5867ad71>
+        <span data-v-5867ad71 class="copyright">R2Ktwo<br data-v-5867ad71> All Right Reserved 2025.</span>
       </div>
     </div>
 
@@ -294,9 +279,9 @@
       </div>
     </div>
 
-    <div class="col">
-      <span class="title">ResponsibleGambling.org</span>
-      <span class="subtitle" style="font-size:9px;">Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.</span>
+    <div data-v-5867ad71 class="col">
+      <span data-v-5867ad71 class="title">ResponsibleGambling.org</span>
+      <span data-v-5867ad71 class="subtitle" style="font-size:9px;">Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.</span>
     </div>
   </div>
 
@@ -305,7 +290,7 @@
           data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
           crossorigin="anonymous"></script>
 
-  <!-- Modal behavior -->
+  <!-- Modal behavior (kept) -->
   <script>
     const modal = document.getElementById("rulesModal");
     const btn = document.getElementById("rulesButton");
@@ -317,18 +302,21 @@
     document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal && modal.style.display==='block') closeModal(); });
   </script>
 
-  <!-- Core JS -->
+  <!-- Existing JS includes (kept) -->
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
+  <!-- NOTE: do NOT include /js/leaderboard-page.js to avoid conflicts -->
 
-  <!-- Push content below sticky header -->
+  <!-- Push content below the sticky header -->
   <script>
     (function(){
       function pushBelowHeader(){
         const header = document.getElementById('r2kHeader');
         const app = document.getElementById('appContent');
-        if(header && app){ app.style.marginTop = header.offsetHeight + 'px'; }
+        if(header && app){
+          app.style.marginTop = header.offsetHeight + 'px';
+        }
       }
       window.addEventListener('load', pushBelowHeader);
       window.addEventListener('resize', pushBelowHeader);
@@ -350,7 +338,12 @@
       const MS_DAY    = 86400000;
 
       function nyParts(date = new Date()){
-        const f = new Intl.DateTimeFormat("en-US",{ timeZone:"America/New_York", year:"numeric", month:"numeric", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric", hour12:false });
+        const f = new Intl.DateTimeFormat("en-US",{
+          timeZone:"America/New_York",
+          year:"numeric",month:"numeric",day:"numeric",
+          hour:"numeric",minute:"numeric",second:"numeric",
+          hour12:false
+        });
         const parts = f.formatToParts(date);
         const get = t => Number(parts.find(p=>p.type===t)?.value);
         return { y:get("year"), m1:get("month"), d:get("day"), hh:get("hour"), mm:get("minute")||0, ss:get("second")||0 };
@@ -430,28 +423,37 @@
         rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
       }
 
-      /* ====== Renderers ====== */
+      /* ===== Renderers ===== */
       function renderTop3(rows){
+        // Keep original look/stack for Top-3 (no .lb-money classes here)
         const top3 = document.getElementById("top3-cards");
         if (!top3) return;
         top3.innerHTML = "";
         const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
-
         rows.slice(0,3).forEach((entry, idx) => {
           const place   = idx + 1;
-          const masked  = maskName(entry.username || "Unknown");
+          const user    = entry.username || "Unknown";
+          const masked  = maskName(user);
           const wagered = fmtMoney(entry.wagered || 0);
           const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
           const card = document.createElement("div");
-          card.className = `top-card ${glows[idx]||""}`;
+          card.className = `css-jehefp ${glows[idx]||""}`;
+          card.style.position = "relative";
+          if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
+          if (idx === 2) card.style.transform = "translateY(25px)";
           card.innerHTML = `
-            <div class="rank-badge">#${place}</div>
-            <img src="${logoSrc}" alt="R" class="rlogo">
-            <div class="name">${masked}</div>
-            <div class="wagered-label">Wagered</div>
-            <div class="wager-pill"><span class="lb-money wager">${wagered}</span></div>
-            <span class="lb-money prize">${prize}</span>
+            <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
+                        padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
+            <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
+            <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
+
+            <div style="margin:8px 0 6px;color:#9ac9ff;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Wagered</div>
+            <div style="display:inline-block;padding:10px 18px;border:1px solid #1b3760;background:#0c1a2d;border-radius:12px;box-shadow:inset 0 0 10px rgba(0,153,255,.25);">
+              <span style="font-weight:900;color:#ffffff;text-shadow:0 0 10px rgba(19,152,255,.35)">${wagered}</span>
+            </div>
+
+            <div style="margin-top:10px;font-weight:900;color:#39ff93;text-shadow:0 0 6px rgba(57,255,147,.85),0 0 14px rgba(57,255,147,.55),0 0 28px rgba(57,255,147,.35)">${prize}</div>
           `;
           top3.appendChild(card);
         });
@@ -463,9 +465,10 @@
         list.innerHTML = "";
 
         rows.slice(3).forEach((entry, i) => {
-          const idx = i + 3;         // 3..9
-          const place   = idx + 1;   // 4..10
-          const masked  = maskName(entry.username || "Unknown");
+          const idx = i + 3;             // 3..9 => ranks 4..10
+          const place   = idx + 1;       // 4..10
+          const user    = entry.username || "Unknown";
+          const masked  = maskName(user);
           const wagered = fmtMoney(entry.wagered || 0);
           const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
@@ -475,9 +478,16 @@
             <img src="${logoSrc}" alt="R" style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover">
             <div class="lb-rank">#${place}</div>
             <div class="lb-name">${masked}</div>
+
             <div class="lb-right">
-              <div><span class="lb-label">Wagered</span> <span class="lb-money wager">${wagered}</span></div>
-              <div><span class="lb-label">Prize</span> <span class="lb-money prize">${prize}</span></div>
+              <div>
+                <span class="lb-label">Wagered</span>
+                <span class="lb-money wager">${wagered}</span>
+              </div>
+              <div>
+                <span class="lb-label">Prize</span>
+                <span class="lb-money prize">${prize}</span>
+              </div>
             </div>
           `;
           list.appendChild(row);
@@ -488,15 +498,23 @@
         try{
           const win = currentLBWindow();
           const rows = await fetchRows(win.startISO, win.endISO);
-          renderTop3(rows); renderRows(rows);
-        }catch(err){ console.error("Leaderboard load error:", err); showError("Error loading leaderboard.", String(err)); }
+          renderTop3(rows);
+          renderRows(rows);
+        }catch(err){
+          console.error("Leaderboard load error:", err);
+          showError("Error loading leaderboard.", String(err));
+        }
       }
       async function paintListPrevious(){
         try{
           const prev = previousLBWindow();
           const rows = await fetchRows(prev.startISO, prev.endISO);
-          renderTop3(rows); renderRows(rows);
-        }catch(err){ console.error("Prev leaderboard load error:", err); showError("Error loading previous leaderboard.", String(err)); }
+        renderTop3(rows);
+          renderRows(rows);
+        }catch(err){
+          console.error("Prev leaderboard load error:", err);
+          showError("Error loading previous leaderboard.", String(err));
+        }
       }
 
       function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
