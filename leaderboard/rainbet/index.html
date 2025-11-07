@@ -17,6 +17,7 @@
   <script src="/js/countdown-roobet.js"></script>
 
   <style>
+    /* small helpers & overrides */
     .warning-message{
       width:90%;max-width:500px;margin:10px auto;background:rgba(255,0,0,.1);
       border:2px solid #ff4444;border-radius:4px;padding:15px;color:#ff4444;font-weight:700;text-align:center;box-sizing:border-box;
@@ -49,7 +50,7 @@
     .r2k-progress-fill{height:100%;width:0;transition:width 900ms ease-in-out;background:linear-gradient(90deg,#1398ff,#48c7ff);box-shadow:0 0 12px rgba(0,153,255,.55)}
     .r2k-progress-fill.over{background:linear-gradient(90deg,#22c55e,#86efac);box-shadow:0 0 12px rgba(34,197,94,.55)}
     .r2k-progress-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#87c8ff;opacity:.95;margin-top:6px}
-    .r2k-progress-meta .strong{Color:#e9f5ff;font-weight:700}
+    .r2k-progress-meta .strong{color:#e9f5ff;font-weight:700}
 
     .tmr{display:flex;align-items:center;gap:10px;margin-top:12px}
     .tmr-label{color:#b6d9ff;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 0 10px rgba(19,152,255,.45)}
@@ -87,69 +88,99 @@
 
     /* Top-3 cards container */
     #top3-cards{
-      display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+      display:flex;flex-direction:column;gap:18px;align-items:center;
       width:min(1120px,95%);margin:10px auto 24px;
     }
 
-    /* Make top3 cards smaller and centered content */
+    /* Strong overrides to force compact, centered top-3 cards */
     #top3-cards .css-jehefp{
-      /* smaller card footprint */
-      flex: 0 1 640px;
-      max-width: 90%;
-      padding: 18px 18px;
-      border-radius: 12px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      background: linear-gradient(180deg, rgba(12,22,36,0.98), rgba(6,18,30,0.95));
-      border:1px solid rgba(56,178,255,0.14);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 36px rgba(255,200,50,0.06);
-      position:relative;
-    }
-
-    /* Reduce logo size inside top3 */
-    #top3-cards .css-jehefp img{
-      width:72px;
-      height:auto;
+      /* force a compact card height and center contents */
+      width:100%;
+      max-width:880px;            /* keep cards narrower than full page */
+      min-width:320px;
+      height:170px !important;   /* reduce vertical footprint */
+      padding:14px 22px !important;
+      box-sizing:border-box;
       border-radius:12px;
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:8px !important;
+      text-align:center !important;
+      background: linear-gradient(180deg, rgba(12,22,36,0.98), rgba(6,18,30,0.95)) !important;
+      border:1px solid rgba(56,178,255,0.12) !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.55) !important;
+      position:relative;
+      overflow:hidden;
     }
 
-    /* Toning down the vertical offsets for the stacked effect */
-    #top3-cards .css-jehefp:nth-child(2){ transform: translateY(10px) scale(1.04); }
-    #top3-cards .css-jehefp:nth-child(3){ transform: translateY(6px) scale(1.00); }
+    /* smaller logo inside top3 */
+    #top3-cards .css-jehefp img{
+      width:56px !important;
+      height:56px !important;
+      border-radius:12px !important;
+      object-fit:contain;
+      margin-top:2px;
+    }
 
-    /* Center and style the wager box inside top cards */
+    /* User name */
+    #top3-cards .css-hca0vm{ margin-top:4px; }
+    #top3-cards .css-15a1lq3{ display:block; font-weight:800; font-size:15px; color:#d6ecff; letter-spacing:0.2px; }
+
+    /* Wager box: center it and make it compact */
     #top3-cards .css-7ahevu,
     #top3-cards .css-7ahevu.ejrykqo0 {
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      padding:10px 16px;
-      min-width:140px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,0.04);
-      background: rgba(255,255,255,0.02);
+      display:inline-flex !important;
+      flex-direction:column !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:6px !important;
+      padding:8px 12px !important;
+      min-width:120px !important;
+      max-width:240px;
+      border-radius:8px !important;
+      border:1px solid rgba(255,255,255,0.03) !important;
+      background: rgba(255,255,255,0.01) !important;
       box-shadow: inset 0 0 8px rgba(0,0,0,0.35);
-      text-align:center;
+      text-align:center !important;
+      margin:6px auto 0 !important;
     }
 
-    /* Ensure wager value is centered and slightly larger */
+    /* Wagered value centered and scaled */
     #top3-cards .lb-money.wager{
       display:block;
       text-align:center;
-      font-size:20px;
-      line-height:1.1;
+      font-size:18px !important;
+      line-height:1.05;
     }
 
-    /* Prize label smaller on top cards to fit */
+    /* Prize smaller and placed under wager */
     #top3-cards .lb-money.prize{
-      font-size:16px;
-      margin-top:4px;
+      font-size:14px !important;
+      margin-top:6px !important;
+      display:block;
     }
+
+    /* reduce the large top-left rank badge */
+    #top3-cards .css-jehefp > div[style]{
+      /* this targets the inline badge created in JS; make it small and unobtrusive */
+      top:10px !important;
+      left:10px !important;
+      padding:5px 8px !important;
+      font-size:12px !important;
+      border-radius:8px !important;
+      background:rgba(0,0,0,0.55) !important;
+    }
+
+    /* reduce stacking transform effect so cards don't appear huge */
+    #top3-cards .css-jehefp.top-card-shadow-1{ box-shadow:0 0 28px #FFD700; }
+    #top3-cards .css-jehefp.top-card-shadow-2{ box-shadow:0 0 28px #C0C0C0; }
+    #top3-cards .css-jehefp.top-card-shadow-3{ box-shadow:0 0 28px #CD7F32; }
+
+    #top3-cards .css-jehefp:nth-child(1){ transform: none !important; }
+    #top3-cards .css-jehefp:nth-child(2){ transform: translateY(6px) scale(1.02) !important; }
+    #top3-cards .css-jehefp:nth-child(3){ transform: translateY(3px) scale(1.00) !important; }
 
     /* Rows 4–10 */
     .lb-row{
@@ -175,9 +206,16 @@
       .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:18px}
       .lb-name{font-size:15px}
 
-      /* Top3 cards take full width on small screens but remain visually compact */
-      #top3-cards .css-jehefp{ flex-basis: 100%; max-width: 100%; padding:14px; }
-      #top3-cards { gap: 18px; }
+      /* Top3 cards stack full width but remain compact */
+      #top3-cards .css-jehefp{
+        width:100%;
+        max-width:100%;
+        height:auto !important;
+        padding:12px 14px !important;
+        gap:6px !important;
+      }
+      #top3-cards .css-jehefp img{ width:48px !important; height:48px !important; }
+      #top3-cards .css-7ahevu{ min-width:0 !important; padding:6px 10px !important; }
     }
   </style>
 </head>
@@ -234,17 +272,17 @@
           <div class="warning-message">It Only Takes One!</div>
 
           <button id="rulesButton" class="prev-lb-btn" style="background:#FFFFFF;cursor:pointer;border:none;color:#000;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2[...]" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2"/></svg>
             RULES
           </button>
 
           <button id="prevLeaderboardBtn" class="prev-lb-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-[...]" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-"/></svg>
             PREVIOUS LEADERBOARD
           </button>
 
           <button id="currentLeaderboardBtn" class="prev-lb-btn" style="display:none;background:#22c55e;color:#000;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h[...]" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h"/></svg>
             CURRENT LEADERBOARD
           </button>
         </span>
@@ -334,7 +372,7 @@
 
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
           integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
-          data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain[...]"}}'
+          data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true}}}'
           crossorigin="anonymous"></script>
 
   <!-- Modal behavior -->
@@ -477,11 +515,10 @@
           const card = document.createElement("div");
           card.className = `css-jehefp ${glows[idx]||""}`;
           card.style.position = "relative";
-          // lighter offsets now handled in CSS :nth-child
           card.innerHTML = `
             <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
-            <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
-            <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
+            <img src="${logoSrc}" style="width:56px;height:56px;border-radius:12px;">
+            <div class="css-hca0vm"><span class="css-15a1lq3">${masked}</span></div>
             <div class="css-7ahevu ejrykqo0">
               <span class="lb-label">Wagered</span>
               <span class="lb-money wager">${wagered}</span>
