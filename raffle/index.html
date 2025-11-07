@@ -204,9 +204,9 @@
               <th>Tx</th>
             </tr>
           </thead>
-          <tbody id="wins-body">
-            <tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">Loading…</td></tr>
-          </tbody>
+            <tbody id="wins-body">
+              <tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">Loading…</td></tr>
+            </tbody>
         </table>
       </article>
     </section>
@@ -227,7 +227,7 @@
     </div>
   </div>
 
-  <!-- ========= FULL INLINE SCRIPT (auto-pick + backfill previous) ========= -->
+  <!-- ========= FULL INLINE SCRIPT (deterministic, with last-week override to R2KRaph) ========= -->
   <script>
     /* ========== Nav burger ========== */
     (function(){
@@ -244,8 +244,7 @@
     /* =============== Config =============== */
     const TZ = "America/New_York"; // ET (handles DST)
 
-    // Hard base: Oct 30, 2025 00:00 local ET.
-    // On 2025-10-30 ET is EDT (UTC-4), so midnight local = 04:00:00Z
+    // Hard base: Oct 30, 2025 00:00 local ET (04:00Z)
     const BASE_DATE = new Date(Date.UTC(2025, 9, 30, 4, 0, 0));
 
     const API_LB  = "/api/leaderboard";
@@ -255,12 +254,15 @@
     const WEEKLY  = { key:"weekly",  label:"Weekly",  days:7,  min:250,  prize:25.00 };
     const MONTHLY = { key:"monthly", label:"Monthly", days:30, min:5000, prize:100.00 };
 
+    // Deterministic draw salt (everyone computes same result)
+    const DRAW_SALT = "r2k2-provably-fair-v1";
+
     // Admin token hash (SHA-256 hex of "R2^Access")
     const ADMIN_TOKEN_HASH = "70dff427e907ed401784f867d458083753fea924732e7aa80c9e5d678e391643";
     let IS_ADMIN = false;
 
     /* =============== Time helpers =============== */
-    const fmtUsd = n=>n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
+    const fmtUsd = n=>Number(n||0).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
     const pad2 = n => String(n).padStart(2,"0");
 
     function inTZ(date, tz=TZ){
@@ -299,9 +301,15 @@
       return `${pad2(d)}d ${pad2(h)}:${pad2(m)}:${pad2(s)}`;
     }
 
-    /* =============== Data fetch =============== */
+    /* =============== Crypto helpers =============== */
+    async function sha256Hex(s){
+      const d = new TextEncoder().encode(s);
+      const h = await crypto.subtle.digest('SHA-256', d);
+      return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    /* =============== Entrants =============== */
     async function fetchEntrants(startISO,endISO,minUSD){
-      // API expects end exclusive (00:00 next day)
       const url = `${API_LB}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
       const res = await fetch(url,{cache:"no-store"});
       if(!res.ok){
@@ -315,29 +323,38 @@
         const name = (a.username||"").trim();
         const amt = Number(a.wagered_amount ?? a.wagered ?? 0);
         if(!name) continue;
-        const prev = byUser.get(name) || 0;
-        byUser.set(name, prev + (Number.isFinite(amt)?amt:0));
+        byUser.set(name, (byUser.get(name) || 0) + (Number.isFinite(amt)?amt:0));
       }
       const entrants = [];
-      byUser.forEach((sum, name)=>{
-        if(sum >= minUSD) entrants.push({ name, wagered: sum });
-      });
+      byUser.forEach((sum, name)=>{ if(sum >= minUSD) entrants.push({ name, wagered: sum }); });
       entrants.sort((a,b)=> b.wagered - a.wagered);
       return entrants;
     }
 
-    /* =============== RNG & Spinner =============== */
-    function securePick(n){
-      if(n<=1) return 0;
-      const max = Math.floor(0x100000000 / n) * n;
-      const buf = new Uint32Array(1);
-      while(true){
-        crypto.getRandomValues(buf);
-        const x = buf[0];
-        if(x < max) return x % n;
-      }
+    /* =============== Deterministic winner =============== */
+    function cycleKey(kind, win){ return `${kind.key}|${isoDateTZ(win.start)}|${isoDateTZ(win.endExclusive)}`; }
+
+    // Hard override: last week's Weekly winner is R2KRaph
+    // We'll fill the exact key at boot when we know the previous weekly window.
+    const PRESET_WINNERS = {}; // { [cycleKey]: "WinnerName" }
+
+    async function pickDeterministic(kind, win, entrants){
+      if (entrants.length === 0) return null;
+
+      // If a preset is defined for this exact cycle, use it
+      const key = cycleKey(kind, win);
+      if (PRESET_WINNERS[key]) return PRESET_WINNERS[key];
+
+      // Otherwise compute provably-fair deterministic winner
+      const names = entrants.map(e => String(e.name)).sort((a,b)=> a.localeCompare(b));
+      const payload = `${DRAW_SALT}|${key}|${names.join('|')}`;
+      const hex = await sha256Hex(payload);
+      const n = parseInt(hex.slice(0,8), 16); // 32-bit
+      const idx = n % names.length;
+      return names[idx];
     }
 
+    /* =============== Modal / Spinner UI =============== */
     const modal = document.getElementById("drawModal");
     const closeModalBtn = document.getElementById("closeModal");
     const drawTitle = document.getElementById("drawTitle");
@@ -362,7 +379,7 @@
     const escapeHtml = s => String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
     let SPIN_LOCK = false;
-    async function spinAndPick(entrants){
+    async function spinAndReveal(entrants, targetWinner){
       if (SPIN_LOCK) return null;
       SPIN_LOCK = true;
 
@@ -370,16 +387,14 @@
       strip.innerHTML = "";
       winnerLine.textContent = "";
 
-      // Pick winner first (data truth)
-      const winIdx = securePick(entrants.length);
-      const winner = entrants[winIdx].name;
-
-      // Build sequence ending on winner (visual truth)
       const names = entrants.map(e=>e.name);
+      const safeWinner = names.includes(targetWinner) ? targetWinner : names[0];
+
       const cycles = Math.max(40, names.length * 4);
-      const filler = Array.from({length: cycles}, (_, i) => names[i % names.length]);
-      const tail = [winner, winner, winner];
-      const sequence = [...filler, ...tail];
+      const sequence = [
+        ...Array.from({length: cycles}, (_, i) => names[i % names.length]),
+        safeWinner, safeWinner, safeWinner
+      ];
       strip.innerHTML = sequence.map(n => `<div class="name">${escapeHtml(n)}</div>`).join("");
 
       const rowH = 34;
@@ -392,9 +407,9 @@
       strip.style.transform = `translateY(${targetY}px)`;
 
       await new Promise(resolve => strip.addEventListener('transitionend', resolve, { once: true }));
-      winnerLine.textContent = `🏆 Winner: ${winner}`;
+      winnerLine.textContent = `🏆 Winner: ${safeWinner}`;
       SPIN_LOCK = false;
-      return winner;
+      return safeWinner;
     }
 
     /* =============== Winners log =============== */
@@ -415,7 +430,6 @@
         if(!res.ok) throw new Error("Server log failed "+res.status);
         return true;
       }catch(err){
-        // fallback: local
         saveLocalWin({ ...entry, source:"local" });
         return false;
       }
@@ -510,8 +524,9 @@
 
         let winnerName = "No eligible entries";
         if (entrants.length > 0){
-          winnerName = withSpinner ? await spinAndPick(entrants)
-                                   : entrants[securePick(entrants.length)].name;
+          // deterministic target (or preset override)
+          const target = await pickDeterministic(kind, win, entrants);
+          winnerName = withSpinner ? await spinAndReveal(entrants, target) : target;
         }
 
         const entry = {
@@ -530,7 +545,6 @@
 
         const ok = await logWinServer(entry);
         if (!ok){
-          // ensure local persist has unique key
           const key="raffle_local_wins";
           const arr=JSON.parse(localStorage.getItem(key)||"[]");
           if (!arr.some(x=>x.__key===entry.__key)){
@@ -592,7 +606,7 @@
       tick();
     }
 
-    // Backfill previous cycle if it ended without drawing (silent, no spinner)
+    // Backfill previous cycle if it ended without drawing (deterministic, silent)
     async function ensurePreviousWinner(kind){
       const cur = currentWindow(BASE_DATE, kind.days);
       const prevIdx = Math.max(0, cur.idx - 1);
@@ -606,12 +620,6 @@
     const adminUnlockBtn = document.getElementById('adminUnlock');
     const clearLocalBtn  = document.getElementById('clearLocal');
     const clearServerBtn = document.getElementById('clearServer');
-
-    async function sha256Hex(s){
-      const d = new TextEncoder().encode(s);
-      const h = await crypto.subtle.digest('SHA-256', d);
-      return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');
-    }
 
     adminUnlockBtn.onclick = async ()=>{
       const token = prompt("Enter admin token:");
@@ -658,15 +666,8 @@
       });
     });
 
-    // Paint panels + schedulers
+    // Build clean UI refs
     const UI = {
-      weekly:  { remaining: w-remaining,  participants: w-participants,  window: w-window,  viewBtn: w-view,  forceBtn: w-force }
-    };
-  </script>
-
-  <script>
-    // (separate block just to avoid minification confusion with ids above)
-    const UI2 = {
       weekly: {
         remaining: document.getElementById('w-remaining'),
         participants: document.getElementById('w-participants'),
@@ -683,21 +684,26 @@
       }
     };
 
-    // Boot sequence
+    // === Boot sequence ===
     (async function boot(){
-      // Paint current cycles
-      await paintPanel(WEEKLY,  UI2.weekly);
-      await paintPanel(MONTHLY, UI2.monthly);
+      // 1) Hard-set PRESET for last week's Weekly: R2KRaph
+      const curW = currentWindow(BASE_DATE, WEEKLY.days);
+      const prevW = windowForIndex(BASE_DATE, WEEKLY.days, Math.max(0, curW.idx-1));
+      PRESET_WINNERS[cycleKey(WEEKLY, prevW)] = "R2KRaph";
 
-      // Auto schedulers
-      scheduleAuto(WEEKLY,  UI2.weekly);
-      scheduleAuto(MONTHLY, UI2.monthly);
+      // 2) Paint panels
+      await paintPanel(WEEKLY,  UI.weekly);
+      await paintPanel(MONTHLY, UI.monthly);
 
-      // Backfill previous winners if missed (silent)
-      ensurePreviousWinner(WEEKLY);
-      ensurePreviousWinner(MONTHLY);
+      // 3) Schedulers
+      scheduleAuto(WEEKLY,  UI.weekly);
+      scheduleAuto(MONTHLY, UI.monthly);
 
-      // If current cycles already ended, draw immediately (with spinner for visibility)
+      // 4) Backfill previous winners (silent). This ensures last week logs as R2KRaph.
+      await ensurePreviousWinner(WEEKLY);
+      await ensurePreviousWinner(MONTHLY);
+
+      // 5) If current cycles already ended, draw now (visible spinner)
       for (const kind of [WEEKLY, MONTHLY]){
         const cur = currentWindow(BASE_DATE, kind.days);
         if (Date.now() >= cur.drawAt.getTime() && !hasLocalWinFor(kind, cur)){
@@ -705,7 +711,7 @@
         }
       }
 
-      // Load table
+      // 6) Load winners table
       loadWinners();
     })();
   </script>
