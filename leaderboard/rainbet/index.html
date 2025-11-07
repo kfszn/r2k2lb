@@ -24,17 +24,14 @@
     @media (max-width:768px){.warning-message{width:95%;padding:12px;font-size:14px;margin:10px auto}}
 
     /* ===== Modal ===== */
-    .modal{display:none;position:fixed;z-index:1000;inset:0;overflow:auto;background:rgba(0,0,0,.7);opacity:0;transition:opacity .5s}
-    .modal.show{opacity:1}
+    .modal{display:none;position:fixed;z-index:1000;inset:0;overflow:auto;background:rgba(0,0,0,.7)}
     .modal-content{
       background:linear-gradient(135deg,#1f2937,#111827);margin:10% auto;padding:25px;border:1px solid rgba(255,255,255,.1);
-      border-radius:12px;width:80%;max-width:600px;box-shadow:0 10px 25px rgba(0,0,0,.5);transform:translateY(-20px);transition:.5s;position:relative
+      border-radius:12px;width:80%;max-width:600px;box-shadow:0 10px 25px rgba(0,0,0,.5);position:relative
     }
-    .modal.show .modal-content{transform:translateY(0)}
     .modal-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:15px;margin-bottom:15px}
     .modal-title{font-size:24px;font-weight:700;color:#fff;margin:0}
-    .close{color:#aaa;font-size:28px;font-weight:700;cursor:pointer;transition:color .2s}
-    .close:hover{color:#fff}
+    .close{color:#aaa;font-size:28px;font-weight:700;cursor:pointer}
     .modal-body{color:#d1d5db;font-size:16px;line-height:1.6}
     .modal-body li{margin-bottom:10px;text-align:left}
     .modal-body ul{padding-left:20px}
@@ -52,12 +49,11 @@
     .r2k-progress-meta .strong{color:#e9f5ff;font-weight:700}
 
     .tmr{display:flex;align-items:center;gap:10px;margin-top:12px}
-    .tmr-label{color:#b6d9ff;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 0 10px rgba(19,152,255,.45)}
-    .tmr-value{color:#fff;font-weight:900;letter-spacing:.5px;font-size:18px;text-shadow:0 0 16px rgba(19,152,255,.8),0 0 25px rgba(19,152,255,.4)}
+    .tmr-label{color:#b6d9ff;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+    .tmr-value{color:#fff;font-weight:900;letter-spacing:.5px;font-size:18px}
     @media (max-width:640px){.tmr-value{font-size:16px}}
 
-    .prev-lb-btn{display:inline-flex;align-items:center;gap:8px;background:#2775ca;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;border:2px solid rgba(255,255,255,.2);box-shadow:0 4px 15px rgba(39,117,202,.2);position:relative;overflow:hidden;margin:10px 10px 10px 0;transition:all .2s cubic-bezier(.4,0,.2,1)}
-    .prev-lb-btn:hover{transform:translateY(-2px) scale(1.02);background:#2775ca;box-shadow:0 6px 20px rgba(39,117,202,.4);border-color:rgba(255,255,255,.4);color:#000;text-decoration:none}
+    .prev-lb-btn{display:inline-flex;align-items:center;gap:8px;background:#2775ca;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;border:2px solid rgba(255,255,255,.2);box-shadow:0 4px 15px rgba(39,117,202,.2);margin:10px 10px 10px 0}
     .prev-lb-btn svg{width:18px;height:18px}
     @media (max-width:768px){.prev-lb-btn{width:100%;margin-right:0;text-align:center;justify-content:center}}
 
@@ -67,17 +63,26 @@
       display:flex;flex-direction:column;gap:12px;
     }
 
-    .lb-money{font-weight:900;letter-spacing:.3px;white-space:nowrap;text-shadow:0 0 12px rgba(19,152,255,.35)}
+    /* Money tokens */
+    .lb-money{font-weight:900;letter-spacing:.3px;white-space:nowrap}
+    /* Wagered must be PURE WHITE everywhere (override vendor styles) */
+    .lb-money.wager,
+    #top3-cards .lb-money.wager,
+    .wager-amount{
+      color:#fff !important;
+      -webkit-text-fill-color:#fff !important;
+      text-shadow:none !important;
+      filter:none !important;
+      background:transparent !important;
+    }
     /* Prize = glowing green */
     .lb-money.prize{
       color:#39ff93;
       text-shadow:0 0 6px rgba(57,255,147,.85),0 0 14px rgba(57,255,147,.55),0 0 28px rgba(57,255,147,.35);
       filter:drop-shadow(0 0 6px rgba(57,255,147,.35));
     }
-    /* Wagered = pure white (iOS-safe) */
-    .lb-money.wager{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 0 8px rgba(19,152,255,.25)}
 
-    /* Top-3 cards container */
+    /* Top-3 container */
     #top3-cards{
       display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
       width:min(1120px,95%);margin:10px auto 24px;
@@ -86,17 +91,16 @@
     .top-card-shadow-2{box-shadow:0 0 40px #C0C0C0}
     .top-card-shadow-3{box-shadow:0 0 40px #CD7F32}
 
-    /* Top-3: WAGERED pill */
-    .wagered-wrap{display:flex;align-items:center;gap:12px;justify-content:center;margin-top:8px}
+    /* Top-3: centered WAGERED pill */
+    .wagered-wrap{display:flex;align-items:center;gap:12px;justify-content:center;margin-top:10px}
     .wager-label{font-size:12px;color:#9ac9ff;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
     .wager-box{
       display:flex;align-items:center;justify-content:center;
-      min-width:220px;height:56px;padding:0 16px;border-radius:12px;
+      min-width:240px;height:56px;padding:0 16px;border-radius:12px;
       border:1px solid rgba(135,200,255,.25);
-      background:rgba(11,15,23,.6);
+      background:rgba(11,15,23,.65);
       box-shadow:inset 0 0 12px rgba(19,152,255,.18),0 0 10px rgba(19,152,255,.15);
     }
-    .wager-amount{line-height:1}
 
     /* Rows 4–10 */
     .lb-row{
@@ -285,8 +289,8 @@
     const modal = document.getElementById("rulesModal");
     const btn = document.getElementById("rulesButton");
     const span = document.getElementsByClassName("close")[0];
-    btn?.addEventListener('click', ()=>{ if(!modal) return; modal.style.display="block"; document.body.style.overflow="hidden"; setTimeout(()=>modal.classList.add("show"),10) });
-    function closeModal(){ if(!modal) return; modal.classList.remove("show"); setTimeout(()=>{ modal.style.display="none"; document.body.style.overflow="auto"; },500) }
+    btn?.addEventListener('click', ()=>{ if(!modal) return; modal.style.display="block"; document.body.style.overflow="hidden"; });
+    function closeModal(){ if(!modal) return; modal.style.display="none"; document.body.style.overflow="auto"; }
     span?.addEventListener('click', closeModal);
     window.addEventListener('click',(e)=>{ if(e.target===modal) closeModal(); });
     document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal && modal.style.display==='block') closeModal(); });
@@ -405,7 +409,7 @@
         rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
       }
 
-      /* ====== Renderers ====== */
+      /* ===== Renderers ===== */
       function renderTop3(rows){
         const top3 = document.getElementById("top3-cards");
         if (!top3) return;
@@ -566,20 +570,6 @@
       });
 
       (function(){
-        const btn = document.getElementById('rewardsBtn');
-        const menu = document.getElementById('rewardsMenu');
-        if(btn && menu){
-          btn.addEventListener('click', ()=>{
-            const open = menu.style.display==='block';
-            menu.style.display = open ? 'none' : 'block';
-            btn.setAttribute('aria-expanded', String(!open));
-          });
-          document.addEventListener('click',(e)=>{
-            if(!menu?.contains(e.target) && e.target!==btn){
-              if(menu){ menu.style.display='none'; btn.setAttribute('aria-expanded','false'); }
-            }
-          });
-        }
         const burger = document.getElementById('hamburger');
         const nav = document.getElementById('r2kNav');
         if(burger && nav){
