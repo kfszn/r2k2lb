@@ -1,3 +1,5 @@
+IDK WHAT IT RETURNS I SENT U THE CODE, MAKE IT WORK., 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,163 +45,579 @@
     .pill .cap{font-size:12px;color:#a6c9ef;margin-top:4px}
     .stat{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;margin-top:18px}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 16px;border-radius:12px;margin-top:18px;border:1px solid #2b2466;background:rgba(107,92,255,.1);color:#f0eaff;font-weight:800;cursor:pointer;transition:.18s}
+    .btn:hover{filter:brightness(1.07);box-shadow:0 0 18px rgba(107,92,255,.25) inset}
     .btn.alt{border-color:#0f5da1;background:linear-gradient(90deg,#22b1ff,#1398ff);color:#08111a;box-shadow:0 6px 20px rgba(19,152,255,.35)}
+
+    .bar{height:12px;background:#081321;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+    .fill{height:100%;width:0;background:linear-gradient(90deg,#1398ff,#48c7ff);box-shadow:0 0 12px rgba(0,153,255,.55);transition:width .8s ease}
+    .meta{display:flex;justify-content:space-between;font-size:12px;color:#a6c9ef;margin-top:6px}
+    .meta .strong{color:#fff;font-weight:800}
+
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:3000}
     .modal .sheet{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:640px;width:92%;padding:18px}
     .close-x{background:transparent;border:1px solid var(--border);padding:8px 12px;border-radius:10px;color:#cfe9ff;cursor:pointer}
     .roller{margin:16px auto 8px;height:48px;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#0a101a}
     .roller .strip{display:flex;flex-direction:column;gap:0;padding:10px;transform:translateY(0);transition:transform 2.2s cubic-bezier(.2,.7,0,1)}
     .strip .name{height:34px;line-height:34px;text-align:center;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
     table.wins{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
     .wins th,.wins td{border-bottom:1px solid #0f1c2c;padding:10px 8px;text-align:left}
     .wins th{color:#cfe9ff;font-weight:900}
   </style>
 </head>
-
 <body>
-<header id="r2kHeader">
-  <div class="h-inner">
-    <a href="/" class="brand"><img src="/assets/logo.png" class="logo" alt="R2K2"><div class="name">R2K<span class="accent">2</span></div></a>
-    <nav class="nav" id="r2kNav"><a href="/">Home</a><a href="/leaderboard/rainbet">Leaderboard</a><a href="/raffle" aria-current="page">Raffle</a><a href="/challenges">Challenges</a></nav>
-    <div class="actions"><a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank">Join Rainbet</a></div>
-    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+  <header id="r2kHeader">
+    <div class="h-inner">
+      <a href="/" class="brand" aria-label="R2K2 Home">
+        <img src="/assets/logo.png" class="logo" alt="R2K2">
+        <div class="name">R2K<span class="accent">2</span></div>
+      </a>
+      <nav class="nav" id="r2kNav">
+        <a href="/">Home</a>
+        <a href="/leaderboard/rainbet">Leaderboard</a>
+        <a href="/raffle" aria-current="page">Raffle</a>
+        <a href="/challenges">Challenges</a>
+      </nav>
+      <div class="actions">
+        <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
+      </div>
+      <div class="hamburger" id="hamburger" aria-label="Menu" aria-controls="r2kNav" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1 class="hero-title">R2K2 <span style="color:var(--blue);text-shadow:0 0 10px rgba(19,152,255,.45)">Raffles</span></h1>
+    <p class="hero-sub">One ticket per qualified entrant. Draws run automatically. Good luck! ✨</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="weekly">Weekly</button>
+      <button class="tab-btn" data-tab="monthly">Monthly</button>
+      <button class="tab-btn" data-tab="previous">Previous Winners</button>
+    </div>
+
+    <!-- Admin controls -->
+    <div style="display:flex;justify-content:center;gap:10px;margin-top:12px">
+      <button id="adminUnlock" class="tab-btn" type="button" title="Unlock admin actions">🔒 Admin</button>
+      <button id="clearLocal" class="tab-btn" type="button" style="display:none" title="Clear local winners only">🧹 Clear Local Winners</button>
+      <button id="clearServer" class="tab-btn" type="button" style="display:none" title="Attempt to clear server winners (needs backend support)">🗑️ Clear Server Winners</button>
+    </div>
+
+    <!-- WEEKLY -->
+    <section class="panel active" id="panel-weekly">
+      <div class="grid">
+        <article class="card">
+          <div class="prize" id="w-prize">$25.00</div>
+          <div class="prize-label">WEEKLY CASH • 1 WINNER</div>
+
+          <div class="pill-row">
+            <div class="pill">
+              <div class="big" id="w-min">$250.00</div>
+              <div class="cap">Min Wager (7 days)</div>
+            </div>
+            <div class="pill">
+              <div class="big" id="w-remaining">--</div>
+              <div class="cap">Remaining (ET)</div>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div class="count" id="w-participants">0</div>
+            <div class="cap">Qualified Entrants</div>
+          </div>
+
+          <div class="meta" style="margin-top:10px">
+            <span>Window:</span>
+            <span id="w-window">—</span>
+          </div>
+
+          <button class="btn alt" id="w-view">👥 View Entrants</button>
+          <button class="btn" id="w-force" disabled title="Admin only">🎬 Force Draw (admin)</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- MONTHLY -->
+    <section class="panel" id="panel-monthly">
+      <div class="grid">
+        <article class="card">
+          <div class="prize" id="m-prize">$100.00</div>
+          <div class="prize-label">MONTHLY CASH • 1 WINNER</div>
+
+          <div class="pill-row">
+            <div class="pill">
+              <div class="big" id="m-min">$5,000.00</div>
+              <div class="cap">Min Wager (30 days)</div>
+            </div>
+            <div class="pill">
+              <div class="big" id="m-remaining">--</div>
+              <div class="cap">Remaining (ET)</div>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div class="count" id="m-participants">0</div>
+            <div class="cap">Qualified Entrants</div>
+          </div>
+
+          <div class="meta" style="margin-top:10px">
+            <span>Window:</span>
+            <span id="m-window">—</span>
+          </div>
+
+          <button class="btn alt" id="m-view">👥 View Entrants</button>
+          <button class="btn" id="m-force" disabled title="Admin only">🎬 Force Draw (admin)</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- PREVIOUS WINNERS -->
+    <section class="panel" id="panel-previous">
+      <article class="card">
+        <h3 style="margin:0 0 8px 0">Previous Winners</h3>
+        <p class="hero-sub" style="text-align:left;margin:0 0 10px 0">Auto-logged after each draw. Server entries shown first.</p>
+        <table class="wins" id="wins-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Raffle</th>
+              <th>Winner</th>
+              <th>Prize</th>
+              <th>Entries</th>
+              <th>Tx</th>
+            </tr>
+          </thead>
+          <tbody id="wins-body">
+            <tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">Loading…</td></tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+  </main>
+
+  <!-- Draw / Entrants Modal -->
+  <div class="modal" id="drawModal" aria-hidden="true">
+    <div class="sheet">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3 id="drawTitle" style="margin:0">Drawing…</h3>
+        <button class="close-x" id="closeModal">Close</button>
+      </div>
+      <div class="roller" id="roller" style="display:none">
+        <div class="strip" id="strip"></div>
+      </div>
+      <div id="entrantList" style="max-height:360px;overflow:auto;border:1px dashed var(--border);border-radius:10px;margin-top:10px;padding:8px 0"></div>
+      <div id="winnerLine" style="margin-top:12px;font-weight:900;font-size:18px"></div>
+    </div>
   </div>
-</header>
 
-<main class="wrap">
-  <h1 class="hero-title">R2K2 <span style="color:var(--blue)">Raffles</span></h1>
-  <p class="hero-sub">One ticket per qualified entrant. Draws run automatically.</p>
+  <!-- ====== JS (inline, ET, hard start 10/30/2025, draw 23:59:59 on day 7/30, admin token) ====== -->
+  <script>
+    /* ========== Nav burger ========== */
+    (function(){
+      const burger=document.getElementById('hamburger');
+      const nav=document.getElementById('r2kNav');
+      if(burger&&nav){
+        burger.addEventListener('click',()=>{
+          const open = nav.classList.toggle('show');
+          burger.setAttribute('aria-expanded', String(open));
+        });
+      }
+    })();
 
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="weekly">Weekly</button>
-    <button class="tab-btn" data-tab="monthly">Monthly</button>
-    <button class="tab-btn" data-tab="previous">Previous Winners</button>
-  </div>
+    /* =============== Config =============== */
+    const TZ = "America/New_York"; // ET (handles DST)
 
-  <section class="panel active" id="panel-weekly">
-    <div class="grid"><article class="card">
-      <div class="prize">$25.00</div><div class="prize-label">WEEKLY • 1 WINNER</div>
-      <div class="pill-row"><div class="pill"><div class="big">$250.00</div><div class="cap">Min Wager</div></div><div class="pill"><div class="big" id="w-remaining">--</div><div class="cap">Remaining</div></div></div>
-      <div class="stat"><div class="count" id="w-participants">0</div><div class="cap">Qualified Entrants</div></div>
-      <div class="meta"><span>Window:</span><span id="w-window"></span></div>
-      <button class="btn alt" id="w-view">👥 View Entrants</button>
-    </article></div>
-  </section>
+    // Hard base: Oct 30, 2025 00:00 local ET.
+    // On 2025-10-30 ET is EDT (UTC-4), so midnight local = 04:00:00Z
+    const BASE_DATE = new Date(Date.UTC(2025, 9, 30, 4, 0, 0));
 
-  <section class="panel" id="panel-monthly">
-    <div class="grid"><article class="card">
-      <div class="prize">$100.00</div><div class="prize-label">MONTHLY • 1 WINNER</div>
-      <div class="pill-row"><div class="pill"><div class="big">$5,000.00</div><div class="cap">Min Wager</div></div><div class="pill"><div class="big" id="m-remaining">--</div><div class="cap">Remaining</div></div></div>
-      <div class="stat"><div class="count" id="m-participants">0</div><div class="cap">Qualified Entrants</div></div>
-      <div class="meta"><span>Window:</span><span id="m-window"></span></div>
-      <button class="btn alt" id="m-view">👥 View Entrants</button>
-    </article></div>
-  </section>
+    const API_LB  = "/api/leaderboard";
+    const API_LOG = "/api/raffle/log";
+    const API_WINS= "/api/raffle/winners?limit=50";
 
-  <section class="panel" id="panel-previous">
-    <article class="card">
-      <h3>Previous Winners</h3>
-      <table class="wins"><thead><tr><th>Date</th><th>Raffle</th><th>Winner</th><th>Prize</th><th>Entries</th></tr></thead><tbody id="wins-body"><tr><td colspan="5">Loading…</td></tr></tbody></table>
-    </article>
-  </section>
-</main>
+    const WEEKLY  = { label:"Weekly",  days:7,  min:250,  prize:25.00 };
+    const MONTHLY = { label:"Monthly", days:30, min:5000, prize:100.00 };
 
-<div class="modal" id="drawModal">
-  <div class="sheet">
-    <div style="display:flex;justify-content:space-between"><h3 id="drawTitle">Drawing…</h3><button class="close-x" id="closeModal">Close</button></div>
-    <div class="roller" id="roller" style="display:none"><div class="strip" id="strip"></div></div>
-    <div id="entrantList" style="max-height:360px;overflow:auto;border:1px dashed var(--border);border-radius:10px;margin-top:10px;padding:8px 0"></div>
-    <div id="winnerLine" style="margin-top:12px;font-weight:900;font-size:18px"></div>
-  </div>
-</div>
+    // Admin token hash (SHA-256 hex of "R2^Access")
+    const ADMIN_TOKEN_HASH = "70dff427e907ed401784f867d458083753fea924732e7aa80c9e5d678e391643";
+    let IS_ADMIN = false;
 
-<script>
-const TZ = "America/New_York";
-const BASE_DATE = new Date(Date.UTC(2025, 9, 30, 4, 0, 0));
-const WEEKLY  = { label:"Weekly",  days:7,  min:250,  prize:25 };
-const MONTHLY = { label:"Monthly", days:30, min:5000, prize:100 };
-const API_LB="/api/leaderboard"; const API_WINS="/api/raffle/winners?limit=100"; const API_LOG="/api/raffle/log";
+    // Clean old anchors
+    (()=>{
+      ['raffle_anchor_weekly','raffle_anchor_monthly'].forEach(k => localStorage.removeItem(k));
+    })();
 
-const modal=document.getElementById("drawModal"),strip=document.getElementById("strip"),roller=document.getElementById("roller"),winnerLine=document.getElementById("winnerLine"),entrantList=document.getElementById("entrantList");
-document.getElementById("closeModal").onclick=()=>{modal.style.display="none";strip.style.transition="none";strip.style.transform="translateY(0)"};
-function showModal(){modal.style.display="flex";}
+    /* =============== Time helpers =============== */
+    const fmtUsd = n=>n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
+    const pad2 = n => String(n).padStart(2,"0");
 
-function pad(n){return String(n).padStart(2,"0")}
-function inTZ(d){return new Date(d.toLocaleString("en-US",{timeZone:TZ}))}
-function windowInfo(days){
-  const now=new Date(),base=BASE_DATE,ms=86400000,len=(days+1)*ms,k=Math.floor((now-base)/len),start=new Date(base.getTime()+k*len),endEx=new Date(start.getTime()+len),endIn=new Date(endEx.getTime()-1000),drawAt=endIn;
-  return {start,endEx,endIn,drawAt,startISO:fmt(start),endExISO:fmt(endEx),endInISO:fmt(endIn)};
-}
-function fmt(d){const t=inTZ(d);return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`}
+    function inTZ(date, tz=TZ){
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz,
+        year:'numeric', month:'2-digit', day:'2-digit',
+        hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+      }).formatToParts(date);
+      const get = t => parts.find(p => p.type===t)?.value;
+      return { y:+get('year'), m:+get('month'), d:+get('day'), hh:+get('hour'), mm:+get('minute'), ss:+get('second') };
+    }
+    function isoDateTZ(d, tz = TZ){ const p = inTZ(d, tz); return `${p.y}-${pad2(p.m)}-${pad2(p.d)}`; }
 
-async function fetchServerWinners(){
-  try{const r=await fetch(API_WINS);if(!r.ok)return[];const j=await r.json();return Array.isArray(j)?j:(j.winners||[]);}catch{return[];}
-}
+    // Compute rolling window from BASE with an extra day so the draw is 23:59:59 on day N.
+    // Returns: { start, endExclusive (00:00 next day), drawAt (23:59:59 final day) }
+    function windowFromBase(baseDate, days){
+      const now = new Date();
+      const dayMs = 86400000;
+      const len = (days + 1) * dayMs;              // <- extra day so draw happens end of the Nth day
+      const k = (now < baseDate) ? 0 : Math.floor((now.getTime() - baseDate.getTime()) / len);
+      const start = new Date(baseDate.getTime() + k * len);
+      const endExclusive = new Date(start.getTime() + len);     // 00:00 the day AFTER the shown range
+      const drawAt = new Date(endExclusive.getTime() - 1000);   // 23:59:59 of the final shown day
+      return { start, endExclusive, drawAt };
+    }
 
-async function ensureR2KRAPHInserted(){
-  const period={start:"2025-10-30",end_inclusive:"2025-11-05"};
-  const all=await fetchServerWinners();
-  if(all.some(w=>w.raffle==="Weekly"&&w.window&&w.window.start===period.start))return;
-  await fetch(API_LOG,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({date:new Date().toISOString(),raffle:"Weekly",winner:"R2KRAPH",prize:25,entries:1,window:{start:period.start,end_inclusive:period.end_inclusive,end_exclusive:"2025-11-06"}})});
-}
+    function humanWindow(start, endExclusive){
+      const endShown = new Date(endExclusive.getTime() - 1000); // inclusive day for display
+      const s = inTZ(start); const e = inTZ(endShown);
+      return `${s.y}-${pad2(s.m)}-${pad2(s.d)} → ${e.y}-${pad2(e.m)}-${pad2(e.d)}`;
+    }
 
-async function fetchEntrants(startISO,endExclusiveISO,min){
-  const r=await fetch(`${API_LB}?start_at=${startISO}&end_at=${endExclusiveISO}`);
-  const j=await r.json(),arr=j.affiliates||j||[];
-  const map=new Map(); for(const a of arr){const n=a.username?.trim();const w=+a.wagered_amount||0;if(w>=min)map.set(n,w);}
-  return [...map].map(([name,wagered])=>({name,wagered})).sort((a,b)=>b.wagered-a.wagered);
-}
+    function remaining(toMoment){
+      const ms = toMoment.getTime() - Date.now();
+      const S = Math.max(0, Math.floor(ms/1000));
+      const d = Math.floor(S/86400), h = Math.floor((S%86400)/3600), m = Math.floor((S%3600)/60), s = S%60;
+      return `${pad2(d)}d ${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+    }
 
-function renderEntrants(es){entrantList.innerHTML=es.length?es.map(e=>`<div style="padding:6px 12px;display:flex;justify-content:space-between;border-bottom:1px solid #0f1c2c"><span>${e.name}</span><span>${e.wagered.toFixed(2)}</span></div>`).join(""):`<div style="padding:10px;color:#a6c9ef">No entrants</div>`;}
+    /* =============== Data fetch =============== */
+    async function fetchEntrants(startISO,endISO,minUSD){
+      // API expects end exclusive (00:00 next day)
+      const url = `${API_LB}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
+      const res = await fetch(url,{cache:"no-store"});
+      if(!res.ok){
+        const txt = await res.text().catch(()=> "");
+        throw new Error(`Leaderboard API ${res.status}\n${txt.slice(0,200)}`);
+      }
+      const json = await res.json();
+      const arr = Array.isArray(json) ? json : (json.affiliates || []);
+      const byUser = new Map();
+      for(const a of arr){
+        const name = (a.username||"").trim();
+        const amt = Number(a.wagered_amount ?? a.wagered ?? 0);
+        if(!name) continue;
+        const prev = byUser.get(name) || 0;
+        byUser.set(name, prev + (Number.isFinite(amt)?amt:0));
+      }
+      const entrants = [];
+      byUser.forEach((sum, name)=>{
+        if(sum >= minUSD) entrants.push({ name, wagered: sum });
+      });
+      entrants.sort((a,b)=> b.wagered - a.wagered);
+      return entrants;
+    }
 
-async function revealWinner(name){
-  roller.style.display="block";
-  const names=[...Array(50)].map(()=>name);
-  strip.innerHTML=names.map(n=>`<div class="name">${n}</div>`).join("");
-  strip.style.transition="transform 1.5s ease-out";
-  strip.style.transform=`translateY(-${(names.length-1)*34}px)`;
-  await new Promise(res=>strip.addEventListener("transitionend",res,{once:true}));
-  winnerLine.textContent=`🏆 Winner: ${name}`;
-}
+    /* =============== RNG & Spinner (data-first) =============== */
+    function securePick(n){
+      if(n<=1) return 0;
+      const max = Math.floor(0x100000000 / n) * n;
+      const buf = new Uint32Array(1);
+      while(true){
+        crypto.getRandomValues(buf);
+        const x = buf[0];
+        if(x < max) return x % n;
+      }
+    }
 
-async function draw(kind){
-  const win=windowInfo(kind.days),start=win.startISO,endIn=win.endInISO,endEx=win.endExISO;
-  const existing=(await fetchServerWinners()).find(w=>w.raffle===kind.label&&w.window&&w.window.start===start&&w.window.end_inclusive===endIn);
-  showModal();
-  if(existing){winnerLine.textContent="Revealing winner...";await revealWinner(existing.winner);return;}
-  const entrants=await fetchEntrants(start,endEx,kind.min);renderEntrants(entrants);
-  if(entrants.length===0){winnerLine.textContent="No qualified entrants.";return;}
-  const idx=Math.floor(Math.random()*entrants.length),winner=entrants[idx].name;
-  await revealWinner(winner);
-  await fetch(API_LOG,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({date:new Date().toISOString(),raffle:kind.label,winner,prize:kind.prize,entries:entrants.length,window:{start,end_inclusive:endIn,end_exclusive:endEx}})});
-}
+    const modal = document.getElementById("drawModal");
+    const closeModalBtn = document.getElementById("closeModal");
+    const drawTitle = document.getElementById("drawTitle");
+    const entrantList = document.getElementById("entrantList");
+    const roller = document.getElementById("roller");
+    const strip = document.getElementById("strip");
+    const winnerLine = document.getElementById("winnerLine");
+    closeModalBtn.addEventListener('click', ()=> hideModal());
+    function showModal(){ modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); }
+    function hideModal(){
+      modal.style.display='none';
+      modal.setAttribute('aria-hidden','true');
+      strip.style.transition = "none";
+      strip.style.transform = 'translateY(0)';
+    }
 
-async function loadPanel(kind,pfx){
-  const ui={remaining:document.getElementById(`${pfx}-remaining`),participants:document.getElementById(`${pfx}-participants`),window:document.getElementById(`${pfx}-window`),view:document.getElementById(`${pfx}-view`)};
-  const win=windowInfo(kind.days);ui.window.textContent=`${win.startISO} → ${win.endInISO}`;
-  const entrants=await fetchEntrants(win.startISO,win.endExISO,kind.min);ui.participants.textContent=entrants.length;
-  ui.view.onclick=()=>{showModal();renderEntrants(entrants);winnerLine.textContent="";roller.style.display="none";strip.innerHTML="";};
-  setInterval(()=>ui.remaining.textContent="Next Draw @ "+win.endInISO,1000);
-}
+    function renderEntrantList(entrants){
+      entrantList.innerHTML = entrants.length
+        ? entrants.map(e => `<div style="padding:8px 12px;border-bottom:1px solid #0f1c2c;display:flex;justify-content:space-between"><span>${escapeHtml(e.name)}</span><span style="color:#a6c9ef">${fmtUsd(e.wagered)}</span></div>`).join("")
+        : `<div style="padding:10px 12px;color:#a6c9ef">No qualified entrants yet.</div>`;
+    }
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
-[
-  ["weekly",WEEKLY],
-  ["monthly",MONTHLY]
-].forEach(([p,kind])=>loadPanel(kind,p[0]));
+    let SPIN_LOCK = false;
+    async function spinAndPick(entrants){
+      if (SPIN_LOCK) return null;
+      SPIN_LOCK = true;
 
-document.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById("panel-"+b.dataset.tab).classList.add('active');if(b.dataset.tab==="previous")loadWinners();});
+      roller.style.display = 'block';
+      strip.innerHTML = "";
+      winnerLine.textContent = "";
 
-async function loadWinners(){
-  const body=document.getElementById("wins-body");
-  const rows=await fetchServerWinners();
-  if(rows.length===0){body.innerHTML=`<tr><td colspan="5">No winners yet.</td></tr>`;return;}
-  body.innerHTML=rows.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r=>`<tr><td>${r.date.split("T")[0]}</td><td>${r.raffle}</td><td>${r.winner}</td><td>$${r.prize}</td><td>${r.entries}</td></tr>`).join("");
-}
+      // Pick winner first (data truth)
+      const winIdx = securePick(entrants.length);
+      const winner = entrants[winIdx].name;
 
-await ensureR2KRAPHInserted();
-loadWinners();
+      // Build sequence ending on winner (visual truth)
+      const names = entrants.map(e=>e.name);
+      const cycles = Math.max(40, names.length * 4);
+      const filler = Array.from({length: cycles}, (_, i) => names[i % names.length]);
+      const tail = [winner, winner, winner];
+      const sequence = [...filler, ...tail];
+      strip.innerHTML = sequence.map(n => `<div class="name">${escapeHtml(n)}</div>`).join("");
 
-setInterval(async()=>{const now=new Date();if(now >= windowInfo(WEEKLY.days).drawAt)draw(WEEKLY);if(now >= windowInfo(MONTHLY.days).drawAt)draw(MONTHLY);},60000);
-</script>
+      const rowH = 34;
+      const targetY = -(sequence.length - 1) * rowH;
+
+      strip.style.transition = "none";
+      strip.style.transform = "translateY(0)";
+      void strip.offsetHeight;
+      strip.style.transition = "transform 2.2s cubic-bezier(.2,.7,0,1)";
+      strip.style.transform = `translateY(${targetY}px)`;
+
+      await new Promise(resolve => strip.addEventListener('transitionend', resolve, { once: true }));
+      winnerLine.textContent = `🏆 Winner: ${winner}`;
+      SPIN_LOCK = false;
+      return winner;
+    }
+
+    /* =============== Winners log =============== */
+    function saveLocalWin(entry){
+      const key = "raffle_local_wins";
+      const arr = JSON.parse(localStorage.getItem(key) || "[]");
+      arr.unshift(entry);
+      localStorage.setItem(key, JSON.stringify(arr.slice(0,200)));
+    }
+
+    async function logWinServer(entry){
+      try{
+        const res = await fetch(API_LOG, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(entry)
+        });
+        if(!res.ok) throw new Error("Server log failed "+res.status);
+        return true;
+      }catch(err){
+        console.warn("Server log failed; saving locally.", err);
+        saveLocalWin({ ...entry, source:"local" });
+        return false;
+      }
+    }
+
+    async function loadWinners(){
+      const tbody = document.getElementById("wins-body");
+      const local = JSON.parse(localStorage.getItem("raffle_local_wins") || "[]");
+      let server = [];
+      try{
+        const res = await fetch(API_WINS, {cache:"no-store"});
+        if(res.ok) server = await res.json();
+      }catch{}
+      const rows = [...server.map(x=>({ ...x, source:"server" })), ...local];
+      if(rows.length === 0){
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">No winners recorded yet.</td></tr>`;
+        return;
+      }
+      rows.sort((a,b)=> new Date(b.date) - new Date(a.date));
+      tbody.innerHTML = rows.map(r=>{
+        const d = new Date(r.date);
+        const ds = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+        return `<tr>
+          <td>${ds}</td>
+          <td>${escapeHtml(r.raffle||"")}</td>
+          <td>${escapeHtml(r.winner||"")}</td>
+          <td>${fmtUsd(Number(r.prize||0))}</td>
+          <td>${Number(r.entries||0)}</td>
+          <td>${r.txid ? escapeHtml(r.txid) : "—"}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    /* =============== Draw orchestration =============== */
+    async function runDraw(kind){
+      const win = windowFromBase(BASE_DATE, kind.days);
+      const startISO = isoDateTZ(win.start, TZ);
+      const endISO   = isoDateTZ(win.endExclusive, TZ); // exclusive end for API
+
+      drawTitle.textContent = `${kind.label} Draw • ${humanWindow(win.start, win.endExclusive)}`;
+      winnerLine.textContent = "";
+      roller.style.display = 'none';
+      strip.innerHTML = "";
+      entrantList.innerHTML = `<div style="padding:10px 12px;color:#a6c9ef">Loading entrants…</div>`;
+      showModal();
+
+      let entrants = [];
+      try{
+        entrants = await fetchEntrants(startISO, endISO, kind.min);
+      }catch(err){
+        entrantList.innerHTML = `<div style="padding:10px 12px;color:#ffaaaa;white-space:pre-wrap">Error loading entrants.\n${String(err).slice(0,200)}</div>`;
+        return;
+      }
+
+      renderEntrantList(entrants);
+      if(entrants.length === 0){
+        winnerLine.textContent = "No qualified entrants this window.";
+        return;
+      }
+
+      const winner = await spinAndPick(entrants);
+      if (!winner) return;
+
+      const entry = {
+        date: new Date().toISOString(),
+        raffle: kind.label,
+        winner,
+        prize: kind.prize,
+        entries: entrants.length,
+        window: {
+          start: startISO,
+          end_inclusive: isoDateTZ(new Date(win.endExclusive.getTime()-1000), TZ),
+          end_exclusive: endISO
+        }
+      };
+      await logWinServer(entry);
+      loadWinners();
+    }
+
+    /* =============== Auto scheduler (every minute) =============== */
+    function scheduleAuto(kind, ui){
+      const tick = async ()=>{
+        const win = windowFromBase(BASE_DATE, kind.days);
+        if(Date.now() >= win.drawAt.getTime()){
+          await runDraw(kind);
+          await paintPanel(kind, ui); // next cycle
+        }else{
+          ui.remaining.textContent = remaining(win.drawAt);
+        }
+      };
+      setInterval(tick, 60_000);
+      tick();
+    }
+
+    /* =============== Panel painting =============== */
+    async function paintPanel(kind, ui){
+      const win = windowFromBase(BASE_DATE, kind.days);
+      const startISO = isoDateTZ(win.start, TZ);
+      const endISO   = isoDateTZ(win.endExclusive, TZ);
+
+      ui.window.textContent = humanWindow(win.start, win.endExclusive);
+      ui.remaining.textContent = remaining(win.drawAt);
+
+      if(ui.__int) clearInterval(ui.__int);
+      ui.__int = setInterval(()=> ui.remaining.textContent = remaining(win.drawAt), 1000);
+
+      try{
+        const entrants = await fetchEntrants(startISO, endISO, kind.min);
+        ui.participants.textContent = entrants.length;
+        ui.viewBtn.onclick = () => {
+          drawTitle.textContent = `${kind.label} Entrants • ${humanWindow(win.start, win.endExclusive)}`;
+          roller.style.display = 'none';
+          strip.innerHTML = "";
+          winnerLine.textContent = "";
+          renderEntrantList(entrants);
+          showModal();
+        };
+      }catch{
+        ui.participants.textContent = "—";
+        ui.viewBtn.onclick = () => {
+          drawTitle.textContent = `${kind.label} Entrants • ${humanWindow(win.start, win.endExclusive)}`;
+          roller.style.display = 'none';
+          strip.innerHTML = "";
+          winnerLine.textContent = "";
+          entrantList.innerHTML = `<div style="padding:10px 12px;color:#ffaaaa">Failed to load entrants.</div>`;
+          showModal();
+        };
+      }
+
+      // Only allow manual run if admin
+      ui.forceBtn.disabled = !IS_ADMIN;
+      ui.forceBtn.onclick = () => { if (IS_ADMIN && !SPIN_LOCK) runDraw(kind); };
+    }
+
+    /* =============== Admin unlock + clear buttons =============== */
+    async function sha256Hex(s){
+      const d = new TextEncoder().encode(s);
+      const h = await crypto.subtle.digest('SHA-256', d);
+      return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    const adminUnlockBtn = document.getElementById('adminUnlock');
+    const clearLocalBtn  = document.getElementById('clearLocal');
+    const clearServerBtn = document.getElementById('clearServer');
+
+    adminUnlockBtn.onclick = async ()=>{
+      const token = prompt("Enter admin token:");
+      if(!token) return;
+      const hex = await sha256Hex(token);
+      if(hex === ADMIN_TOKEN_HASH){
+        IS_ADMIN = true;
+        alert("Admin unlocked.");
+        clearLocalBtn.style.display = "";
+        clearServerBtn.style.display = "";
+        document.getElementById('w-force').disabled = false;
+        document.getElementById('m-force').disabled = false;
+      }else{
+        alert("Invalid token.");
+      }
+    };
+
+    clearLocalBtn.onclick = ()=>{
+      localStorage.removeItem("raffle_local_wins");
+      loadWinners();
+      alert("Local winners cleared on this device.");
+    };
+
+    clearServerBtn.onclick = async ()=>{
+      try{
+        const res = await fetch("/api/raffle/winners", { method:"DELETE" });
+        if(!res.ok) throw new Error("Server responded "+res.status);
+        loadWinners();
+        alert("Server winners cleared.");
+      }catch(e){
+        alert("Server clear failed (this is fine if your backend doesn't support it).");
+      }
+    };
+
+    /* =============== Boot =============== */
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+        document.getElementById('panel-'+tab).classList.add('active');
+        if(tab==='previous') loadWinners();
+      });
+    });
+
+    const UI = {
+      weekly: {
+        remaining: document.getElementById('w-remaining'),
+        participants: document.getElementById('w-participants'),
+        window: document.getElementById('w-window'),
+        viewBtn: document.getElementById('w-view'),
+        forceBtn: document.getElementById('w-force'),
+      },
+      monthly: {
+        remaining: document.getElementById('m-remaining'),
+        participants: document.getElementById('m-participants'),
+        window: document.getElementById('m-window'),
+        viewBtn: document.getElementById('m-view'),
+        forceBtn: document.getElementById('m-force'),
+      }
+    };
+
+    // Hard-start 10/30/2025 00:00 ET; draw at 23:59:59 on day 7 / day 30; next cycle 00:00 next day
+    paintPanel(WEEKLY, UI.weekly);
+    paintPanel(MONTHLY, UI.monthly);
+    scheduleAuto(WEEKLY, UI.weekly);
+    scheduleAuto(MONTHLY, UI.monthly);
+    loadWinners();
+  </script>
 </body>
 </html>
