@@ -42,7 +42,7 @@
     .pill .big{font-weight:900}
     .pill .cap{font-size:12px;color:#a6c9ef;margin-top:4px}
     .stat{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;margin-top:18px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 16px;border-radius:12px;margin-top:18px;border:1px solid #2b2466;background:rgba(107,92,255,.1);color:#f0eaff;font-weight:800;cursor:pointer;transition:.18s}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 16px;border-radius:12px;margin-top:18px;border:1px solid #2b2466;background:rgba(107,92,255,.1);}
     .btn:hover{filter:brightness(1.07);box-shadow:0 0 18px rgba(107,92,255,.25) inset}
     .btn.alt{border-color:#0f5da1;background:linear-gradient(90deg,#22b1ff,#1398ff);color:#08111a;box-shadow:0 6px 20px rgba(19,152,255,.35)}
 
@@ -174,7 +174,7 @@
     <section class="panel" id="panel-previous">
       <article class="card">
         <h3 style="margin:0 0 8px 0">Previous Winners</h3>
-        <p class="hero-sub" style="text-align:left;margin:0 0 10px 0">Auto-logged after each draw. Server entries shown first.</p>
+        <p class="hero-sub" style="text-align:left;margin:0 0 10px 0">Authoritative list embedded in the page. This ensures everyone sees the same results.</p>
         <table class="wins" id="wins-table">
           <thead>
             <tr>
@@ -209,7 +209,7 @@
     </div>
   </div>
 
-  <!-- ====== JS (inline, ET, hard start 10/30/2025, draw 23:59:59 on day 7/30, admin token) ====== -->
+  <!-- ====== JS ====== -->
   <script>
     /* ========== Nav burger ========== */
     (function(){
@@ -343,7 +343,7 @@
 
     function renderEntrantList(entrants){
       entrantList.innerHTML = entrants.length
-        ? entrants.map(e => `<div style="padding:8px 12px;border-bottom:1px solid #0f1c2c;display:flex;justify-content:space-between"><span>${escapeHtml(e.name)}</span><span style="color:#a6c9ef">${fmtUsd(e.wagered)}</span></div>`).join("")
+        ? entrants.map(e => `<div style="padding:8px 12px;border-bottom:1px solid #0f1c2c;display:flex;justify-content:space-between"><span>${escapeHtml(e.name)}</span><span style="color:#a6c9ef">${fmtUsd(e.wagered || 0)}</span></div>`).join("")
         : `<div style="padding:10px 12px;color:#a6c9ef">No qualified entrants yet.</div>`;
     }
     const escapeHtml = s => String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
@@ -384,7 +384,16 @@
       return winner;
     }
 
-    /* =============== Winners log =============== */
+    /* =============== Winners log (client-only canonical approach) =============== */
+
+    // Canonical winners embedded in the HTML. This is the authoritative list served to all clients
+    // Replace/add entries here if you want everyone to see the same historical winners.
+    const CANONICAL_WINS = [
+      // 2025-11-06 -> R2KRaph (canonical)
+      { date: '2025-11-06T12:00:00Z', raffle: 'Weekly', winner: 'R2KRaph', prize: 25.00, entries: 1, txid: '', source: 'canonical' },
+      // Add more historical canonical entries here (those in the page are authoritative)
+    ];
+
     function saveLocalWin(entry){
       const key = "raffle_local_wins";
       const arr = JSON.parse(localStorage.getItem(key) || "[]");
@@ -392,31 +401,15 @@
       localStorage.setItem(key, JSON.stringify(arr.slice(0,200)));
     }
 
-    async function logWinServer(entry){
-      try{
-        const res = await fetch(API_LOG, {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify(entry)
-        });
-        if(!res.ok) throw new Error("Server log failed "+res.status);
-        return true;
-      }catch(err){
-        console.warn("Server log failed; saving locally.", err);
-        saveLocalWin({ ...entry, source:"local" });
-        return false;
-      }
-    }
-
+    // loadWinners now uses embedded CANONICAL_WINS as authoritative.
     async function loadWinners(){
       const tbody = document.getElementById("wins-body");
       const local = JSON.parse(localStorage.getItem("raffle_local_wins") || "[]");
-      let server = [];
-      try{
-        const res = await fetch(API_WINS, {cache:"no-store"});
-        if(res.ok) server = await res.json();
-      }catch{}
-      const rows = [...server.map(x=>({ ...x, source:"server" })), ...local];
+
+      // Use canonical list first — this ensures everyone who loads this HTML sees the same winners.
+      // Show local-only wins after canonical entries (clearly not authoritative)
+      const rows = [...CANONICAL_WINS, ...local];
+
       if(rows.length === 0){
         tbody.innerHTML = `<tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">No winners recorded yet.</td></tr>`;
         return;
@@ -428,7 +421,7 @@
         return `<tr>
           <td>${ds}</td>
           <td>${escapeHtml(r.raffle||"")}</td>
-          <td>${escapeHtml(r.winner||"")}</td>
+          <td>${escapeHtml(r.winner||"")}${r.source==='canonical' ? ' <span style="color:#a6c9ef;font-weight:700">(official)</span>' : ''}</td>
           <td>${fmtUsd(Number(r.prize||0))}</td>
           <td>${Number(r.entries||0)}</td>
           <td>${r.txid ? escapeHtml(r.txid) : "—"}</td>
@@ -436,59 +429,22 @@
       }).join("");
     }
 
-    /* =============== Draw orchestration =============== */
+    /* =============== Draw orchestration (disabled for clients) =============== */
     async function runDraw(kind){
-      const win = windowFromBase(BASE_DATE, kind.days);
-      const startISO = isoDateTZ(win.start, TZ);
-      const endISO   = isoDateTZ(win.endExclusive, TZ); // exclusive end for API
-
-      drawTitle.textContent = `${kind.label} Draw • ${humanWindow(win.start, win.endExclusive)}`;
-      winnerLine.textContent = "";
-      roller.style.display = 'none';
-      strip.innerHTML = "";
-      entrantList.innerHTML = `<div style="padding:10px 12px;color:#a6c9ef">Loading entrants…</div>`;
-      showModal();
-
-      let entrants = [];
-      try{
-        entrants = await fetchEntrants(startISO, endISO, kind.min);
-      }catch(err){
-        entrantList.innerHTML = `<div style="padding:10px 12px;color:#ffaaaa;white-space:pre-wrap">Error loading entrants.\n${String(err).slice(0,200)}</div>`;
-        return;
-      }
-
-      renderEntrantList(entrants);
-      if(entrants.length === 0){
-        winnerLine.textContent = "No qualified entrants this window.";
-        return;
-      }
-
-      const winner = await spinAndPick(entrants);
-      if (!winner) return;
-
-      const entry = {
-        date: new Date().toISOString(),
-        raffle: kind.label,
-        winner,
-        prize: kind.prize,
-        entries: entrants.length,
-        window: {
-          start: startISO,
-          end_inclusive: isoDateTZ(new Date(win.endExclusive.getTime()-1000), TZ),
-          end_exclusive: endISO
-        }
-      };
-      await logWinServer(entry);
-      loadWinners();
+      // Client-side draws are disabled in this static deployment.
+      // If you are an admin and want to record a new winner for everyone,
+      // please update the canonical list in this HTML (or use a server-backed API).
+      alert('Client-side draws are disabled. Update the canonical winners in the page or use a server to publish winners.');
     }
 
-    /* =============== Auto scheduler (every minute) =============== */
+    /* =============== Auto scheduler (client will NOT run draws) =============== */
     function scheduleAuto(kind, ui){
+      // Only update remaining countdown info in the UI.
       const tick = async ()=>{
         const win = windowFromBase(BASE_DATE, kind.days);
         if(Date.now() >= win.drawAt.getTime()){
-          await runDraw(kind);
-          await paintPanel(kind, ui); // next cycle
+          // Window passed — this static page uses canonical winners; show that draw has completed.
+          ui.remaining.textContent = 'Completed — see Previous Winners';
         }else{
           ui.remaining.textContent = remaining(win.drawAt);
         }
@@ -532,12 +488,12 @@
         };
       }
 
-      // Only allow manual run if admin
-      ui.forceBtn.disabled = !IS_ADMIN;
+      // client-side force draw disabled
+      ui.forceBtn.disabled = true;
       ui.forceBtn.onclick = () => { if (IS_ADMIN && !SPIN_LOCK) runDraw(kind); };
     }
 
-    /* =============== Admin unlock + clear buttons =============== */
+    /* =============== Admin unlock + clear buttons (kept for local use only) =============== */
     async function sha256Hex(s){
       const d = new TextEncoder().encode(s);
       const h = await crypto.subtle.digest('SHA-256', d);
@@ -554,11 +510,9 @@
       const hex = await sha256Hex(token);
       if(hex === ADMIN_TOKEN_HASH){
         IS_ADMIN = true;
-        alert("Admin unlocked.");
+        alert("Admin unlocked (local only). Client draws remain disabled for all visitors.");
         clearLocalBtn.style.display = "";
-        clearServerBtn.style.display = "";
-        document.getElementById('w-force').disabled = false;
-        document.getElementById('m-force').disabled = false;
+        clearServerBtn.style.display = "none";
       }else{
         alert("Invalid token.");
       }
@@ -571,14 +525,7 @@
     };
 
     clearServerBtn.onclick = async ()=>{
-      try{
-        const res = await fetch("/api/raffle/winners", { method:"DELETE" });
-        if(!res.ok) throw new Error("Server responded "+res.status);
-        loadWinners();
-        alert("Server winners cleared.");
-      }catch(e){
-        alert("Server clear failed (this is fine if your backend doesn't support it).");
-      }
+      alert("No server API configured in this static-only deployment.");
     };
 
     /* =============== Boot =============== */
@@ -610,7 +557,7 @@
       }
     };
 
-    // Hard-start 10/30/2025 00:00 ET; draw at 23:59:59 on day 7 / day 30; next cycle 00:00 next day
+    // Start UI (no client auto-draws)
     paintPanel(WEEKLY, UI.weekly);
     paintPanel(MONTHLY, UI.monthly);
     scheduleAuto(WEEKLY, UI.weekly);
