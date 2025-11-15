@@ -211,6 +211,7 @@
   </div>
 
   <!-- ====== JS ====== -->
+    <!-- ====== JS ====== -->
   <script>
     /* ========== Nav burger ========== */
     (function(){
@@ -285,6 +286,32 @@
       const S = Math.max(0, Math.floor(ms/1000));
       const d = Math.floor(S/86400), h = Math.floor((S%86400)/3600), m = Math.floor((S%3600)/60), s = S%60;
       return `${pad2(d)}d ${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+    }
+
+    // Helper: last completed window for draws (previous cycle)
+    function getDrawWindow(kind){
+      const dayMs = 86400000;
+      const len = (kind.days + 1) * dayMs;
+      const now = new Date();
+      const diff = now.getTime() - BASE_DATE.getTime();
+
+      if (diff < 0){
+        // before base start – fallback to current
+        return windowFromBase(BASE_DATE, kind.days);
+      }
+
+      const k = Math.floor(diff / len);
+
+      if (k <= 0){
+        // first window – no completed previous window yet, use current
+        return windowFromBase(BASE_DATE, kind.days);
+      }
+
+      // Last completed window is the previous one: (k-1)
+      const start = new Date(BASE_DATE.getTime() + (k - 1) * len);
+      const endExclusive = new Date(start.getTime() + len);
+      const drawAt = new Date(endExclusive.getTime() - 1000);
+      return { start, endExclusive, drawAt };
     }
 
     /* =============== Data fetch =============== */
@@ -430,15 +457,50 @@
       }).join("");
     }
 
-    /* =============== Draw orchestration (disabled for clients) =============== */
+    /* =============== Draw orchestration (manual admin) =============== */
     async function runDraw(kind){
-      // Client-side draws are disabled in this static deployment.
-      // If you are an admin and want to record a new winner for everyone,
-      // please update the canonical list in this HTML (or use a server-backed API).
-      alert('Client-side draws are disabled. Update the canonical winners in the page or use a server to publish winners.');
+      // Use the last completed window for the draw
+      const win = getDrawWindow(kind);
+      const startISO = isoDateTZ(win.start, TZ);
+      const endISO   = isoDateTZ(win.endExclusive, TZ);
+
+      let entrants;
+      try{
+        entrants = await fetchEntrants(startISO, endISO, kind.min);
+      }catch(err){
+        alert('Failed to load entrants for draw.');
+        console.error(err);
+        return;
+      }
+
+      if(!entrants.length){
+        alert('No qualified entrants for this window.');
+        return;
+      }
+
+      drawTitle.textContent = `${kind.label} Draw • ${humanWindow(win.start, win.endExclusive)}`;
+      renderEntrantList(entrants);
+      showModal();
+
+      const winnerName = await spinAndPick(entrants);
+      if(!winnerName) return;
+
+      const entry = {
+        date: new Date().toISOString(),
+        raffle: kind.label,
+        winner: winnerName,
+        prize: kind.prize,
+        entries: entrants.length,
+        txid: '',
+        source: 'local'
+      };
+      saveLocalWin(entry);
+      loadWinners();
+
+      // Optional: if you wire a backend, you can POST entry to API_LOG here.
     }
 
-    /* =============== Auto scheduler (client will NOT run draws) =============== */
+    /* =============== Auto scheduler (no auto draws; just countdown UI) =============== */
     function scheduleAuto(kind, ui){
       // Only update remaining countdown info in the UI.
       const tick = async ()=>{
@@ -489,9 +551,11 @@
         };
       }
 
-      // client-side force draw disabled
-      ui.forceBtn.disabled = true;
-      ui.forceBtn.onclick = () => { if (IS_ADMIN && !SPIN_LOCK) runDraw(kind); };
+      // Force draw now works for admin (uses last completed window)
+      ui.forceBtn.disabled = !IS_ADMIN;
+      ui.forceBtn.onclick = () => {
+        if (IS_ADMIN && !SPIN_LOCK) runDraw(kind);
+      };
     }
 
     /* =============== Admin unlock + clear buttons (kept for local use only) =============== */
@@ -511,9 +575,14 @@
       const hex = await sha256Hex(token);
       if(hex === ADMIN_TOKEN_HASH){
         IS_ADMIN = true;
-        alert("Admin unlocked (local only). Client draws remain disabled for all visitors.");
+        alert("Admin unlocked.");
         clearLocalBtn.style.display = "";
         clearServerBtn.style.display = "none";
+
+        const wForce = document.getElementById('w-force');
+        const mForce = document.getElementById('m-force');
+        if (wForce) wForce.disabled = false;
+        if (mForce) mForce.disabled = false;
       }else{
         alert("Invalid token.");
       }
@@ -558,7 +627,7 @@
       }
     };
 
-    // Start UI (no client auto-draws)
+    // Start UI (no auto draws; just countdown + manual admin draw)
     paintPanel(WEEKLY, UI.weekly);
     paintPanel(MONTHLY, UI.monthly);
     scheduleAuto(WEEKLY, UI.weekly);
