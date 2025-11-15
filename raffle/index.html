@@ -131,7 +131,7 @@
           </div>
 
           <button class="btn alt" id="w-view">👥 View Entrants</button>
-          <button class="btn" id="w-force" disabled title="Admin only">🎬 Force Draw (admin)</button>
+          <button class="btn" id="w-force" title="Manual draw">🎬 Force Draw</button>
         </article>
       </div>
     </section>
@@ -165,7 +165,7 @@
           </div>
 
           <button class="btn alt" id="m-view">👥 View Entrants</button>
-          <button class="btn" id="m-force" disabled title="Admin only">🎬 Force Draw (admin)</button>
+          <button class="btn" id="m-force" title="Manual draw">🎬 Force Draw</button>
         </article>
       </div>
     </section>
@@ -401,13 +401,10 @@
       localStorage.setItem(key, JSON.stringify(arr.slice(0,200)));
     }
 
-    // loadWinners now uses embedded CANONICAL_WINS as authoritative.
     async function loadWinners(){
       const tbody = document.getElementById("wins-body");
       const local = JSON.parse(localStorage.getItem("raffle_local_wins") || "[]");
 
-      // Use canonical list first — this ensures everyone who loads this HTML sees the same winners.
-      // Show local-only wins after canonical entries (clearly not authoritative)
       const rows = [...CANONICAL_WINS, ...local];
 
       if(rows.length === 0){
@@ -429,42 +426,128 @@
       }).join("");
     }
 
-    /* =============== Draw orchestration (disabled for clients) =============== */
-    async function runDraw(kind){
-      // Client-side draws are disabled in this static deployment.
-      // If you are an admin and want to record a new winner for everyone,
-      // please update the canonical list in this HTML (or use a server-backed API).
-      alert('Client-side draws are disabled. Update the canonical winners in the page or use a server to publish winners.');
-    }
+    /* =============== Draw orchestration (AUTO now enabled) =============== */
+    async function runDraw(kind, winOverride, startISOOverride, endISOOverride){
+      try{
+        const win = winOverride || windowFromBase(BASE_DATE, kind.days);
+        const startISO = startISOOverride || isoDateTZ(win.start, TZ);
+        const endISO   = endISOOverride   || isoDateTZ(win.endExclusive, TZ);
 
-    /* =============== Auto scheduler (client will NOT run draws) =============== */
-    function scheduleAuto(kind, ui){
-      // Only update remaining countdown info in the UI.
-      const tick = async ()=>{
-        const win = windowFromBase(BASE_DATE, kind.days);
-        if(Date.now() >= win.drawAt.getTime()){
-          // Window passed — this static page uses canonical winners; show that draw has completed.
-          ui.remaining.textContent = 'Completed — see Previous Winners';
-        }else{
-          ui.remaining.textContent = remaining(win.drawAt);
+        const entrants = await fetchEntrants(startISO, endISO, kind.min);
+
+        drawTitle.textContent = `${kind.label} Draw • ${humanWindow(win.start, win.endExclusive)}`;
+        renderEntrantList(entrants);
+        showModal();
+
+        if(!entrants.length){
+          roller.style.display = 'none';
+          strip.innerHTML = "";
+          winnerLine.textContent = "No qualified entrants for this window.";
+          return null;
         }
-      };
-      setInterval(tick, 60_000);
-      tick();
+
+        const winnerName = await spinAndPick(entrants);
+
+        const entry = {
+          date: new Date().toISOString(),
+          raffle: kind.label,
+          winner: winnerName,
+          prize: kind.prize,
+          entries: entrants.length,
+          txid: '',
+          source: 'local'
+        };
+        saveLocalWin(entry);
+        loadWinners();
+
+        return winnerName;
+      }catch(err){
+        console.error(err);
+        alert(`Draw failed: ${err.message || err}`);
+        return null;
+      }
     }
 
-    /* =============== Panel painting =============== */
+    /* =============== Admin unlock + clear buttons (kept for local use only) =============== */
+    async function sha256Hex(s){
+      const d = new TextEncoder().encode(s);
+      const h = await crypto.subtle.digest('SHA-256', d);
+      return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    const adminUnlockBtn = document.getElementById('adminUnlock');
+    const clearLocalBtn  = document.getElementById('clearLocal');
+    const clearServerBtn = document.getElementById('clearServer');
+
+    adminUnlockBtn.onclick = async ()=>{
+      const token = prompt("Enter admin token:");
+      if(!token) return;
+      const hex = await sha256Hex(token);
+      if(hex === ADMIN_TOKEN_HASH){
+        IS_ADMIN = true;
+        alert("Admin unlocked (local only).");
+        clearLocalBtn.style.display = "";
+        clearServerBtn.style.display = "none";
+      }else{
+        alert("Invalid token.");
+      }
+    };
+
+    clearLocalBtn.onclick = ()=>{
+      localStorage.removeItem("raffle_local_wins");
+      loadWinners();
+      alert("Local winners cleared on this device.");
+    };
+
+    clearServerBtn.onclick = async ()=>{
+      alert("No server API configured in this static-only deployment.");
+    };
+
+    /* =============== Panel painting with auto-draw per window =============== */
     async function paintPanel(kind, ui){
       const win = windowFromBase(BASE_DATE, kind.days);
       const startISO = isoDateTZ(win.start, TZ);
       const endISO   = isoDateTZ(win.endExclusive, TZ);
+      const windowKey = `${kind.label}:${startISO}->${endISO}`;
+      const lastKeyName = `raffle_lastdraw_${kind.label.toLowerCase()}`;
 
       ui.window.textContent = humanWindow(win.start, win.endExclusive);
-      ui.remaining.textContent = remaining(win.drawAt);
 
       if(ui.__int) clearInterval(ui.__int);
-      ui.__int = setInterval(()=> ui.remaining.textContent = remaining(win.drawAt), 1000);
 
+      const updateCountdownAndMaybeDraw = async ()=>{
+        const now = Date.now();
+        const msLeft = win.drawAt.getTime() - now;
+
+        // Already drawn this window on this device
+        const seenKey = localStorage.getItem(lastKeyName);
+
+        if(msLeft <= 0){
+          if(seenKey === windowKey){
+            ui.remaining.textContent = "Completed — see Previous Winners";
+            if(ui.__int){ clearInterval(ui.__int); ui.__int = null; }
+            return;
+          }
+          if(ui.__int){ clearInterval(ui.__int); ui.__int = null; }
+
+          ui.remaining.textContent = "Drawing…";
+          const winner = await runDraw(kind, win, startISO, endISO);
+          if(winner){
+            localStorage.setItem(lastKeyName, windowKey);
+            ui.remaining.textContent = "Completed — see Previous Winners";
+          }else{
+            ui.remaining.textContent = "No qualified entrants for this window.";
+          }
+        }else{
+          ui.remaining.textContent = remaining(win.drawAt);
+        }
+      };
+
+      // Kick once immediately, then every second
+      updateCountdownAndMaybeDraw();
+      ui.__int = setInterval(updateCountdownAndMaybeDraw, 1000);
+
+      // Entrants preview
       try{
         const entrants = await fetchEntrants(startISO, endISO, kind.min);
         ui.participants.textContent = entrants.length;
@@ -488,47 +571,20 @@
         };
       }
 
-      // client-side force draw disabled
-      ui.forceBtn.disabled = true;
-      ui.forceBtn.onclick = () => { if (IS_ADMIN && !SPIN_LOCK) runDraw(kind); };
+      // Manual force draw for this window on this device
+      ui.forceBtn.onclick = async ()=>{
+        if(SPIN_LOCK) return;
+        const winner = await runDraw(kind, win, startISO, endISO);
+        if(winner){
+          localStorage.setItem(lastKeyName, windowKey);
+          ui.remaining.textContent = "Completed — see Previous Winners";
+        }else{
+          ui.remaining.textContent = "No qualified entrants for this window.";
+        }
+      };
     }
 
-    /* =============== Admin unlock + clear buttons (kept for local use only) =============== */
-    async function sha256Hex(s){
-      const d = new TextEncoder().encode(s);
-      const h = await crypto.subtle.digest('SHA-256', d);
-      return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');
-    }
-
-    const adminUnlockBtn = document.getElementById('adminUnlock');
-    const clearLocalBtn  = document.getElementById('clearLocal');
-    const clearServerBtn = document.getElementById('clearServer');
-
-    adminUnlockBtn.onclick = async ()=>{
-      const token = prompt("Enter admin token:");
-      if(!token) return;
-      const hex = await sha256Hex(token);
-      if(hex === ADMIN_TOKEN_HASH){
-        IS_ADMIN = true;
-        alert("Admin unlocked (local only). Client draws remain disabled for all visitors.");
-        clearLocalBtn.style.display = "";
-        clearServerBtn.style.display = "none";
-      }else{
-        alert("Invalid token.");
-      }
-    };
-
-    clearLocalBtn.onclick = ()=>{
-      localStorage.removeItem("raffle_local_wins");
-      loadWinners();
-      alert("Local winners cleared on this device.");
-    };
-
-    clearServerBtn.onclick = async ()=>{
-      alert("No server API configured in this static-only deployment.");
-    };
-
-    /* =============== Boot =============== */
+    /* =============== Tabs + boot =============== */
     document.querySelectorAll('.tab-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -557,11 +613,9 @@
       }
     };
 
-    // Start UI (no client auto-draws)
+    // Start UI with auto-draws on this device
     paintPanel(WEEKLY, UI.weekly);
     paintPanel(MONTHLY, UI.monthly);
-    scheduleAuto(WEEKLY, UI.weekly);
-    scheduleAuto(MONTHLY, UI.monthly);
     loadWinners();
   </script>
 </body>
