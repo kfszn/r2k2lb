@@ -226,7 +226,7 @@
     /* =============== Config =============== */
     const TZ = "America/New_York"; // ET (handles DST)
 
-    // Monthly anchor base stays as-is
+    // Monthly anchor base (unchanged)
     // Hard base: Oct 30, 2025 00:00 local ET.
     // On 2025-10-30 ET is EDT (UTC-4), so midnight local = 04:00:00Z
     const BASE_DATE = new Date(Date.UTC(2025, 9, 30, 4, 0, 0));
@@ -278,16 +278,14 @@
       const now = new Date();
       const p = inTZ(now, TZ);
 
-      // Find current weekday in ET using a stable reference at noon ET
-      const noonET = new Date(Date.UTC(p.y, p.m-1, p.d, 17, 0, 0)); // ~12:00 ET (handles DST safely)
+      // Determine weekday in ET
+      const noonET = new Date(Date.UTC(p.y, p.m-1, p.d, 17, 0, 0)); // ~12:00 ET
       const weekdayET = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday:'short' }).format(noonET);
       const map = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
       const dow = map[weekdayET] ?? 0;
 
-      // Days since Friday
       const sinceFri = (dow - 5 + 7) % 7;
 
-      // Start at Friday 00:00 ET of this cycle
       const start = new Date(now);
       start.setHours(0,0,0,0);
       start.setDate(start.getDate() - sinceFri);
@@ -295,13 +293,12 @@
       const endExclusive = new Date(start);
       endExclusive.setDate(endExclusive.getDate() + 7);
 
-      // Draw / rollover is exactly at endExclusive (00:00 ET tonight when window ends)
-      const drawAt = new Date(endExclusive.getTime());
+      const drawAt = new Date(endExclusive.getTime()); // 00:00 ET at rollover
 
       return { start, endExclusive, drawAt };
     }
 
-    // Keep monthly rolling logic the same as before
+    /* ===== Monthly rolling windows from BASE (unchanged) ===== */
     function windowFromBase(baseDate, days){
       const now = new Date();
       const dayMs = 86400000;
@@ -313,12 +310,12 @@
       return { start, endExclusive, drawAt };
     }
 
-    // Last completed window for draws (previous cycle)
+    /* ===== Last completed window for admin draws ===== */
     function getDrawWindow(kind){
       if(kind.label === "Weekly"){
-        const win = weeklyWindowFriToFri();
-        const start = new Date(win.start.getTime() - 7*86400000);
-        const endExclusive = new Date(win.start.getTime());
+        const cur = weeklyWindowFriToFri();
+        const start = new Date(cur.start.getTime() - 7*86400000);
+        const endExclusive = new Date(cur.start.getTime());
         const drawAt = new Date(endExclusive.getTime());
         return { start, endExclusive, drawAt };
       }
@@ -327,16 +324,10 @@
       const len = (kind.days + 1) * dayMs;
       const now = new Date();
       const diff = now.getTime() - BASE_DATE.getTime();
-
-      if (diff < 0){
-        return windowFromBase(BASE_DATE, kind.days);
-      }
+      if (diff < 0) return windowFromBase(BASE_DATE, kind.days);
 
       const k = Math.floor(diff / len);
-
-      if (k <= 0){
-        return windowFromBase(BASE_DATE, kind.days);
-      }
+      if (k <= 0) return windowFromBase(BASE_DATE, kind.days);
 
       const start = new Date(BASE_DATE.getTime() + (k - 1) * len);
       const endExclusive = new Date(start.getTime() + len);
@@ -439,8 +430,7 @@
       return winner;
     }
 
-    /* =============== Winners log (previous winners from /raffle/winners.json) =============== */
-
+    /* =============== Winners log (server winners from /raffle/winners.json) =============== */
     function saveLocalWin(entry){
       const key = "raffle_local_wins";
       const arr = JSON.parse(localStorage.getItem(key) || "[]");
@@ -456,15 +446,39 @@
       try{
         const res = await fetch("/raffle/winners.json", { cache: "no-store" });
         if(res.ok){
-          const json = await res.json();
-          if(Array.isArray(json)) serverWins = json;
-          else if(Array.isArray(json.winners)) serverWins = json.winners;
+          const text = await res.text();
+
+          try{
+            serverWins = JSON.parse(text);
+          }catch(parseErr){
+            // auto-fix bareword winners once (e.g., "winner": Mamba2k,)
+            const patched = text.replace(
+              /"winner"\s*:\s*([A-Za-z0-9_]+)\s*,/g,
+              '"winner":"$1",'
+            );
+            serverWins = JSON.parse(patched);
+          }
+
+          if(!Array.isArray(serverWins)){
+            serverWins = Array.isArray(serverWins.winners) ? serverWins.winners : [];
+          }
         }
       }catch(e){
-        // ignore and fallback
+        serverWins = [];
       }
 
-      const rows = [...serverWins, ...local];
+      const normalizedServer = serverWins.map(w => ({
+        date: w.end || w.start || new Date().toISOString(), // display by end date
+        raffle: w.type || w.raffle || "",
+        winner: w.winner || null,
+        prize: Number(w.prize || 0),
+        entries: (w.entries == null ? 0 : Number(w.entries)),
+        txid: w.txid || "",
+        official: !!w.official,
+        source: "server"
+      }));
+
+      const rows = [...normalizedServer, ...local];
 
       if(rows.length === 0){
         tbody.innerHTML = `<tr><td colspan="6" style="padding:14px 8px;color:#a6c9ef">No winners recorded yet.</td></tr>`;
@@ -472,13 +486,16 @@
       }
 
       rows.sort((a,b)=> new Date(b.date) - new Date(a.date));
+
       tbody.innerHTML = rows.map(r=>{
         const d = new Date(r.date);
         const ds = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+        const winnerText = r.winner ? escapeHtml(r.winner) : "—";
+        const officialTag = r.official ? ' <span style="color:#a6c9ef;font-weight:700">(official)</span>' : '';
         return `<tr>
           <td>${ds}</td>
           <td>${escapeHtml(r.raffle||"")}</td>
-          <td>${escapeHtml(r.winner||"")}</td>
+          <td>${winnerText}${officialTag}</td>
           <td>${fmtUsd(Number(r.prize||0))}</td>
           <td>${Number(r.entries||0)}</td>
           <td>${r.txid ? escapeHtml(r.txid) : "—"}</td>
@@ -519,12 +536,12 @@
         winner: winnerName,
         prize: kind.prize,
         entries: entrants.length,
-        txid: ''
+        txid: '',
+        official: false,
+        source: 'local'
       };
       saveLocalWin(entry);
       loadWinners();
-
-      // Optional backend POST can go here if ever added.
     }
 
     /* =============== Auto scheduler (no auto draws; just countdown UI) =============== */
@@ -555,7 +572,7 @@
     async function paintPanel(kind, ui){
       let win;
       if(kind.label === "Weekly"){
-        win = weeklyWindowFriToFri(); // Fri->Fri, updates at 00:00 ET
+        win = weeklyWindowFriToFri();
       }else{
         win = windowFromBase(BASE_DATE, kind.days);
       }
@@ -673,8 +690,7 @@
     scheduleAuto(MONTHLY, UI.monthly);
     loadWinners();
 
-    // Repaint weekly shortly after midnight ET so window flips cleanly
-    // (keeps UI in sync if page stays open)
+    // keep weekly UI synced if page stays open (rolls at midnight ET)
     setInterval(()=> paintPanel(WEEKLY, UI.weekly), 60_000);
   </script>
 </body>
