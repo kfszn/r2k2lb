@@ -2,31 +2,31 @@
   {
     "type": "Weekly",
     "start": "2025-10-30T00:00:00-05:00",
-    "end":   "2025-11-07T00:00:00-05:00",
+    "end": "2025-11-07T00:00:00-05:00",
     "winner": "R2KRaph",
     "entries": 1,
     "prize": 25,
-    "txid": xxx,
+    "txid": "001",
     "official": false
   },
   {
     "type": "Weekly",
     "start": "2025-11-07T00:00:00-05:00",
-    "end":   "2025-11-14T00:00:00-05:00",
+    "end": "2025-11-14T00:00:00-05:00",
     "winner": "Mamba2k",
     "entries": 1,
     "prize": 25,
-    "txid": xxx,
+    "txid": "002",
     "official": false
   },
   {
     "type": "Weekly",
     "start": "2025-11-14T00:00:00-05:00",
-    "end":   "2025-11-21T00:00:00-05:00",
+    "end": "2025-11-21T00:00:00-05:00",
     "winner": "R2ginger69",
     "entries": 1,
     "prize": 25,
-    "txid": xxx,
+    "txid": "003",
     "official": false
-  },
+  }
 ]
