@@ -75,7 +75,7 @@
     .lb-row{
       display:grid;
       grid-template-columns: 54px 64px 1fr auto auto;
-      align-items:center;
+      align-items:center;                 /* alignment fix */
       gap:14px;
       padding:16px 18px;
       background:#0b0f17;
@@ -90,13 +90,15 @@
     .lb-right{display:flex;align-items:baseline;gap:min(8vw,64px)}
     .lb-label{font-size:12px;color:#9ac9ff;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-right:8px}
 
+    /* Amount sizing */
     .lb-row .lb-money.wager{font-size:18px}
     .lb-row .lb-money.prize{font-size:18px}
     .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:20px}
 
+    /* Colors scoped to rows 4–10 (Top-3 untouched) */
     .lb-row .lb-money.wager{
       color:#ffffff !important;
-      -webkit-text-fill-color:#ffffff !important;
+      -webkit-text-fill-color:#ffffff !important;  /* iOS */
       text-shadow:0 0 8px rgba(19,152,255,.25);
       background:transparent!important;
       filter:none!important;
@@ -110,6 +112,7 @@
       filter: drop-shadow(0 0 6px rgba(57,255,147,.35));
     }
 
+    /* Mobile for rows 4–10 */
     @media (max-width:720px){
       .lb-row{grid-template-columns:44px 54px 1fr;gap:10px}
       .lb-right{grid-column:1 / -1;justify-content:space-between;margin-top:8px;gap:22px}
@@ -119,6 +122,7 @@
     }
     /* ---------- END rows #4–#10 styles ---------- */
 
+    /* Top-3 container spacing (unchanged look) */
     #top3-cards{
       display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
       width:min(1120px,95%);margin:10px auto 24px;
@@ -239,7 +243,9 @@
 
     <div class="css-esk2ah">
       <div class="css-2w2ovy">
+        <!-- Top 3 (unchanged look) -->
         <div class="css-gqrafh" id="top3-cards"></div>
+        <!-- Rows 4–10 -->
         <div id="leaderboard-rows"></div>
       </div>
     </div>
@@ -279,6 +285,11 @@
     </div>
   </div>
 
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
+          integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
+          data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
+          crossorigin="anonymous"></script>
+
   <!-- Modal behavior (kept) -->
   <script>
     const modal = document.getElementById("rulesModal");
@@ -295,6 +306,7 @@
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
+  <!-- NOTE: do NOT include /js/leaderboard-page.js to avoid conflicts -->
 
   <!-- Push content below the sticky header -->
   <script>
@@ -311,23 +323,36 @@
     })();
   </script>
 
-  <!-- ===== Leaderboard logic (LB = DEAL window + 30 days, still 8PM ET boundary) ===== -->
+  <!-- ===== Leaderboard logic (CURRENT = today → Dec 31, 2025 | PREV = old deal+30d window) ===== -->
   <script>
     (function(){
       const API_ROUTE = "/api/leaderboard";
       const DEAL_GOAL = 1200000;
       const LB_GOAL   = 2250000;
 
-      // Deal dates stay MANUAL (you change these each deal)
+      // =========================
+      // MANUAL DEAL WINDOW (unchanged)
+      // =========================
       const DEAL_START = "2025-11-02";
       const DEAL_END   = "2025-12-01";
 
-      // LB rule you asked for:
-      // Leaderboard duration = deal duration + 30 days
-      // (because your deal is ~7d 6h, LB becomes ~37d 6h)
+      // =========================
+      // CURRENT LEADERBOARD (NEW RULE)
+      // start = TODAY in ET
+      // end   = 2025-12-31
+      // =========================
+      const CURRENT_LB_END_ISO = "2025-12-31";
+      const CURRENT_LB_END_INSTANT = new Date("2025-12-31T23:59:59-05:00");
+
+      // =========================
+      // PREVIOUS LEADERBOARD (OLD RULE)
+      // previous = deal window + 30 days
+      // (kept the same 8PM ET boundary style)
+      // =========================
       const LB_EXTRA_DAYS = 30;
       const MS_DAY = 86400000;
 
+      // ---------- New York time helpers ----------
       function nyParts(date = new Date()){
         const f = new Intl.DateTimeFormat("en-US",{
           timeZone:"America/New_York",
@@ -337,19 +362,31 @@
         });
         const parts = f.formatToParts(date);
         const get = t => Number(parts.find(p=>p.type===t)?.value);
-        return { y:get("year"), m1:get("month"), d:get("day"), hh:get("hour"), mm:get("minute")||0, ss:get("second")||0 };
+        return {
+          y: get("year"),
+          m1: get("month"),
+          d: get("day"),
+          hh: get("hour"),
+          mm: get("minute") || 0,
+          ss: get("second") || 0
+        };
       }
 
-      // 8:00 PM ET on y-m-d, expressed in UTC
+      function nyTodayISO(){
+        const p = nyParts();
+        return `${p.y}-${String(p.m1).padStart(2,"0")}-${String(p.d).padStart(2,"0")}`;
+      }
+
+      // 8:00 PM ET on y-m-d expressed in UTC (used for PREVIOUS windows only)
       function boundaryUTC(y,m1,d){
         const nyMid = nyParts(new Date(`${y}-${String(m1).padStart(2,"0")}-${String(d).padStart(2,"0")}T00:00:00`));
         const baseUTC = Date.UTC(nyMid.y, nyMid.m1-1, nyMid.d, 0,0,0,0);
         return new Date(baseUTC + 20*3600*1000); // 8 PM ET
       }
 
-      const isoDate = (d)=> d.toISOString().slice(0,10);
+      const isoDate = d => d.toISOString().slice(0,10);
 
-      // Rainbet expects date boundaries based on the "day after 8PM ET"
+      // Rainbet expects date boundaries based on "day after 8PM ET"
       function apiDateFromBoundary(boundaryUTCDate){
         return isoDate(new Date(Date.UTC(
           boundaryUTCDate.getUTCFullYear(),
@@ -363,14 +400,22 @@
         return {y,m1,d};
       }
 
-      function lbWindowFromDeal(){
+      // ---------- Windows ----------
+      function currentLBWindow(){
+        return {
+          startISO: nyTodayISO(),
+          endISO: CURRENT_LB_END_ISO,
+          endInstantUTC: CURRENT_LB_END_INSTANT
+        };
+      }
+
+      function oldLBWindowFromDeal(){
         const ds = parseISO(DEAL_START);
         const de = parseISO(DEAL_END);
 
-        const startUTC = boundaryUTC(ds.y, ds.m1, ds.d);     // 8PM ET on deal start day
-        const dealEndUTC = boundaryUTC(de.y, de.m1, de.d);  // 8PM ET on deal end day
-
-        const endUTC = new Date(dealEndUTC.getTime() + LB_EXTRA_DAYS * MS_DAY);
+        const startUTC   = boundaryUTC(ds.y, ds.m1, ds.d);
+        const dealEndUTC = boundaryUTC(de.y, de.m1, de.d);
+        const endUTC     = new Date(dealEndUTC.getTime() + LB_EXTRA_DAYS * MS_DAY);
 
         const winLen = endUTC.getTime() - startUTC.getTime();
 
@@ -385,9 +430,9 @@
       }
 
       function previousLBWindow(){
-        const cur = lbWindowFromDeal();
-        const prevEndUTC = cur.startUTC;
-        const prevStartUTC = new Date(prevEndUTC.getTime() - cur.winLen);
+        const old = oldLBWindowFromDeal();
+        const prevEndUTC   = old.startUTC;
+        const prevStartUTC = new Date(prevEndUTC.getTime() - old.winLen);
         return {
           startISO: apiDateFromBoundary(prevStartUTC),
           endISO: apiDateFromBoundary(prevEndUTC),
@@ -395,6 +440,7 @@
         };
       }
 
+      // ---------- Formatting + data ----------
       function fmtMoney(n){
         try{ return n.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:2}); }
         catch{ return "$" + (Math.round(n*100)/100).toFixed(2); }
@@ -442,14 +488,17 @@
         rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
       }
 
+      // ---------- Renderers (Top-3 untouched) ----------
       function renderTop3(rows){
         const top3 = document.getElementById("top3-cards");
         if (!top3) return;
         top3.innerHTML = "";
         const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
+
         rows.slice(0,3).forEach((entry, idx) => {
           const place   = idx + 1;
-          const masked  = maskName(entry.username || "Unknown");
+          const user    = entry.username || "Unknown";
+          const masked  = maskName(user);
           const wagered = fmtMoney(entry.wagered || 0);
           const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
@@ -481,9 +530,10 @@
         list.innerHTML = "";
 
         rows.slice(3).forEach((entry, i) => {
-          const idx = i + 3;
+          const idx = i + 3;             // index 3..9 => ranks 4..10
           const place   = idx + 1;
-          const masked  = maskName(entry.username || "Unknown");
+          const user    = entry.username || "Unknown";
+          const masked  = maskName(user);
           const wagered = fmtMoney(entry.wagered || 0);
           const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
@@ -509,9 +559,10 @@
         });
       }
 
+      // ---------- Paint lists ----------
       async function paintListCurrent(){
         try{
-          const win = lbWindowFromDeal();
+          const win = currentLBWindow();
           const rows = await fetchRows(win.startISO, win.endISO);
           renderTop3(rows);
           renderRows(rows);
@@ -533,6 +584,7 @@
         }
       }
 
+      // ---------- Progress bars ----------
       function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
         const fill  = document.getElementById(fillId);
         const pctEl = document.getElementById(pctId);
@@ -547,7 +599,7 @@
         bar.setAttribute("aria-valuenow", Math.round(pct));
       }
 
-      let lbWindow = lbWindowFromDeal();
+      let lbWindow = currentLBWindow();
       let showingPrev = false;
 
       async function paintTotals(){
@@ -557,18 +609,25 @@
           const dealTotal = await fetchTotal(DEAL_START, DEAL_END);
           if(dealEl) dealEl.textContent = fmtMoney(dealTotal);
           renderProgress({ total: dealTotal, goal: DEAL_GOAL, fillId: "r2kDealFill", pctId: "r2kDealPct", metaId: "r2kDealMeta", barId: "r2kDealBar" });
-        }catch(e){ if(dealEl) dealEl.textContent="—"; console.error("Deal total error:", e); }
+        }catch(e){
+          if(dealEl) dealEl.textContent="—";
+          console.error("Deal total error:", e);
+        }
 
         const lbEl = document.getElementById("r2kLbWager");
         if(lbEl) lbEl.textContent = "…";
         try{
-          lbWindow = lbWindowFromDeal();
+          lbWindow = currentLBWindow(); // re-evaluate "today" on load
           const lbTotal = await fetchTotal(lbWindow.startISO, lbWindow.endISO);
           if(lbEl) lbEl.textContent = fmtMoney(lbTotal);
           renderProgress({ total: lbTotal, goal: LB_GOAL, fillId: "r2kLbFill", pctId: "r2kLbPct", metaId: "r2kLbMeta", barId: "r2kLbBar" });
-        }catch(e){ if(lbEl) lbEl.textContent="—"; console.error("LB total error:", e); }
+        }catch(e){
+          if(lbEl) lbEl.textContent="—";
+          console.error("LB total error:", e);
+        }
       }
 
+      // ---------- Countdown ----------
       function fmtRemaining(ms){
         const s = Math.max(0, Math.floor(ms/1000));
         const d = Math.floor(s/86400);
@@ -587,18 +646,15 @@
           const ms = new Date(DEAL_END + "T23:59:59").getTime() - Date.now();
           dealSpan.textContent = fmtRemaining(ms);
         }
+
         const lbSpan = document.getElementById('lb-remaining');
         if(lbSpan){
           const msLeft = lbWindow.endInstantUTC.getTime() - Date.now();
           lbSpan.textContent = fmtRemaining(msLeft);
-          if(msLeft <= 0){
-            lbWindow = lbWindowFromDeal();
-            paintTotals();
-            if(!showingPrev) paintListCurrent();
-          }
         }
       }
 
+      // ---------- Buttons ----------
       const prevBtn = document.getElementById("prevLeaderboardBtn");
       const currBtn = document.getElementById("currentLeaderboardBtn");
 
@@ -616,6 +672,7 @@
         await paintListCurrent();
       });
 
+      // ---------- Hamburger ----------
       (function(){
         const burger = document.getElementById('hamburger');
         const nav = document.getElementById('r2kNav');
@@ -627,6 +684,7 @@
         }
       })();
 
+      // ---------- Init ----------
       document.addEventListener("DOMContentLoaded", async ()=>{
         await paintTotals();
         await paintListCurrent();
