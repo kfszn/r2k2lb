@@ -323,20 +323,23 @@
     })();
   </script>
 
-  <!-- ===== Leaderboard logic (rolling 30d @ 8PM ET) ===== -->
+  <!-- ===== Leaderboard logic (AUTO monthly cutoff on the 22nd @ 8PM ET) ===== -->
   <script>
     (function(){
       const API_ROUTE = "/api/leaderboard";
       const DEAL_GOAL = 1200000;
       const LB_GOAL   = 2250000;
 
+      // Deal dates stay manual like before (unchanged)
       const DEAL_START = "2025-11-02";
       const DEAL_END   = "2025-12-01";
 
-      const LB_ANCHOR = "2025-10-18"; // first reset at 8:00 PM ET
-      const LB_DAYS   = 37;
+      // NEW: leaderboard auto window settings
+      const LB_CUTOFF_DAY = 22;  // ends on the 22nd
+      const LB_DAYS   = 30;      // 30-day window
       const MS_DAY    = 86400000;
 
+      // --- Helpers to work in New York time and keep your 8PM ET boundary style ---
       function nyParts(date = new Date()){
         const f = new Intl.DateTimeFormat("en-US",{
           timeZone:"America/New_York",
@@ -348,34 +351,73 @@
         const get = t => Number(parts.find(p=>p.type===t)?.value);
         return { y:get("year"), m1:get("month"), d:get("day"), hh:get("hour"), mm:get("minute")||0, ss:get("second")||0 };
       }
+
+      // Returns a Date that represents 8:00 PM ET on y-m-d, expressed in UTC.
       function boundaryUTC(y,m1,d){
         const nyMid = nyParts(new Date(`${y}-${String(m1).padStart(2,"0")}-${String(d).padStart(2,"0")}T00:00:00`));
         const baseUTC = Date.UTC(nyMid.y, nyMid.m1-1, nyMid.d, 0,0,0,0);
         return new Date(baseUTC + 20*3600*1000); // 8 PM ET
       }
+
       const isoDate = (d)=> d.toISOString().slice(0,10);
+
+      // Your old code expects Rainbet dates to align to the day AFTER the 8PM boundary.
       function apiDateFromBoundary(boundaryUTC){
-        return isoDate(new Date(Date.UTC(boundaryUTC.getUTCFullYear(), boundaryUTC.getUTCMonth(), boundaryUTC.getUTCDate() + 1)));
+        return isoDate(new Date(Date.UTC(
+          boundaryUTC.getUTCFullYear(),
+          boundaryUTC.getUTCMonth(),
+          boundaryUTC.getUTCDate() + 1
+        )));
       }
+
+      function addMonths(y, m1, delta){
+        let m = m1 + delta;
+        let year = y;
+        while(m > 12){ m -= 12; year += 1; }
+        while(m < 1){ m += 12; year -= 1; }
+        return {year, month:m};
+      }
+
+      // NEW: current 30-day window ending on the next cutoff (22nd @ 8PM ET)
       function currentLBWindow(){
-        const [ay,am1,ad] = LB_ANCHOR.split("-").map(Number);
-        const anchorUTC = boundaryUTC(ay,am1,ad);
         const now = new Date();
-        const msWin = LB_DAYS * MS_DAY;
-        const k = Math.floor((now - anchorUTC)/msWin);
-        const startUTC = new Date(anchorUTC.getTime() + k*msWin);
-        const endUTC   = new Date(startUTC.getTime() + msWin);
-        return { startISO: apiDateFromBoundary(startUTC), endISO: apiDateFromBoundary(endUTC), endInstantUTC: endUTC };
+        const { y, m1, d, hh, mm, ss } = nyParts(now);
+
+        // This month’s cutoff boundary
+        const thisCutoffUTC = boundaryUTC(y, m1, LB_CUTOFF_DAY);
+
+        // If we are BEFORE this month's cutoff boundary in ET, end is thisCutoff.
+        // Otherwise end is next month's cutoff.
+        let endUTC = thisCutoffUTC;
+
+        // Determine if NY "now" is after the cutoff boundary.
+        const nowUTC = now.getTime();
+        if(nowUTC >= thisCutoffUTC.getTime()){
+          const next = addMonths(y, m1, 1);
+          endUTC = boundaryUTC(next.year, next.month, LB_CUTOFF_DAY);
+        }
+
+        const startUTC = new Date(endUTC.getTime() - LB_DAYS * MS_DAY);
+
+        return {
+          startISO: apiDateFromBoundary(startUTC),
+          endISO:   apiDateFromBoundary(endUTC),
+          endInstantUTC: endUTC
+        };
       }
+
+      // NEW: previous window = the 30 days immediately before the current one
       function previousLBWindow(){
-        const [ay,am1,ad] = LB_ANCHOR.split("-").map(Number);
-        const anchorUTC = boundaryUTC(ay,am1,ad);
-        const now = new Date();
-        const msWin = LB_DAYS * MS_DAY;
-        const k = Math.floor((now - anchorUTC)/msWin) - 1;
-        const startUTC = new Date(anchorUTC.getTime() + k*msWin);
-        const endUTC   = new Date(startUTC.getTime() + msWin);
-        return { startISO: apiDateFromBoundary(startUTC), endISO: apiDateFromBoundary(endUTC), endInstantUTC: endUTC };
+        const cur = currentLBWindow();
+        const curEndUTC = cur.endInstantUTC;
+        const prevEndUTC = new Date(curEndUTC.getTime() - LB_DAYS * MS_DAY);
+        const prevStartUTC = new Date(prevEndUTC.getTime() - LB_DAYS * MS_DAY);
+
+        return {
+          startISO: apiDateFromBoundary(prevStartUTC),
+          endISO:   apiDateFromBoundary(prevEndUTC),
+          endInstantUTC: prevEndUTC
+        };
       }
 
       function fmtMoney(n){
@@ -392,6 +434,7 @@
         const affiliates = Array.isArray(data?.affiliates) ? data.affiliates : [];
         return affiliates.reduce((sum,a)=>sum + Number(a?.wagered_amount||0), 0);
       }
+
       async function fetchRows(startISO,endISO){
         const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
         const res = await fetch(url,{cache:"no-store"});
@@ -417,15 +460,15 @@
         if(s.length <= 3) return s;
         return s.slice(0,2) + "*".repeat(s.length-3) + s.slice(-1);
       }
+
       function showError(msg, detail = ""){
         const rows = document.getElementById("leaderboard-rows");
         if (!rows) return;
         rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
       }
 
-      /* ===== Renderers ===== */
+      /* ===== Renderers (unchanged) ===== */
       function renderTop3(rows){
-        // Keep original look/stack for Top-3 (no .lb-money classes here)
         const top3 = document.getElementById("top3-cards");
         if (!top3) return;
         top3.innerHTML = "";
@@ -465,8 +508,8 @@
         list.innerHTML = "";
 
         rows.slice(3).forEach((entry, i) => {
-          const idx = i + 3;             // 3..9 => ranks 4..10
-          const place   = idx + 1;       // 4..10
+          const idx = i + 3;
+          const place   = idx + 1;
           const user    = entry.username || "Unknown";
           const masked  = maskName(user);
           const wagered = fmtMoney(entry.wagered || 0);
@@ -505,11 +548,12 @@
           showError("Error loading leaderboard.", String(err));
         }
       }
+
       async function paintListPrevious(){
         try{
           const prev = previousLBWindow();
           const rows = await fetchRows(prev.startISO, prev.endISO);
-        renderTop3(rows);
+          renderTop3(rows);
           renderRows(rows);
         }catch(err){
           console.error("Prev leaderboard load error:", err);
@@ -571,10 +615,13 @@
           const ms = new Date(DEAL_END + "T23:59:59").getTime() - Date.now();
           dealSpan.textContent = fmtRemaining(ms);
         }
+
         const lbSpan = document.getElementById('lb-remaining');
         if(lbSpan){
           const msLeft = lbWindow.endInstantUTC.getTime() - Date.now();
           lbSpan.textContent = fmtRemaining(msLeft);
+
+          // when cutoff hits, auto-roll to new window
           if(msLeft <= 0){
             lbWindow = currentLBWindow();
             paintTotals();
@@ -585,12 +632,14 @@
 
       const prevBtn = document.getElementById("prevLeaderboardBtn");
       const currBtn = document.getElementById("currentLeaderboardBtn");
+
       prevBtn?.addEventListener("click", async () => {
         showingPrev = true;
         prevBtn.style.display = "none";
         if (currBtn) currBtn.style.display = "inline-flex";
         await paintListPrevious();
       });
+
       currBtn?.addEventListener("click", async () => {
         showingPrev = false;
         currBtn.style.display = "none";
