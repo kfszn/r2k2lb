@@ -75,7 +75,7 @@
     .lb-row{
       display:grid;
       grid-template-columns: 54px 64px 1fr auto auto;
-      align-items:center;                 /* alignment fix */
+      align-items:center;
       gap:14px;
       padding:16px 18px;
       background:#0b0f17;
@@ -90,15 +90,13 @@
     .lb-right{display:flex;align-items:baseline;gap:min(8vw,64px)}
     .lb-label{font-size:12px;color:#9ac9ff;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-right:8px}
 
-    /* Amount sizing */
     .lb-row .lb-money.wager{font-size:18px}
     .lb-row .lb-money.prize{font-size:18px}
     .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:20px}
 
-    /* Colors scoped to rows 4–10 (Top-3 untouched) */
     .lb-row .lb-money.wager{
       color:#ffffff !important;
-      -webkit-text-fill-color:#ffffff !important;  /* iOS */
+      -webkit-text-fill-color:#ffffff !important;
       text-shadow:0 0 8px rgba(19,152,255,.25);
       background:transparent!important;
       filter:none!important;
@@ -112,7 +110,6 @@
       filter: drop-shadow(0 0 6px rgba(57,255,147,.35));
     }
 
-    /* Mobile for rows 4–10 */
     @media (max-width:720px){
       .lb-row{grid-template-columns:44px 54px 1fr;gap:10px}
       .lb-right{grid-column:1 / -1;justify-content:space-between;margin-top:8px;gap:22px}
@@ -122,7 +119,6 @@
     }
     /* ---------- END rows #4–#10 styles ---------- */
 
-    /* Top-3 container spacing (unchanged look) */
     #top3-cards{
       display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
       width:min(1120px,95%);margin:10px auto 24px;
@@ -243,9 +239,7 @@
 
     <div class="css-esk2ah">
       <div class="css-2w2ovy">
-        <!-- Top 3 (unchanged look) -->
         <div class="css-gqrafh" id="top3-cards"></div>
-        <!-- Rows 4–10 -->
         <div id="leaderboard-rows"></div>
       </div>
     </div>
@@ -285,11 +279,6 @@
     </div>
   </div>
 
-  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
-          integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
-          data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
-          crossorigin="anonymous"></script>
-
   <!-- Modal behavior (kept) -->
   <script>
     const modal = document.getElementById("rulesModal");
@@ -306,7 +295,6 @@
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
-  <!-- NOTE: do NOT include /js/leaderboard-page.js to avoid conflicts -->
 
   <!-- Push content below the sticky header -->
   <script>
@@ -323,23 +311,23 @@
     })();
   </script>
 
-  <!-- ===== Leaderboard logic (AUTO monthly cutoff on the 22nd @ 8PM ET) ===== -->
+  <!-- ===== Leaderboard logic (LB = DEAL window + 30 days, still 8PM ET boundary) ===== -->
   <script>
     (function(){
       const API_ROUTE = "/api/leaderboard";
       const DEAL_GOAL = 1200000;
       const LB_GOAL   = 2250000;
 
-      // Deal dates stay manual like before (unchanged)
+      // Deal dates stay MANUAL (you change these each deal)
       const DEAL_START = "2025-11-02";
       const DEAL_END   = "2025-12-01";
 
-      // NEW: leaderboard auto window settings
-      const LB_CUTOFF_DAY = 22;  // ends on the 22nd
-      const LB_DAYS   = 30;      // 30-day window
-      const MS_DAY    = 86400000;
+      // LB rule you asked for:
+      // Leaderboard duration = deal duration + 30 days
+      // (because your deal is ~7d 6h, LB becomes ~37d 6h)
+      const LB_EXTRA_DAYS = 30;
+      const MS_DAY = 86400000;
 
-      // --- Helpers to work in New York time and keep your 8PM ET boundary style ---
       function nyParts(date = new Date()){
         const f = new Intl.DateTimeFormat("en-US",{
           timeZone:"America/New_York",
@@ -352,7 +340,7 @@
         return { y:get("year"), m1:get("month"), d:get("day"), hh:get("hour"), mm:get("minute")||0, ss:get("second")||0 };
       }
 
-      // Returns a Date that represents 8:00 PM ET on y-m-d, expressed in UTC.
+      // 8:00 PM ET on y-m-d, expressed in UTC
       function boundaryUTC(y,m1,d){
         const nyMid = nyParts(new Date(`${y}-${String(m1).padStart(2,"0")}-${String(d).padStart(2,"0")}T00:00:00`));
         const baseUTC = Date.UTC(nyMid.y, nyMid.m1-1, nyMid.d, 0,0,0,0);
@@ -361,61 +349,48 @@
 
       const isoDate = (d)=> d.toISOString().slice(0,10);
 
-      // Your old code expects Rainbet dates to align to the day AFTER the 8PM boundary.
-      function apiDateFromBoundary(boundaryUTC){
+      // Rainbet expects date boundaries based on the "day after 8PM ET"
+      function apiDateFromBoundary(boundaryUTCDate){
         return isoDate(new Date(Date.UTC(
-          boundaryUTC.getUTCFullYear(),
-          boundaryUTC.getUTCMonth(),
-          boundaryUTC.getUTCDate() + 1
+          boundaryUTCDate.getUTCFullYear(),
+          boundaryUTCDate.getUTCMonth(),
+          boundaryUTCDate.getUTCDate() + 1
         )));
       }
 
-      function addMonths(y, m1, delta){
-        let m = m1 + delta;
-        let year = y;
-        while(m > 12){ m -= 12; year += 1; }
-        while(m < 1){ m += 12; year -= 1; }
-        return {year, month:m};
+      function parseISO(iso){
+        const [y,m1,d] = iso.split("-").map(Number);
+        return {y,m1,d};
       }
 
-      // NEW: current 30-day window ending on the next cutoff (22nd @ 8PM ET)
-      function currentLBWindow(){
-        const now = new Date();
-        const { y, m1, d, hh, mm, ss } = nyParts(now);
+      function lbWindowFromDeal(){
+        const ds = parseISO(DEAL_START);
+        const de = parseISO(DEAL_END);
 
-        // This month’s cutoff boundary
-        const thisCutoffUTC = boundaryUTC(y, m1, LB_CUTOFF_DAY);
+        const startUTC = boundaryUTC(ds.y, ds.m1, ds.d);     // 8PM ET on deal start day
+        const dealEndUTC = boundaryUTC(de.y, de.m1, de.d);  // 8PM ET on deal end day
 
-        // If we are BEFORE this month's cutoff boundary in ET, end is thisCutoff.
-        // Otherwise end is next month's cutoff.
-        let endUTC = thisCutoffUTC;
+        const endUTC = new Date(dealEndUTC.getTime() + LB_EXTRA_DAYS * MS_DAY);
 
-        // Determine if NY "now" is after the cutoff boundary.
-        const nowUTC = now.getTime();
-        if(nowUTC >= thisCutoffUTC.getTime()){
-          const next = addMonths(y, m1, 1);
-          endUTC = boundaryUTC(next.year, next.month, LB_CUTOFF_DAY);
-        }
-
-        const startUTC = new Date(endUTC.getTime() - LB_DAYS * MS_DAY);
+        const winLen = endUTC.getTime() - startUTC.getTime();
 
         return {
+          startUTC,
+          endUTC,
+          winLen,
           startISO: apiDateFromBoundary(startUTC),
-          endISO:   apiDateFromBoundary(endUTC),
+          endISO: apiDateFromBoundary(endUTC),
           endInstantUTC: endUTC
         };
       }
 
-      // NEW: previous window = the 30 days immediately before the current one
       function previousLBWindow(){
-        const cur = currentLBWindow();
-        const curEndUTC = cur.endInstantUTC;
-        const prevEndUTC = new Date(curEndUTC.getTime() - LB_DAYS * MS_DAY);
-        const prevStartUTC = new Date(prevEndUTC.getTime() - LB_DAYS * MS_DAY);
-
+        const cur = lbWindowFromDeal();
+        const prevEndUTC = cur.startUTC;
+        const prevStartUTC = new Date(prevEndUTC.getTime() - cur.winLen);
         return {
           startISO: apiDateFromBoundary(prevStartUTC),
-          endISO:   apiDateFromBoundary(prevEndUTC),
+          endISO: apiDateFromBoundary(prevEndUTC),
           endInstantUTC: prevEndUTC
         };
       }
@@ -451,8 +426,8 @@
           .slice(0, 10);
       }
 
-      const logoSrc   = "/assets/rainbetlogo.png";
-      const rewards   = [900, 575, 400, 350, 250, 200, 150, 100, 50, 25];
+      const logoSrc = "/assets/rainbetlogo.png";
+      const rewards = [900, 575, 400, 350, 250, 200, 150, 100, 50, 25];
 
       function maskName(name){
         if(!name) return "Unknown";
@@ -467,7 +442,6 @@
         rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
       }
 
-      /* ===== Renderers (unchanged) ===== */
       function renderTop3(rows){
         const top3 = document.getElementById("top3-cards");
         if (!top3) return;
@@ -475,8 +449,7 @@
         const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
         rows.slice(0,3).forEach((entry, idx) => {
           const place   = idx + 1;
-          const user    = entry.username || "Unknown";
-          const masked  = maskName(user);
+          const masked  = maskName(entry.username || "Unknown");
           const wagered = fmtMoney(entry.wagered || 0);
           const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
@@ -510,8 +483,7 @@
         rows.slice(3).forEach((entry, i) => {
           const idx = i + 3;
           const place   = idx + 1;
-          const user    = entry.username || "Unknown";
-          const masked  = maskName(user);
+          const masked  = maskName(entry.username || "Unknown");
           const wagered = fmtMoney(entry.wagered || 0);
           const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
@@ -539,7 +511,7 @@
 
       async function paintListCurrent(){
         try{
-          const win = currentLBWindow();
+          const win = lbWindowFromDeal();
           const rows = await fetchRows(win.startISO, win.endISO);
           renderTop3(rows);
           renderRows(rows);
@@ -575,7 +547,7 @@
         bar.setAttribute("aria-valuenow", Math.round(pct));
       }
 
-      let lbWindow = currentLBWindow();
+      let lbWindow = lbWindowFromDeal();
       let showingPrev = false;
 
       async function paintTotals(){
@@ -590,7 +562,7 @@
         const lbEl = document.getElementById("r2kLbWager");
         if(lbEl) lbEl.textContent = "…";
         try{
-          lbWindow = currentLBWindow();
+          lbWindow = lbWindowFromDeal();
           const lbTotal = await fetchTotal(lbWindow.startISO, lbWindow.endISO);
           if(lbEl) lbEl.textContent = fmtMoney(lbTotal);
           renderProgress({ total: lbTotal, goal: LB_GOAL, fillId: "r2kLbFill", pctId: "r2kLbPct", metaId: "r2kLbMeta", barId: "r2kLbBar" });
@@ -615,15 +587,12 @@
           const ms = new Date(DEAL_END + "T23:59:59").getTime() - Date.now();
           dealSpan.textContent = fmtRemaining(ms);
         }
-
         const lbSpan = document.getElementById('lb-remaining');
         if(lbSpan){
           const msLeft = lbWindow.endInstantUTC.getTime() - Date.now();
           lbSpan.textContent = fmtRemaining(msLeft);
-
-          // when cutoff hits, auto-roll to new window
           if(msLeft <= 0){
-            lbWindow = currentLBWindow();
+            lbWindow = lbWindowFromDeal();
             paintTotals();
             if(!showingPrev) paintListCurrent();
           }
