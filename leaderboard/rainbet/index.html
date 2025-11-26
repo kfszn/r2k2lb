@@ -71,10 +71,11 @@
       gap:12px;
     }
 
+    /* ---------- ONLY rows #4–#10 styles ---------- */
     .lb-row{
       display:grid;
       grid-template-columns: 54px 64px 1fr auto auto;
-      align-items:center;
+      align-items:center;                 /* alignment fix */
       gap:14px;
       padding:16px 18px;
       background:#0b0f17;
@@ -89,9 +90,29 @@
     .lb-right{display:flex;align-items:baseline;gap:min(8vw,64px)}
     .lb-label{font-size:12px;color:#9ac9ff;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-right:8px}
 
-    .lb-row .lb-money.wager{font-size:18px;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;text-shadow:0 0 8px rgba(19,152,255,.25);}
-    .lb-row .lb-money.prize{font-size:18px;color:#39ff93;text-shadow:0 0 6px rgba(57,255,147,.85),0 0 14px rgba(57,255,147,.55),0 0 28px rgba(57,255,147,.35);}
+    /* Amount sizing */
+    .lb-row .lb-money.wager{font-size:18px}
+    .lb-row .lb-money.prize{font-size:18px}
+    .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:20px}
 
+    /* Colors scoped to rows 4–10 (Top-3 untouched) */
+    .lb-row .lb-money.wager{
+      color:#ffffff !important;
+      -webkit-text-fill-color:#ffffff !important;  /* iOS */
+      text-shadow:0 0 8px rgba(19,152,255,.25);
+      background:transparent!important;
+      filter:none!important;
+    }
+    .lb-row .lb-money.prize{
+      color:#39ff93;
+      text-shadow:
+        0 0 6px rgba(57,255,147,.85),
+        0 0 14px rgba(57,255,147,.55),
+        0 0 28px rgba(57,255,147,.35);
+      filter: drop-shadow(0 0 6px rgba(57,255,147,.35));
+    }
+
+    /* Mobile for rows 4–10 */
     @media (max-width:720px){
       .lb-row{grid-template-columns:44px 54px 1fr;gap:10px}
       .lb-right{grid-column:1 / -1;justify-content:space-between;margin-top:8px;gap:22px}
@@ -99,7 +120,9 @@
       .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:18px}
       .lb-name{font-size:15px}
     }
+    /* ---------- END rows #4–#10 styles ---------- */
 
+    /* Top-3 container spacing (unchanged look) */
     #top3-cards{
       display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
       width:min(1120px,95%);margin:10px auto 24px;
@@ -109,7 +132,6 @@
     .top-card-shadow-3{box-shadow:0 0 40px #CD7F32}
   </style>
 </head>
-
 <body>
   <div id="toast"><span id="message"></span></div>
 
@@ -138,54 +160,55 @@
     </div>
   </header>
 
+  <!-- Background elements (kept) -->
   <canvas id="particleCanvas"></canvas>
-
   <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
   <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
   <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%"></object>
 
-  <!-- Toggle -->
+  <!-- Provider toggle -->
   <div class="toggle-images" style="margin-top:50px;">
-    <img class="game-image roobet-image" id="roobetImage" src="/assets/rainbet.png"
-         style="cursor:pointer;opacity:1;" onclick="window.location.href='/leaderboard/rainbet'">
+    <img class="game-image roobet-image" id="roobetImage" src="/assets/rainbet.png" style="cursor:pointer;opacity:1;" onclick="window.location.href='/leaderboard/rainbet'">
   </div>
 
-  <div id="appContent">
-    <div class="row text">
-      <span class="title">
-  <div class="price-wrapper glow">$3,000</div>
-  MONTHLY CODE <span class="glow">R2K2</span> Leaderboard!
-</span>
-<br>  <!-- THIS WAS MISSING -->
+  <!-- Main content -->
+  <div data-v-1d580398 data-v-e4097664 id="appContent">
+    <div data-v-1d580398>
+      <div data-v-1d580398 class="row text">
+        <span data-v-1d580398 class="title">
+          <div data-v-1d580398 class="price-wrapper glow">$3,000</div>
+          MONTHLY CODE <span class="glow">R2K2</span> Leaderboard!
+        </span>
+        <span data-v-1d580398 class="subtitle" style="color:#FFF;">
+          Every <b>BET</b> on Rainbet under Code <b>R2K2</b> counts towards your score. <br>
+          <i>The leaderboard updates every 15 minutes.</i><br>
+          <div class="warning-message">It Only Takes One!</div>
 
-<span class="subtitle" style="color:#FFF;">
-  Every <b>BET</b> on Rainbet under Code <b>R2K2</b> counts towards your score. <br>
-  <i>The leaderboard updates every 15 minutes.</i><br>
+          <button id="rulesButton" class="prev-lb-btn" style="background:#FFFFFF;cursor:pointer;border:none;color:#000;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            RULES
+          </button>
 
+          <button id="prevLeaderboardBtn" class="prev-lb-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l2 2h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2z"></path></svg>
+            PREVIOUS LEADERBOARD
+          </button>
 
-        <div class="warning-message">It Only Takes One!</div>
-
-        <button id="rulesButton" class="prev-lb-btn" style="background:#FFFFFF;cursor:pointer;border:none;color:#000;">
-          RULES
-        </button>
-
-        <button id="prevLeaderboardBtn" class="prev-lb-btn">
-          PREVIOUS LEADERBOARD
-        </button>
-
-        <button id="currentLeaderboardBtn" class="prev-lb-btn"
-                style="display:none;background:#22c55e;color:#000;">
-          CURRENT LEADERBOARD
-        </button>
-      </span>
+          <button id="currentLeaderboardBtn" class="prev-lb-btn" style="display:none;background:#22c55e;color:#000;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
+            CURRENT LEADERBOARD
+          </button>
+        </span>
+      </div>
     </div>
 
+    <!-- Totals + Goals -->
     <div class="r2k-totals">
       <div class="r2k-total-card">
         <div class="r2k-total-label">Current Deal</div>
         <div class="r2k-total-value" id="r2kDealWager">$0</div>
-        <div class="r2k-progress">
-          <div class="r2k-progress-bar" id="r2kDealBar">
+        <div class="r2k-progress" aria-label="Deal goal progress">
+          <div class="r2k-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="r2kDealBar">
             <div class="r2k-progress-fill" id="r2kDealFill"></div>
           </div>
           <div class="r2k-progress-meta">
@@ -202,8 +225,8 @@
       <div class="r2k-total-card">
         <div class="r2k-total-label">Current Leaderboard</div>
         <div class="r2k-total-value" id="r2kLbWager">$0</div>
-        <div class="r2k-progress">
-          <div class="r2k-progress-bar" id="r2kLbBar">
+        <div class="r2k-progress" aria-label="Leaderboard goal progress">
+          <div class="r2k-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="r2kLbBar">
             <div class="r2k-progress-fill" id="r2kLbFill"></div>
           </div>
           <div class="r2k-progress-meta">
@@ -220,75 +243,72 @@
 
     <div class="css-esk2ah">
       <div class="css-2w2ovy">
-        <div id="top3-cards"></div>
+        <!-- Top 3 (unchanged look) -->
+        <div class="css-gqrafh" id="top3-cards"></div>
+        <!-- Rows 4–10 -->
         <div id="leaderboard-rows"></div>
       </div>
     </div>
   </div>
 
   <!-- Footer -->
-  <div class="row inner-footer">
-    <div class="col-5">
-      <div class="content">
-        <div class="company"></div><br>
-        <span class="copyright">R2Ktwo<br> All Right Reserved 2025.</span>
+  <div data-v-5867ad71 class="row inner-footer">
+    <div data-v-5867ad71 class="col-5">
+      <div data-v-5867ad71 class="content">
+        <div data-v-5867ad71 class="company"></div><br data-v-5867ad71>
+        <span data-v-5867ad71 class="copyright">R2Ktwo<br data-v-5867ad71> All Right Reserved 2025.</span>
       </div>
     </div>
+
+    <style>
+      .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+      .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;font-size:14px;transition:transform .2s}
+      .footer-socials a.social:hover{transform:translateX(4px)}
+      .footer-socials .social-img{width:22px;height:22px;object-fit:contain}
+    </style>
 
     <div class="col">
       <span class="title">Socials</span>
       <div class="footer-socials">
         <a href="https://kick.com/R2Ktwo" target="_blank" class="social">
-          <img src="/assets/kick.png" class="social-img"><span>Kick</span>
+          <img src="/assets/kick.png" alt="Kick Logo" class="social-img"><span>Kick</span>
         </a>
         <a href="https://discord.gg/DwpA8vaGPj" target="_blank" class="social">
-          <img src="/assets/discord.png" class="social-img"><span>Discord</span>
+          <img src="/assets/discord.png" alt="Discord Logo" class="social-img"><span>Discord</span>
         </a>
       </div>
     </div>
 
-    <div class="col">
-      <span class="title">ResponsibleGambling.org</span>
-      <span class="subtitle" style="font-size:9px;">
-        Remember: Gambling over a long period will always result in losses.
-      </span>
+    <div data-v-5867ad71 class="col">
+      <span data-v-5867ad71 class="title">ResponsibleGambling.org</span>
+      <span data-v-5867ad71 class="subtitle" style="font-size:9px;">Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.</span>
     </div>
   </div>
 
-  <script defer src="https://static.cloudflareinsights.com/beacon.min.js"></script>
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
+          integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
+          data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
+          crossorigin="anonymous"></script>
 
-  <!-- Modal behavior -->
+  <!-- Modal behavior (kept) -->
   <script>
     const modal = document.getElementById("rulesModal");
     const btn = document.getElementById("rulesButton");
     const span = document.getElementsByClassName("close")[0];
-
-    btn?.addEventListener('click', ()=>{
-      if(!modal) return;
-      modal.style.display="block";
-      document.body.style.overflow="hidden";
-      setTimeout(()=>modal.classList.add("show"),10)
-    });
-
-    function closeModal(){
-      if(!modal) return;
-      modal.classList.remove("show");
-      setTimeout(()=>{
-        modal.style.display="none";
-        document.body.style.overflow="auto";
-      },500)
-    }
-
+    btn?.addEventListener('click', ()=>{ if(!modal) return; modal.style.display="block"; document.body.style.overflow="hidden"; setTimeout(()=>modal.classList.add("show"),10) });
+    function closeModal(){ if(!modal) return; modal.classList.remove("show"); setTimeout(()=>{ modal.style.display="none"; document.body.style.overflow="auto"; },500) }
     span?.addEventListener('click', closeModal);
     window.addEventListener('click',(e)=>{ if(e.target===modal) closeModal(); });
     document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal && modal.style.display==='block') closeModal(); });
   </script>
 
+  <!-- Existing JS includes (kept) -->
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
+  <!-- NOTE: do NOT include /js/leaderboard-page.js to avoid conflicts -->
 
-  <!-- Header spacing (single copy, NOT duplicated) -->
+  <!-- Push content below the sticky header -->
   <script>
     (function(){
       function pushBelowHeader(){
@@ -303,261 +323,376 @@
     })();
   </script>
 
-  <!-- ========== FIXED LEADERBOARD LOGIC ========== -->
+  <!-- ===== Leaderboard logic (CURRENT = today → Dec 31, 2025 | PREV = old deal+30d window) ===== -->
   <script>
-(function(){
-  const API_ROUTE = "/api/leaderboard";
-  const DEAL_GOAL = 1200000;
-  const LB_GOAL   = 2250000;
+    (function(){
+      const API_ROUTE = "/api/leaderboard";
+      const DEAL_GOAL = 1200000;
+      const LB_GOAL   = 2250000;
 
-  // Deal window (unchanged)
-  const DEAL_START = "2025-11-02";
-  const DEAL_END   = "2025-12-01";
+      // =========================
+      // MANUAL DEAL WINDOW (unchanged)
+      // =========================
+      const DEAL_START = "2025-11-02";
+      const DEAL_END   = "2025-12-01";
 
-  // FIX: Current LB window = 11/25 → 12/31
-  function currentLBWindow(){
-    return {
+      // =========================
+      // CURRENT LEADERBOARD (NEW RULE)
+      // start = TODAY in ET
+      // end   = 2025-12-31
+      // =========================
+      const CURRENT_LB_END_ISO = "2025-12-31";
+      const CURRENT_LB_END_INSTANT = new Date("2025-12-31T23:59:59-05:00");
+
+      // =========================
+      // PREVIOUS LEADERBOARD (OLD RULE)
+      // previous = deal window + 30 days
+      // (kept the same 8PM ET boundary style)
+      // =========================
+      const LB_EXTRA_DAYS = 30;
+      const MS_DAY = 86400000;
+
+      // ---------- New York time helpers ----------
+      function nyParts(date = new Date()){
+        const f = new Intl.DateTimeFormat("en-US",{
+          timeZone:"America/New_York",
+          year:"numeric",month:"numeric",day:"numeric",
+          hour:"numeric",minute:"numeric",second:"numeric",
+          hour12:false
+        });
+        const parts = f.formatToParts(date);
+        const get = t => Number(parts.find(p=>p.type===t)?.value);
+        return {
+          y: get("year"),
+          m1: get("month"),
+          d: get("day"),
+          hh: get("hour"),
+          mm: get("minute") || 0,
+          ss: get("second") || 0
+        };
+      }
+
+      function nyTodayISO(){
+        const p = nyParts();
+        return `${p.y}-${String(p.m1).padStart(2,"0")}-${String(p.d).padStart(2,"0")}`;
+      }
+
+      // 8:00 PM ET on y-m-d expressed in UTC (used for PREVIOUS windows only)
+      function boundaryUTC(y,m1,d){
+        const nyMid = nyParts(new Date(`${y}-${String(m1).padStart(2,"0")}-${String(d).padStart(2,"0")}T00:00:00`));
+        const baseUTC = Date.UTC(nyMid.y, nyMid.m1-1, nyMid.d, 0,0,0,0);
+        return new Date(baseUTC + 20*3600*1000); // 8 PM ET
+      }
+
+      const isoDate = d => d.toISOString().slice(0,10);
+
+      // Rainbet expects date boundaries based on "day after 8PM ET"
+      function apiDateFromBoundary(boundaryUTCDate){
+        return isoDate(new Date(Date.UTC(
+          boundaryUTCDate.getUTCFullYear(),
+          boundaryUTCDate.getUTCMonth(),
+          boundaryUTCDate.getUTCDate() + 1
+        )));
+      }
+
+      function parseISO(iso){
+        const [y,m1,d] = iso.split("-").map(Number);
+        return {y,m1,d};
+      }
+
+      // ---------- Windows ----------
+     function currentLBWindow(){
+      return {
       startISO: "2025-11-25",
       endISO: "2025-12-31",
       endInstantUTC: new Date("2025-12-31T23:59:59-05:00")
-    };
-  }
+  };
+      }
 
-  // Previous LB = deal window + 30 days
-  const LB_EXTRA_DAYS = 30;
-  const MS_DAY = 86400000;
+      function oldLBWindowFromDeal(){
+        const ds = parseISO(DEAL_START);
+        const de = parseISO(DEAL_END);
 
-  function isoDate(d){return d.toISOString().slice(0,10);}
-  function parseISO(s){const [y,m,d]=s.split("-").map(Number);return{y,m1:m,d};}
+        const startUTC   = boundaryUTC(ds.y, ds.m1, ds.d);
+        const dealEndUTC = boundaryUTC(de.y, de.m1, de.d);
+        const endUTC     = new Date(dealEndUTC.getTime() + LB_EXTRA_DAYS * MS_DAY);
 
-  function boundaryUTC(y,m1,d){
-    return new Date(Date.UTC(y, m1-1, d, 20,0,0)); // 8pm ET
-  }
+        const winLen = endUTC.getTime() - startUTC.getTime();
 
-  function apiDateFromBoundary(dtUTC){
-    return isoDate(new Date(Date.UTC(
-      dtUTC.getUTCFullYear(),
-      dtUTC.getUTCMonth(),
-      dtUTC.getUTCDate()+1
-    )));
-  }
+        return {
+          startUTC,
+          endUTC,
+          winLen,
+          startISO: apiDateFromBoundary(startUTC),
+          endISO: apiDateFromBoundary(endUTC),
+          endInstantUTC: endUTC
+        };
+      }
 
-  function oldLBWindowFromDeal(){
-    const ds=parseISO(DEAL_START);
-    const de=parseISO(DEAL_END);
+      function previousLBWindow(){
+        const old = oldLBWindowFromDeal();
+        const prevEndUTC   = old.startUTC;
+        const prevStartUTC = new Date(prevEndUTC.getTime() - old.winLen);
+        return {
+          startISO: apiDateFromBoundary(prevStartUTC),
+          endISO: apiDateFromBoundary(prevEndUTC),
+          endInstantUTC: prevEndUTC
+        };
+      }
 
-    const startUTC=boundaryUTC(ds.y,ds.m1,ds.d);
-    const dealEndUTC=boundaryUTC(de.y,de.m1,de.d);
-    const endUTC=new Date(dealEndUTC.getTime()+LB_EXTRA_DAYS*MS_DAY);
+      // ---------- Formatting + data ----------
+      function fmtMoney(n){
+        try{ return n.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:2}); }
+        catch{ return "$" + (Math.round(n*100)/100).toFixed(2); }
+      }
+      const toNum = v => Number.isFinite(Number(v)) ? Number(v) : 0;
 
-    return{
-      startUTC,
-      endUTC,
-      winLen:endUTC-startUTC,
-      startISO:apiDateFromBoundary(startUTC),
-      endISO:apiDateFromBoundary(endUTC),
-      endInstantUTC:endUTC
-    };
-  }
+      async function fetchTotal(startISO,endISO){
+        const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
+        const res = await fetch(url,{cache:"no-store"});
+        if(!res.ok) throw new Error(`API ${res.status}`);
+        const data = await res.json();
+        const affiliates = Array.isArray(data?.affiliates) ? data.affiliates : [];
+        return affiliates.reduce((sum,a)=>sum + Number(a?.wagered_amount||0), 0);
+      }
 
-  function previousLBWindow(){
-    const old=oldLBWindowFromDeal();
-    const prevEndUTC=old.startUTC;
-    const prevStartUTC=new Date(prevEndUTC-old.winLen);
-    return{
-      startISO:apiDateFromBoundary(prevStartUTC),
-      endISO:apiDateFromBoundary(prevEndUTC),
-      endInstantUTC:prevEndUTC
-    };
-  }
+      async function fetchRows(startISO,endISO){
+        const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
+        const res = await fetch(url,{cache:"no-store"});
+        if(!res.ok) {
+          const text = await res.text().catch(()=> "");
+          throw new Error(`HTTP ${res.status} ${res.statusText}\n${text.slice(0,300)}`);
+        }
+        const json = await res.json();
+        const raw = Array.isArray(json) ? json : (json.affiliates || []);
+        return raw
+          .map(a => ({ username: a.username || "Unknown", wagered: toNum(a.wagered_amount ?? a.wagered) }))
+          .filter(r => r.wagered > 0)
+          .sort((a, b) => b.wagered - a.wagered)
+          .slice(0, 10);
+      }
 
-  function fmtMoney(n){
-    return "$" + Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-  }
-  function toNum(v){return Number(v)||0;}
+      const logoSrc = "/assets/rainbetlogo.png";
+      const rewards = [900, 575, 400, 350, 250, 200, 150, 100, 50, 25];
 
-  async function fetchTotal(startISO,endISO){
-    const url=`${API_ROUTE}?start_at=${startISO}&end_at=${endISO}`;
-    const r=await fetch(url,{cache:"no-store"});
-    const j=await r.json();
-    const arr=j.affiliates||[];
-    return arr.reduce((s,a)=>s+toNum(a.wagered_amount),0);
-  }
+      function maskName(name){
+        if(!name) return "Unknown";
+        const s = String(name).trim();
+        if(s.length <= 3) return s;
+        return s.slice(0,2) + "*".repeat(s.length-3) + s.slice(-1);
+      }
 
-  async function fetchRows(startISO,endISO){
-    const url=`${API_ROUTE}?start_at=${startISO}&end_at=${endISO}`;
-    const r=await fetch(url,{cache:"no-store"});
-    const j=await r.json();
-    const arr=j.affiliates||[];
-    return arr
-      .map(a=>({username:a.username,wagered:toNum(a.wagered_amount)}))
-      .filter(a=>a.wagered>0)
-      .sort((a,b)=>b.wagered-a.wagered)
-      .slice(0,10);
-  }
+      function showError(msg, detail = ""){
+        const rows = document.getElementById("leaderboard-rows");
+        if (!rows) return;
+        rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
+      }
 
-  const logoSrc="/assets/rainbetlogo.png";
-  const rewards=[900,575,400,350,250,200,150,100,50,25];
+      // ---------- Renderers (Top-3 untouched) ----------
+      function renderTop3(rows){
+        const top3 = document.getElementById("top3-cards");
+        if (!top3) return;
+        top3.innerHTML = "";
+        const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
 
-  function maskName(s){
-    if(!s)return"Unknown";
-    s=String(s);
-    if(s.length<=3)return s;
-    return s.slice(0,2)+"*".repeat(s.length-3)+s.slice(-1);
-  }
+        rows.slice(0,3).forEach((entry, idx) => {
+          const place   = idx + 1;
+          const user    = entry.username || "Unknown";
+          const masked  = maskName(user);
+          const wagered = fmtMoney(entry.wagered || 0);
+          const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
-  function renderTop3(rows){
-    const el=document.getElementById("top3-cards");
-    el.innerHTML="";
-    const glows=["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
-    rows.slice(0,3).forEach((e,i)=>{
-      const div=document.createElement("div");
-      div.className=`css-jehefp ${glows[i]||""}`;
-      div.style.position="relative";
-      if(i===1)div.style.transform="translateY(25px) scale(1.2)";
-      if(i===2)div.style.transform="translateY(25px)";
-      div.innerHTML=`
-        <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
-                    padding:4px 8px;border-radius:8px;font-weight:700;">#${i+1}</div>
-        <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
-        <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${maskName(e.username)}</span></div>
-        <div style="margin:8px 0 6px;color:#9ac9ff;font-weight:800;">Wagered</div>
-        <div style="padding:10px 18px;border:1px solid #1b3760;background:#0c1a2d;border-radius:12px;">
-          <span style="font-weight:900;color:#fff;">${fmtMoney(e.wagered)}</span>
-        </div>
-        <div style="margin-top:10px;font-weight:900;color:#39ff93;">${fmtMoney(rewards[i])}</div>
-      `;
-      el.appendChild(div);
-    });
-  }
+          const card = document.createElement("div");
+          card.className = `css-jehefp ${glows[idx]||""}`;
+          card.style.position = "relative";
+          if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
+          if (idx === 2) card.style.transform = "translateY(25px)";
+          card.innerHTML = `
+            <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
+                        padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
+            <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
+            <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
 
-  function renderRows(rows){
-    const el=document.getElementById("leaderboard-rows");
-    el.innerHTML="";
-    rows.slice(3).forEach((e,idx)=>{
-      const rank=idx+4;
-      const div=document.createElement("div");
-      div.className="lb-row lb-row--wide";
-      div.innerHTML=`
-        <img src="${logoSrc}" style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;">
-        <div class="lb-rank">#${rank}</div>
-        <div class="lb-name">${maskName(e.username)}</div>
-        <div class="lb-right">
-          <div>
-            <span class="lb-label">Wagered</span>
-            <span class="lb-money wager">${fmtMoney(e.wagered)}</span>
-          </div>
-          <div>
-            <span class="lb-label">Prize</span>
-            <span class="lb-money prize">${fmtMoney(rewards[rank-1])}</span>
-          </div>
-        </div>`;
-      el.appendChild(div);
-    });
-  }
+            <div style="margin:8px 0 6px;color:#9ac9ff;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Wagered</div>
+            <div style="display:inline-block;padding:10px 18px;border:1px solid #1b3760;background:#0c1a2d;border-radius:12px;box-shadow:inset 0 0 10px rgba(0,153,255,.25);">
+              <span style="font-weight:900;color:#ffffff;text-shadow:0 0 10px rgba(19,152,255,.35)">${wagered}</span>
+            </div>
 
-  async function paintListCurrent(){
-    const w=currentLBWindow();
-    const rows=await fetchRows(w.startISO,w.endISO);
-    renderTop3(rows);
-    renderRows(rows);
-  }
+            <div style="margin-top:10px;font-weight:900;color:#39ff93;text-shadow:0 0 6px rgba(57,255,147,.85),0 0 14px rgba(57,255,147,.55),0 0 28px rgba(57,255,147,.35)">${prize}</div>
+          `;
+          top3.appendChild(card);
+        });
+      }
 
-  async function paintListPrevious(){
-    const w=previousLBWindow();
-    const rows=await fetchRows(w.startISO,w.endISO);
-    renderTop3(rows);
-    renderRows(rows);
-  }
+      function renderRows(rows){
+        const list = document.getElementById("leaderboard-rows");
+        if (!list) return;
+        list.innerHTML = "";
 
-  function renderProgress({total,goal,fillId,pctId,metaId,barId}){
-    const fill=document.getElementById(fillId);
-    const pct=document.getElementById(pctId);
-    const meta=document.getElementById(metaId);
-    const bar=document.getElementById(barId);
-    const p=goal?Math.min((total/goal)*100,100):0;
-    fill.style.width=p+"%";
-    fill.classList.toggle("over",p>=100);
-    pct.textContent=Math.round(p)+"%";
-    meta.textContent=`${fmtMoney(total)} / ${fmtMoney(goal)}`;
-    bar.setAttribute("aria-valuenow",Math.round(p));
-  }
+        rows.slice(3).forEach((entry, i) => {
+          const idx = i + 3;             // index 3..9 => ranks 4..10
+          const place   = idx + 1;
+          const user    = entry.username || "Unknown";
+          const masked  = maskName(user);
+          const wagered = fmtMoney(entry.wagered || 0);
+          const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
-  async function paintTotals(){
-    const dealTotal=await fetchTotal(DEAL_START,DEAL_END);
-    document.getElementById("r2kDealWager").textContent=fmtMoney(dealTotal);
-    renderProgress({
-      total:dealTotal,goal:DEAL_GOAL,
-      fillId:"r2kDealFill",pctId:"r2kDealPct",
-      metaId:"r2kDealMeta",barId:"r2kDealBar"
-    });
+          const row = document.createElement("div");
+          row.className = `lb-row lb-row--wide`;
+          row.innerHTML = `
+            <img src="${logoSrc}" alt="R" style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover">
+            <div class="lb-rank">#${place}</div>
+            <div class="lb-name">${masked}</div>
 
-    const w=currentLBWindow();
-    const lbTotal=await fetchTotal(w.startISO,w.endISO);
-    document.getElementById("r2kLbWager").textContent=fmtMoney(lbTotal);
-    renderProgress({
-      total:lbTotal,goal:LB_GOAL,
-      fillId:"r2kLbFill",pctId:"r2kLbPct",
-      metaId:"r2kLbMeta",barId:"r2kLbBar"
-    });
-  }
+            <div class="lb-right">
+              <div>
+                <span class="lb-label">Wagered</span>
+                <span class="lb-money wager">${wagered}</span>
+              </div>
+              <div>
+                <span class="lb-label">Prize</span>
+                <span class="lb-money prize">${prize}</span>
+              </div>
+            </div>
+          `;
+          list.appendChild(row);
+        });
+      }
 
-  function fmtRemaining(ms){
-    const s=Math.max(0,Math.floor(ms/1000));
-    const d=Math.floor(s/86400);
-    const h=Math.floor((s%86400)/3600);
-    const m=Math.floor((s%3600)/60);
-    const ss=s%60;
-    if(d>0)return`${d}d ${h}h ${m}m`;
-    if(h>0)return`${h}h ${m}m ${ss}s`;
-    if(m>0)return`${m}m ${ss}s`;
-    return`${ss}s`;
-  }
+      // ---------- Paint lists ----------
+      async function paintListCurrent(){
+        try{
+          const win = currentLBWindow();
+          const rows = await fetchRows(win.startISO, win.endISO);
+          renderTop3(rows);
+          renderRows(rows);
+        }catch(err){
+          console.error("Leaderboard load error:", err);
+          showError("Error loading leaderboard.", String(err));
+        }
+      }
 
-  function tickCountdowns(){
-    const dealSpan=document.getElementById('deal-remaining');
-    const dealMs=new Date(DEAL_END+"T23:59:59").getTime()-Date.now();
-    dealSpan.textContent=fmtRemaining(dealMs);
+      async function paintListPrevious(){
+        try{
+          const prev = previousLBWindow();
+          const rows = await fetchRows(prev.startISO, prev.endISO);
+          renderTop3(rows);
+          renderRows(rows);
+        }catch(err){
+          console.error("Prev leaderboard load error:", err);
+          showError("Error loading previous leaderboard.", String(err));
+        }
+      }
 
-    const lbSpan=document.getElementById('lb-remaining');
-    const w=currentLBWindow();
-    const lbMs=w.endInstantUTC-Date.now();
-    lbSpan.textContent=fmtRemaining(lbMs);
-  }
+      // ---------- Progress bars ----------
+      function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
+        const fill  = document.getElementById(fillId);
+        const pctEl = document.getElementById(pctId);
+        const metaEl= document.getElementById(metaId);
+        const bar   = document.getElementById(barId);
+        if(!fill||!pctEl||!metaEl||!bar) return;
+        const pct = goal>0 ? Math.min((total/goal)*100,100) : 0;
+        fill.style.width = pct + "%";
+        fill.classList.toggle("over", pct>=100);
+        pctEl.textContent = Math.round(pct) + "%";
+        metaEl.textContent = `${fmtMoney(total)} / ${fmtMoney(goal)}`;
+        bar.setAttribute("aria-valuenow", Math.round(pct));
+      }
 
-  const prevBtn=document.getElementById("prevLeaderboardBtn");
-  const currBtn=document.getElementById("currentLeaderboardBtn");
+      let lbWindow = currentLBWindow();
+      let showingPrev = false;
 
-  prevBtn.addEventListener("click",async()=>{
-    prevBtn.style.display="none";
-    currBtn.style.display="inline-flex";
-    await paintListPrevious();
-  });
+      async function paintTotals(){
+        const dealEl = document.getElementById("r2kDealWager");
+        if(dealEl) dealEl.textContent = "…";
+        try{
+          const dealTotal = await fetchTotal(DEAL_START, DEAL_END);
+          if(dealEl) dealEl.textContent = fmtMoney(dealTotal);
+          renderProgress({ total: dealTotal, goal: DEAL_GOAL, fillId: "r2kDealFill", pctId: "r2kDealPct", metaId: "r2kDealMeta", barId: "r2kDealBar" });
+        }catch(e){
+          if(dealEl) dealEl.textContent="—";
+          console.error("Deal total error:", e);
+        }
 
-  currBtn.addEventListener("click",async()=>{
-    currBtn.style.display="none";
-    prevBtn.style.display="inline-flex";
-    await paintListCurrent();
-  });
+        const lbEl = document.getElementById("r2kLbWager");
+        if(lbEl) lbEl.textContent = "…";
+        try{
+          lbWindow = currentLBWindow(); // re-evaluate "today" on load
+          const lbTotal = await fetchTotal(lbWindow.startISO, lbWindow.endISO);
+          if(lbEl) lbEl.textContent = fmtMoney(lbTotal);
+          renderProgress({ total: lbTotal, goal: LB_GOAL, fillId: "r2kLbFill", pctId: "r2kLbPct", metaId: "r2kLbMeta", barId: "r2kLbBar" });
+        }catch(e){
+          if(lbEl) lbEl.textContent="—";
+          console.error("LB total error:", e);
+        }
+      }
 
-  (function(){
-    const burger=document.getElementById('hamburger');
-    const nav=document.getElementById('r2kNav');
-    burger?.addEventListener('click',()=>{
-      const isOpen=nav.classList.toggle('show');
-      burger.setAttribute('aria-expanded',String(isOpen));
-    });
-  })();
+      // ---------- Countdown ----------
+      function fmtRemaining(ms){
+        const s = Math.max(0, Math.floor(ms/1000));
+        const d = Math.floor(s/86400);
+        const h = Math.floor((s%86400)/3600);
+        const m = Math.floor((s%3600)/60);
+        const ss= s%60;
+        if(d>0) return `${d}d ${h}h ${m}m`;
+        if(h>0) return `${h}h ${m}m ${ss}s`;
+        if(m>0) return `${m}m ${ss}s`;
+        return `${ss}s`;
+      }
 
-  document.addEventListener("DOMContentLoaded",async()=>{
-    await paintTotals();
-    await paintListCurrent();
-    tickCountdowns();
-    setInterval(tickCountdowns,1000);
-  });
+      function tickCountdowns(){
+        const dealSpan = document.getElementById('deal-remaining');
+        if(dealSpan){
+          const ms = new Date(DEAL_END + "T23:59:59").getTime() - Date.now();
+          dealSpan.textContent = fmtRemaining(ms);
+        }
 
-})();
+        const lbSpan = document.getElementById('lb-remaining');
+        if(lbSpan){
+          const msLeft = lbWindow.endInstantUTC.getTime() - Date.now();
+          lbSpan.textContent = fmtRemaining(msLeft);
+        }
+      }
+
+      // ---------- Buttons ----------
+      const prevBtn = document.getElementById("prevLeaderboardBtn");
+      const currBtn = document.getElementById("currentLeaderboardBtn");
+
+      prevBtn?.addEventListener("click", async () => {
+        showingPrev = true;
+        prevBtn.style.display = "none";
+        if (currBtn) currBtn.style.display = "inline-flex";
+        await paintListPrevious();
+      });
+
+      currBtn?.addEventListener("click", async () => {
+        showingPrev = false;
+        currBtn.style.display = "none";
+        if (prevBtn) prevBtn.style.display = "inline-flex";
+        await paintListCurrent();
+      });
+
+      // ---------- Hamburger ----------
+      (function(){
+        const burger = document.getElementById('hamburger');
+        const nav = document.getElementById('r2kNav');
+        if(burger && nav){
+          burger.addEventListener('click', ()=>{
+            const isOpen = nav.classList.toggle('show');
+            burger.setAttribute('aria-expanded', String(isOpen));
+          });
+        }
+      })();
+
+      // ---------- Init ----------
+      document.addEventListener("DOMContentLoaded", async ()=>{
+        await paintTotals();
+        await paintListCurrent();
+        tickCountdowns();
+        clearInterval(window.__r2kLbTick__);
+        window.__r2kLbTick__ = setInterval(tickCountdowns, 1000);
+      });
+    })();
   </script>
-
 </body>
 </html>
