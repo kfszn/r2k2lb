@@ -261,6 +261,7 @@
     function isoDateTZ(d, tz = TZ){ const p = inTZ(d, tz); return `${p.y}-${pad2(p.m)}-${pad2(p.d)}`; }
 
     function humanWindow(start, endExclusive){
+      // Show inclusive end as 1 second before the exclusive boundary
       const endShown = new Date(endExclusive.getTime() - 1000);
       const s = inTZ(start); const e = inTZ(endShown);
       return `${s.y}-${pad2(s.m)}-${pad2(s.d)} → ${e.y}-${pad2(e.m)}-${pad2(e.d)}`;
@@ -273,51 +274,31 @@
       return `${pad2(d)}d ${pad2(h)}:${pad2(m)}:${pad2(s)}`;
     }
 
-    /* ===== Weekly windows Sat 00:00 ET -> Fri 00:00 ET ===== */
-function weeklyWindowFriToFri(){
-  const now = new Date();
-  const p = inTZ(now, TZ);
+    /* ===== Weekly windows Sat 00:00 ET -> next Sat 00:00 ET (counts Sat–Fri) ===== */
+    function weeklyWindowSatToFri(){
+      const now = new Date();
+      const p = inTZ(now, TZ);
 
-  // Determine weekday in ET via a stable ET time (noon ET)
-  const noonET = new Date(Date.UTC(p.y, p.m - 1, p.d, 17, 0, 0)); 
-  const weekdayET = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(noonET);
-
-  const map = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
-  const dow = map[weekdayET] ?? 0;
-
-  // How many days since Saturday
-  const sinceSat = (dow - 6 + 7) % 7;
-
-  // Start at Saturday 00:00 ET
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() - sinceSat);
-
-  // End at next Friday 00:00 ET (7 days later)
-  const endExclusive = new Date(start);
-  endExclusive.setDate(endExclusive.getDate() + 7);
-
-  const drawAt = new Date(endExclusive.getTime());
-
-  return { start, endExclusive, drawAt };
-}
-
-      // Determine weekday in ET
-      const noonET = new Date(Date.UTC(p.y, p.m-1, p.d, 17, 0, 0)); // ~12:00 ET
+      // Get weekday in ET using a stable ET time (noon ET)
+      const noonET = new Date(Date.UTC(p.y, p.m - 1, p.d, 17, 0, 0)); // ~12:00 ET
       const weekdayET = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday:'short' }).format(noonET);
       const map = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
       const dow = map[weekdayET] ?? 0;
 
-      const sinceFri = (dow - 5 + 7) % 7;
+      // Days since Saturday (Saturday = 6)
+      const sinceSat = (dow - 6 + 7) % 7;
 
+      // Start at most recent Saturday 00:00 ET
       const start = new Date(now);
       start.setHours(0,0,0,0);
-      start.setDate(start.getDate() - sinceFri);
+      start.setDate(start.getDate() - sinceSat);
 
+      // End-exclusive at next Saturday 00:00 ET (so last counted day is Friday)
       const endExclusive = new Date(start);
       endExclusive.setDate(endExclusive.getDate() + 7);
 
-      const drawAt = new Date(endExclusive.getTime()); // 00:00 ET at rollover
+      // Drawings happen on Friday, so we set drawAt to Friday 23:59:59 ET
+      const drawAt = new Date(endExclusive.getTime() - 1000);
 
       return { start, endExclusive, drawAt };
     }
@@ -336,15 +317,20 @@ function weeklyWindowFriToFri(){
 
     /* ===== Last completed window for admin draws ===== */
     function getDrawWindow(kind){
+      const dayMs = 86400000;
+
       if(kind.label === "Weekly"){
-        const cur = weeklyWindowFriToFri();
-        const start = new Date(cur.start.getTime() - 7*86400000);
+        // Current open Sat–Fri window
+        const cur = weeklyWindowSatToFri();
+
+        // Last completed Sat–Fri window ends when current one begins
+        const start = new Date(cur.start.getTime() - 7 * dayMs);
         const endExclusive = new Date(cur.start.getTime());
-        const drawAt = new Date(endExclusive.getTime());
+        const drawAt = new Date(endExclusive.getTime() - 1000); // last Friday 23:59:59
+
         return { start, endExclusive, drawAt };
       }
 
-      const dayMs = 86400000;
       const len = (kind.days + 1) * dayMs;
       const now = new Date();
       const diff = now.getTime() - BASE_DATE.getTime();
@@ -573,7 +559,7 @@ function weeklyWindowFriToFri(){
       const tick = async ()=>{
         let win;
         if(kind.label === "Weekly"){
-          win = weeklyWindowFriToFri();
+          win = weeklyWindowSatToFri();
           if(Date.now() >= win.drawAt.getTime()){
             ui.remaining.textContent = 'Completed — see Previous Winners';
           }else{
@@ -596,7 +582,7 @@ function weeklyWindowFriToFri(){
     async function paintPanel(kind, ui){
       let win;
       if(kind.label === "Weekly"){
-        win = weeklyWindowFriToFri();
+        win = weeklyWindowSatToFri();
       }else{
         win = windowFromBase(BASE_DATE, kind.days);
       }
@@ -714,7 +700,7 @@ function weeklyWindowFriToFri(){
     scheduleAuto(MONTHLY, UI.monthly);
     loadWinners();
 
-    // keep weekly UI synced if page stays open (rolls at midnight ET)
+    // keep weekly UI synced if page stays open (rolls at window boundaries)
     setInterval(()=> paintPanel(WEEKLY, UI.weekly), 60_000);
   </script>
 </body>
