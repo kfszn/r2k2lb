@@ -273,10 +273,34 @@
       return `${pad2(d)}d ${pad2(h)}:${pad2(m)}:${pad2(s)}`;
     }
 
-    /* ===== Weekly windows Fri 00:00 ET -> next Fri 00:00 ET (auto updates at midnight ET) ===== */
-    function weeklyWindowFriToFri(){
-      const now = new Date();
-      const p = inTZ(now, TZ);
+    /* ===== Weekly windows Sat 00:00 ET -> Fri 00:00 ET ===== */
+function weeklyWindowFriToFri(){
+  const now = new Date();
+  const p = inTZ(now, TZ);
+
+  // Determine weekday in ET via a stable ET time (noon ET)
+  const noonET = new Date(Date.UTC(p.y, p.m - 1, p.d, 17, 0, 0)); 
+  const weekdayET = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(noonET);
+
+  const map = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+  const dow = map[weekdayET] ?? 0;
+
+  // How many days since Saturday
+  const sinceSat = (dow - 6 + 7) % 7;
+
+  // Start at Saturday 00:00 ET
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - sinceSat);
+
+  // End at next Friday 00:00 ET (7 days later)
+  const endExclusive = new Date(start);
+  endExclusive.setDate(endExclusive.getDate() + 7);
+
+  const drawAt = new Date(endExclusive.getTime());
+
+  return { start, endExclusive, drawAt };
+}
 
       // Determine weekday in ET
       const noonET = new Date(Date.UTC(p.y, p.m-1, p.d, 17, 0, 0)); // ~12:00 ET
