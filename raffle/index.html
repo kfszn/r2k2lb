@@ -582,9 +582,15 @@
     async function paintPanel(kind, ui){
       let win;
       if(kind.label === "Weekly"){
-        win = weeklyWindowSatToFri();
-      }else{
-        win = windowFromBase(BASE_DATE, kind.days);
+  win = weeklyWindowSatToFri();
+}else{
+  // -------------------------------
+  // MANUAL MONTHLY WINDOW OVERRIDE
+  // -------------------------------
+  const start = new Date("2025-10-30T00:00:00-05:00");
+  const endExclusive = new Date("2025-11-30T00:00:00-05:00"); 
+  const drawAt = new Date(endExclusive.getTime() - 1000);
+  win = { start, endExclusive, drawAt };
       }
 
       const startISO = isoDateTZ(win.start, TZ);
