@@ -307,7 +307,7 @@
     function windowFromBase(baseDate, days){
       const now = new Date();
       const dayMs = 86400000;
-      const len = days * dayMs;
+      const len = (days + 1) * dayMs;
       const k = (now < baseDate) ? 0 : Math.floor((now.getTime() - baseDate.getTime()) / len);
       const start = new Date(baseDate.getTime() + k * len);
       const endExclusive = new Date(start.getTime() + len);
@@ -331,7 +331,7 @@
         return { start, endExclusive, drawAt };
       }
 
-      const len = kind.days * dayMs;
+      const len = (kind.days + 1) * dayMs;
       const now = new Date();
       const diff = now.getTime() - BASE_DATE.getTime();
       if (diff < 0) return windowFromBase(BASE_DATE, kind.days);
@@ -582,15 +582,9 @@
     async function paintPanel(kind, ui){
       let win;
       if(kind.label === "Weekly"){
-  win = weeklyWindowSatToFri();
-}else{
-  // -------------------------------
-  // MANUAL MONTHLY WINDOW OVERRIDE
-  // -------------------------------
-  const start = new Date("2025-10-30T00:00:00-05:00");
-  const endExclusive = new Date("2025-11-30T00:00:00-05:00"); 
-  const drawAt = new Date(endExclusive.getTime() - 1000);
-  win = { start, endExclusive, drawAt };
+        win = weeklyWindowSatToFri();
+      }else{
+        win = windowFromBase(BASE_DATE, kind.days);
       }
 
       const startISO = isoDateTZ(win.start, TZ);
