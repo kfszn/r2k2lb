@@ -167,7 +167,7 @@ async function loadLeaderboard(apiURL = CURRENT_API_URL) {
       .map(a => ({ username: a.username || "Unknown", wagered: toNum(a.wagered_amount ?? a.wagered) }))
       .filter(r => r.wagered > 0)
       .sort((a, b) => b.wagered - a.wagered) // highest first
-      .slice(0, 10);
+      .slice(0, 15);
 
     renderLeaderboard(rows);
   } catch (err) {
