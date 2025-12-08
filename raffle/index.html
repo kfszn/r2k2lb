@@ -303,16 +303,6 @@
       return { start, endExclusive, drawAt };
     }
 
-    /* ===== Manual override: fixed weekly window for missed raffle (11/29 → 12/05 ET) ===== */
-    function manualWeeklyWindow(){
-      // 2025-11-29 00:00 ET = 2025-11-29 05:00Z (EST, UTC-5)
-      const start = new Date(Date.UTC(2025, 10, 29, 5, 0, 0));
-      // End-exclusive at 2025-12-06 00:00 ET = 2025-12-06 05:00Z
-      const endExclusive = new Date(Date.UTC(2025, 11, 6, 5, 0, 0));
-      const drawAt = new Date(endExclusive.getTime() - 1000); // 2025-12-05 23:59:59 ET
-      return { start, endExclusive, drawAt };
-    }
-
     /* ===== Monthly rolling windows from BASE (unchanged) ===== */
     function windowFromBase(baseDate, days){
       const now = new Date();
@@ -330,8 +320,15 @@
       const dayMs = 86400000;
 
       if(kind.label === "Weekly"){
-        // For this version, always use the manual fixed window 11/29–12/05 ET
-        return manualWeeklyWindow();
+        // Current open Sat–Fri window
+        const cur = weeklyWindowSatToFri();
+
+        // Last completed Sat–Fri window ends when current one begins
+        const start = new Date(cur.start.getTime() - 7 * dayMs);
+        const endExclusive = new Date(cur.start.getTime());
+        const drawAt = new Date(endExclusive.getTime() - 1000); // last Friday 23:59:59
+
+        return { start, endExclusive, drawAt };
       }
 
       const len = (kind.days + 1) * dayMs;
@@ -562,8 +559,7 @@
       const tick = async ()=>{
         let win;
         if(kind.label === "Weekly"){
-          // Use the same manual fixed window for the UI countdown
-          win = manualWeeklyWindow();
+          win = weeklyWindowSatToFri();
           if(Date.now() >= win.drawAt.getTime()){
             ui.remaining.textContent = 'Completed — see Previous Winners';
           }else{
@@ -586,8 +582,7 @@
     async function paintPanel(kind, ui){
       let win;
       if(kind.label === "Weekly"){
-        // Always show 2025-11-29 → 2025-12-05 window in UI and entrants
-        win = manualWeeklyWindow();
+        win = weeklyWindowSatToFri();
       }else{
         win = windowFromBase(BASE_DATE, kind.days);
       }
