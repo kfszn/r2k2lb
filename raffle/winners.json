@@ -28,5 +28,45 @@
     "prize": 25,
     "txid": "003",
     "official": false
+  },
+  {
+    "type": "Weekly",
+    "start": "2025-11-22T00:00:00-05:00",
+    "end": "2025-11-28T00:00:00-05:00",
+    "winner": "RTWOPEAKs",
+    "entries": 1,
+    "prize": 25,
+    "txid": "004",
+    "official": false
+  },
+  {
+    "type": "Monthly",
+    "start": "2025-10-30T00:00:00-05:00",
+    "end": "2025-11-28T00:00:00-05:00",
+    "winner": "R2KRAPH",
+    "entries": 1,
+    "prize": 100,
+    "txid": "005",
+    "official": false
+  },
+  {
+    "type": "Weekly",
+    "start": "2025-11-29T00:00:00-05:00",
+    "end": "2025-12-05T00:00:00-05:00",
+    "winner": "R2zeqo",
+    "entries": 1,
+    "prize": 25,
+    "txid": "006",
+    "official": false
+  },
+  {
+    "type": "Weekly",
+    "start": "2025-12-06T00:00:00-05:00",
+    "end": "2025-12-12T00:00:00-05:00",
+    "winner": "TBD",
+    "entries": 1,
+    "prize": 25,
+    "txid": "007",
+    "official": false
   }
 ]
