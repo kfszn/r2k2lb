@@ -7,16 +7,22 @@
 
 <style>
 :root{
-  --bg1:#050b16;
-  --bg2:#071a34;
+  /* Global Theme */
+  --bg-main:#070b12;
+  --bg-soft:#0b1424;
+  --border:#1b2a40;
+  --text:#e9f5ff;
+  --muted:#8fb3d9;
+
+  /* Accent */
+  --blue:#19b7ff;
+  --blue-dark:#0a8edb;
+
+  /* Cards */
   --card1:#0a2347;
   --card2:#071b35;
-  --border:rgba(255,255,255,.08);
-  --text:#eaf3ff;
-  --muted:#8fb3d9;
-  --blue:#19b7ff;
-  --blue2:#0a8edb;
 
+  /* Tiers */
   --bronze:#c78a45;
   --silver:#b9c4cf;
   --gold:#f2c94c;
@@ -30,21 +36,66 @@
 body{
   margin:0;
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-  background:radial-gradient(circle at top,var(--bg2),var(--bg1));
+  background:radial-gradient(circle at top,var(--bg-soft),var(--bg-main));
   color:var(--text);
 }
 
+/* ================= HEADER ================= */
+
 .header{
-  padding:18px 20px;
-  font-size:22px;
-  font-weight:800;
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:linear-gradient(180deg,#071427,#070b12);
+  border-bottom:1px solid var(--border);
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
 }
 
-.container{
+.brand{
+  font-weight:900;
+  font-size:20px;
+  letter-spacing:.5px;
+}
+
+.header-actions{
+  display:flex;
+  gap:10px;
+}
+
+.icon-btn{
+  background:var(--bg-soft);
+  border:1px solid var(--border);
+  color:var(--muted);
+  padding:8px 12px;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.icon-btn:hover{
+  color:var(--blue);
+  border-color:var(--blue);
+}
+
+/* ================= PAGE ================= */
+
+.page{
   max-width:420px;
   margin:0 auto;
-  padding:0 16px 40px;
+  padding:20px 16px 40px;
 }
+
+.page-title{
+  font-size:22px;
+  font-weight:800;
+  margin-bottom:18px;
+}
+
+/* ================= REWARD CARDS ================= */
 
 .card{
   background:linear-gradient(180deg,var(--card1),var(--card2));
@@ -78,7 +129,7 @@ body{
   width:120px;
   height:120px;
   border-radius:50%;
-  margin:12px auto 18px;
+  margin:14px auto 18px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -102,7 +153,7 @@ body{
   justify-content:center;
   font-weight:900;
   font-size:26px;
-  color:#0b1625;
+  color:#08131f;
 }
 
 .m-bronze{background:linear-gradient(180deg,#7b4a1f,#c78a45)}
@@ -122,7 +173,7 @@ body{
 .wager{
   font-size:28px;
   font-weight:800;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
 
 .reward{
@@ -140,12 +191,12 @@ body{
 
 .claim{
   width:100%;
-  background:linear-gradient(180deg,var(--blue),var(--blue2));
+  background:linear-gradient(180deg,var(--blue),var(--blue-dark));
   border:none;
   border-radius:16px;
   padding:16px;
   font-size:16px;
-  font-weight:700;
+  font-weight:800;
   color:white;
   display:flex;
   align-items:center;
@@ -153,14 +204,54 @@ body{
   gap:10px;
   cursor:pointer;
 }
+
+/* ================= RULES MODAL ================= */
+
+.rules-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:100;
+}
+
+.rules-content{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  background:var(--bg-soft);
+  border-top:1px solid var(--border);
+  border-radius:20px 20px 0 0;
+  padding:22px;
+}
+
+.rules-content h3{
+  margin:0 0 10px;
+}
+
+.rules-content ul{
+  padding-left:18px;
+  font-size:14px;
+  color:var(--muted);
+  line-height:1.6;
+}
 </style>
 </head>
 
 <body>
 
-<div class="header">Wager Reward Tiers</div>
+<!-- HEADER -->
+<div class="header">
+  <div class="brand">R2K2</div>
+  <div class="header-actions">
+    <button class="icon-btn" onclick="openRules()">Rules</button>
+    <button class="icon-btn">☰</button>
+  </div>
+</div>
 
-<div class="container">
+<!-- PAGE -->
+<div class="page">
+  <div class="page-title">Wager Reward Tiers</div>
 
   <!-- BRONZE -->
   <div class="card">
@@ -223,5 +314,26 @@ body{
   </div>
 
 </div>
+
+<!-- RULES -->
+<div class="rules-modal" id="rules">
+  <div class="rules-content">
+    <h3>Wager Reward Rules</h3>
+    <ul>
+      <li>Wagers must be placed using code <b>R2K2</b></li>
+      <li>Rewards unlock once wager threshold is met</li>
+      <li>Each tier may be claimed once per cycle</li>
+      <li>Abuse or manipulation voids eligibility</li>
+    </ul>
+    <br>
+    <button class="icon-btn" onclick="closeRules()">Close</button>
+  </div>
+</div>
+
+<script>
+function openRules(){document.getElementById('rules').style.display='block'}
+function closeRules(){document.getElementById('rules').style.display='none'}
+</script>
+
 </body>
 </html>
