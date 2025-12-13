@@ -1,187 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>R2K2 | Wager Rewards</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<title>R2K2 | Wager Rewards</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    :root{
-      --bg:#070b12;
-      --card:#0b0f17;
-      --border:#1b2a40;
-      --text:#e9f5ff;
-      --muted:#8fb3d9;
-      --accent:#ffd400;
-      --btn:#151b2d;
-      --btn-border:#2a3560;
-    }
+<style>
+:root{
+  --bg1:#050b16;
+  --bg2:#071a34;
+  --card1:#0a2347;
+  --card2:#071b35;
+  --border:rgba(255,255,255,.08);
+  --text:#eaf3ff;
+  --muted:#8fb3d9;
+  --blue:#19b7ff;
+  --blue2:#0a8edb;
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
+  --bronze:#c78a45;
+  --silver:#b9c4cf;
+  --gold:#f2c94c;
+  --platinum:#6ee7d8;
+  --diamond:#8ab4ff;
+  --infernal:#ff6b6b;
+}
 
-    .wrap{
-      max-width:1200px;
-      margin:40px auto;
-      padding:0 20px;
-    }
+*{box-sizing:border-box}
 
-    h1{
-      text-align:center;
-      margin-bottom:30px;
-      font-size:28px;
-      font-weight:700;
-    }
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:radial-gradient(circle at top,var(--bg2),var(--bg1));
+  color:var(--text);
+}
 
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-      gap:22px;
-    }
+.header{
+  padding:18px 20px;
+  font-size:22px;
+  font-weight:800;
+}
 
-    .card{
-      background:linear-gradient(180deg,#0b0f17,#070b12);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:24px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      min-height:260px;
-    }
+.container{
+  max-width:420px;
+  margin:0 auto;
+  padding:0 16px 40px;
+}
 
-    .tier{
-      font-size:20px;
-      font-weight:700;
-      text-align:center;
-      margin-bottom:16px;
-    }
+.card{
+  background:linear-gradient(180deg,var(--card1),var(--card2));
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:26px 22px 28px;
+  margin-bottom:22px;
+  text-align:center;
+  position:relative;
+}
 
-    .stat{
-      text-align:center;
-      margin-bottom:18px;
-    }
+.tier-pill{
+  position:absolute;
+  top:18px;
+  right:18px;
+  padding:6px 14px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
 
-    .label{
-      font-size:12px;
-      letter-spacing:.12em;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
+.bronze{background:rgba(199,138,69,.15);color:var(--bronze)}
+.silver{background:rgba(185,196,207,.15);color:var(--silver)}
+.gold{background:rgba(242,201,76,.15);color:var(--gold)}
+.platinum{background:rgba(110,231,216,.15);color:var(--platinum)}
+.diamond{background:rgba(138,180,255,.15);color:var(--diamond)}
+.infernal{background:rgba(255,107,107,.15);color:var(--infernal)}
 
-    .value{
-      font-size:36px;
-      font-weight:800;
-      color:white;
-    }
+.medal-wrap{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  margin:12px auto 18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
 
-    .reward{
-      font-size:18px;
-      font-weight:700;
-      color:var(--accent);
-      margin-top:4px;
-    }
+.medal-wrap::before{
+  content:"";
+  position:absolute;
+  inset:-10px;
+  border-radius:50%;
+  border:2px dashed rgba(255,255,255,.08);
+}
 
-    .btn{
-      margin-top:auto;
-      background:var(--btn);
-      border:1px solid var(--btn-border);
-      color:white;
-      padding:14px;
-      border-radius:12px;
-      font-size:14px;
-      font-weight:600;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      transition:.2s;
-    }
+.medal{
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:26px;
+  color:#0b1625;
+}
 
-    .btn:hover{
-      border-color:var(--accent);
-      color:var(--accent);
-    }
+.m-bronze{background:linear-gradient(180deg,#7b4a1f,#c78a45)}
+.m-silver{background:linear-gradient(180deg,#7f8a94,#c4ced8)}
+.m-gold{background:linear-gradient(180deg,#b8911c,#f2c94c)}
+.m-platinum{background:linear-gradient(180deg,#1aa39a,#6ee7d8)}
+.m-diamond{background:linear-gradient(180deg,#4c7cff,#8ab4ff)}
+.m-infernal{background:linear-gradient(180deg,#b71c1c,#ff6b6b)}
 
-    .gift{
-      font-size:16px;
-    }
-  </style>
+.label{
+  font-size:12px;
+  letter-spacing:.2em;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+.wager{
+  font-size:28px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+.reward{
+  font-size:42px;
+  font-weight:900;
+  margin-bottom:20px;
+}
+
+.reward span{
+  font-size:24px;
+  vertical-align:top;
+  margin-right:2px;
+  color:var(--blue);
+}
+
+.claim{
+  width:100%;
+  background:linear-gradient(180deg,var(--blue),var(--blue2));
+  border:none;
+  border-radius:16px;
+  padding:16px;
+  font-size:16px;
+  font-weight:700;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  cursor:pointer;
+}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <h1>Wager Reward Tiers</h1>
 
-    <div class="grid">
+<div class="header">Wager Reward Tiers</div>
 
-      <div class="card">
-        <div class="tier">Bronze</div>
-        <div class="stat">
-          <div class="label">WAGER</div>
-          <div class="value">$10</div>
-          <div class="reward">Reward: $0</div>
-        </div>
-        <button class="btn"><span class="gift">🎁</span>Claim Reward</button>
-      </div>
+<div class="container">
 
-      <div class="card">
-        <div class="tier">Silver</div>
-        <div class="stat">
-          <div class="label">WAGER</div>
-          <div class="value">$20</div>
-          <div class="reward">Reward: $5</div>
-        </div>
-        <button class="btn"><span class="gift">🎁</span>Claim Reward</button>
-      </div>
-
-      <div class="card">
-        <div class="tier">Gold</div>
-        <div class="stat">
-          <div class="label">WAGER</div>
-          <div class="value">$40</div>
-          <div class="reward">Reward: $10</div>
-        </div>
-        <button class="btn"><span class="gift">🎁</span>Claim Reward</button>
-      </div>
-
-      <div class="card">
-        <div class="tier">Platinum</div>
-        <div class="stat">
-          <div class="label">WAGER</div>
-          <div class="value">$75</div>
-          <div class="reward">Reward: $20</div>
-        </div>
-        <button class="btn"><span class="gift">🎁</span>Claim Reward</button>
-      </div>
-
-      <div class="card">
-        <div class="tier">Diamond</div>
-        <div class="stat">
-          <div class="label">WAGER</div>
-          <div class="value">$150</div>
-          <div class="reward">Reward: $50</div>
-        </div>
-        <button class="btn"><span class="gift">🎁</span>Claim Reward</button>
-      </div>
-
-      <div class="card">
-        <div class="tier">Infernal</div>
-        <div class="stat">
-          <div class="label">WAGER</div>
-          <div class="value">$300</div>
-          <div class="reward">Reward: $100</div>
-        </div>
-        <button class="btn"><span class="gift">🎁</span>Claim Reward</button>
-      </div>
-
-    </div>
+  <!-- BRONZE -->
+  <div class="card">
+    <div class="tier-pill bronze">BRONZE</div>
+    <div class="medal-wrap"><div class="medal m-bronze">3</div></div>
+    <div class="label">WAGER</div>
+    <div class="wager">$10,000</div>
+    <div class="reward"><span>$</span>10</div>
+    <button class="claim">🎁 Claim Reward</button>
   </div>
+
+  <!-- SILVER -->
+  <div class="card">
+    <div class="tier-pill silver">SILVER</div>
+    <div class="medal-wrap"><div class="medal m-silver">2</div></div>
+    <div class="label">WAGER</div>
+    <div class="wager">$25,000</div>
+    <div class="reward"><span>$</span>25</div>
+    <button class="claim">🎁 Claim Reward</button>
+  </div>
+
+  <!-- GOLD -->
+  <div class="card">
+    <div class="tier-pill gold">GOLD</div>
+    <div class="medal-wrap"><div class="medal m-gold">1</div></div>
+    <div class="label">WAGER</div>
+    <div class="wager">$50,000</div>
+    <div class="reward"><span>$</span>50</div>
+    <button class="claim">🎁 Claim Reward</button>
+  </div>
+
+  <!-- PLATINUM -->
+  <div class="card">
+    <div class="tier-pill platinum">PLATINUM</div>
+    <div class="medal-wrap"><div class="medal m-platinum">★</div></div>
+    <div class="label">WAGER</div>
+    <div class="wager">$100,000</div>
+    <div class="reward"><span>$</span>100</div>
+    <button class="claim">🎁 Claim Reward</button>
+  </div>
+
+  <!-- DIAMOND -->
+  <div class="card">
+    <div class="tier-pill diamond">DIAMOND</div>
+    <div class="medal-wrap"><div class="medal m-diamond">◆</div></div>
+    <div class="label">WAGER</div>
+    <div class="wager">$250,000</div>
+    <div class="reward"><span>$</span>250</div>
+    <button class="claim">🎁 Claim Reward</button>
+  </div>
+
+  <!-- INFERNAL -->
+  <div class="card">
+    <div class="tier-pill infernal">INFERNAL</div>
+    <div class="medal-wrap"><div class="medal m-infernal">☠</div></div>
+    <div class="label">WAGER</div>
+    <div class="wager">$500,000</div>
+    <div class="reward"><span>$</span>500</div>
+    <button class="claim">🎁 Claim Reward</button>
+  </div>
+
+</div>
 </body>
 </html>
