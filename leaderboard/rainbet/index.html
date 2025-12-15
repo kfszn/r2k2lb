@@ -386,7 +386,7 @@
         return new Date(baseUTC + 20*3600*1000); // 8 PM ET
       }
 
-      const isoDate = d => d.toISOString().slice(0,15);
+      const isoDate = d => d.toISOString().slice(0,10);
 
       // Rainbet expects date boundaries based on "day after 8PM ET"
       function apiDateFromBoundary(boundaryUTCDate){
@@ -471,7 +471,7 @@
           .map(a => ({ username: a.username || "Unknown", wagered: toNum(a.wagered_amount ?? a.wagered) }))
           .filter(r => r.wagered > 0)
           .sort((a, b) => b.wagered - a.wagered)
-          .slice(0, 15);
+          .slice(0, 10);
       }
 
       const logoSrc = "/assets/rainbetlogo.png";
