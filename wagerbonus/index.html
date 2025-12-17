@@ -106,10 +106,22 @@
       margin-top:6px;
     }
 
+    /* 🔥 FIX: FORCE HORIZONTAL WAGER DISPLAY */
     .wager{
       font-size:28px;
       font-weight:900;
       margin-top:4px;
+
+      display:flex;
+      justify-content:center;
+      align-items:center;
+
+      white-space:nowrap;
+      writing-mode:horizontal-tb !important;
+      text-orientation:mixed !important;
+      word-break:normal;
+      letter-spacing:normal;
+      line-height:1.1;
     }
 
     .reward{
@@ -160,11 +172,10 @@
 
 <body>
 
-<!-- ===== HEADER (UNCHANGED) ===== -->
 <header id="r2kHeader">
   <div class="h-inner">
-    <a href="/" class="brand" aria-label="R2K2 Home">
-      <img src="/assets/logo.png" class="logo" alt="R2K2">
+    <a href="/" class="brand">
+      <img src="/assets/logo.png" class="logo">
       <div class="name">R2K<span class="accent">2</span></div>
     </a>
     <nav class="nav" id="r2kNav">
@@ -175,7 +186,7 @@
       <a href="/wagerbonus" aria-current="page">Wager Bonus</a>
     </nav>
     <div class="actions">
-      <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Rainbet</a>
+      <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank">Join Rainbet</a>
     </div>
     <div class="hamburger" id="hamburger">
       <span></span><span></span><span></span>
@@ -184,84 +195,16 @@
 </header>
 
 <main class="wrap">
-  <h1 class="hero-title">
-    Wager <span style="color:var(--blue)">Bonus</span>
-  </h1>
-  <p class="hero-sub">
-    Wager on Rainbet using code <b>R2K2</b> to unlock instant bonus rewards.
-  </p>
-
-  <div class="top-actions">
-    <button class="tab-btn active">Live Tiers</button>
-    <button class="tab-btn">Rules</button>
-  </div>
+  <h1 class="hero-title">Wager <span style="color:var(--blue)">Bonus</span></h1>
+  <p class="hero-sub">Wager on Rainbet using code <b>R2K2</b> to unlock instant bonus rewards.</p>
 
   <div class="grid">
-    <!-- BRONZE -->
-    <div class="card">
-      <div class="tier-pill">BRONZE</div>
-      <div class="medal-wrap"><div class="medal">1</div></div>
-      <div class="label">WAGER REQUIRED</div>
-      <div class="wager">$10,000</div>
-      <div class="label">REWARD</div>
-      <div class="reward">$10</div>
-      <button class="btn">🎁 Claim Reward</button>
-    </div>
-
-    <!-- SILVER -->
-    <div class="card">
-      <div class="tier-pill">SILVER</div>
-      <div class="medal-wrap"><div class="medal">2</div></div>
-      <div class="label">WAGER REQUIRED</div>
-      <div class="wager">$25,000</div>
-      <div class="label">REWARD</div>
-      <div class="reward">$25</div>
-      <button class="btn">🎁 Claim Reward</button>
-    </div>
-
-    <!-- GOLD -->
-    <div class="card">
-      <div class="tier-pill">GOLD</div>
-      <div class="medal-wrap"><div class="medal">3</div></div>
-      <div class="label">WAGER REQUIRED</div>
-      <div class="wager">$50,000</div>
-      <div class="label">REWARD</div>
-      <div class="reward">$50</div>
-      <button class="btn">🎁 Claim Reward</button>
-    </div>
-
-    <!-- PLATINUM -->
-    <div class="card">
-      <div class="tier-pill">PLATINUM</div>
-      <div class="medal-wrap"><div class="medal">4</div></div>
-      <div class="label">WAGER REQUIRED</div>
-      <div class="wager">$100,000</div>
-      <div class="label">REWARD</div>
-      <div class="reward">$100</div>
-      <button class="btn">🎁 Claim Reward</button>
-    </div>
-
-    <!-- DIAMOND -->
-    <div class="card">
-      <div class="tier-pill">DIAMOND</div>
-      <div class="medal-wrap"><div class="medal">5</div></div>
-      <div class="label">WAGER REQUIRED</div>
-      <div class="wager">$250,000</div>
-      <div class="label">REWARD</div>
-      <div class="reward">$250</div>
-      <button class="btn">🎁 Claim Reward</button>
-    </div>
-
-    <!-- INFERNAL -->
-    <div class="card">
-      <div class="tier-pill">INFERNAL</div>
-      <div class="medal-wrap"><div class="medal">☠</div></div>
-      <div class="label">WAGER REQUIRED</div>
-      <div class="wager">$500,000</div>
-      <div class="label">REWARD</div>
-      <div class="reward">$500</div>
-      <button class="btn">🎁 Claim Reward</button>
-    </div>
+    <div class="card"><div class="tier-pill">BRONZE</div><div class="medal-wrap"><div class="medal">1</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$10,000</div><div class="label">REWARD</div><div class="reward">$10</div><button class="btn">🎁 Claim Reward</button></div>
+    <div class="card"><div class="tier-pill">SILVER</div><div class="medal-wrap"><div class="medal">2</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$25,000</div><div class="label">REWARD</div><div class="reward">$25</div><button class="btn">🎁 Claim Reward</button></div>
+    <div class="card"><div class="tier-pill">GOLD</div><div class="medal-wrap"><div class="medal">3</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$50,000</div><div class="label">REWARD</div><div class="reward">$50</div><button class="btn">🎁 Claim Reward</button></div>
+    <div class="card"><div class="tier-pill">PLATINUM</div><div class="medal-wrap"><div class="medal">4</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$100,000</div><div class="label">REWARD</div><div class="reward">$100</div><button class="btn">🎁 Claim Reward</button></div>
+    <div class="card"><div class="tier-pill">DIAMOND</div><div class="medal-wrap"><div class="medal">5</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$250,000</div><div class="label">REWARD</div><div class="reward">$250</div><button class="btn">🎁 Claim Reward</button></div>
+    <div class="card"><div class="tier-pill">INFERNAL</div><div class="medal-wrap"><div class="medal">☠</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$500,000</div><div class="label">REWARD</div><div class="reward">$500</div><button class="btn">🎁 Claim Reward</button></div>
   </div>
 
   <div class="rules">
@@ -276,17 +219,13 @@
 </main>
 
 <script>
-  /* reuse same burger logic */
-  (function(){
-    const burger=document.getElementById('hamburger');
-    const nav=document.getElementById('r2kNav');
-    if(burger&&nav){
-      burger.addEventListener('click',()=>{
-        const open = nav.classList.toggle('show');
-        burger.setAttribute('aria-expanded', String(open));
-      });
-    }
-  })();
+(function(){
+  const burger=document.getElementById('hamburger');
+  const nav=document.getElementById('r2kNav');
+  if(burger&&nav){
+    burger.addEventListener('click',()=>nav.classList.toggle('show'));
+  }
+})();
 </script>
 
 </body>
