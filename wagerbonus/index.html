@@ -15,8 +15,9 @@
   <style>
     :root{
       --bg-deep:#070b12; --card:#0b0f17; --border:#1b2a40;
-      --ink:#e9f5ff; --muted:#a6c9ef; --blue:#1398ff; --purple:#6b5cff;
+      --ink:#e9f5ff; --muted:#a6c9ef; --blue:#1398ff;
     }
+
     html,body{background:var(--bg-deep);color:var(--ink);margin:0}
 
     .wrap{max-width:1200px;margin:0 auto;padding:24px 20px}
@@ -27,6 +28,7 @@
       text-align:center;
       margin-top:18px
     }
+
     .hero-sub{
       font-size:14px;
       color:var(--muted);
@@ -34,30 +36,22 @@
       margin-top:6px
     }
 
-    .top-actions{
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      margin-top:18px;
-      flex-wrap:wrap;
-    }
-
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(320px,420px));
       justify-content:center;
       gap:24px;
-      margin-top:28px;
+      margin-top:32px;
     }
 
     .card{
       background:var(--card);
       border:1px solid var(--border);
       border-radius:18px;
-      padding:22px;
-      box-shadow:0 0 24px rgba(19,152,255,.08);
+      padding:26px 22px 22px;
       text-align:center;
       position:relative;
+      box-shadow:0 0 28px rgba(19,152,255,.08);
     }
 
     .tier-pill{
@@ -77,7 +71,7 @@
     .medal-wrap{
       width:120px;
       height:120px;
-      margin:10px auto 14px;
+      margin:10px auto 18px;
       border-radius:50%;
       border:2px dashed #1b2a40;
       display:flex;
@@ -96,7 +90,6 @@
       font-weight:900;
       font-size:26px;
       color:#08111a;
-      box-shadow:0 0 18px rgba(19,152,255,.5);
     }
 
     .label{
@@ -106,11 +99,14 @@
       margin-top:6px;
     }
 
-    /* 🔥 FIX: FORCE HORIZONTAL WAGER DISPLAY */
+    /* ✅ FIXED WAGER DISPLAY */
     .wager{
-      font-size:28px;
+      margin-top:8px;
+      font-size:30px;
       font-weight:900;
-      margin-top:4px;
+
+      color:var(--ink);
+      text-align:center;
 
       display:flex;
       justify-content:center;
@@ -121,51 +117,35 @@
       text-orientation:mixed !important;
       word-break:normal;
       letter-spacing:normal;
-      line-height:1.1;
+      line-height:1.15;
     }
 
     .reward{
       font-size:38px;
       font-weight:900;
-      margin-top:8px;
+      margin-top:10px;
       color:var(--blue);
     }
 
+    /* ✅ BUTTON AS LINK */
     .btn{
-      display:inline-flex;
+      display:flex;
       align-items:center;
       justify-content:center;
       gap:10px;
       width:100%;
       padding:14px 16px;
       border-radius:12px;
-      margin-top:18px;
+      margin-top:22px;
       border:1px solid #0f5da1;
       background:linear-gradient(90deg,#22b1ff,#1398ff);
       color:#08111a;
       font-weight:900;
-      cursor:pointer;
+      text-decoration:none;
     }
 
-    .rules{
-      max-width:720px;
-      margin:40px auto 0;
-      background:#0c1320;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:18px;
-    }
-
-    .rules h3{
-      margin:0 0 10px;
-    }
-
-    .rules ul{
-      margin:0;
-      padding-left:18px;
-      color:var(--muted);
-      line-height:1.6;
-      font-size:14px;
+    .btn:hover{
+      filter:brightness(1.05);
     }
   </style>
 </head>
@@ -188,9 +168,6 @@
     <div class="actions">
       <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank">Join Rainbet</a>
     </div>
-    <div class="hamburger" id="hamburger">
-      <span></span><span></span><span></span>
-    </div>
   </div>
 </header>
 
@@ -199,34 +176,12 @@
   <p class="hero-sub">Wager on Rainbet using code <b>R2K2</b> to unlock instant bonus rewards.</p>
 
   <div class="grid">
-    <div class="card"><div class="tier-pill">BRONZE</div><div class="medal-wrap"><div class="medal">1</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$10,000</div><div class="label">REWARD</div><div class="reward">$10</div><button class="btn">🎁 Claim Reward</button></div>
-    <div class="card"><div class="tier-pill">SILVER</div><div class="medal-wrap"><div class="medal">2</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$25,000</div><div class="label">REWARD</div><div class="reward">$25</div><button class="btn">🎁 Claim Reward</button></div>
-    <div class="card"><div class="tier-pill">GOLD</div><div class="medal-wrap"><div class="medal">3</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$50,000</div><div class="label">REWARD</div><div class="reward">$50</div><button class="btn">🎁 Claim Reward</button></div>
-    <div class="card"><div class="tier-pill">PLATINUM</div><div class="medal-wrap"><div class="medal">4</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$100,000</div><div class="label">REWARD</div><div class="reward">$100</div><button class="btn">🎁 Claim Reward</button></div>
-    <div class="card"><div class="tier-pill">DIAMOND</div><div class="medal-wrap"><div class="medal">5</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$250,000</div><div class="label">REWARD</div><div class="reward">$250</div><button class="btn">🎁 Claim Reward</button></div>
-    <div class="card"><div class="tier-pill">INFERNAL</div><div class="medal-wrap"><div class="medal">☠</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$500,000</div><div class="label">REWARD</div><div class="reward">$500</div><button class="btn">🎁 Claim Reward</button></div>
-  </div>
-
-  <div class="rules">
-    <h3>Wager Bonus Rules</h3>
-    <ul>
-      <li>All wagers must be placed using code <b>R2K2</b></li>
-      <li>Each tier may be claimed once per reward cycle</li>
-      <li>Wager totals reset periodically</li>
-      <li>Abuse or manipulation voids eligibility</li>
-    </ul>
+    <div class="card"><div class="tier-pill">BRONZE</div><div class="medal-wrap"><div class="medal">1</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$10,000</div><div class="label">REWARD</div><div class="reward">$10</div><a class="btn" href="https://discord.gg/KXSBRmQSRq" target="_blank">🎁 Claim Reward</a></div>
+    <div class="card"><div class="tier-pill">SILVER</div><div class="medal-wrap"><div class="medal">2</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$25,000</div><div class="label">REWARD</div><div class="reward">$25</div><a class="btn" href="https://discord.gg/KXSBRmQSRq" target="_blank">🎁 Claim Reward</a></div>
+    <div class="card"><div class="tier-pill">GOLD</div><div class="medal-wrap"><div class="medal">3</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$50,000</div><div class="label">REWARD</div><div class="reward">$50</div><a class="btn" href="https://discord.gg/KXSBRmQSRq" target="_blank">🎁 Claim Reward</a></div>
+    <div class="card"><div class="tier-pill">PLATINUM</div><div class="medal-wrap"><div class="medal">4</div></div><div class="label">WAGER REQUIRED</div><div class="wager">$100,000</div><div class="label">REWARD</div><div class="reward">$100</div><a class="btn" href="https://discord.gg/KXSBRmQSRq" target="_blank">🎁 Claim Reward</a></div>
   </div>
 </main>
-
-<script>
-(function(){
-  const burger=document.getElementById('hamburger');
-  const nav=document.getElementById('r2kNav');
-  if(burger&&nav){
-    burger.addEventListener('click',()=>nav.classList.toggle('show'));
-  }
-})();
-</script>
 
 </body>
 </html>
