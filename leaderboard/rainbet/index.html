@@ -404,12 +404,22 @@
 
       // ---------- Windows ----------
      function currentLBWindow(){
-      return {
-      startISO: "2025-11-25",
-      endISO: "2025-12-31",
-      endInstantUTC: new Date("2025-12-31T23:59:59-05:00")
+  // Get TODAY in New York
+  const p = nyParts();
+
+  const todayISO = `${p.y}-${String(p.m1).padStart(2,"0")}-${String(p.d).padStart(2,"0")}`;
+
+  // Today at 12:00 PM EST
+  const endInstantET = new Date(
+    `${todayISO}T12:00:00-05:00`
+  );
+
+  return {
+    startISO: "2025-11-25",   // keep your original start
+    endISO: todayISO,        // API stops today
+    endInstantUTC: endInstantET
   };
-      }
+}
 
       function oldLBWindowFromDeal(){
         const ds = parseISO(DEAL_START);
