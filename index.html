@@ -1,12 +1,10 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <title>R2K2</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Exclusive wager races on Rainbet for code R2K2!">
+  <meta name="description" content="Leaderboards & rewards across Acebet, Packdraw, and Clash.gg for code R2K2.">
   <meta property="og:image" content="/assets/logo.png">
   <link rel="icon" type="image/jpg" href="/assets/logo.png">
 
@@ -17,7 +15,7 @@
   <link rel="stylesheet" type="text/css" href="/css/cards.css">
   <link rel="stylesheet" type="text/css" href="/css/toast.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-  
+
   <style>
     /* ==== Existing page styles (kept) ==== */
     .draggable{position:fixed;bottom:15px;right:15px;width:350px;height:250px;border-radius:8px;overflow:hidden;z-index:1000;background:#fff;border:2px solid #2775ca;box-shadow:0 0 100px rgba(39,117,202,1)}
@@ -36,9 +34,125 @@
     .coin-right{right:25%;animation:float 3s ease-in-out infinite}
     @media screen and (max-width:768px){.coin-container{display:none}}
 
-    
+    /* ==== NEW: homepage hub layout ==== */
+    .home-wrap{
+      width:min(1200px, 92%);
+      margin: 0 auto;
+    }
 
+    .home-title{
+      text-align:center;
+      margin: 10px auto 0;
+      color:#fff;
+      font-weight:900;
+      letter-spacing:.02em;
+    }
 
+    .home-subtitle{
+      text-align:center;
+      margin: 8px auto 0;
+      color: rgba(255,255,255,.85);
+      max-width: 820px;
+      line-height:1.5;
+      font-weight:600;
+    }
+
+    /* Top logos row */
+    .platform-bar{
+      display:flex;
+      justify-content:center;
+      gap:18px;
+      flex-wrap:wrap;
+      margin: 26px auto 10px;
+    }
+
+    .platform-logo{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width: min(280px, 100%);
+      height: 86px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(39,117,202,.35);
+      border-radius: 14px;
+      box-shadow: 0 0 18px rgba(39,117,202,.20);
+      text-decoration:none;
+      position:relative;
+      overflow:hidden;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .platform-logo:hover{
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 0 28px rgba(39,117,202,.35);
+      border-color: rgba(39,117,202,.6);
+    }
+
+    .platform-logo img{
+      height: 52px;
+      width: auto;
+      max-width: 86%;
+      object-fit:contain;
+      filter: drop-shadow(0 0 10px rgba(39,117,202,.25));
+    }
+
+    /* Divider */
+    .home-divider{
+      width: min(900px, 95%);
+      margin: 22px auto 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(0,0,0,0), rgba(39,117,202,.55), rgba(0,0,0,0));
+    }
+
+    /* Cards grid */
+    .cards-grid{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:24px;
+      margin: 28px auto 0;
+    }
+
+    .card-container{
+      display:flex;
+      justify-content:center;
+      width: 100%;
+      margin: 0; /* we control spacing with grid now */
+    }
+
+    /* Ensure the card itself can be used without outer <a> wrapper */
+    .hub-card{
+      width: min(420px, 96vw);
+    }
+
+    /* Buttons row inside card */
+    .hub-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:center;
+      margin-top:16px;
+    }
+
+    /* Make “Sign up” button more consistent */
+    .signup-button{
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      font-weight:900;
+      padding: 12px 18px;
+      border-radius: 10px;
+    }
+
+    /* Socials section (kept) */
+    .social-media-cards{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-top:30px}
+    .social-media-cards .card{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);padding:10px 15px;border-radius:8px;text-decoration:none;color:#fff;font-weight:500;transition:transform .2s}
+    .social-media-cards .card:hover{transform:translateY(-3px)}
+    .social-media-cards .icon{width:24px;height:24px;object-fit:contain}
+
+    /* Footer socials (kept) */
+    .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+    .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:bold;font-size:14px;transition:transform .2s}
+    .footer-socials a.social:hover{transform:translateX(4px)}
+    .footer-socials .social-img{width:22px;height:22px;object-fit:contain}
   </style>
 </head>
 
@@ -60,6 +174,8 @@
   <!-- Background visuals -->
   <canvas id="particleCanvas"></canvas>
   <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
+
+  <!-- NOTE: you can swap these to generic home art later -->
   <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
   <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%"></object>
 
@@ -70,16 +186,18 @@
         <img src="/assets/logo.png" class="logo" alt="R2K2">
         <div class="name">R2K<span class="accent">2</span></div>
       </a>
+
       <nav class="nav" id="r2kNav">
         <a href="/">Home</a>
-        <a href="/leaderboard/rainbet">Leaderboard</a>
-        <a href="/raffle" aria-current="page">Raffle</a>
+        <!-- Leaderboard now scrolls to the platform selector -->
+        <a href="#platforms">Leaderboards</a>
+        <a href="/raffle">Raffle</a>
         <a href="/challenges">Challenges</a>
         <a href="/wagerbonus">Wager Bonus</a>
       </nav>
-      <div class="actions">
-        <a class="btn" href="https://rainbet.com/?r=r2k2" target="_blank" rel="noopener">Join Acebet</a>
-      </div>
+
+      <!-- Join button removed per request -->
+
       <div class="hamburger" id="hamburger" aria-label="Menu" aria-controls="r2kNav" aria-expanded="false">
         <span></span><span></span><span></span>
       </div>
@@ -87,76 +205,178 @@
   </header>
 
   <!-- Main content -->
-  <br><br>
-  <div id="appContent" data-v-1d580398 data-v-e4097664>
-    <div class="row text" data-v-1d580398 style="margin-top: 50px;">
-      <span class="title" data-v-1d580398>COMPETE ON OUR LEADERBOARDs!</span>
-      <div class="toggle-images" style="margin-top: 20px;">
-        <div class="image-wrapper">
-          <img class="game-image clash-image" id="clashImage2" src="/assets/rainbet.png" style="cursor:pointer;opacity:1;" onclick="window.location.href='/leaderboard/rainbet'">
-          <div class="label">
-            <div class="price-wrapper glow" data-v-1d580398 style="font-size: 26px;">$2,500</div>
-          </div>
+  <div id="appContent" data-v-1d580398 data-v-e4097664 style="margin-top:50px;">
+    <div class="home-wrap">
+
+      <div class="row text" data-v-1d580398 style="margin-top: 50px;">
+        <span class="title home-title" data-v-1d580398>COMPETE ON OUR LEADERBOARDS!</span>
+        <div class="home-subtitle">
+          Pick a platform below to view the live leaderboard. Scroll down to sign up for each site.
         </div>
+
+        <!-- TOP: 3 logos -->
+        <div id="platforms" class="platform-bar">
+          <!-- NOTE: These are placeholder images. Replace src with your real logo files when you upload them. -->
+          <a class="platform-logo" href="/leaderboard/acebet" aria-label="Acebet Leaderboard">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='160'%3E%3Crect width='100%25' height='100%25' rx='28' ry='28' fill='%23101622' stroke='%232775ca' stroke-width='6'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Arial' font-size='44' fill='%23a7d7ff'%3EACEBET LOGO%3C/text%3E%3C/svg%3E"
+              alt="Acebet"
+            >
+          </a>
+
+          <a class="platform-logo" href="/leaderboard/packdraw" aria-label="Packdraw Leaderboard">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='160'%3E%3Crect width='100%25' height='100%25' rx='28' ry='28' fill='%23101622' stroke='%232775ca' stroke-width='6'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Arial' font-size='44' fill='%23a7d7ff'%3EPACKDRAW LOGO%3C/text%3E%3C/svg%3E"
+              alt="Packdraw"
+            >
+          </a>
+
+          <a class="platform-logo" href="/leaderboard/clash" aria-label="Clash.gg Leaderboard">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='160'%3E%3Crect width='100%25' height='100%25' rx='28' ry='28' fill='%23101622' stroke='%232775ca' stroke-width='6'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Arial' font-size='44' fill='%23a7d7ff'%3ECLASH.GG LOGO%3C/text%3E%3C/svg%3E"
+              alt="Clash.gg"
+            >
+          </a>
+        </div>
+
+        <div class="home-divider"></div>
       </div>
-    </div>
 
-    <div class="row text" data-v-1d580398 style="margin-top: 80px;"></div>
+      <!-- BOTTOM: 3 promo cards -->
+      <div class="cards-grid" aria-label="Platform signup cards">
 
-    <!-- Card CTA -->
-    <div class="card-container">
-      <a href="https://rainbet.com/?r=KCAZ" class="card-link" target="_blank">
-        <div class="MuiBox-root css-1o7r9kk">
-          <div class="MuiBox-root css-1t0wa4v">
-            <img src="/assets/rainbet.png" alt="">
-          </div>
-          <div class="code-container MuiBox-root css-0">
-            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1rmbjih" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.41 6 5 7.41 9.58 12 5 16.59 6.41 18l6-6z"></path><path d="m13 6-1.41 1.41L16.17 12l-4.58 4.59L13 18l6-6z"></path></svg>
-            <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root" style="font-size:24px;">Code</p>
-            <p class="MuiTypography-root MuiTypography-body1 code css-rmwyl-MuiTypography-root">R2K2</p>
-            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1m8kjhh" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.59 18 19 16.59 14.42 12 19 7.41 17.59 6l-6 6z"></path><path d="m11 18 1.41-1.41L7.83 12l4.58-4.59L11 6l-6 6z"></path></svg>
-          </div>
-          <div class="MuiBox-root css-18dqm7l">
-            <div class="description MuiBox-root css-0">
-              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
-              <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">EXCLUSIVE REWARDS</p>
+        <!-- ========================= -->
+        <!-- ACEBET CARD (EDIT LINKS) -->
+        <!-- ========================= -->
+        <div class="card-container">
+          <div class="MuiBox-root css-1o7r9kk hub-card">
+            <div class="MuiBox-root css-1t0wa4v">
+              <!-- Replace this placeholder with your uploaded logo -->
+              <img
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='260'%3E%3Crect width='100%25' height='100%25' rx='22' ry='22' fill='%230b1220' stroke='%232775ca' stroke-width='6'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Arial' font-size='44' fill='%23a7d7ff'%3EACEBET%3C/text%3E%3C/svg%3E"
+                alt="Acebet"
+              >
             </div>
-            <div class="description MuiBox-root css-0">
-              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
-              <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">MONTHLY LEADERBOARD</p>
+
+            <div class="code-container MuiBox-root css-0">
+              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1rmbjih" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.41 6 5 7.41 9.58 12 5 16.59 6.41 18l6-6z"></path><path d="m13 6-1.41 1.41L16.17 12l-4.58 4.59L13 18l6-6z"></path></svg>
+              <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root" style="font-size:24px;">Code</p>
+              <p class="MuiTypography-root MuiTypography-body1 code css-rmwyl-MuiTypography-root">R2K2</p>
+              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1m8kjhh" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.59 18 19 16.59 14.42 12 19 7.41 17.59 6l-6 6z"></path><path d="m11 18 1.41-1.41L7.83 12l4.58-4.59L11 6l-6 6z"></path></svg>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px;">
-              <a class="MuiButton-root MuiButton-contained signup-button" href="https://rainbet.com/?r=R2K2" target="_blank">Sign up</a>
-              <a class="MuiButton-root MuiButton-contained signup-button" href="/leaderboard/rainbet" target="_blank">Leaderboard</a>
+
+            <div class="MuiBox-root css-18dqm7l">
+              <div class="description MuiBox-root css-0">
+                <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
+                <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">EXCLUSIVE REWARDS</p>
+              </div>
+              <div class="description MuiBox-root css-0">
+                <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
+                <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">MONTHLY LEADERBOARD</p>
+              </div>
+
+              <div class="hub-actions">
+                <!-- TODO: replace href with your Acebet signup URL -->
+                <a class="MuiButton-root MuiButton-contained signup-button" href="#" target="_blank" rel="noopener">Sign up</a>
+              </div>
             </div>
           </div>
         </div>
-      </a>
-    </div>
 
-    <!-- Socials -->
-    <div class="row text" data-v-1d580398 style="margin-top: 50px;">
-      <span class="title" data-v-1d580398>Our Socials!</span>
-    </div>
+        <!-- =========================== -->
+        <!-- PACKDRAW CARD (EDIT LINKS) -->
+        <!-- =========================== -->
+        <div class="card-container">
+          <div class="MuiBox-root css-1o7r9kk hub-card">
+            <div class="MuiBox-root css-1t0wa4v">
+              <img
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='260'%3E%3Crect width='100%25' height='100%25' rx='22' ry='22' fill='%230b1220' stroke='%232775ca' stroke-width='6'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Arial' font-size='44' fill='%23a7d7ff'%3EPACKDRAW%3C/text%3E%3C/svg%3E"
+                alt="Packdraw"
+              >
+            </div>
 
-    <style>
-      .social-media-cards{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-top:30px}
-      .social-media-cards .card{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);padding:10px 15px;border-radius:8px;text-decoration:none;color:#fff;font-weight:500;transition:transform .2s}
-      .social-media-cards .card:hover{transform:translateY(-3px)}
-      .social-media-cards .icon{width:24px;height:24px;object-fit:contain}
-    </style>
+            <div class="code-container MuiBox-root css-0">
+              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1rmbjih" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.41 6 5 7.41 9.58 12 5 16.59 6.41 18l6-6z"></path><path d="m13 6-1.41 1.41L16.17 12l-4.58 4.59L13 18l6-6z"></path></svg>
+              <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root" style="font-size:24px;">Code</p>
+              <p class="MuiTypography-root MuiTypography-body1 code css-rmwyl-MuiTypography-root">R2K2</p>
+              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1m8kjhh" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.59 18 19 16.59 14.42 12 19 7.41 17.59 6l-6 6z"></path><path d="m11 18 1.41-1.41L7.83 12l4.58-4.59L11 6l-6 6z"></path></svg>
+            </div>
 
-    <div class="social-media-cards">
-      <a href="https://kick.com/R2Ktwo" target="_blank" class="card kick">
-        <img src="/assets/kick.png" alt="Kick Logo" class="icon">
-        <span>@R2Ktwo</span>
-      </a>
-      <a href="https://discord.gg/DwpA8vaGPj" target="_blank" class="card discord">
-        <img src="/assets/discord.png" alt="Discord Logo" class="icon">
-        <span>@R2Ktwo</span>
-      </a>
-    </div>
-  </div>
+            <div class="MuiBox-root css-18dqm7l">
+              <div class="description MuiBox-root css-0">
+                <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
+                <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">EXCLUSIVE REWARDS</p>
+              </div>
+              <div class="description MuiBox-root css-0">
+                <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
+                <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">LIVE LEADERBOARD</p>
+              </div>
+
+              <div class="hub-actions">
+                <!-- TODO: replace href with your Packdraw signup URL -->
+                <a class="MuiButton-root MuiButton-contained signup-button" href="#" target="_blank" rel="noopener">Sign up</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================= -->
+        <!-- CLASH CARD (EDIT LINKS) -->
+        <!-- ========================= -->
+        <div class="card-container">
+          <div class="MuiBox-root css-1o7r9kk hub-card">
+            <div class="MuiBox-root css-1t0wa4v">
+              <img
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='260'%3E%3Crect width='100%25' height='100%25' rx='22' ry='22' fill='%230b1220' stroke='%232775ca' stroke-width='6'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Arial' font-size='44' fill='%23a7d7ff'%3ECLASH.GG%3C/text%3E%3C/svg%3E"
+                alt="Clash.gg"
+              >
+            </div>
+
+            <div class="code-container MuiBox-root css-0">
+              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1rmbjih" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.41 6 5 7.41 9.58 12 5 16.59 6.41 18l6-6z"></path><path d="m13 6-1.41 1.41L16.17 12l-4.58 4.59L13 18l6-6z"></path></svg>
+              <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root" style="font-size:24px;">Code</p>
+              <p class="MuiTypography-root MuiTypography-body1 code css-rmwyl-MuiTypography-root">R2K2</p>
+              <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1m8kjhh" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.59 18 19 16.59 14.42 12 19 7.41 17.59 6l-6 6z"></path><path d="m11 18 1.41-1.41L7.83 12l4.58-4.59L11 6l-6 6z"></path></svg>
+            </div>
+
+            <div class="MuiBox-root css-18dqm7l">
+              <div class="description MuiBox-root css-0">
+                <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
+                <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">EXCLUSIVE REWARDS</p>
+              </div>
+              <div class="description MuiBox-root css-0">
+                <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ywrbwt" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path></svg>
+                <p class="MuiTypography-root MuiTypography-body1 css-8a8e2m-MuiTypography-root">MONTHLY LEADERBOARD</p>
+              </div>
+
+              <div class="hub-actions">
+                <!-- TODO: replace href with your Clash.gg signup URL -->
+                <a class="MuiButton-root MuiButton-contained signup-button" href="#" target="_blank" rel="noopener">Sign up</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /cards-grid -->
+
+      <!-- Socials -->
+      <div class="row text" data-v-1d580398 style="margin-top: 60px;">
+        <span class="title" data-v-1d580398>Our Socials!</span>
+      </div>
+
+      <div class="social-media-cards">
+        <a href="https://kick.com/R2Ktwo" target="_blank" class="card kick" rel="noopener">
+          <img src="/assets/kick.png" alt="Kick Logo" class="icon">
+          <span>@R2Ktwo</span>
+        </a>
+        <a href="https://discord.gg/DwpA8vaGPj" target="_blank" class="card discord" rel="noopener">
+          <img src="/assets/discord.png" alt="Discord Logo" class="icon">
+          <span>@R2Ktwo</span>
+        </a>
+      </div>
+
+    </div><!-- /home-wrap -->
+  </div><!-- /appContent -->
 
   <!-- Footer -->
   <div class="row inner-footer" data-v-5867ad71>
@@ -173,20 +393,13 @@
       <a href="/" class=""><span class="subtitle" data-v-5867ad71>Privacy Policy</span></a>
     </div>
 
-    <style>
-      .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
-      .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:bold;font-size:14px;transition:transform .2s}
-      .footer-socials a.social:hover{transform:translateX(4px)}
-      .footer-socials .social-img{width:22px;height:22px;object-fit:contain}
-    </style>
-
     <div class="col">
       <span class="title">Socials</span>
       <div class="footer-socials">
-        <a href="https://kick.com/R2Ktwo" target="_blank" class="social">
+        <a href="https://kick.com/R2Ktwo" target="_blank" class="social" rel="noopener">
           <img src="/assets/kick.png" alt="Kick Logo" class="social-img"><span>Kick</span>
         </a>
-        <a href="https://discord.gg/DwpA8vaGPj" target="_blank" class="social">
+        <a href="https://discord.gg/DwpA8vaGPj" target="_blank" class="social" rel="noopener">
           <img src="/assets/discord.png" alt="Discord Logo" class="social-img"><span>Discord</span>
         </a>
       </div>
@@ -209,27 +422,8 @@
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
 
-  <!-- Header interactivity (dropdown + mobile) -->
+  <!-- Header interactivity (mobile hamburger) -->
   <script>
-    // Rewards dropdown
-    (function(){
-      const btn = document.getElementById('rewardsBtn');
-      const menu = document.getElementById('rewardsMenu');
-      if(!btn||!menu) return;
-      btn.addEventListener('click', () => {
-        const open = menu.style.display === 'block';
-        menu.style.display = open ? 'none' : 'block';
-        btn.setAttribute('aria-expanded', String(!open));
-      });
-      document.addEventListener('click', (e) => {
-        if (!menu.contains(e.target) && e.target !== btn) {
-          menu.style.display = 'none';
-          btn.setAttribute('aria-expanded','false');
-        }
-      });
-    })();
-
-    // Mobile hamburger
     (function(){
       const burger = document.getElementById('hamburger');
       const nav = document.getElementById('r2kNav');
@@ -276,6 +470,3 @@
   </script>
 </body>
 </html>
-
-
-
