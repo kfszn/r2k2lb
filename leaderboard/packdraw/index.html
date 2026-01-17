@@ -175,7 +175,7 @@
     <div data-v-1d580398>
       <div data-v-1d580398 class="row text">
         <span data-v-1d580398 class="title">
-          <div data-v-1d580398 class="price-wrapper glow">$2,500</div>
+          <div data-v-1d580398 class="price-wrapper glow">$1,000</div>
           MONTHLY CODE <span class="glow">R2K2</span> Leaderboard!
         </span>
 
@@ -310,18 +310,18 @@
       // =========================
       const PACKDRAW_API_KEY = "edadb58b-ea99-4c27-9b91-60b84c095ee9";
       const PACKDRAW_BASE    = "https://packdraw.com/api/v1/affiliates/leaderboard";
-      const PACKDRAW_SIGNUP_URL = "PUT_YOUR_PACKDRAW_SIGNUP_LINK_HERE";
+      const PACKDRAW_SIGNUP_URL = "https://packdraw.com?ref=R2K2";
 
       // goals (optional)
-      const DEAL_GOAL = 2000000;
-      const LB_GOAL   = 2250000;
+      const DEAL_GOAL = 50000;
+      const LB_GOAL   = 50000;
 
       // manual deal window (optional)
       const DEAL_START = "2025-12-02";
       const DEAL_END   = "2025-12-31";
 
       // Rewards (edit if different)
-      const rewards = [800, 500, 375, 300, 250, 125, 75, 40, 20, 15];
+      const rewards = [400, 250, 100, 50,];
 
       // Provider logo used in Top-3 + rows
       const logoSrc = "/assets/packdrawlogo.png"; // TODO upload or rename
@@ -369,8 +369,8 @@
         const endInstantET = new Date(`${todayISO}T23:59:59-05:00`);
 
         return {
-          startISO: "2025-11-25",   // TODO change as desired
-          endISO: todayISO,
+          startISO: "2026-01-18",   // TODO change as desired
+          endISO: "2026-02-18,
           endInstantUTC: endInstantET
         };
       }
