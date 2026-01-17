@@ -66,3 +66,61 @@ img{display:block; max-width:100%}
 --------------------------- */
 .site-header{
   display:flex; align-items:center;
+
+/* =========================
+   R2K2 Neon Theme (Blue/Purple)
+   ========================= */
+:root{
+  --bg:#070b12;
+  --card:#0b0f17;
+  --border:#1b2a40;
+
+  --text:#e9f5ff;
+  --muted:#a6c9ef;
+
+  --blue:#1398ff;
+  --purple:#6b5cff;
+  --cyan:#48c7ff;
+
+  --glow-blue: rgba(19,152,255,.55);
+  --glow-purple: rgba(107,92,255,.55);
+
+  --grad-neon: linear-gradient(90deg, var(--blue), var(--purple));
+  --grad-neon-soft: linear-gradient(135deg, rgba(19,152,255,.18), rgba(107,92,255,.18));
+}
+
+/* Page base */
+html,body{ background:var(--bg); color:var(--text); }
+
+/* Global “glow” text */
+.glow{
+  text-shadow: 0 0 16px var(--glow-blue), 0 0 28px rgba(19,152,255,.25);
+}
+
+/* Cards / panels */
+.MuiBox-root.css-1o7r9kk,
+.r2k-total-card,
+.lb-row{
+  background:var(--card);
+  border:1px solid rgba(19,152,255,.25);
+  box-shadow: 0 0 18px rgba(19,152,255,.18);
+}
+.MuiBox-root.css-1o7r9kk:hover,
+.lb-row:hover{
+  border-color: rgba(107,92,255,.45);
+  box-shadow: 0 0 26px rgba(107,92,255,.20), 0 0 22px rgba(19,152,255,.18);
+}
+
+/* Buttons (site-wide) */
+.btn,
+.signup-button{
+  background: var(--grad-neon);
+  color:#05070b;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow: 0 0 18px rgba(19,152,255,.25);
+}
+.btn:hover,
+.signup-button:hover{
+  box-shadow: 0 0 26px rgba(107,92,255,.28), 0 0 22px rgba(19,152,255,.22);
+  transform: translateY(-1px);
+}
