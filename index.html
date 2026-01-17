@@ -8,7 +8,7 @@
   <meta property="og:image" content="/assets/logo.png">
   <link rel="icon" type="image/jpg" href="/assets/logo.png">
 
-  <!-- Your existing CSS (kept) -->
+  <!-- CSS -->
   <link rel="stylesheet" type="text/css" href="/css/app.css">
   <link rel="stylesheet" type="text/css" href="/css/lb.css">
   <link rel="stylesheet" type="text/css" href="/css/vendor.css">
@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="/css/theme.css">
 
   <style>
-    /* ==== Existing page styles (kept) ==== */
+    /* ==== Stream player (kept) ==== */
     .draggable{position:fixed;bottom:15px;right:15px;width:350px;height:250px;border-radius:8px;overflow:hidden;z-index:1000;background:#fff;border:2px solid #2775ca;box-shadow:0 0 100px rgba(39,117,202,1)}
     .controls{display:flex;align-items:center;background:#333;padding:5px;cursor:move}
     .drag-handle{flex-grow:1;text-align:left;color:#2775ca;font-size:20px;font-weight:900;box-shadow:0 0 100px rgba(39,117,202,1);padding:0 15px}
@@ -27,129 +27,66 @@
     .minimized-icon{display:none;align-items:center;justify-content:center;position:fixed;bottom:15px;right:15px;width:50px;height:50px;border-radius:25px;background:#333;color:#fff;font-size:30px;z-index:1001;cursor:pointer;box-shadow:0 0 100px rgba(39,117,202,1)}
     .open-btn{background:none;border:none;color:#2775ca;font-size:20px;font-weight:900;cursor:pointer}
     @media (max-width:570px){.draggable{left:50%;transform:translateX(-50%)}}
-    @keyframes float{0%{transform:translateY(0) scaleX(1) rotate(20deg)}50%{transform:translateY(-10px) scaleX(1) rotate(20deg)}100%{transform:translateY(0) scaleX(1) rotate(20deg)}}
-    @keyframes floatLeft{0%{transform:translateY(0) scaleX(-1) rotate(20deg)}50%{transform:translateY(-10px) scaleX(-1) rotate(20deg)}100%{transform:translateY(0) scaleX(-1) rotate(20deg)}}
-    .coin-container{position:relative;height:0;margin:0}
-    .coin-left,.coin-right{position:absolute;height:100px;width:auto;opacity:.7;top:-50px}
-    .coin-left{left:22%;animation:floatLeft 3s ease-in-out infinite}
-    .coin-right{right:25%;animation:float 3s ease-in-out infinite}
-    @media screen and (max-width:768px){.coin-container{display:none}}
 
-    /* ==== NEW: homepage hub layout ==== */
-    .home-wrap{
-      width:min(1200px, 92%);
-      margin: 0 auto;
-    }
+    /* ==== Layout ==== */
+    .home-wrap{width:min(1200px,92%);margin:0 auto}
+    .home-title{text-align:center;margin:10px auto 0;color:#fff;font-weight:900;letter-spacing:.02em}
+    .home-subtitle{text-align:center;margin:8px auto 0;color:rgba(255,255,255,.85);max-width:820px;line-height:1.5;font-weight:600}
+    .home-divider{width:min(900px,95%);margin:22px auto 0;height:1px;background:linear-gradient(90deg, rgba(0,0,0,0), rgba(19,152,255,.55), rgba(0,0,0,0))}
 
-    .home-title{
-      text-align:center;
-      margin: 10px auto 0;
-      color:#fff;
-      font-weight:900;
-      letter-spacing:.02em;
-    }
-
-    .home-subtitle{
-      text-align:center;
-      margin: 8px auto 0;
-      color: rgba(255,255,255,.85);
-      max-width: 820px;
-      line-height:1.5;
-      font-weight:600;
-    }
-
-    /* Top logos row */
+    /* ==== TOP LOGOS: logo-only clickable ==== */
     .platform-bar{
       display:flex;
       justify-content:center;
-      gap:18px;
+      align-items:center;
+      gap:32px;
       flex-wrap:wrap;
-      margin: 26px auto 10px;
+      margin:26px auto 10px;
     }
-
     .platform-logo{
-      display:flex;
+      display:inline-flex;
       align-items:center;
       justify-content:center;
-      width: min(280px, 100%);
-      height: 86px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(39,117,202,.35);
-      border-radius: 14px;
-      box-shadow: 0 0 18px rgba(39,117,202,.20);
+      padding:6px 8px;         /* small click padding */
+      border-radius:10px;
+      background:transparent;
+      border:none;
+      box-shadow:none;
       text-decoration:none;
-      position:relative;
-      overflow:hidden;
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      transition:transform .15s ease, filter .15s ease, opacity .15s ease;
     }
     .platform-logo:hover{
-      transform: translateY(-2px) scale(1.01);
-      box-shadow: 0 0 28px rgba(39,117,202,.35);
-      border-color: rgba(39,117,202,.6);
+      transform:translateY(-2px);
+      filter:
+        drop-shadow(0 0 14px rgba(19,152,255,.35))
+        drop-shadow(0 0 18px rgba(107,92,255,.25));
     }
-
     .platform-logo img{
-      height: 52px;
-      width: auto;
-      max-width: 86%;
+      height:44px;             /* main size control */
+      width:auto;
+      max-width:240px;
       object-fit:contain;
-      filter: drop-shadow(0 0 10px rgba(39,117,202,.25));
+      display:block;
+    }
+    @media (max-width:640px){
+      .platform-bar{gap:18px}
+      .platform-logo img{height:34px;max-width:180px}
     }
 
-    /* Divider */
-    .home-divider{
-      width: min(900px, 95%);
-      margin: 22px auto 0;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(0,0,0,0), rgba(39,117,202,.55), rgba(0,0,0,0));
-    }
+    /* ==== Cards grid ==== */
+    .cards-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:24px;margin:28px auto 0}
+    .card-container{display:flex;justify-content:center;width:100%;margin:0}
+    .hub-card{width:min(420px,96vw)}
+    .hub-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px}
+    .signup-button{text-transform:uppercase;letter-spacing:.06em;font-weight:900;padding:12px 18px;border-radius:10px}
 
-    /* Cards grid */
-    .cards-grid{
-      display:flex;
-      flex-wrap:wrap;
-      justify-content:center;
-      gap:24px;
-      margin: 28px auto 0;
-    }
-
-    .card-container{
-      display:flex;
-      justify-content:center;
-      width: 100%;
-      margin: 0; /* we control spacing with grid now */
-    }
-
-    /* Ensure the card itself can be used without outer <a> wrapper */
-    .hub-card{
-      width: min(420px, 96vw);
-    }
-
-    /* Buttons row inside card */
-    .hub-actions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      justify-content:center;
-      margin-top:16px;
-    }
-
-    /* Make “Sign up” button more consistent */
-    .signup-button{
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      font-weight:900;
-      padding: 12px 18px;
-      border-radius: 10px;
-    }
-
-    /* Socials section (kept) */
+    /* ==== Socials (kept) ==== */
     .social-media-cards{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-top:30px}
     .social-media-cards .card{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);padding:10px 15px;border-radius:8px;text-decoration:none;color:#fff;font-weight:500;transition:transform .2s}
     .social-media-cards .card:hover{transform:translateY(-3px)}
     .social-media-cards .icon{width:24px;height:24px;object-fit:contain}
 
-    /* Footer socials (kept) */
+    /* ==== Footer socials (kept) ==== */
     .footer-socials{display:flex;flex-direction:column;gap:14px;margin-top:10px}
     .footer-socials a.social{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:bold;font-size:14px;transition:transform .2s}
     .footer-socials a.social:hover{transform:translateX(4px)}
@@ -160,7 +97,7 @@
 <body>
   <div id="toast"><span id="message"></span></div>
 
-  <!-- Stream player + minimized icon -->
+  <!-- Stream player -->
   <div id="draggable-player" class="draggable">
     <div id="controls" class="controls">
       <div id="drag-handle" class="drag-handle">&#x2630;</div>
@@ -175,8 +112,6 @@
   <!-- Background visuals -->
   <canvas id="particleCanvas"></canvas>
   <div class="glow-container"><div class="left-glow"></div><div class="right-glow"></div></div>
-
-  <!-- NOTE: you can swap these to generic home art later -->
   <object type="image/png" data="/assets/left-rainbet.png" id="leftsvg" height="100%"></object>
   <object type="image/png" data="/assets/right-rainbet.png" id="rightsvg" height="100%"></object>
 
@@ -190,14 +125,11 @@
 
       <nav class="nav" id="r2kNav">
         <a href="/">Home</a>
-        <!-- Leaderboard now scrolls to the platform selector -->
         <a href="#platforms">Leaderboards</a>
         <a href="/raffle">Raffle</a>
         <a href="/challenges">Challenges</a>
         <a href="/wagerbonus">Wager Bonus</a>
       </nav>
-
-      <!-- Join button removed per request -->
 
       <div class="hamburger" id="hamburger" aria-label="Menu" aria-controls="r2kNav" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -205,52 +137,42 @@
     </div>
   </header>
 
-  <!-- Main content -->
+  <!-- Main -->
   <div id="appContent" data-v-1d580398 data-v-e4097664 style="margin-top:50px;">
     <div class="home-wrap">
 
-      <div class="row text" data-v-1d580398 style="margin-top: 50px;">
+      <div class="row text" data-v-1d580398 style="margin-top:50px;">
         <span class="title home-title" data-v-1d580398>COMPETE ON OUR LEADERBOARDS!</span>
         <div class="home-subtitle">
-          Pick a platform below to view the live leaderboard. Scroll down to sign up for each site.
+          Click a logo to view the leaderboard. Scroll down to sign up for each site.
         </div>
 
-        <!-- TOP: 3 logos -->
+        <!-- TOP: Logos (logo-only click targets) -->
         <div id="platforms" class="platform-bar">
-          <!-- NOTE: These are placeholder images. Replace src with your real logo files when you upload them. -->
           <a class="platform-logo" href="/leaderboard/acebet" aria-label="Acebet Leaderboard">
-           <img src="/assets/rainbet.png" alt="Acebet">
-            
+            <img src="/assets/rainbet.png" alt="Acebet">
           </a>
 
           <a class="platform-logo" href="/leaderboard/packdraw" aria-label="Packdraw Leaderboard">
             <img src="/assets/packdraw.png" alt="Packdraw">
-
           </a>
 
           <a class="platform-logo" href="/leaderboard/clash" aria-label="Clash.gg Leaderboard">
-            <img src="/assets/clash.jpg" alt="Clash">
-            
+            <img src="/assets/clash.jpg" alt="Clash.gg">
           </a>
         </div>
 
         <div class="home-divider"></div>
       </div>
 
-      <!-- BOTTOM: 3 promo cards -->
+      <!-- Cards -->
       <div class="cards-grid" aria-label="Platform signup cards">
 
-        <!-- ========================= -->
-        <!-- ACEBET CARD (EDIT LINKS) -->
-        <!-- ========================= -->
+        <!-- Acebet -->
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <!-- Replace this placeholder with your uploaded logo -->
-              <img
-                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='260'%3E%3Crect width='100%25' height='100%25' rx='22' ry='22' fill='%230b1220' stroke='%232775ca' stroke-width='6'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Arial' font-size='44' fill='%23a7d7ff'%3EACEBET%3C/text%3E%3C/svg%3E"
-                alt="Acebet"
-              >
+              <img src="/assets/rainbet.png" alt="Acebet">
             </div>
 
             <div class="code-container MuiBox-root css-0">
@@ -271,23 +193,17 @@
               </div>
 
               <div class="hub-actions">
-                <!-- TODO: replace href with your Acebet signup URL -->
                 <a class="MuiButton-root MuiButton-contained signup-button" href="#" target="_blank" rel="noopener">Sign up</a>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- =========================== -->
-        <!-- PACKDRAW CARD (EDIT LINKS) -->
-        <!-- =========================== -->
+        <!-- Packdraw -->
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img
-                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='260'%3E%3Crect width='100%25' height='100%25' rx='22' ry='22' fill='%230b1220' stroke='%232775ca' stroke-width='6'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Arial' font-size='44' fill='%23a7d7ff'%3EPACKDRAW%3C/text%3E%3C/svg%3E"
-                alt="Packdraw"
-              >
+              <img src="/assets/packdraw.png" alt="Packdraw">
             </div>
 
             <div class="code-container MuiBox-root css-0">
@@ -308,23 +224,17 @@
               </div>
 
               <div class="hub-actions">
-                <!-- TODO: replace href with your Packdraw signup URL -->
                 <a class="MuiButton-root MuiButton-contained signup-button" href="#" target="_blank" rel="noopener">Sign up</a>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ========================= -->
-        <!-- CLASH CARD (EDIT LINKS) -->
-        <!-- ========================= -->
+        <!-- Clash -->
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img
-                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='260'%3E%3Crect width='100%25' height='100%25' rx='22' ry='22' fill='%230b1220' stroke='%232775ca' stroke-width='6'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Arial' font-size='44' fill='%23a7d7ff'%3ECLASH.GG%3C/text%3E%3C/svg%3E"
-                alt="Clash.gg"
-              >
+              <img src="/assets/clash.jpg" alt="Clash.gg">
             </div>
 
             <div class="code-container MuiBox-root css-0">
@@ -345,17 +255,16 @@
               </div>
 
               <div class="hub-actions">
-                <!-- TODO: replace href with your Clash.gg signup URL -->
                 <a class="MuiButton-root MuiButton-contained signup-button" href="#" target="_blank" rel="noopener">Sign up</a>
               </div>
             </div>
           </div>
         </div>
 
-      </div><!-- /cards-grid -->
+      </div>
 
       <!-- Socials -->
-      <div class="row text" data-v-1d580398 style="margin-top: 60px;">
+      <div class="row text" data-v-1d580398 style="margin-top:60px;">
         <span class="title" data-v-1d580398>Our Socials!</span>
       </div>
 
@@ -370,8 +279,8 @@
         </a>
       </div>
 
-    </div><!-- /home-wrap -->
-  </div><!-- /appContent -->
+    </div>
+  </div>
 
   <!-- Footer -->
   <div class="row inner-footer" data-v-5867ad71>
@@ -406,18 +315,12 @@
     </div>
   </div>
 
-  <!-- Cloudflare beacon -->
-  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
-          integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
-          data-cf-beacon='{"rayId":"93f5c327eff14c77","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
-          crossorigin="anonymous"></script>
-
   <!-- Scripts -->
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
 
-  <!-- Header interactivity (mobile hamburger) -->
+  <!-- Mobile hamburger -->
   <script>
     (function(){
       const burger = document.getElementById('hamburger');
@@ -430,7 +333,7 @@
     })();
   </script>
 
-  <!-- Draggable/minimize player behavior -->
+  <!-- Draggable/minimize player -->
   <script>
     window.onload = function () {
       const player = document.getElementById('draggable-player');
@@ -439,7 +342,6 @@
       const minimizedIcon = document.getElementById('minimized-icon');
       const openBtn = document.getElementById('open-btn');
 
-      // Drag
       dragHandle.onmousedown = function (event) {
         event.preventDefault();
         const startX = event.clientX - player.offsetLeft;
@@ -452,7 +354,6 @@
         document.onmouseup = function () { document.removeEventListener('mousemove', onMouseMove); };
       };
 
-      // Minimize / restore
       closeBtn.onclick = function () {
         player.style.display = 'none';
         minimizedIcon.style.display = 'flex';
@@ -465,7 +366,3 @@
   </script>
 </body>
 </html>
-
-
-
-
