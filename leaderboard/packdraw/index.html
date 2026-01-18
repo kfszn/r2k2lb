@@ -301,317 +301,337 @@
 
   <!-- ===== Packdraw Leaderboard logic (LOGIC ONLY FIXED) ===== -->
   <script>
-    (function(){
-      const PACKDRAW_API_KEY = "edadb58b-ea99-4c27-9b91-60b84c095ee9";
-      const PACKDRAW_BASE    = "https://packdraw.com/api/v1/affiliates/leaderboard";
-      const PACKDRAW_SIGNUP_URL = "https://packdraw.com?ref=R2K2";
+(function(){
+  const PACKDRAW_API_KEY = "edadb58b-ea99-4c27-9b91-60b84c095ee9";
+  const PACKDRAW_BASE    = "https://packdraw.com/api/v1/affiliates/leaderboard";
+  const PACKDRAW_SIGNUP_URL = "https://packdraw.com?ref=R2K2";
 
-      // goals
-      const DEAL_GOAL = 50000;
-      const LB_GOAL   = 50000;
+  // OPTIONAL: if you ever add a same-origin proxy, this will auto-use it
+  // (If this endpoint does not exist, it will simply fail and fall back.)
+  const PACKDRAW_PROXY_BASE = "https://www.r2k2.gg/api/packdraw";
 
-      // manual deal window (left card)
-      const DEAL_START = "2025-12-02";
-      const DEAL_END   = "2025-12-31";
+  // goals
+  const DEAL_GOAL = 50000;
+  const LB_GOAL   = 50000;
 
-      // Rewards (Top 10)
-      const rewards = [400, 250, 100, 50, 0, 0, 0, 0, 0, 0];
+  // manual deal window (left card)
+  const DEAL_START = "2025-12-02";
+  const DEAL_END   = "2025-12-31";
 
-      // Use your real logo
-      const logoSrc = "/assets/packdraw.png";
+  // Rewards (Top 10)
+  const rewards = [400, 250, 100, 50, 0, 0, 0, 0, 0, 0];
 
-      // Join button
-      const joinBtn = document.getElementById("joinPackdrawBtn");
-      if(joinBtn) joinBtn.href = PACKDRAW_SIGNUP_URL;
+  // Use your real logo
+  const logoSrc = "/assets/packdraw.png";
 
-      // Packdraw wants M-D-YYYY (no zero padding)
-      function isoToMDY(iso){
-        const [y,m,d] = iso.split("-").map(Number);
-        return `${m}-${d}-${y}`;
+  // Join button
+  const joinBtn = document.getElementById("joinPackdrawBtn");
+  if(joinBtn) joinBtn.href = PACKDRAW_SIGNUP_URL;
+
+  // Packdraw wants M-D-YYYY (no zero padding)
+  function isoToMDY(iso){
+    const [y,m,d] = iso.split("-").map(Number);
+    return `${m}-${d}-${y}`;
+  }
+
+  // ✅ CURRENT WINDOW (FIXED)
+  function currentLBWindow(){
+    const startISO = "2026-01-18";
+    const endISO   = "2026-02-18";
+    const endInstantET = new Date(`${endISO}T23:59:59-05:00`);
+    return { startISO, endISO, endInstantUTC: endInstantET };
+  }
+
+  function previousLBWindow(){
+    const cur = currentLBWindow();
+    const start = new Date(cur.startISO + "T00:00:00Z").getTime();
+    const end   = new Date(cur.endISO   + "T00:00:00Z").getTime();
+    const lenMs = end - start;
+    const prevEnd = new Date(start);
+    const prevStart = new Date(start - lenMs);
+
+    const prevStartISO = prevStart.toISOString().slice(0,10);
+    const prevEndISO   = prevEnd.toISOString().slice(0,10);
+    const prevEndInstantET = new Date(`${prevEndISO}T23:59:59-05:00`);
+    return { startISO: prevStartISO, endISO: prevEndISO, endInstantUTC: prevEndInstantET };
+  }
+
+  function fmtMoney(n){
+    const num = Number(n) || 0;
+    try{ return num.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:2}); }
+    catch{ return "$" + (Math.round(num*100)/100).toFixed(2); }
+  }
+  const toNum = v => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  // ✅ Packdraw response shape:
+  // { after, before, asOf, leaderboard:[ { username, wagerAmount, ... } ] }
+  function extractLeaderboard(json){
+    return Array.isArray(json?.leaderboard) ? json.leaderboard : [];
+  }
+
+  async function safeFetchJson(url){
+    const res = await fetch(url, { cache:"no-store" });
+    if(!res.ok){
+      const text = await res.text().catch(()=> "");
+      throw new Error(`HTTP ${res.status} ${res.statusText}\n${text.slice(0,200)}`);
+    }
+    return await res.json();
+  }
+
+  async function fetchPackdraw(afterISO){
+    const afterMDY = isoToMDY(afterISO);
+
+    // 1) Try direct Packdraw (will fail if CORS blocks)
+    const directUrl = `${PACKDRAW_BASE}?after=${encodeURIComponent(afterMDY)}&apiKey=${encodeURIComponent(PACKDRAW_API_KEY)}`;
+
+    try{
+      return await safeFetchJson(directUrl);
+    }catch(e){
+      const msg = String(e);
+
+      // If it’s not a CORS-style failure, just throw it
+      if(!msg.includes("Failed to fetch")) throw e;
+
+      // 2) Try proxy if it exists
+      // NOTE: this only works if you truly have an API endpoint at that URL.
+      const proxyUrl = `${PACKDRAW_PROXY_BASE}?after=${encodeURIComponent(afterMDY)}`;
+      try{
+        return await safeFetchJson(proxyUrl);
+      }catch(e2){
+        // Final: CORS explanation
+        throw new Error(
+          "TypeError: Failed to fetch\n" +
+          "Packdraw API is reachable in a browser tab, but browsers block cross-domain fetch() unless Packdraw enables CORS for your domain.\n" +
+          "Fix: use a same-domain proxy endpoint (e.g., /api/packdraw) or ask Packdraw to enable CORS (Access-Control-Allow-Origin).\n" +
+          "Tried direct + proxy, both failed."
+        );
       }
+    }
+  }
 
-      // ✅ CURRENT WINDOW (FIXED SYNTAX)
-      function currentLBWindow(){
-        const startISO = "2026-01-18";
-        const endISO   = "2026-02-18";
-        const endInstantET = new Date(`${endISO}T23:59:59-05:00`);
-        return { startISO, endISO, endInstantUTC: endInstantET };
-      }
+  async function fetchTotal(startISO, endISO){
+    const data = await fetchPackdraw(startISO);
+    const rows = extractLeaderboard(data);
+    return rows.reduce((sum,a)=> sum + toNum(a?.wagerAmount), 0);
+  }
 
-      // Previous window = same length immediately before current start
-      function previousLBWindow(){
-        const cur = currentLBWindow();
-        const start = new Date(cur.startISO + "T00:00:00Z").getTime();
-        const end   = new Date(cur.endISO   + "T00:00:00Z").getTime();
-        const lenMs = end - start; // length in ms between start and end
-        const prevEnd = new Date(start);
-        const prevStart = new Date(start - lenMs);
+  async function fetchRows(startISO, endISO){
+    const data = await fetchPackdraw(startISO);
+    const rows = extractLeaderboard(data);
 
-        const prevStartISO = prevStart.toISOString().slice(0,10);
-        const prevEndISO   = prevEnd.toISOString().slice(0,10);
-        const prevEndInstantET = new Date(`${prevEndISO}T23:59:59-05:00`);
-        return { startISO: prevStartISO, endISO: prevEndISO, endInstantUTC: prevEndInstantET };
-      }
+    return rows
+      .map(a => ({
+        username: a?.username || "Unknown",
+        wagered: toNum(a?.wagerAmount)
+      }))
+      .filter(r => r.wagered > 0)
+      .sort((a,b)=> b.wagered - a.wagered)
+      .slice(0, 10);
+  }
 
-      function fmtMoney(n){
-        const num = Number(n) || 0;
-        try{ return num.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:2}); }
-        catch{ return "$" + (Math.round(num*100)/100).toFixed(2); }
-      }
-      const toNum = v => {
-        const n = Number(v);
-        return Number.isFinite(n) ? n : 0;
-      };
+  function maskName(name){
+    if(!name) return "Unknown";
+    const s = String(name).trim();
+    if(s.length <= 3) return s;
+    return s.slice(0,2) + "*".repeat(s.length-3) + s.slice(-1);
+  }
 
-      async function fetchPackdraw(afterISO){
-        const afterMDY = isoToMDY(afterISO);
-        const url = `${PACKDRAW_BASE}?after=${encodeURIComponent(afterMDY)}&apiKey=${encodeURIComponent(PACKDRAW_API_KEY)}`;
+  function showError(msg, detail = ""){
+    const rows = document.getElementById("leaderboard-rows");
+    if (!rows) return;
+    rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
+  }
 
-        try{
-          const res = await fetch(url,{cache:"no-store"});
-          if(!res.ok){
-            const text = await res.text().catch(()=> "");
-            throw new Error(`HTTP ${res.status} ${res.statusText}\n${text.slice(0,200)}`);
-          }
-          return await res.json();
-        }catch(err){
-          // Most common: CORS blocks browser fetch
-          const msg = String(err);
-          const hint = "If the API opens in a browser tab but fetch() fails here, it's CORS. You’ll need a small proxy on your domain (Vercel/Worker) to call Packdraw server-side.";
-          throw new Error(msg.includes("Failed to fetch") ? `${msg}\n${hint}` : msg);
-        }
-      }
+  function renderTop3(rows){
+    const top3 = document.getElementById("top3-cards");
+    if (!top3) return;
+    top3.innerHTML = "";
+    const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
 
-      // ✅ Packdraw response shape:
-      // { after, before, asOf, leaderboard:[ { username, wagerAmount, ... } ] }
-      function extractLeaderboard(json){
-        const arr = Array.isArray(json?.leaderboard) ? json.leaderboard : [];
-        return arr;
-      }
+    rows.slice(0,3).forEach((entry, idx) => {
+      const place   = idx + 1;
+      const masked  = maskName(entry.username || "Unknown");
+      const wagered = fmtMoney(entry.wagered || 0);
+      const prize   = idx < rewards.length ? fmtMoney(rewards[idx] || 0) : "$0.00";
 
-      async function fetchTotal(startISO, endISO){
-        // Packdraw only filters by AFTER (startISO). endISO is only used for countdown/UI.
-        const data = await fetchPackdraw(startISO);
-        const rows = extractLeaderboard(data);
-        return rows.reduce((sum,a)=> sum + toNum(a?.wagerAmount), 0);
-      }
+      const card = document.createElement("div");
+      card.className = `css-jehefp ${glows[idx]||""}`;
+      card.style.position = "relative";
+      if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
+      if (idx === 2) card.style.transform = "translateY(25px)";
+      card.innerHTML = `
+        <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
+                    padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
+        <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
+        <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
 
-      async function fetchRows(startISO, endISO){
-        const data = await fetchPackdraw(startISO);
-        const rows = extractLeaderboard(data);
+        <div style="margin:8px 0 6px;color:#9ac9ff;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Wagered</div>
+        <div style="display:inline-block;padding:10px 18px;border:1px solid #1b3760;background:#0c1a2d;border-radius:12px;box-shadow:inset 0 0 10px rgba(0,153,255,.25);">
+          <span style="font-weight:900;color:#ffffff;text-shadow:0 0 10px rgba(19,152,255,.35)">${wagered}</span>
+        </div>
 
-        return rows
-          .map(a => ({
-            username: a?.username || "Unknown",
-            wagered: toNum(a?.wagerAmount)
-          }))
-          .filter(r => r.wagered > 0)
-          .sort((a,b)=> b.wagered - a.wagered)
-          .slice(0, 10);
-      }
+        <div style="margin-top:10px;font-weight:900;color:#39ff93;text-shadow:0 0 6px rgba(57,255,147,.85),0 0 14px rgba(57,255,147,.55),0 0 28px rgba(57,255,147,.35)">${prize}</div>
+      `;
+      top3.appendChild(card);
+    });
+  }
 
-      function maskName(name){
-        if(!name) return "Unknown";
-        const s = String(name).trim();
-        if(s.length <= 3) return s;
-        return s.slice(0,2) + "*".repeat(s.length-3) + s.slice(-1);
-      }
+  function renderRows(rows){
+    const list = document.getElementById("leaderboard-rows");
+    if (!list) return;
+    list.innerHTML = "";
 
-      function showError(msg, detail = ""){
-        const rows = document.getElementById("leaderboard-rows");
-        if (!rows) return;
-        rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
-      }
+    rows.slice(3).forEach((entry, i) => {
+      const idx = i + 3;
+      const place   = idx + 1;
+      const masked  = maskName(entry.username || "Unknown");
+      const wagered = fmtMoney(entry.wagered || 0);
+      const prize   = idx < rewards.length ? fmtMoney(rewards[idx] || 0) : "$0.00";
 
-      function renderTop3(rows){
-        const top3 = document.getElementById("top3-cards");
-        if (!top3) return;
-        top3.innerHTML = "";
-        const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
+      const row = document.createElement("div");
+      row.className = `lb-row lb-row--wide`;
+      row.innerHTML = `
+        <img src="${logoSrc}" alt="P" style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover">
+        <div class="lb-rank">#${place}</div>
+        <div class="lb-name">${masked}</div>
 
-        rows.slice(0,3).forEach((entry, idx) => {
-          const place   = idx + 1;
-          const masked  = maskName(entry.username || "Unknown");
-          const wagered = fmtMoney(entry.wagered || 0);
-          const prize   = idx < rewards.length ? fmtMoney(rewards[idx] || 0) : "$0.00";
+        <div class="lb-right">
+          <div>
+            <span class="lb-label">Wagered</span>
+            <span class="lb-money wager">${wagered}</span>
+          </div>
+          <div>
+            <span class="lb-label">Prize</span>
+            <span class="lb-money prize">${prize}</span>
+          </div>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  }
 
-          const card = document.createElement("div");
-          card.className = `css-jehefp ${glows[idx]||""}`;
-          card.style.position = "relative";
-          if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
-          if (idx === 2) card.style.transform = "translateY(25px)";
-          card.innerHTML = `
-            <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
-                        padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
-            <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
-            <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
+  async function paintList(win){
+    try{
+      const rows = await fetchRows(win.startISO, win.endISO);
+      renderTop3(rows);
+      renderRows(rows);
+    }catch(err){
+      console.error("Leaderboard load error:", err);
+      showError("Error loading leaderboard.", String(err));
+    }
+  }
 
-            <div style="margin:8px 0 6px;color:#9ac9ff;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Wagered</div>
-            <div style="display:inline-block;padding:10px 18px;border:1px solid #1b3760;background:#0c1a2d;border-radius:12px;box-shadow:inset 0 0 10px rgba(0,153,255,.25);">
-              <span style="font-weight:900;color:#ffffff;text-shadow:0 0 10px rgba(19,152,255,.35)">${wagered}</span>
-            </div>
+  function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
+    const fill  = document.getElementById(fillId);
+    const pctEl = document.getElementById(pctId);
+    const metaEl= document.getElementById(metaId);
+    const bar   = document.getElementById(barId);
+    if(!fill||!pctEl||!metaEl||!bar) return;
 
-            <div style="margin-top:10px;font-weight:900;color:#39ff93;text-shadow:0 0 6px rgba(57,255,147,.85),0 0 14px rgba(57,255,147,.55),0 0 28px rgba(57,255,147,.35)">${prize}</div>
-          `;
-          top3.appendChild(card);
-        });
-      }
+    const pct = goal>0 ? Math.min((total/goal)*100,100) : 0;
+    fill.style.width = pct + "%";
+    fill.classList.toggle("over", pct>=100);
+    pctEl.textContent = Math.round(pct) + "%";
+    metaEl.textContent = `${fmtMoney(total)} / ${fmtMoney(goal)}`;
+    bar.setAttribute("aria-valuenow", Math.round(pct));
+  }
 
-      function renderRows(rows){
-        const list = document.getElementById("leaderboard-rows");
-        if (!list) return;
-        list.innerHTML = "";
+  let lbWindow = currentLBWindow();
 
-        rows.slice(3).forEach((entry, i) => {
-          const idx = i + 3;
-          const place   = idx + 1;
-          const masked  = maskName(entry.username || "Unknown");
-          const wagered = fmtMoney(entry.wagered || 0);
-          const prize   = idx < rewards.length ? fmtMoney(rewards[idx] || 0) : "$0.00";
+  async function paintTotals(){
+    const dealEl = document.getElementById("r2kDealWager");
+    if(dealEl) dealEl.textContent = "…";
+    try{
+      const dealTotal = await fetchTotal(DEAL_START, DEAL_END);
+      if(dealEl) dealEl.textContent = fmtMoney(dealTotal);
+      renderProgress({ total: dealTotal, goal: DEAL_GOAL, fillId: "r2kDealFill", pctId: "r2kDealPct", metaId: "r2kDealMeta", barId: "r2kDealBar" });
+    }catch(e){
+      if(dealEl) dealEl.textContent="—";
+      console.error("Deal total error:", e);
+    }
 
-          const row = document.createElement("div");
-          row.className = `lb-row lb-row--wide`;
-          row.innerHTML = `
-            <img src="${logoSrc}" alt="P" style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover">
-            <div class="lb-rank">#${place}</div>
-            <div class="lb-name">${masked}</div>
+    const lbEl = document.getElementById("r2kLbWager");
+    if(lbEl) lbEl.textContent = "…";
+    try{
+      const lbTotal = await fetchTotal(lbWindow.startISO, lbWindow.endISO);
+      if(lbEl) lbEl.textContent = fmtMoney(lbTotal);
+      renderProgress({ total: lbTotal, goal: LB_GOAL, fillId: "r2kLbFill", pctId: "r2kLbPct", metaId: "r2kLbMeta", barId: "r2kLbBar" });
+    }catch(e){
+      if(lbEl) lbEl.textContent="—";
+      console.error("LB total error:", e);
+    }
+  }
 
-            <div class="lb-right">
-              <div>
-                <span class="lb-label">Wagered</span>
-                <span class="lb-money wager">${wagered}</span>
-              </div>
-              <div>
-                <span class="lb-label">Prize</span>
-                <span class="lb-money prize">${prize}</span>
-              </div>
-            </div>
-          `;
-          list.appendChild(row);
-        });
-      }
+  function fmtRemaining(ms){
+    const s = Math.max(0, Math.floor(ms/1000));
+    const d = Math.floor(s/86400);
+    const h = Math.floor((s%86400)/3600);
+    const m = Math.floor((s%3600)/60);
+    const ss= s%60;
+    if(d>0) return `${d}d ${h}h ${m}m`;
+    if(h>0) return `${h}h ${m}m ${ss}s`;
+    if(m>0) return `${m}m ${ss}s`;
+    return `${ss}s`;
+  }
 
-      async function paintList(win){
-        try{
-          const rows = await fetchRows(win.startISO, win.endISO);
-          renderTop3(rows);
-          renderRows(rows);
-        }catch(err){
-          console.error("Leaderboard load error:", err);
-          showError("Error loading leaderboard.", String(err));
-        }
-      }
+  function tickCountdowns(){
+    const dealSpan = document.getElementById('deal-remaining');
+    if(dealSpan){
+      const ms = new Date(DEAL_END + "T23:59:59").getTime() - Date.now();
+      dealSpan.textContent = fmtRemaining(ms);
+    }
+    const lbSpan = document.getElementById('lb-remaining');
+    if(lbSpan){
+      const msLeft = lbWindow.endInstantUTC.getTime() - Date.now();
+      lbSpan.textContent = fmtRemaining(msLeft);
+    }
+  }
 
-      function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
-        const fill  = document.getElementById(fillId);
-        const pctEl = document.getElementById(pctId);
-        const metaEl= document.getElementById(metaId);
-        const bar   = document.getElementById(barId);
-        if(!fill||!pctEl||!metaEl||!bar) return;
+  // Prev/Current buttons
+  const prevBtn = document.getElementById("prevLeaderboardBtn");
+  const currBtn = document.getElementById("currentLeaderboardBtn");
 
-        const pct = goal>0 ? Math.min((total/goal)*100,100) : 0;
-        fill.style.width = pct + "%";
-        fill.classList.toggle("over", pct>=100);
-        pctEl.textContent = Math.round(pct) + "%";
-        metaEl.textContent = `${fmtMoney(total)} / ${fmtMoney(goal)}`;
-        bar.setAttribute("aria-valuenow", Math.round(pct));
-      }
+  prevBtn?.addEventListener("click", async ()=>{
+    prevBtn.style.display = "none";
+    if(currBtn) currBtn.style.display = "inline-flex";
+    lbWindow = previousLBWindow();
+    await paintTotals();
+    await paintList(lbWindow);
+  });
 
-      let lbWindow = currentLBWindow();
-      let showingPrev = false;
+  currBtn?.addEventListener("click", async ()=>{
+    currBtn.style.display = "none";
+    if(prevBtn) prevBtn.style.display = "inline-flex";
+    lbWindow = currentLBWindow();
+    await paintTotals();
+    await paintList(lbWindow);
+  });
 
-      async function paintTotals(){
-        const dealEl = document.getElementById("r2kDealWager");
-        if(dealEl) dealEl.textContent = "…";
-        try{
-          const dealTotal = await fetchTotal(DEAL_START, DEAL_END);
-          if(dealEl) dealEl.textContent = fmtMoney(dealTotal);
-          renderProgress({ total: dealTotal, goal: DEAL_GOAL, fillId: "r2kDealFill", pctId: "r2kDealPct", metaId: "r2kDealMeta", barId: "r2kDealBar" });
-        }catch(e){
-          if(dealEl) dealEl.textContent="—";
-          console.error("Deal total error:", e);
-        }
-
-        const lbEl = document.getElementById("r2kLbWager");
-        if(lbEl) lbEl.textContent = "…";
-        try{
-          const lbTotal = await fetchTotal(lbWindow.startISO, lbWindow.endISO);
-          if(lbEl) lbEl.textContent = fmtMoney(lbTotal);
-          renderProgress({ total: lbTotal, goal: LB_GOAL, fillId: "r2kLbFill", pctId: "r2kLbPct", metaId: "r2kLbMeta", barId: "r2kLbBar" });
-        }catch(e){
-          if(lbEl) lbEl.textContent="—";
-          console.error("LB total error:", e);
-        }
-      }
-
-      function fmtRemaining(ms){
-        const s = Math.max(0, Math.floor(ms/1000));
-        const d = Math.floor(s/86400);
-        const h = Math.floor((s%86400)/3600);
-        const m = Math.floor((s%3600)/60);
-        const ss= s%60;
-        if(d>0) return `${d}d ${h}h ${m}m`;
-        if(h>0) return `${h}h ${m}m ${ss}s`;
-        if(m>0) return `${m}m ${ss}s`;
-        return `${ss}s`;
-      }
-
-      function tickCountdowns(){
-        const dealSpan = document.getElementById('deal-remaining');
-        if(dealSpan){
-          const ms = new Date(DEAL_END + "T23:59:59").getTime() - Date.now();
-          dealSpan.textContent = fmtRemaining(ms);
-        }
-        const lbSpan = document.getElementById('lb-remaining');
-        if(lbSpan){
-          const msLeft = lbWindow.endInstantUTC.getTime() - Date.now();
-          lbSpan.textContent = fmtRemaining(msLeft);
-        }
-      }
-
-      // Prev/Current buttons
-      const prevBtn = document.getElementById("prevLeaderboardBtn");
-      const currBtn = document.getElementById("currentLeaderboardBtn");
-
-      prevBtn?.addEventListener("click", async ()=>{
-        showingPrev = true;
-        prevBtn.style.display = "none";
-        if(currBtn) currBtn.style.display = "inline-flex";
-        lbWindow = previousLBWindow();
-        await paintTotals();
-        await paintList(lbWindow);
+  // Hamburger
+  (function(){
+    const burger = document.getElementById('hamburger');
+    const nav = document.getElementById('r2kNav');
+    if(burger && nav){
+      burger.addEventListener('click', ()=>{
+        const isOpen = nav.classList.toggle('show');
+        burger.setAttribute('aria-expanded', String(isOpen));
       });
+    }
+  })();
 
-      currBtn?.addEventListener("click", async ()=>{
-        showingPrev = false;
-        currBtn.style.display = "none";
-        if(prevBtn) prevBtn.style.display = "inline-flex";
-        lbWindow = currentLBWindow();
-        await paintTotals();
-        await paintList(lbWindow);
-      });
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    lbWindow = currentLBWindow();
+    await paintTotals();
+    await paintList(lbWindow);
+    tickCountdowns();
+    clearInterval(window.__r2kLbTick__);
+    window.__r2kLbTick__ = setInterval(tickCountdowns, 1000);
+  });
+})();
+</script>
 
-      // Hamburger
-      (function(){
-        const burger = document.getElementById('hamburger');
-        const nav = document.getElementById('r2kNav');
-        if(burger && nav){
-          burger.addEventListener('click', ()=>{
-            const isOpen = nav.classList.toggle('show');
-            burger.setAttribute('aria-expanded', String(isOpen));
-          });
-        }
-      })();
-
-      document.addEventListener("DOMContentLoaded", async ()=>{
-        lbWindow = currentLBWindow();
-        await paintTotals();
-        await paintList(lbWindow);
-        tickCountdowns();
-        clearInterval(window.__r2kLbTick__);
-        window.__r2kLbTick__ = setInterval(tickCountdowns, 1000);
-      });
-    })();
-  </script>
 </body>
 </html>
