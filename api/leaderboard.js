@@ -9,7 +9,7 @@ const HARDCODED_ACEBET_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjo
 // ✅ EDIT DEFAULT DATES HERE
 // ===============================
 const DEFAULT_START = "2025-12-26";
-const DEFAULT_END   = "2026-01-20"; // <-- change this with DEFAULT_START (or set to "" to use today UTC)
+const DEFAULT_END   = "2026-01-25"; // <-- change this with DEFAULT_START (or set to "" to use today UTC)
 
 // Other knobs
 const DEFAULT_DELAY_MS = 120;
