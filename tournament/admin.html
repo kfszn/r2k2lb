@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>R2K2 | Tournament Admin</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="icon" href="/assets/logo.png">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/lb.css">
+  <link rel="stylesheet" href="/css/vendor.css">
+</head>
+
+<body>
+  <header id="r2kHeader">
+    <!-- same header -->
+  </header>
+
+  <div id="appContent">
+    <div class="row text">
+      <span class="title">Tournament Control Panel</span>
+    </div>
+
+    <div class="r2k-totals">
+      <button class="prev-lb-btn" onclick="openEntries()">Open Entries</button>
+      <button class="prev-lb-btn" onclick="closeEntries()">Close & Lock Bracket</button>
+    </div>
+  </div>
+
+  <script>
+    async function openEntries(){
+      await fetch("/api/tournament/open",{method:"POST"});
+      alert("Entries opened");
+    }
+    async function closeEntries(){
+      await fetch("/api/tournament/close",{method:"POST"});
+      alert("Bracket locked");
+    }
+  </script>
+</body>
+</html>
