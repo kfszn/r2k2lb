@@ -40,17 +40,11 @@
     .modal-body li{margin-bottom:10px;text-align:left}
     .modal-body ul{padding-left:20px}
 
-    /* ===== Totals + progress (kept styles, content changed) ===== */
+    /* ===== Totals (kept styles) ===== */
     .r2k-totals{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:30px;margin:28px auto 10px;width:min(1080px,92%)}
     .r2k-total-card{flex:0 1 360px;background:#0b0f17;border:1px solid #0e2038;border-radius:14px;padding:18px 20px;box-shadow:0 0 18px rgba(0,153,255,.25)}
     .r2k-total-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#87c8ff;opacity:.9}
     .r2k-total-value{margin-top:6px;font-weight:700;font-size:22px;line-height:1.2;color:#e9f5ff;text-shadow:0 0 10px rgba(0,153,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .r2k-progress{margin-top:10px}
-    .r2k-progress-bar{height:10px;background:rgba(8,20,35,.9);border:1px solid #0e2038;border-radius:999px;overflow:hidden;box-shadow:inset 0 0 10px rgba(0,153,255,.15),0 0 14px rgba(0,153,255,.15)}
-    .r2k-progress-fill{height:100%;width:0;transition:width 900ms ease-in-out;background:linear-gradient(90deg,#1398ff,#48c7ff);box-shadow:0 0 12px rgba(0,153,255,.55)}
-    .r2k-progress-fill.over{background:linear-gradient(90deg,#22c55e,#86efac);box-shadow:0 0 12px rgba(34,197,94,.55)}
-    .r2k-progress-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#87c8ff;opacity:.95;margin-top:6px}
-    .r2k-progress-meta .strong{color:#e9f5ff;font-weight:700}
 
     .tmr{display:flex;align-items:center;gap:10px;margin-top:12px}
     .tmr-label{color:#b6d9ff;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 0 10px rgba(19,152,255,.45)}
@@ -119,6 +113,7 @@
     }
     /* ---------- END rows #4–#10 styles ---------- */
 
+    /* Top-3 container spacing (unchanged look) */
     #top3-cards{
       display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
       width:min(1120px,95%);margin:10px auto 24px;
@@ -127,7 +122,6 @@
     .top-card-shadow-2{box-shadow:0 0 40px #C0C0C0}
     .top-card-shadow-3{box-shadow:0 0 40px #CD7F32}
 
-    /* small avatar fallback styling */
     .avatar-fallback{
       width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;
       display:flex;align-items:center;justify-content:center;font-weight:900;color:#9ac9ff;
@@ -204,11 +198,11 @@
       </div>
     </div>
 
-    <!-- Totals (UPDATED: single card only) -->
+    <!-- Totals -->
     <div class="r2k-totals">
       <div class="r2k-total-card">
         <div class="r2k-total-label">Current Totals</div>
-        <div class="r2k-total-value" id="r2kCurrentTotals">$0.00</div>
+        <div class="r2k-total-value" id="r2kCurrentTotals">…</div>
         <div class="tmr">
           <span class="tmr-label">ENDING IN</span>
           <span id="lb-remaining" class="tmr-value">--</span>
@@ -218,9 +212,7 @@
 
     <div class="css-esk2ah">
       <div class="css-2w2ovy">
-        <!-- Top 3 (unchanged look) -->
         <div class="css-gqrafh" id="top3-cards"></div>
-        <!-- Rows 4–10 -->
         <div id="leaderboard-rows"></div>
       </div>
     </div>
@@ -260,11 +252,6 @@
     </div>
   </div>
 
-  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
-          integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
-          data-cf-beacon='{"rayId":"93f624c93c488202","version":"2025.4.0-1-g37f21b1","r":1,"token":"6a289e34095c4e319f5a765107c772ad","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
-          crossorigin="anonymous"></script>
-
   <!-- Modal behavior (kept) -->
   <script>
     const modal = document.getElementById("rulesModal");
@@ -281,7 +268,6 @@
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
   <script src="/js/toast.js"></script>
-  <!-- NOTE: do NOT include /js/leaderboard-page.js to avoid conflicts -->
 
   <!-- Push content below the sticky header -->
   <script>
@@ -298,87 +284,24 @@
     })();
   </script>
 
-  <!-- ===== Leaderboard logic (UPDATED to use /api/leaderboard.js response) ===== -->
+  <!-- ===== Leaderboard logic (ONE API call per view) ===== -->
   <script>
     (function(){
-      const API_ROUTE = "/api/leaderboard";
+      const API_ROUTE = "/api/leaderboard"; // your screenshot shows this works ✅
 
-      // Rewards unchanged
       const rewards = [800, 500, 375, 300, 250, 125, 75, 40, 20, 15];
 
-      // ---------- New York time helpers ----------
-      function nyParts(date = new Date()){
-        const f = new Intl.DateTimeFormat("en-US",{
-          timeZone:"America/New_York",
-          year:"numeric",month:"numeric",day:"numeric",
-          hour:"numeric",minute:"numeric",second:"numeric",
-          hour12:false
-        });
-        const parts = f.formatToParts(date);
-        const get = t => Number(parts.find(p=>p.type===t)?.value);
-        return {
-          y: get("year"),
-          m1: get("month"),
-          d: get("day"),
-          hh: get("hour"),
-          mm: get("minute") || 0,
-          ss: get("second") || 0
-        };
-      }
-
-      function nyTodayISO(){
-        const p = nyParts();
-        return `${p.y}-${String(p.m1).padStart(2,"0")}-${String(p.d).padStart(2,"0")}`;
-      }
-
-      // ---------- Windows ----------
-      function currentLBWindow(){
-        // Keep your current start hard-coded here (edit whenever you roll it)
-        const startISO = "2025-11-25";
-        const todayISO = nyTodayISO();
-
-        // End countdown at 12:00 PM EST today (kept from your file)
-        const endInstantET = new Date(`${todayISO}T12:00:00-05:00`);
-
-        return {
-          startISO,
-          endISO: todayISO,
-          endInstantUTC: endInstantET
-        };
-      }
-
-      function previousLBWindow(){
-        // previous = same length window, shifted back
-        const cur = currentLBWindow();
-        const s = new Date(cur.startISO + "T00:00:00Z");
-        const e = new Date(cur.endISO   + "T00:00:00Z");
-        const len = Math.floor((e.getTime() - s.getTime())/86400000) + 1;
-
-        const ps = new Date(s.getTime()); ps.setUTCDate(ps.getUTCDate() - len);
-        const pe = new Date(e.getTime()); pe.setUTCDate(pe.getUTCDate() - len);
-
-        // keep countdown "ending in" for prev as pe @ 12:00 PM EST of that prev end day
-        const peISO = pe.toISOString().slice(0,10);
-        const prevEndInstantET = new Date(`${peISO}T12:00:00-05:00`);
-
-        return {
-          startISO: ps.toISOString().slice(0,10),
-          endISO: peISO,
-          endInstantUTC: prevEndInstantET
-        };
-      }
-
-      // ---------- Formatting ----------
+      // ---- formatting ----
       function fmtMoney(n){
         const num = Number(n) || 0;
-        try {
-          return num.toLocaleString(undefined, {
+        try{
+          return num.toLocaleString(undefined,{
             style:"currency",
             currency:"USD",
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
           });
-        } catch {
+        }catch{
           return "$" + (Math.round(num*100)/100).toFixed(2);
         }
       }
@@ -390,88 +313,86 @@
         return s.slice(0,2) + "*".repeat(s.length-3) + s.slice(-1);
       }
 
-      function showError(msg, detail = ""){
-        const rows = document.getElementById("leaderboard-rows");
-        if (!rows) return;
-        rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
-      }
-
-      // ---------- API consumption ----------
-      async function fetchLeaderboard(startISO, endISO){
-        const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
-        const res = await fetch(url,{cache:"no-store"});
-        if(!res.ok){
-          const text = await res.text().catch(()=> "");
-          throw new Error(`HTTP ${res.status} ${res.statusText}\n${text.slice(0,300)}`);
-        }
-        const json = await res.json();
-
-        // Expecting: { ok:true, range:{...}, count:n, data:[...] }
-        const rows = Array.isArray(json?.data) ? json.data : [];
-
-        // normalize to what renderers expect
-        return rows
-          .map(u => ({
-            username: u?.name || "Unknown",
-            avatar: u?.avatar || "",
-            wagered: Number(u?.wagered || 0)
-          }))
-          .filter(r => r.wagered > 0)
-          .sort((a,b)=> b.wagered - a.wagered)
-          .slice(0, 10);
-      }
-
-      async function fetchCurrentTotal(startISO, endISO){
-        const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
-        const res = await fetch(url,{cache:"no-store"});
-        if(!res.ok) throw new Error(`API ${res.status}`);
-        const json = await res.json();
-        const rows = Array.isArray(json?.data) ? json.data : [];
-        return rows.reduce((sum,u)=> sum + (Number(u?.wagered)||0), 0);
-      }
-
-      // ---------- Avatar helpers ----------
-      function safeAvatar(avatarUrl){
-        const u = (avatarUrl || "").trim();
+      function safeAvatar(url){
+        const u = (url || "").trim();
         if(!u) return "";
-        // allow absolute or relative
-        if (u.startsWith("http://") || u.startsWith("https://") || u.startsWith("/")) return u;
-        // sometimes API sends //cdn...
-        if (u.startsWith("//")) return "https:" + u;
-        return u; // last resort
+        if(u.startsWith("http://") || u.startsWith("https://") || u.startsWith("/")) return u;
+        if(u.startsWith("//")) return "https:" + u;
+        return u;
       }
 
       function avatarHTML(avatarUrl, altText){
         const src = safeAvatar(avatarUrl);
+        const letter = (altText || "U").trim().slice(0,1).toUpperCase() || "U";
         if(!src){
-          const letter = (altText || "U").trim().slice(0,1).toUpperCase() || "U";
           return `<div class="avatar-fallback" aria-label="avatar">${letter}</div>`;
         }
-        return `<img src="${src}" alt="${altText||"avatar"}"
-                  style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover"
-                  referrerpolicy="no-referrer"
-                  onerror="this.outerHTML='<div class=&quot;avatar-fallback&quot; aria-label=&quot;avatar&quot;>${(altText||'U').trim().slice(0,1).toUpperCase()||'U'}</div>'">`;
+        const escAlt = String(altText || "avatar").replace(/"/g,'&quot;');
+        return `
+          <img src="${src}" alt="${escAlt}"
+               style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover"
+               referrerpolicy="no-referrer"
+               onerror="this.outerHTML='<div class=&quot;avatar-fallback&quot; aria-label=&quot;avatar&quot;>${letter}</div>'">
+        `;
       }
 
-      // ---------- Renderers (Top-3 look kept; only image swapped to avatar) ----------
+      function showError(msg, detail=""){
+        const rows = document.getElementById("leaderboard-rows");
+        if(!rows) return;
+        rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail?`\n${detail}`:""}</div>`;
+      }
+
+      // ---- countdown from API end_at ----
+      // We’ll count down to end_at 23:59:59 ET (good enough; avoids "--")
+      let endInstant = null;
+
+      function endInstantFromEndAt(endAtISO){
+        // force an offset; if you want DST-perfect later, we’ll do NY timezone calc
+        return new Date(`${endAtISO}T23:59:59-05:00`);
+      }
+
+      function fmtRemaining(ms){
+        const s = Math.max(0, Math.floor(ms/1000));
+        const d = Math.floor(s/86400);
+        const h = Math.floor((s%86400)/3600);
+        const m = Math.floor((s%3600)/60);
+        const ss= s%60;
+        if(d>0) return `${d}d ${h}h ${m}m`;
+        if(h>0) return `${h}h ${m}m ${ss}s`;
+        if(m>0) return `${m}m ${ss}s`;
+        return `${ss}s`;
+      }
+
+      function tickCountdown(){
+        const el = document.getElementById("lb-remaining");
+        if(!el) return;
+        if(!endInstant || isNaN(endInstant.getTime())){
+          el.textContent = "--";
+          return;
+        }
+        el.textContent = fmtRemaining(endInstant.getTime() - Date.now());
+      }
+
+      // ---- rendering ----
       function renderTop3(rows){
         const top3 = document.getElementById("top3-cards");
-        if (!top3) return;
+        if(!top3) return;
         top3.innerHTML = "";
         const glows = ["top-card-shadow-1","top-card-shadow-2","top-card-shadow-3"];
 
-        rows.slice(0,3).forEach((entry, idx) => {
-          const place   = idx + 1;
-          const user    = entry.username || "Unknown";
-          const masked  = maskName(user);
+        rows.slice(0,3).forEach((entry, idx)=>{
+          const place = idx+1;
+          const user = entry.name || "Unknown";
+          const masked = maskName(user);
           const wagered = fmtMoney(entry.wagered || 0);
-          const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
+          const prize = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
           const card = document.createElement("div");
           card.className = `css-jehefp ${glows[idx]||""}`;
           card.style.position = "relative";
-          if (idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
-          if (idx === 2) card.style.transform = "translateY(25px)";
+          if(idx === 1) card.style.transform = "translateY(25px) scale(1.2)";
+          if(idx === 2) card.style.transform = "translateY(25px)";
+
           card.innerHTML = `
             <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
                         padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
@@ -493,19 +414,19 @@
 
       function renderRows(rows){
         const list = document.getElementById("leaderboard-rows");
-        if (!list) return;
+        if(!list) return;
         list.innerHTML = "";
 
-        rows.slice(3).forEach((entry, i) => {
-          const idx = i + 3;             // index 3..9 => ranks 4..10
-          const place   = idx + 1;
-          const user    = entry.username || "Unknown";
-          const masked  = maskName(user);
+        rows.slice(3,10).forEach((entry, i)=>{
+          const idx = i + 3; // ranks 4..10
+          const place = idx + 1;
+          const user = entry.name || "Unknown";
+          const masked = maskName(user);
           const wagered = fmtMoney(entry.wagered || 0);
-          const prize   = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
+          const prize = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
           const row = document.createElement("div");
-          row.className = `lb-row lb-row--wide`;
+          row.className = "lb-row lb-row--wide";
           row.innerHTML = `
             ${avatarHTML(entry.avatar, user)}
             <div class="lb-rank">#${place}</div>
@@ -526,85 +447,71 @@
         });
       }
 
-      // ---------- Paint lists ----------
-      async function paintListCurrent(){
-        try{
-          const win = currentLBWindow();
-          const rows = await fetchLeaderboard(win.startISO, win.endISO);
-          renderTop3(rows);
-          renderRows(rows);
-        }catch(err){
-          console.error("Leaderboard load error:", err);
-          showError("Error loading leaderboard.", String(err));
-        }
-      }
-
-      async function paintListPrevious(){
-        try{
-          const prev = previousLBWindow();
-          const rows = await fetchLeaderboard(prev.startISO, prev.endISO);
-          renderTop3(rows);
-          renderRows(rows);
-        }catch(err){
-          console.error("Prev leaderboard load error:", err);
-          showError("Error loading previous leaderboard.", String(err));
-        }
-      }
-
-      // ---------- Current Totals card ----------
-      let lbWindow = currentLBWindow();
-      async function paintCurrentTotals(){
+      function setCurrentTotals(total){
         const el = document.getElementById("r2kCurrentTotals");
-        if(el) el.textContent = "…";
-        try{
-          lbWindow = currentLBWindow();
-          const total = await fetchCurrentTotal(lbWindow.startISO, lbWindow.endISO);
-          if(el) el.textContent = fmtMoney(total);
-        }catch(e){
-          if(el) el.textContent = "—";
-          console.error("Current totals error:", e);
+        if(el) el.textContent = fmtMoney(total);
+      }
+
+      // ---- ONE request function ----
+      async function loadAndRender({ prev=false } = {}){
+        const totalsEl = document.getElementById("r2kCurrentTotals");
+        if(totalsEl) totalsEl.textContent = "…";
+
+        const url = prev ? `${API_ROUTE}?prev=1` : API_ROUTE;
+        const res = await fetch(url, { cache:"no-store" });
+        if(!res.ok){
+          const text = await res.text().catch(()=> "");
+          throw new Error(`HTTP ${res.status} ${res.statusText}\n${text.slice(0,300)}`);
         }
-      }
 
-      // ---------- Countdown ----------
-      function fmtRemaining(ms){
-        const s = Math.max(0, Math.floor(ms/1000));
-        const d = Math.floor(s/86400);
-        const h = Math.floor((s%86400)/3600);
-        const m = Math.floor((s%3600)/60);
-        const ss= s%60;
-        if(d>0) return `${d}d ${h}h ${m}m`;
-        if(h>0) return `${h}h ${m}m ${ss}s`;
-        if(m>0) return `${m}m ${ss}s`;
-        return `${ss}s`;
-      }
+        const json = await res.json();
+        const data = Array.isArray(json?.data) ? json.data : [];
+        const endAt = json?.range?.end_at;
 
-      function tickCountdowns(){
-        const lbSpan = document.getElementById('lb-remaining');
-        if(lbSpan){
-          const msLeft = lbWindow.endInstantUTC.getTime() - Date.now();
-          lbSpan.textContent = fmtRemaining(msLeft);
+        // countdown target
+        if (endAt && /^\d{4}-\d{2}-\d{2}$/.test(endAt)) {
+          endInstant = endInstantFromEndAt(endAt);
+        } else {
+          endInstant = null;
         }
+
+        // compute totals + top10
+        const total = data.reduce((sum,u)=> sum + (Number(u?.wagered)||0), 0);
+        setCurrentTotals(total);
+
+        const top10 = data
+          .map(u => ({
+            name: u?.name || "Unknown",
+            avatar: u?.avatar || "",
+            wagered: Number(u?.wagered || 0)
+          }))
+          .filter(r => r.wagered > 0)
+          .sort((a,b)=> b.wagered - a.wagered)
+          .slice(0,10);
+
+        renderTop3(top10);
+        renderRows(top10);
       }
 
-      // ---------- Buttons ----------
+      // ---- Buttons ----
       const prevBtn = document.getElementById("prevLeaderboardBtn");
       const currBtn = document.getElementById("currentLeaderboardBtn");
 
-      prevBtn?.addEventListener("click", async () => {
+      prevBtn?.addEventListener("click", async ()=>{
         prevBtn.style.display = "none";
-        if (currBtn) currBtn.style.display = "inline-flex";
-        // totals stay "current totals" (per your request), only list switches
-        await paintListPrevious();
+        if(currBtn) currBtn.style.display = "inline-flex";
+        try { await loadAndRender({ prev:true }); }
+        catch(e){ console.error(e); showError("Error loading previous leaderboard.", String(e)); }
       });
 
-      currBtn?.addEventListener("click", async () => {
+      currBtn?.addEventListener("click", async ()=>{
         currBtn.style.display = "none";
-        if (prevBtn) prevBtn.style.display = "inline-flex";
-        await paintListCurrent();
+        if(prevBtn) prevBtn.style.display = "inline-flex";
+        try { await loadAndRender({ prev:false }); }
+        catch(e){ console.error(e); showError("Error loading leaderboard.", String(e)); }
       });
 
-      // ---------- Hamburger ----------
+      // ---- Hamburger ----
       (function(){
         const burger = document.getElementById('hamburger');
         const nav = document.getElementById('r2kNav');
@@ -616,21 +523,25 @@
         }
       })();
 
-      // ---------- Init ----------
+      // ---- Init ----
       document.addEventListener("DOMContentLoaded", async ()=>{
-        await paintCurrentTotals();
-        await paintListCurrent();
-        tickCountdowns();
+        // start countdown tick immediately (no more "--" if endInstant gets set)
+        tickCountdown();
         clearInterval(window.__r2kLbTick__);
-        window.__r2kLbTick__ = setInterval(tickCountdowns, 1000);
+        window.__r2kLbTick__ = setInterval(tickCountdown, 1000);
 
-        // refresh totals + list every 15 minutes (matches your text)
+        try { await loadAndRender({ prev:false }); }
+        catch(e){ console.error(e); showError("Error loading leaderboard.", String(e)); }
+
+        // refresh every 15 minutes
         clearInterval(window.__r2kLbRefresh__);
         window.__r2kLbRefresh__ = setInterval(async ()=>{
-          await paintCurrentTotals();
-          // only refresh current list automatically
-          if (currBtn && currBtn.style.display === "none") {
-            await paintListCurrent();
+          try {
+            // refresh whichever view button is currently hidden
+            const showingPrev = prevBtn && prevBtn.style.display === "none";
+            await loadAndRender({ prev: showingPrev });
+          } catch(e){
+            console.error(e);
           }
         }, 15 * 60 * 1000);
       });
