@@ -1,4 +1,4 @@
-// api/leaderboard.js — Vercel Serverless Function (Acebet)
+
 
 // ===============================
 // 🔥 DROP YOUR TOKEN HERE
