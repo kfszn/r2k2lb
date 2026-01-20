@@ -1,0 +1,47 @@
+body,
+html {
+  margin: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+#toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #333;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  z-index: 9999;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow */
+  font-size: 14px; /* Increase font size */
+  font-weight: bold; /* Make text bold */
+  max-width: 350px; /* Add max-width */
+  word-wrap: break-word; /* Break words to the next line if necessary */
+}
+
+#alertText {
+  color: yellow; /* Make the "Alert" text yellow or any color that stands out */
+  margin-right: 10px; /* Add some spacing between "Alert" and the message */
+  font-size: 18px;
+}
+
+#toast.show {
+  opacity: 1;
+}
+
+/* You can customize the animations and colors based on the type of notification */
+#toast.success {
+  background-color: green;
+}
+
+#toast.error {
+  background-color: red;
+}
+
+#toast.warning {
+  background-color: orange;
+}
