@@ -40,7 +40,7 @@
     .modal-body li{margin-bottom:10px;text-align:left}
     .modal-body ul{padding-left:20px}
 
-    /* ===== Totals + progress (kept) ===== */
+    /* ===== Totals + progress (kept styles, content changed) ===== */
     .r2k-totals{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:30px;margin:28px auto 10px;width:min(1080px,92%)}
     .r2k-total-card{flex:0 1 360px;background:#0b0f17;border:1px solid #0e2038;border-radius:14px;padding:18px 20px;box-shadow:0 0 18px rgba(0,153,255,.25)}
     .r2k-total-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#87c8ff;opacity:.9}
@@ -75,7 +75,7 @@
     .lb-row{
       display:grid;
       grid-template-columns: 54px 64px 1fr auto auto;
-      align-items:center;                 /* alignment fix */
+      align-items:center;
       gap:14px;
       padding:16px 18px;
       background:#0b0f17;
@@ -90,15 +90,13 @@
     .lb-right{display:flex;align-items:baseline;gap:min(8vw,64px)}
     .lb-label{font-size:12px;color:#9ac9ff;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-right:8px}
 
-    /* Amount sizing */
     .lb-row .lb-money.wager{font-size:18px}
     .lb-row .lb-money.prize{font-size:18px}
     .lb-row--wide .lb-money.wager,.lb-row--wide .lb-money.prize{font-size:20px}
 
-    /* Colors scoped to rows 4–10 (Top-3 untouched) */
     .lb-row .lb-money.wager{
       color:#ffffff !important;
-      -webkit-text-fill-color:#ffffff !important;  /* iOS */
+      -webkit-text-fill-color:#ffffff !important;
       text-shadow:0 0 8px rgba(19,152,255,.25);
       background:transparent!important;
       filter:none!important;
@@ -112,7 +110,6 @@
       filter: drop-shadow(0 0 6px rgba(57,255,147,.35));
     }
 
-    /* Mobile for rows 4–10 */
     @media (max-width:720px){
       .lb-row{grid-template-columns:44px 54px 1fr;gap:10px}
       .lb-right{grid-column:1 / -1;justify-content:space-between;margin-top:8px;gap:22px}
@@ -122,7 +119,6 @@
     }
     /* ---------- END rows #4–#10 styles ---------- */
 
-    /* Top-3 container spacing (unchanged look) */
     #top3-cards{
       display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
       width:min(1120px,95%);margin:10px auto 24px;
@@ -130,6 +126,13 @@
     .top-card-shadow-1{box-shadow:0 0 40px #FFD700}
     .top-card-shadow-2{box-shadow:0 0 40px #C0C0C0}
     .top-card-shadow-3{box-shadow:0 0 40px #CD7F32}
+
+    /* small avatar fallback styling */
+    .avatar-fallback{
+      width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;
+      display:flex;align-items:center;justify-content:center;font-weight:900;color:#9ac9ff;
+      text-transform:uppercase;
+    }
   </style>
 </head>
 <body>
@@ -177,7 +180,7 @@
           <div data-v-1d580398 class="price-wrapper glow">$2,500</div>
           MONTHLY CODE <span class="glow">R2K2</span> Leaderboard!
         </span>
-        
+
         <span data-v-1d580398 class="subtitle" style="color:#FFF;">
           Every <b>BET</b> on Acebet under Code <b>R2K2</b> counts towards your score. <br>
           <i>The leaderboard updates every 15 minutes.</i><br>
@@ -201,38 +204,11 @@
       </div>
     </div>
 
-    <!-- Totals + Goals -->
+    <!-- Totals (UPDATED: single card only) -->
     <div class="r2k-totals">
       <div class="r2k-total-card">
-        <div class="r2k-total-label">Current Deal</div>
-        <div class="r2k-total-value" id="r2kDealWager">$0</div>
-        <div class="r2k-progress" aria-label="Deal goal progress">
-          <div class="r2k-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="r2kDealBar">
-            <div class="r2k-progress-fill" id="r2kDealFill"></div>
-          </div>
-          <div class="r2k-progress-meta">
-            <span id="r2kDealPct" class="strong">0%</span>
-            <span id="r2kDealMeta">$0 / $0</span>
-          </div>
-        </div>
-        <div class="tmr">
-          <span class="tmr-label">ENDING IN</span>
-          <span id="deal-remaining" class="tmr-value">--</span>
-        </div>
-      </div>
-
-      <div class="r2k-total-card">
-        <div class="r2k-total-label">Current Leaderboard</div>
-        <div class="r2k-total-value" id="r2kLbWager">$0</div>
-        <div class="r2k-progress" aria-label="Leaderboard goal progress">
-          <div class="r2k-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="r2kLbBar">
-            <div class="r2k-progress-fill" id="r2kLbFill"></div>
-          </div>
-          <div class="r2k-progress-meta">
-            <span id="r2kLbPct" class="strong">0%</span>
-            <span id="r2kLbMeta">$0 / $0</span>
-          </div>
-        </div>
+        <div class="r2k-total-label">Current Totals</div>
+        <div class="r2k-total-value" id="r2kCurrentTotals">$0.00</div>
         <div class="tmr">
           <span class="tmr-label">ENDING IN</span>
           <span id="lb-remaining" class="tmr-value">--</span>
@@ -322,34 +298,13 @@
     })();
   </script>
 
-  <!-- ===== Leaderboard logic (CURRENT = today → Dec 31, 2025 | PREV = old deal+30d window) ===== -->
+  <!-- ===== Leaderboard logic (UPDATED to use /api/leaderboard.js response) ===== -->
   <script>
     (function(){
       const API_ROUTE = "/api/leaderboard";
-      const DEAL_GOAL = 2000000;
-      const LB_GOAL   = 2250000;
 
-      // =========================
-      // MANUAL DEAL WINDOW (unchanged)
-      // =========================
-      const DEAL_START = "2025-12-02";
-      const DEAL_END   = "2025-12-31";
-
-      // =========================
-      // CURRENT LEADERBOARD (NEW RULE)
-      // start = TODAY in ET
-      // end   = 2025-12-31
-      // =========================
-      const CURRENT_LB_END_ISO = "2025-12-31";
-      const CURRENT_LB_END_INSTANT = new Date("2025-12-31T23:59:59-05:00");
-
-      // =========================
-      // PREVIOUS LEADERBOARD (OLD RULE)
-      // previous = deal window + 30 days
-      // (kept the same 8PM ET boundary style)
-      // =========================
-      const LB_EXTRA_DAYS = 30;
-      const MS_DAY = 86400000;
+      // Rewards unchanged
+      const rewards = [800, 500, 375, 300, 250, 125, 75, 40, 20, 15];
 
       // ---------- New York time helpers ----------
       function nyParts(date = new Date()){
@@ -376,113 +331,57 @@
         return `${p.y}-${String(p.m1).padStart(2,"0")}-${String(p.d).padStart(2,"0")}`;
       }
 
-      // 8:00 PM ET on y-m-d expressed in UTC (used for PREVIOUS windows only)
-      function boundaryUTC(y,m1,d){
-        const nyMid = nyParts(new Date(`${y}-${String(m1).padStart(2,"0")}-${String(d).padStart(2,"0")}T00:00:00`));
-        const baseUTC = Date.UTC(nyMid.y, nyMid.m1-1, nyMid.d, 0,0,0,0);
-        return new Date(baseUTC + 20*3600*1000); // 8 PM ET
-      }
-
-      const isoDate = d => d.toISOString().slice(0,10);
-
-      // Rainbet expects date boundaries based on "day after 8PM ET"
-      function apiDateFromBoundary(boundaryUTCDate){
-        return isoDate(new Date(Date.UTC(
-          boundaryUTCDate.getUTCFullYear(),
-          boundaryUTCDate.getUTCMonth(),
-          boundaryUTCDate.getUTCDate() + 1
-        )));
-      }
-
-      function parseISO(iso){
-        const [y,m1,d] = iso.split("-").map(Number);
-        return {y,m1,d};
-      }
-
       // ---------- Windows ----------
-     function currentLBWindow(){
-  // Get TODAY in New York
-  const p = nyParts();
+      function currentLBWindow(){
+        // Keep your current start hard-coded here (edit whenever you roll it)
+        const startISO = "2025-11-25";
+        const todayISO = nyTodayISO();
 
-  const todayISO = `${p.y}-${String(p.m1).padStart(2,"0")}-${String(p.d).padStart(2,"0")}`;
-
-  // Today at 12:00 PM EST
-  const endInstantET = new Date(
-    `${todayISO}T12:00:00-05:00`
-  );
-
-  return {
-    startISO: "2025-11-25",   // keep your original start
-    endISO: todayISO,        // API stops today
-    endInstantUTC: endInstantET
-  };
-}
-
-      function oldLBWindowFromDeal(){
-        const ds = parseISO(DEAL_START);
-        const de = parseISO(DEAL_END);
-
-        const startUTC   = boundaryUTC(ds.y, ds.m1, ds.d);
-        const dealEndUTC = boundaryUTC(de.y, de.m1, de.d);
-        const endUTC     = new Date(dealEndUTC.getTime() + LB_EXTRA_DAYS * MS_DAY);
-
-        const winLen = endUTC.getTime() - startUTC.getTime();
+        // End countdown at 12:00 PM EST today (kept from your file)
+        const endInstantET = new Date(`${todayISO}T12:00:00-05:00`);
 
         return {
-          startUTC,
-          endUTC,
-          winLen,
-          startISO: apiDateFromBoundary(startUTC),
-          endISO: apiDateFromBoundary(endUTC),
-          endInstantUTC: endUTC
+          startISO,
+          endISO: todayISO,
+          endInstantUTC: endInstantET
         };
       }
 
       function previousLBWindow(){
-        const old = oldLBWindowFromDeal();
-        const prevEndUTC   = old.startUTC;
-        const prevStartUTC = new Date(prevEndUTC.getTime() - old.winLen);
+        // previous = same length window, shifted back
+        const cur = currentLBWindow();
+        const s = new Date(cur.startISO + "T00:00:00Z");
+        const e = new Date(cur.endISO   + "T00:00:00Z");
+        const len = Math.floor((e.getTime() - s.getTime())/86400000) + 1;
+
+        const ps = new Date(s.getTime()); ps.setUTCDate(ps.getUTCDate() - len);
+        const pe = new Date(e.getTime()); pe.setUTCDate(pe.getUTCDate() - len);
+
+        // keep countdown "ending in" for prev as pe @ 12:00 PM EST of that prev end day
+        const peISO = pe.toISOString().slice(0,10);
+        const prevEndInstantET = new Date(`${peISO}T12:00:00-05:00`);
+
         return {
-          startISO: apiDateFromBoundary(prevStartUTC),
-          endISO: apiDateFromBoundary(prevEndUTC),
-          endInstantUTC: prevEndUTC
+          startISO: ps.toISOString().slice(0,10),
+          endISO: peISO,
+          endInstantUTC: prevEndInstantET
         };
       }
 
-      // ---------- Formatting + data ----------
+      // ---------- Formatting ----------
       function fmtMoney(n){
-        try{ return n.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:2}); }
-        catch{ return "$" + (Math.round(n*100)/100).toFixed(2); }
-      }
-      const toNum = v => Number.isFinite(Number(v)) ? Number(v) : 0;
-
-      async function fetchTotal(startISO,endISO){
-        const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
-        const res = await fetch(url,{cache:"no-store"});
-        if(!res.ok) throw new Error(`API ${res.status}`);
-        const data = await res.json();
-        const affiliates = Array.isArray(data?.affiliates) ? data.affiliates : [];
-        return affiliates.reduce((sum,a)=>sum + Number(a?.wagered_amount||0), 0);
-      }
-
-      async function fetchRows(startISO,endISO){
-        const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
-        const res = await fetch(url,{cache:"no-store"});
-        if(!res.ok) {
-          const text = await res.text().catch(()=> "");
-          throw new Error(`HTTP ${res.status} ${res.statusText}\n${text.slice(0,300)}`);
+        const num = Number(n) || 0;
+        try {
+          return num.toLocaleString(undefined, {
+            style:"currency",
+            currency:"USD",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        } catch {
+          return "$" + (Math.round(num*100)/100).toFixed(2);
         }
-        const json = await res.json();
-        const raw = Array.isArray(json) ? json : (json.affiliates || []);
-        return raw
-          .map(a => ({ username: a.username || "Unknown", wagered: toNum(a.wagered_amount ?? a.wagered) }))
-          .filter(r => r.wagered > 0)
-          .sort((a, b) => b.wagered - a.wagered)
-          .slice(0, 10);
       }
-
-      const logoSrc = "/assets/rainbetlogo.png";
-      const rewards = [800, 500, 375, 300, 250, 125, 75, 40, 20, 15];
 
       function maskName(name){
         if(!name) return "Unknown";
@@ -497,7 +396,64 @@
         rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail ? `\n${detail}` : ""}</div>`;
       }
 
-      // ---------- Renderers (Top-3 untouched) ----------
+      // ---------- API consumption ----------
+      async function fetchLeaderboard(startISO, endISO){
+        const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
+        const res = await fetch(url,{cache:"no-store"});
+        if(!res.ok){
+          const text = await res.text().catch(()=> "");
+          throw new Error(`HTTP ${res.status} ${res.statusText}\n${text.slice(0,300)}`);
+        }
+        const json = await res.json();
+
+        // Expecting: { ok:true, range:{...}, count:n, data:[...] }
+        const rows = Array.isArray(json?.data) ? json.data : [];
+
+        // normalize to what renderers expect
+        return rows
+          .map(u => ({
+            username: u?.name || "Unknown",
+            avatar: u?.avatar || "",
+            wagered: Number(u?.wagered || 0)
+          }))
+          .filter(r => r.wagered > 0)
+          .sort((a,b)=> b.wagered - a.wagered)
+          .slice(0, 10);
+      }
+
+      async function fetchCurrentTotal(startISO, endISO){
+        const url = `${API_ROUTE}?start_at=${encodeURIComponent(startISO)}&end_at=${encodeURIComponent(endISO)}`;
+        const res = await fetch(url,{cache:"no-store"});
+        if(!res.ok) throw new Error(`API ${res.status}`);
+        const json = await res.json();
+        const rows = Array.isArray(json?.data) ? json.data : [];
+        return rows.reduce((sum,u)=> sum + (Number(u?.wagered)||0), 0);
+      }
+
+      // ---------- Avatar helpers ----------
+      function safeAvatar(avatarUrl){
+        const u = (avatarUrl || "").trim();
+        if(!u) return "";
+        // allow absolute or relative
+        if (u.startsWith("http://") || u.startsWith("https://") || u.startsWith("/")) return u;
+        // sometimes API sends //cdn...
+        if (u.startsWith("//")) return "https:" + u;
+        return u; // last resort
+      }
+
+      function avatarHTML(avatarUrl, altText){
+        const src = safeAvatar(avatarUrl);
+        if(!src){
+          const letter = (altText || "U").trim().slice(0,1).toUpperCase() || "U";
+          return `<div class="avatar-fallback" aria-label="avatar">${letter}</div>`;
+        }
+        return `<img src="${src}" alt="${altText||"avatar"}"
+                  style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover"
+                  referrerpolicy="no-referrer"
+                  onerror="this.outerHTML='<div class=&quot;avatar-fallback&quot; aria-label=&quot;avatar&quot;>${(altText||'U').trim().slice(0,1).toUpperCase()||'U'}</div>'">`;
+      }
+
+      // ---------- Renderers (Top-3 look kept; only image swapped to avatar) ----------
       function renderTop3(rows){
         const top3 = document.getElementById("top3-cards");
         if (!top3) return;
@@ -519,7 +475,9 @@
           card.innerHTML = `
             <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.45);
                         padding:4px 8px;border-radius:8px;font-weight:700;">#${place}</div>
-            <img src="${logoSrc}" style="width:96px;height:auto;border-radius:12px;">
+
+            ${avatarHTML(entry.avatar, user)}
+
             <div class="css-hca0vm"><span class="css-15a1lq3" style="font-weight:bold;">${masked}</span></div>
 
             <div style="margin:8px 0 6px;color:#9ac9ff;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Wagered</div>
@@ -549,7 +507,7 @@
           const row = document.createElement("div");
           row.className = `lb-row lb-row--wide`;
           row.innerHTML = `
-            <img src="${logoSrc}" alt="R" style="width:44px;height:44px;border-radius:10px;border:1px solid #143255;background:#0b1220;object-fit:cover">
+            ${avatarHTML(entry.avatar, user)}
             <div class="lb-rank">#${place}</div>
             <div class="lb-name">${masked}</div>
 
@@ -572,7 +530,7 @@
       async function paintListCurrent(){
         try{
           const win = currentLBWindow();
-          const rows = await fetchRows(win.startISO, win.endISO);
+          const rows = await fetchLeaderboard(win.startISO, win.endISO);
           renderTop3(rows);
           renderRows(rows);
         }catch(err){
@@ -584,7 +542,7 @@
       async function paintListPrevious(){
         try{
           const prev = previousLBWindow();
-          const rows = await fetchRows(prev.startISO, prev.endISO);
+          const rows = await fetchLeaderboard(prev.startISO, prev.endISO);
           renderTop3(rows);
           renderRows(rows);
         }catch(err){
@@ -593,46 +551,18 @@
         }
       }
 
-      // ---------- Progress bars ----------
-      function renderProgress({ total, goal, fillId, pctId, metaId, barId }){
-        const fill  = document.getElementById(fillId);
-        const pctEl = document.getElementById(pctId);
-        const metaEl= document.getElementById(metaId);
-        const bar   = document.getElementById(barId);
-        if(!fill||!pctEl||!metaEl||!bar) return;
-        const pct = goal>0 ? Math.min((total/goal)*100,100) : 0;
-        fill.style.width = pct + "%";
-        fill.classList.toggle("over", pct>=100);
-        pctEl.textContent = Math.round(pct) + "%";
-        metaEl.textContent = `${fmtMoney(total)} / ${fmtMoney(goal)}`;
-        bar.setAttribute("aria-valuenow", Math.round(pct));
-      }
-
+      // ---------- Current Totals card ----------
       let lbWindow = currentLBWindow();
-      let showingPrev = false;
-
-      async function paintTotals(){
-        const dealEl = document.getElementById("r2kDealWager");
-        if(dealEl) dealEl.textContent = "…";
+      async function paintCurrentTotals(){
+        const el = document.getElementById("r2kCurrentTotals");
+        if(el) el.textContent = "…";
         try{
-          const dealTotal = await fetchTotal(DEAL_START, DEAL_END);
-          if(dealEl) dealEl.textContent = fmtMoney(dealTotal);
-          renderProgress({ total: dealTotal, goal: DEAL_GOAL, fillId: "r2kDealFill", pctId: "r2kDealPct", metaId: "r2kDealMeta", barId: "r2kDealBar" });
+          lbWindow = currentLBWindow();
+          const total = await fetchCurrentTotal(lbWindow.startISO, lbWindow.endISO);
+          if(el) el.textContent = fmtMoney(total);
         }catch(e){
-          if(dealEl) dealEl.textContent="—";
-          console.error("Deal total error:", e);
-        }
-
-        const lbEl = document.getElementById("r2kLbWager");
-        if(lbEl) lbEl.textContent = "…";
-        try{
-          lbWindow = currentLBWindow(); // re-evaluate "today" on load
-          const lbTotal = await fetchTotal(lbWindow.startISO, lbWindow.endISO);
-          if(lbEl) lbEl.textContent = fmtMoney(lbTotal);
-          renderProgress({ total: lbTotal, goal: LB_GOAL, fillId: "r2kLbFill", pctId: "r2kLbPct", metaId: "r2kLbMeta", barId: "r2kLbBar" });
-        }catch(e){
-          if(lbEl) lbEl.textContent="—";
-          console.error("LB total error:", e);
+          if(el) el.textContent = "—";
+          console.error("Current totals error:", e);
         }
       }
 
@@ -650,12 +580,6 @@
       }
 
       function tickCountdowns(){
-        const dealSpan = document.getElementById('deal-remaining');
-        if(dealSpan){
-          const ms = new Date(DEAL_END + "T23:59:59").getTime() - Date.now();
-          dealSpan.textContent = fmtRemaining(ms);
-        }
-
         const lbSpan = document.getElementById('lb-remaining');
         if(lbSpan){
           const msLeft = lbWindow.endInstantUTC.getTime() - Date.now();
@@ -668,14 +592,13 @@
       const currBtn = document.getElementById("currentLeaderboardBtn");
 
       prevBtn?.addEventListener("click", async () => {
-        showingPrev = true;
         prevBtn.style.display = "none";
         if (currBtn) currBtn.style.display = "inline-flex";
+        // totals stay "current totals" (per your request), only list switches
         await paintListPrevious();
       });
 
       currBtn?.addEventListener("click", async () => {
-        showingPrev = false;
         currBtn.style.display = "none";
         if (prevBtn) prevBtn.style.display = "inline-flex";
         await paintListCurrent();
@@ -695,11 +618,21 @@
 
       // ---------- Init ----------
       document.addEventListener("DOMContentLoaded", async ()=>{
-        await paintTotals();
+        await paintCurrentTotals();
         await paintListCurrent();
         tickCountdowns();
         clearInterval(window.__r2kLbTick__);
         window.__r2kLbTick__ = setInterval(tickCountdowns, 1000);
+
+        // refresh totals + list every 15 minutes (matches your text)
+        clearInterval(window.__r2kLbRefresh__);
+        window.__r2kLbRefresh__ = setInterval(async ()=>{
+          await paintCurrentTotals();
+          // only refresh current list automatically
+          if (currBtn && currBtn.style.display === "none") {
+            await paintListCurrent();
+          }
+        }, 15 * 60 * 1000);
       });
     })();
   </script>
