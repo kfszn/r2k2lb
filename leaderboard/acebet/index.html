@@ -298,8 +298,8 @@
           return num.toLocaleString(undefined,{
             style:"currency",
             currency:"USD",
-            minimumFractionDigits:2,
-            maximumFractionDigits:2
+            minimumFractionDigits:0,
+            maximumFractionDigits:0
           });
         }catch{
           return "$" + (Math.round(num*100)/100).toFixed(2);
