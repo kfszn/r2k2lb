@@ -252,18 +252,6 @@
     </div>
   </div>
 
-  <!-- Modal behavior (kept) -->
-  <script>
-    const modal = document.getElementById("rulesModal");
-    const btn = document.getElementById("rulesButton");
-    const span = document.getElementsByClassName("close")[0];
-    btn?.addEventListener('click', ()=>{ if(!modal) return; modal.style.display="block"; document.body.style.overflow="hidden"; setTimeout(()=>modal.classList.add("show"),10) });
-    function closeModal(){ if(!modal) return; modal.classList.remove("show"); setTimeout(()=>{ modal.style.display="none"; document.body.style.overflow="auto"; },500) }
-    span?.addEventListener('click', closeModal);
-    window.addEventListener('click',(e)=>{ if(e.target===modal) closeModal(); });
-    document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal && modal.style.display==='block') closeModal(); });
-  </script>
-
   <!-- Existing JS includes (kept) -->
   <script src="/js/app.js"></script>
   <script src="/js/particles.js"></script>
@@ -287,17 +275,22 @@
   <!-- ===== Leaderboard logic (ONE API call per view) ===== -->
   <script>
     (function(){
-      const API_ROUTE = "/api/leaderboard"; // your screenshot shows this works ✅
+      const API_ROUTE = "/api/leaderboard"; // your API works at r2k2.gg/api/leaderboard ✅
+
+      // ✅ Convert raw wager -> USD
+      // Your API values are coming back ~100x too large, so they are cents.
+      const toUSD = (n) => (Number(n) || 0) / 100;
 
       const rewards = [800, 500, 375, 300, 250, 125, 75, 40, 20, 15];
 
-      // ---- formatting ----
       function fmtMoney(n){
         const num = Number(n) || 0;
         try{
           return num.toLocaleString(undefined,{
             style:"currency",
             currency:"USD",
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
           });
         }catch{
           return "$" + (Math.round(num*100)/100).toFixed(2);
@@ -340,15 +333,11 @@
         rows.innerHTML = `<div style="color:red; white-space:pre-wrap; margin:12px 0;">${msg}${detail?`\n${detail}`:""}</div>`;
       }
 
-      // ---- countdown from API end_at ----
-      // We’ll count down to end_at 23:59:59 ET (good enough; avoids "--")
+      // countdown target (simple ET end-of-day)
       let endInstant = null;
-
       function endInstantFromEndAt(endAtISO){
-        // force an offset; if you want DST-perfect later, we’ll do NY timezone calc
         return new Date(`${endAtISO}T23:59:59-05:00`);
       }
-
       function fmtRemaining(ms){
         const s = Math.max(0, Math.floor(ms/1000));
         const d = Math.floor(s/86400);
@@ -360,7 +349,6 @@
         if(m>0) return `${m}m ${ss}s`;
         return `${ss}s`;
       }
-
       function tickCountdown(){
         const el = document.getElementById("lb-remaining");
         if(!el) return;
@@ -371,7 +359,6 @@
         el.textContent = fmtRemaining(endInstant.getTime() - Date.now());
       }
 
-      // ---- rendering ----
       function renderTop3(rows){
         const top3 = document.getElementById("top3-cards");
         if(!top3) return;
@@ -382,7 +369,7 @@
           const place = idx+1;
           const user = entry.name || "Unknown";
           const masked = maskName(user);
-          const wagered = fmtMoney(entry.wagered || 0);
+          const wagered = fmtMoney(entry.wageredUSD || 0);
           const prize = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
           const card = document.createElement("div");
@@ -416,11 +403,11 @@
         list.innerHTML = "";
 
         rows.slice(3,10).forEach((entry, i)=>{
-          const idx = i + 3; // ranks 4..10
+          const idx = i + 3;
           const place = idx + 1;
           const user = entry.name || "Unknown";
           const masked = maskName(user);
-          const wagered = fmtMoney(entry.wagered || 0);
+          const wagered = fmtMoney(entry.wageredUSD || 0);
           const prize = idx < rewards.length ? fmtMoney(rewards[idx]) : "$0.00";
 
           const row = document.createElement("div");
@@ -445,17 +432,17 @@
         });
       }
 
-      function setCurrentTotals(total){
+      function setCurrentTotals(totalUSD){
         const el = document.getElementById("r2kCurrentTotals");
-        if(el) el.textContent = fmtMoney(total);
+        if(el) el.textContent = fmtMoney(totalUSD);
       }
 
-      // ---- ONE request function ----
       async function loadAndRender({ prev=false } = {}){
         const totalsEl = document.getElementById("r2kCurrentTotals");
         if(totalsEl) totalsEl.textContent = "…";
 
         const url = prev ? `${API_ROUTE}?prev=1` : API_ROUTE;
+
         const res = await fetch(url, { cache:"no-store" });
         if(!res.ok){
           const text = await res.text().catch(()=> "");
@@ -466,32 +453,32 @@
         const data = Array.isArray(json?.data) ? json.data : [];
         const endAt = json?.range?.end_at;
 
-        // countdown target
         if (endAt && /^\d{4}-\d{2}-\d{2}$/.test(endAt)) {
           endInstant = endInstantFromEndAt(endAt);
         } else {
           endInstant = null;
         }
 
-        // compute totals + top10
-        const total = data.reduce((sum,u)=> sum + (Number(u?.wagered)||0), 0);
-        setCurrentTotals(total);
+        // ✅ Total (convert cents -> USD)
+        const totalUSD = data.reduce((sum,u)=> sum + toUSD(u?.wagered), 0);
+        setCurrentTotals(totalUSD);
 
+        // ✅ Top 10 (convert cents -> USD)
         const top10 = data
           .map(u => ({
             name: u?.name || "Unknown",
             avatar: u?.avatar || "",
-            wagered: Number(u?.wagered || 0)
+            wageredUSD: toUSD(u?.wagered)
           }))
-          .filter(r => r.wagered > 0)
-          .sort((a,b)=> b.wagered - a.wagered)
+          .filter(r => r.wageredUSD > 0)
+          .sort((a,b)=> b.wageredUSD - a.wageredUSD)
           .slice(0,10);
 
         renderTop3(top10);
         renderRows(top10);
       }
 
-      // ---- Buttons ----
+      // Buttons
       const prevBtn = document.getElementById("prevLeaderboardBtn");
       const currBtn = document.getElementById("currentLeaderboardBtn");
 
@@ -509,7 +496,7 @@
         catch(e){ console.error(e); showError("Error loading leaderboard.", String(e)); }
       });
 
-      // ---- Hamburger ----
+      // Hamburger
       (function(){
         const burger = document.getElementById('hamburger');
         const nav = document.getElementById('r2kNav');
@@ -521,9 +508,8 @@
         }
       })();
 
-      // ---- Init ----
+      // Init
       document.addEventListener("DOMContentLoaded", async ()=>{
-        // start countdown tick immediately (no more "--" if endInstant gets set)
         tickCountdown();
         clearInterval(window.__r2kLbTick__);
         window.__r2kLbTick__ = setInterval(tickCountdown, 1000);
@@ -531,11 +517,9 @@
         try { await loadAndRender({ prev:false }); }
         catch(e){ console.error(e); showError("Error loading leaderboard.", String(e)); }
 
-        // refresh every 15 minutes
         clearInterval(window.__r2kLbRefresh__);
         window.__r2kLbRefresh__ = setInterval(async ()=>{
           try {
-            // refresh whichever view button is currently hidden
             const showingPrev = prevBtn && prevBtn.style.display === "none";
             await loadAndRender({ prev: showingPrev });
           } catch(e){
