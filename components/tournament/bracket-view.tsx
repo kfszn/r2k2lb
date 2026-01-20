@@ -2,7 +2,7 @@
 
 import { BracketMatch } from "./bracket-match";
 import type { BracketMatchWithPlayers } from "@/lib/types/tournament";
-import { calculateRoundName } from "@/lib/tournament/utils";
+import { calculateRoundName } from "@/lib/tournament/client-utils";
 
 interface BracketViewProps {
   matches: BracketMatchWithPlayers[];

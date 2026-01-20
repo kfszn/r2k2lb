@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { TournamentWithDetails } from "@/lib/types/tournament";
-import { formatCurrency } from "@/lib/tournament/utils";
+import { formatCurrency } from "@/lib/tournament/client-utils";
 import {
   Play,
   Pause,

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import type { TournamentWithDetails, BracketMatchWithPlayers } from "@/lib/types/tournament";
-import { calculateRoundName } from "@/lib/tournament/utils";
+import { calculateRoundName } from "@/lib/tournament/client-utils";
 import { cn } from "@/lib/utils";
 import { Play, Trophy, Loader2, Edit2 } from "lucide-react";
 
