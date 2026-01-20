@@ -34,7 +34,7 @@
     .home-subtitle{text-align:center;margin:8px auto 0;color:rgba(255,255,255,.85);max-width:820px;line-height:1.5;font-weight:600}
     .home-divider{width:min(900px,95%);margin:22px auto 0;height:1px;background:linear-gradient(90deg, rgba(0,0,0,0), rgba(19,152,255,.55), rgba(0,0,0,0))}
 
-    /* ==== TOP LOGOS: logo-only clickable (same size) ==== */
+    /* ==== TOP LOGOS: FORCE same on-screen size ==== */
     .platform-bar{
       display:flex;
       justify-content:center;
@@ -47,8 +47,8 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      padding:6px 8px;
-      border-radius:10px;
+      padding:0;                 /* logo-only clickable */
+      border-radius:12px;
       background:transparent;
       border:none;
       box-shadow:none;
@@ -58,19 +58,18 @@
     .platform-logo:hover{
       transform:translateY(-2px);
       filter:
-        drop-shadow(0 0 14px rgba(19,152,255,.35))
-        drop-shadow(0 0 18px rgba(107,92,255,.25));
+        drop-shadow(0 0 14px rgba(19,152,255,.45))
+        drop-shadow(0 0 18px rgba(107,92,255,.30));
     }
     .platform-logo img{
-      height:42px;           /* SAME HEIGHT for all logos */
-      width:auto;
-      max-width:190px;       /* prevents ACEBET from dominating */
+      width:220px;               /* SAME footprint for all */
+      height:64px;               /* SAME footprint for all */
       object-fit:contain;
       display:block;
     }
     @media (max-width:640px){
       .platform-bar{gap:18px}
-      .platform-logo img{height:34px;max-width:170px}
+      .platform-logo img{width:180px;height:52px}
     }
 
     /* ==== Cards: side-by-side grid ==== */
@@ -91,6 +90,20 @@
     }
     @media (max-width:720px){
       .cards-grid{grid-template-columns: 1fr}
+    }
+
+    /* ==== CARD HEADER LOGOS: consistent sizing ==== */
+    .hub-card .css-1t0wa4v{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:110px;
+    }
+    .hub-card .css-1t0wa4v img{
+      width:260px;
+      height:88px;
+      object-fit:contain;
+      display:block;
     }
 
     /* ==== Socials (kept) ==== */
@@ -158,18 +171,18 @@
           Click a logo to view the leaderboard. Scroll down to sign up for each site.
         </div>
 
-        <!-- TOP: Logos -->
+        <!-- TOP: Logos (use your normalized 420x140 assets) -->
         <div id="platforms" class="platform-bar">
           <a class="platform-logo" href="/leaderboard/acebet" aria-label="Acebet Leaderboard">
-            <img src="/assets/rainbet.png" alt="Acebet">
+            <img src="/assets/acebet_logo_420x140.png" alt="Acebet">
           </a>
 
           <a class="platform-logo" href="/leaderboard/packdraw" aria-label="Packdraw Leaderboard">
-            <img src="/assets/packdraw.png" alt="Packdraw">
+            <img src="/assets/packdraw_logo_420x140.png" alt="Packdraw">
           </a>
 
           <a class="platform-logo" href="/leaderboard/clash" aria-label="Clash.gg Leaderboard">
-            <img src="/assets/clash.png" alt="Clash.gg">
+            <img src="/assets/clash_logo_420x140.png" alt="Clash.gg">
           </a>
         </div>
 
@@ -183,7 +196,7 @@
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img src="/assets/rainbet.png" alt="Acebet">
+              <img src="/assets/acebet_logo_420x140.png" alt="Acebet">
             </div>
 
             <div class="code-container MuiBox-root css-0">
@@ -214,7 +227,7 @@
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img src="/assets/packdraw.png" alt="Packdraw">
+              <img src="/assets/packdraw_logo_420x140.png" alt="Packdraw">
             </div>
 
             <div class="code-container MuiBox-root css-0">
@@ -245,7 +258,7 @@
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img src="/assets/clash.jpg" alt="Clash.gg">
+              <img src="/assets/clash_logo_420x140.png" alt="Clash.gg">
             </div>
 
             <div class="code-container MuiBox-root css-0">
@@ -377,5 +390,3 @@
   </script>
 </body>
 </html>
-
-
