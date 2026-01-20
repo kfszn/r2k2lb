@@ -28,13 +28,7 @@
     .open-btn{background:none;border:none;color:#2775ca;font-size:20px;font-weight:900;cursor:pointer}
     @media (max-width:570px){.draggable{left:50%;transform:translateX(-50%)}}
 
-    /* ==== Layout ==== */
-    .home-wrap{width:min(1200px,92%);margin:0 auto}
-    .home-title{text-align:center;margin:10px auto 0;color:#fff;font-weight:900;letter-spacing:.02em}
-    .home-subtitle{text-align:center;margin:8px auto 0;color:rgba(255,255,255,.85);max-width:820px;line-height:1.5;font-weight:600}
-    .home-divider{width:min(900px,95%);margin:22px auto 0;height:1px;background:linear-gradient(90deg, rgba(0,0,0,0), rgba(19,152,255,.55), rgba(0,0,0,0))}
-
-    /* ==== HEADER NAV: center-align tabs ==== */
+    /* ==== Header nav: center align tabs ==== */
     header#r2kHeader .h-inner{
       display:grid;
       grid-template-columns:auto 1fr auto;
@@ -49,25 +43,35 @@
       gap:18px;
       text-align:center;
     }
-    /* If your global CSS changes nav on mobile, this won't fight it */
     @media (max-width:900px){
       header#r2kHeader .h-inner{grid-template-columns:auto auto}
       header#r2kHeader .nav{justify-self:stretch}
     }
 
-    /* ==== LOGO NORMALIZATION ==== */
+    /* ==== Layout ==== */
+    .home-wrap{width:min(1200px,92%);margin:0 auto}
+    .home-title{text-align:center;margin:10px auto 0;color:#fff;font-weight:900;letter-spacing:.02em}
+    .home-subtitle{text-align:center;margin:8px auto 0;color:rgba(255,255,255,.85);max-width:820px;line-height:1.5;font-weight:600}
+    .home-divider{width:min(900px,95%);margin:22px auto 0;height:1px;background:linear-gradient(90deg, rgba(0,0,0,0), rgba(19,152,255,.55), rgba(0,0,0,0))}
+
+    /* ==== LOGO PATHS (your real files) ==== */
     :root{
-      /* single source of truth: change once, affects TOP + CARD logos */
+      --logo-acebet: "/assets/rainbet.png";
+      --logo-packdraw: "/assets/packdraw.png";
+      --logo-clash: "/assets/clash.png";
+
+      /* same on-screen footprint */
       --logo-w: 220px;
       --logo-h: 64px;
       --logo-w-mobile: 180px;
       --logo-h-mobile: 52px;
 
+      /* card header logo footprint */
       --card-logo-w: 260px;
       --card-logo-h: 88px;
     }
 
-    /* TOP LOGOS BAR */
+    /* ==== TOP LOGOS ==== */
     .platform-bar{
       display:flex;
       justify-content:center;
@@ -94,8 +98,6 @@
         drop-shadow(0 0 14px rgba(19,152,255,.45))
         drop-shadow(0 0 18px rgba(107,92,255,.30));
     }
-
-    /* IMPORTANT: prevent broken image icon; fallback to /assets/logo.png */
     .platform-logo img{
       width:var(--logo-w);
       height:var(--logo-h);
@@ -104,13 +106,10 @@
     }
     @media (max-width:640px){
       .platform-bar{gap:18px}
-      .platform-logo img{
-        width:var(--logo-w-mobile);
-        height:var(--logo-h-mobile);
-      }
+      .platform-logo img{width:var(--logo-w-mobile);height:var(--logo-h-mobile)}
     }
 
-    /* ==== Cards: side-by-side grid ==== */
+    /* ==== Cards grid ==== */
     .cards-grid{
       display:grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -122,15 +121,10 @@
     .hub-card{width:100%;max-width:420px;margin:0 auto}
     .hub-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px}
     .signup-button{text-transform:uppercase;letter-spacing:.06em;font-weight:900;padding:12px 18px;border-radius:10px}
+    @media (max-width:1100px){.cards-grid{grid-template-columns: repeat(2, minmax(0, 1fr))}}
+    @media (max-width:720px){.cards-grid{grid-template-columns: 1fr}}
 
-    @media (max-width:1100px){
-      .cards-grid{grid-template-columns: repeat(2, minmax(0, 1fr))}
-    }
-    @media (max-width:720px){
-      .cards-grid{grid-template-columns: 1fr}
-    }
-
-    /* CARD HEADER LOGOS: consistent sizing */
+    /* ==== CARD HEADER LOGOS: consistent sizing ==== */
     .hub-card .css-1t0wa4v{
       display:flex;
       align-items:center;
@@ -212,19 +206,19 @@
         <!-- TOP: Logos -->
         <div id="platforms" class="platform-bar">
           <a class="platform-logo" href="/leaderboard/acebet" aria-label="Acebet Leaderboard">
-            <img src="/assets/acebet_logo_420x140.png" alt="Acebet"
+            <img src="/assets/rainbet.png" alt="Acebet"
                  loading="lazy"
                  onerror="this.onerror=null;this.src='/assets/logo.png';">
           </a>
 
           <a class="platform-logo" href="/leaderboard/packdraw" aria-label="Packdraw Leaderboard">
-            <img src="/assets/packdraw_logo_420x140.png" alt="Packdraw"
+            <img src="/assets/packdraw.png" alt="Packdraw"
                  loading="lazy"
                  onerror="this.onerror=null;this.src='/assets/logo.png';">
           </a>
 
           <a class="platform-logo" href="/leaderboard/clash" aria-label="Clash.gg Leaderboard">
-            <img src="/assets/clash_logo_420x140.png" alt="Clash.gg"
+            <img src="/assets/clash.png" alt="Clash.gg"
                  loading="lazy"
                  onerror="this.onerror=null;this.src='/assets/logo.png';">
           </a>
@@ -233,14 +227,14 @@
         <div class="home-divider"></div>
       </div>
 
-      <!-- Cards: side-by-side -->
+      <!-- Cards -->
       <div class="cards-grid" aria-label="Platform signup cards">
 
         <!-- Acebet -->
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img src="/assets/acebet_logo_420x140.png" alt="Acebet"
+              <img src="/assets/rainbet.png" alt="Acebet"
                    loading="lazy"
                    onerror="this.onerror=null;this.src='/assets/logo.png';">
             </div>
@@ -273,7 +267,7 @@
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img src="/assets/packdraw_logo_420x140.png" alt="Packdraw"
+              <img src="/assets/packdraw.png" alt="Packdraw"
                    loading="lazy"
                    onerror="this.onerror=null;this.src='/assets/logo.png';">
             </div>
@@ -306,7 +300,7 @@
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img src="/assets/clash_logo_420x140.png" alt="Clash.gg"
+              <img src="/assets/clash.png" alt="Clash.gg"
                    loading="lazy"
                    onerror="this.onerror=null;this.src='/assets/logo.png';">
             </div>
