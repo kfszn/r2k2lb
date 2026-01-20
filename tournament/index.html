@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>R2K2 | Tournament</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="icon" href="/assets/logo.png">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/lb.css">
+  <link rel="stylesheet" href="/css/vendor.css">
+</head>
+
+<body>
+  <!-- HEADER (copied from leaderboard page UNCHANGED) -->
+  <header id="r2kHeader">
+    <!-- paste your exact existing header here -->
+  </header>
+
+  <div id="appContent">
+    <div class="row text">
+      <span class="title">
+        <div class="price-wrapper glow">LIVE</div>
+        SLOT TOURNAMENT
+      </span>
+      <span class="subtitle">
+        Auto-advancing bracket · BYEs enabled · Chat entry
+      </span>
+    </div>
+
+    <!-- STATUS -->
+    <div class="r2k-totals">
+      <div class="r2k-total-card">
+        <div class="r2k-total-label">Tournament Status</div>
+        <div class="r2k-total-value" id="tournamentStatus">Loading…</div>
+      </div>
+    </div>
+
+    <!-- ENTRANTS -->
+    <div class="css-esk2ah">
+      <div class="css-2w2ovy">
+        <h2 class="glow">Entrants</h2>
+        <div id="entrantList"></div>
+      </div>
+    </div>
+
+    <!-- BRACKET -->
+    <div class="css-esk2ah">
+      <div class="css-2w2ovy">
+        <h2 class="glow">Bracket</h2>
+        <div id="bracket"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER (copied UNCHANGED) -->
+  <footer>
+    <!-- paste your exact footer -->
+  </footer>
+
+  <!-- PUSH BELOW HEADER -->
+  <script>
+    (function(){
+      function push(){
+        const h=document.getElementById("r2kHeader");
+        const a=document.getElementById("appContent");
+        if(h&&a) a.style.marginTop=h.offsetHeight+"px";
+      }
+      window.addEventListener("load",push);
+      window.addEventListener("resize",push);
+    })();
+  </script>
+
+  <!-- TOURNAMENT LOGIC -->
+  <script>
+    async function loadTournament(){
+      const res = await fetch("/api/tournament/state",{cache:"no-store"});
+      const s = await res.json();
+
+      document.getElementById("tournamentStatus").textContent =
+        s.open ? "ENTRIES OPEN" : "ENTRIES CLOSED";
+
+      document.getElementById("entrantList").innerHTML =
+        s.entrants.map(e=>`
+          <div class="lb-row">
+            <div class="lb-name">${e.acebetUser}</div>
+            <div class="lb-money wager">$${Number(e.wagerUsd).toLocaleString()}</div>
+          </div>
+        `).join("");
+
+      document.getElementById("bracket").innerHTML =
+        s.matches.map(m=>`
+          <div class="lb-row lb-row--wide">
+            <div class="lb-name">${m.p1?.acebetUser||"BYE"}</div>
+            <div class="lb-name">${m.p2?.acebetUser||"BYE"}</div>
+            <div class="lb-money prize">
+              ${m.winner ? "→ "+m.winner.acebetUser : ""}
+            </div>
+          </div>
+        `).join("");
+    }
+
+    setInterval(loadTournament,3000);
+    loadTournament();
+  </script>
+</body>
+</html>
