@@ -1,23 +1,56 @@
-
+// api/leaderboard.js — Vercel Serverless Function (Acebet) + FAST CACHE
+// Builds leaderboard totals by day: total = (max - min) per user across date range.
+// Supports:
+//   - ?start_at=YYYY-MM-DD&end_at=YYYY-MM-DD
+//   - ?prev=1  (previous window same length)
+//   - ?fresh=1 (force recompute; bypass cache)
+// Adds CORS and returns JSON sorted by wagered desc.
 
 // ===============================
 // 🔥 DROP YOUR TOKEN HERE
 // ===============================
-const HARDCODED_ACEBET_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A"; // paste JWT (no "Bearer ")
+const HARDCODED_ACEBET_TOKEN =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
 
 // ===============================
 // ✅ EDIT DEFAULT DATES HERE
 // ===============================
 const DEFAULT_START = "2025-12-26";
-const DEFAULT_END   = "2026-01-25"; // <-- change this with DEFAULT_START (or set to "" to use today UTC)
+const DEFAULT_END = "2026-01-25"; // set "" to use today UTC
 
-// Other knobs
-const DEFAULT_DELAY_MS = 120;
+// ===============================
+// ⚡ SPEED / SAFETY KNOBS
+// ===============================
+// Reduce delay to speed up first computation. If Acebet rate-limits you, raise it.
+const DEFAULT_DELAY_MS = 0;
+
+// Safety cap (days)
 const DEFAULT_MAX_DAYS = 180;
 
-function toISODateUTC(d) { return d.toISOString().slice(0, 10); }
-function isISODate(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+// Cache TTL (ms). 10 minutes is a good balance.
+const CACHE_TTL_MS = 10 * 60 * 1000;
+
+// OPTIONAL: If you want the response cacheable by CDNs too
+// (still safe because you are not returning private token, only aggregated results)
+const ENABLE_EDGE_CACHE_HEADERS = true;
+
+// ------------------------------
+// Simple in-memory cache (persists while the lambda stays warm)
+// ------------------------------
+let CACHE = {
+  key: "",
+  ts: 0,
+  payload: null,
+  inflight: null, // Promise to de-dupe concurrent requests
+};
+
+function toISODateUTC(d) {
+  return d.toISOString().slice(0, 10);
+}
+function isISODate(s) {
+  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function* dateRangeUTC(startISO, endISO) {
   const start = new Date(`${startISO}T00:00:00Z`);
@@ -49,8 +82,101 @@ async function fetchDayAcebet(dayISO, token) {
     cache: "no-store",
   });
   if (!r.ok) return [];
-  const j = await r.json();
+  const j = await r.json().catch(() => null);
   return Array.isArray(j) ? j : [];
+}
+
+function makeCacheKey({ start_at, end_at, prev }) {
+  return `${start_at}|${end_at}|${prev ? "1" : "0"}`;
+}
+
+async function computeLeaderboard({ start_at, end_at, token }) {
+  const totalDays = daysBetweenInclusive(start_at, end_at);
+
+  const users = new Map();
+
+  for (const day of dateRangeUTC(start_at, end_at)) {
+    const rows = await fetchDayAcebet(day, token);
+
+    for (const r of rows) {
+      const userId = r?.userId;
+      if (userId == null) continue;
+
+      const wagered = Number(r?.wagered ?? 0);
+      const deposited = Number(r?.deposited ?? 0);
+      const earned = Number(r?.earned ?? 0);
+      const xp = Number(r?.xp ?? 0);
+
+      const u = users.get(userId) || {
+        userId,
+        role: r?.role ?? null,
+        name: r?.name ?? null,
+        avatar: r?.avatar ?? null,
+        badge: r?.badge ?? null,
+        isPrivate: Boolean(r?.isPrivate),
+        premiumUntil: r?.premiumUntil ?? null,
+        active: Boolean(r?.active),
+
+        firstSeen: day,
+        lastSeen: day,
+        min: { wagered, deposited, earned, xp },
+        max: { wagered, deposited, earned, xp },
+      };
+
+      u.lastSeen = day;
+
+      u.min.wagered = Math.min(u.min.wagered, wagered);
+      u.min.deposited = Math.min(u.min.deposited, deposited);
+      u.min.earned = Math.min(u.min.earned, earned);
+      u.min.xp = Math.min(u.min.xp, xp);
+
+      u.max.wagered = Math.max(u.max.wagered, wagered);
+      u.max.deposited = Math.max(u.max.deposited, deposited);
+      u.max.earned = Math.max(u.max.earned, earned);
+      u.max.xp = Math.max(u.max.xp, xp);
+
+      // keep latest metadata
+      u.role = r?.role ?? u.role;
+      u.name = r?.name ?? u.name;
+      u.avatar = r?.avatar ?? u.avatar;
+      u.badge = r?.badge ?? u.badge;
+      u.isPrivate = Boolean(r?.isPrivate);
+      u.premiumUntil = r?.premiumUntil ?? u.premiumUntil;
+      u.active = Boolean(r?.active);
+
+      users.set(userId, u);
+    }
+
+    if (DEFAULT_DELAY_MS > 0) await sleep(DEFAULT_DELAY_MS);
+  }
+
+  const data = [...users.values()].map((u) => ({
+    userId: u.userId,
+    name: u.name,
+    avatar: u.avatar,
+    badge: u.badge,
+    role: u.role,
+    active: u.active,
+    isPrivate: u.isPrivate,
+    premiumUntil: u.premiumUntil,
+
+    wagered: (u.max.wagered - u.min.wagered) || 0,
+    deposited: (u.max.deposited - u.min.deposited) || 0,
+    earned: (u.max.earned - u.min.earned) || 0,
+    xp: (u.max.xp - u.min.xp) || 0,
+
+    firstSeen: u.firstSeen,
+    lastSeen: u.lastSeen,
+  }));
+
+  data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
+
+  return {
+    ok: true,
+    range: { start_at, end_at, days: totalDays },
+    count: data.length,
+    data,
+  };
 }
 
 export default async function handler(req, res) {
@@ -58,12 +184,20 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Cache-Control", "no-store");
+
+  if (ENABLE_EDGE_CACHE_HEADERS) {
+    // Allows CDN caching for a short period; browser still revalidates quickly.
+    // You can tune: s-maxage = CDN, stale-while-revalidate = serve old while refreshing.
+    res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+  } else {
+    res.setHeader("Cache-Control", "no-store");
+  }
+
   if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
     const token = process.env.ACEBET_TOKEN || HARDCODED_ACEBET_TOKEN;
-    if (!token || token === "PASTE_YOUR_BEARER_TOKEN_HERE") {
+    if (!token) {
       return res.status(500).json({
         error: "missing_token",
         detail: "Paste token into HARDCODED_ACEBET_TOKEN (top of file) or set ACEBET_TOKEN in Vercel env vars.",
@@ -72,20 +206,16 @@ export default async function handler(req, res) {
 
     const urlObj = new URL(req.url, `http://${req.headers.host}`);
     const prev = urlObj.searchParams.get("prev");
+    const fresh = urlObj.searchParams.get("fresh"); // ?fresh=1 bypass cache
     const qsStart = urlObj.searchParams.get("start_at");
     const qsEnd = urlObj.searchParams.get("end_at");
 
-    // ✅ Use querystring if provided; otherwise use DEFAULT_START/DEFAULT_END
     let start_at = isISODate(qsStart) ? qsStart : DEFAULT_START;
 
     let end_at;
-    if (isISODate(qsEnd)) {
-      end_at = qsEnd;
-    } else if (isISODate(DEFAULT_END) && DEFAULT_END !== "") {
-      end_at = DEFAULT_END;
-    } else {
-      end_at = toISODateUTC(new Date()); // fallback = today UTC
-    }
+    if (isISODate(qsEnd)) end_at = qsEnd;
+    else if (isISODate(DEFAULT_END) && DEFAULT_END !== "") end_at = DEFAULT_END;
+    else end_at = toISODateUTC(new Date());
 
     if (!isISODate(start_at) || !isISODate(end_at)) {
       return res.status(400).json({
@@ -114,93 +244,36 @@ export default async function handler(req, res) {
       });
     }
 
-    // Per-user tracker
-    const users = new Map();
+    const key = makeCacheKey({ start_at, end_at, prev });
 
-    for (const day of dateRangeUTC(start_at, end_at)) {
-      const rows = await fetchDayAcebet(day, token);
+    // ✅ Serve from cache if fresh and not forced
+    const cacheFresh = CACHE.payload && CACHE.key === key && (Date.now() - CACHE.ts) < CACHE_TTL_MS;
+    const forceFresh = fresh && fresh !== "0";
 
-      for (const r of rows) {
-        const userId = r?.userId;
-        if (userId == null) continue;
-
-        const wagered = Number(r?.wagered ?? 0);
-        const deposited = Number(r?.deposited ?? 0);
-        const earned = Number(r?.earned ?? 0);
-        const xp = Number(r?.xp ?? 0);
-
-        const u = users.get(userId) || {
-          userId,
-          role: r?.role ?? null,
-          name: r?.name ?? null,
-          avatar: r?.avatar ?? null,
-          badge: r?.badge ?? null,
-          isPrivate: Boolean(r?.isPrivate),
-          premiumUntil: r?.premiumUntil ?? null,
-          active: Boolean(r?.active),
-
-          firstSeen: day,
-          lastSeen: day,
-          min: { wagered, deposited, earned, xp },
-          max: { wagered, deposited, earned, xp },
-        };
-
-        u.lastSeen = day;
-
-        u.min.wagered = Math.min(u.min.wagered, wagered);
-        u.min.deposited = Math.min(u.min.deposited, deposited);
-        u.min.earned = Math.min(u.min.earned, earned);
-        u.min.xp = Math.min(u.min.xp, xp);
-
-        u.max.wagered = Math.max(u.max.wagered, wagered);
-        u.max.deposited = Math.max(u.max.deposited, deposited);
-        u.max.earned = Math.max(u.max.earned, earned);
-        u.max.xp = Math.max(u.max.xp, xp);
-
-        // keep latest metadata
-        u.role = r?.role ?? u.role;
-        u.name = r?.name ?? u.name;
-        u.avatar = r?.avatar ?? u.avatar;
-        u.badge = r?.badge ?? u.badge;
-        u.isPrivate = Boolean(r?.isPrivate);
-        u.premiumUntil = r?.premiumUntil ?? u.premiumUntil;
-        u.active = Boolean(r?.active);
-
-        users.set(userId, u);
-      }
-
-      if (DEFAULT_DELAY_MS > 0) await sleep(DEFAULT_DELAY_MS);
+    if (!forceFresh && cacheFresh) {
+      return res.status(200).json(CACHE.payload);
     }
 
-    const data = [...users.values()].map(u => ({
-      userId: u.userId,
-      name: u.name,
-      avatar: u.avatar,
-      badge: u.badge,
-      role: u.role,
-      active: u.active,
-      isPrivate: u.isPrivate,
-      premiumUntil: u.premiumUntil,
+    // ✅ De-dupe concurrent requests: if one is computing, await it
+    if (!forceFresh && CACHE.inflight && CACHE.key === key) {
+      const payload = await CACHE.inflight;
+      return res.status(200).json(payload);
+    }
 
-      wagered: (u.max.wagered - u.min.wagered) || 0,
-      deposited: (u.max.deposited - u.min.deposited) || 0,
-      earned: (u.max.earned - u.min.earned) || 0,
-      xp: (u.max.xp - u.min.xp) || 0,
+    // Compute and cache
+    CACHE.key = key;
+    CACHE.inflight = (async () => {
+      const payload = await computeLeaderboard({ start_at, end_at, token });
+      CACHE.payload = payload;
+      CACHE.ts = Date.now();
+      CACHE.inflight = null;
+      return payload;
+    })();
 
-      firstSeen: u.firstSeen,
-      lastSeen: u.lastSeen,
-    }));
-
-    data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
-
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    return res.status(200).send(JSON.stringify({
-      ok: true,
-      range: { start_at, end_at, days: totalDays },
-      count: data.length,
-      data
-    }, null, 2));
+    const payload = await CACHE.inflight;
+    return res.status(200).json(payload);
   } catch (e) {
+    CACHE.inflight = null; // safety
     return res.status(500).json({ error: "leaderboard_failed", detail: String(e) });
   }
 }
