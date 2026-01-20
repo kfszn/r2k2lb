@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Exclusive Rewards For Code R2K2</title>
+  <title>R2K2</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Leaderboards & rewards across Acebet, Packdraw, and Clash.gg for code R2K2.">
@@ -54,12 +54,24 @@
     .home-subtitle{text-align:center;margin:8px auto 0;color:rgba(255,255,255,.85);max-width:820px;line-height:1.5;font-weight:600}
     .home-divider{width:min(900px,95%);margin:22px auto 0;height:1px;background:linear-gradient(90deg, rgba(0,0,0,0), rgba(19,152,255,.55), rgba(0,0,0,0))}
 
-    /* =========================================================
-       TOP CLICKABLE LOGOS (the ONLY thing we normalize here)
-       Same clickable footprint for all, plus per-logo zoom.
-       Cards are left alone (no scaling tricks there).
-    ========================================================== */
+    /* ==== LOGO PATHS (your real files) ==== */
+    :root{
+      --logo-acebet: "/assets/rainbet.png";
+      --logo-packdraw: "/assets/packdraw.png";
+      --logo-clash: "/assets/clash.png";
 
+      /* same on-screen footprint */
+      --logo-w: 220px;
+      --logo-h: 64px;
+      --logo-w-mobile: 180px;
+      --logo-h-mobile: 52px;
+
+      /* card header logo footprint */
+      --card-logo-w: 260px;
+      --card-logo-h: 88px;
+    }
+
+    /* ==== TOP LOGOS ==== */
     .platform-bar{
       display:flex;
       justify-content:center;
@@ -68,14 +80,16 @@
       flex-wrap:wrap;
       margin:26px auto 10px;
     }
-
     .platform-logo{
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      text-decoration:none;
-      border-radius:14px;
       padding:0;
+      border-radius:12px;
+      background:transparent;
+      border:none;
+      box-shadow:none;
+      text-decoration:none;
       transition:transform .15s ease, filter .15s ease, opacity .15s ease;
     }
     .platform-logo:hover{
@@ -84,33 +98,18 @@
         drop-shadow(0 0 14px rgba(19,152,255,.45))
         drop-shadow(0 0 18px rgba(107,92,255,.30));
     }
-
-    /* the clickable footprint (SAME for all logos) */
-    .platform-logo .top-logo-box{
-      width:240px;
-      height:74px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden; /* allows zoom without changing layout */
-    }
-
-    /* image fits the box, then gets a per-logo scale */
-    .platform-logo .top-logo-box img{
-      width:100%;
-      height:100%;
+    .platform-logo img{
+      width:var(--logo-w);
+      height:var(--logo-h);
       object-fit:contain;
       display:block;
-      transform:scale(var(--top-scale, 1));
-      transform-origin:center;
     }
-
-    /* mobile */
     @media (max-width:640px){
-      .platform-logo .top-logo-box{ width:190px; height:58px; }
+      .platform-bar{gap:18px}
+      .platform-logo img{width:var(--logo-w-mobile);height:var(--logo-h-mobile)}
     }
 
-    /* ==== Cards grid (kept) ==== */
+    /* ==== Cards grid ==== */
     .cards-grid{
       display:grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -124,6 +123,20 @@
     .signup-button{text-transform:uppercase;letter-spacing:.06em;font-weight:900;padding:12px 18px;border-radius:10px}
     @media (max-width:1100px){.cards-grid{grid-template-columns: repeat(2, minmax(0, 1fr))}}
     @media (max-width:720px){.cards-grid{grid-template-columns: 1fr}}
+
+    /* ==== CARD HEADER LOGOS: consistent sizing ==== */
+    .hub-card .css-1t0wa4v{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:110px;
+    }
+    .hub-card .css-1t0wa4v img{
+      width:var(--card-logo-w);
+      height:var(--card-logo-h);
+      object-fit:contain;
+      display:block;
+    }
 
     /* ==== Socials (kept) ==== */
     .social-media-cards{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-top:30px}
@@ -190,46 +203,39 @@
           Click a logo to view the leaderboard. Scroll down to sign up for each site.
         </div>
 
-        <!-- TOP: Clickable Logos (normalized) -->
+        <!-- TOP: Logos -->
         <div id="platforms" class="platform-bar">
-
-          <!-- Acebet (file is /assets/rainbet.png) -->
           <a class="platform-logo" href="/leaderboard/acebet" aria-label="Acebet Leaderboard">
-            <div class="top-logo-box" style="--top-scale:1.05">
-              <img src="/assets/rainbet.png" alt="Acebet" loading="lazy"
-                   onerror="this.onerror=null;this.src='/assets/logo.png';">
-            </div>
+            <img src="/assets/rainbet.png" alt="Acebet"
+                 loading="lazy"
+                 onerror="this.onerror=null;this.src='/assets/logo.png';">
           </a>
 
-          <!-- Packdraw -->
           <a class="platform-logo" href="/leaderboard/packdraw" aria-label="Packdraw Leaderboard">
-            <div class="top-logo-box" style="--top-scale:1.22">
-              <img src="/assets/packdraw.png" alt="Packdraw" loading="lazy"
-                   onerror="this.onerror=null;this.src='/assets/logo.png';">
-            </div>
+            <img src="/assets/packdraw.png" alt="Packdraw"
+                 loading="lazy"
+                 onerror="this.onerror=null;this.src='/assets/logo.png';">
           </a>
 
-          <!-- Clash -->
           <a class="platform-logo" href="/leaderboard/clash" aria-label="Clash.gg Leaderboard">
-            <div class="top-logo-box" style="--top-scale:1.75">
-              <img src="/assets/clash.png" alt="Clash.gg" loading="lazy"
-                   onerror="this.onerror=null;this.src='/assets/logo.png';">
-            </div>
+            <img src="/assets/clash.png" alt="Clash.gg"
+                 loading="lazy"
+                 onerror="this.onerror=null;this.src='/assets/logo.png';">
           </a>
-
         </div>
 
         <div class="home-divider"></div>
       </div>
 
-      <!-- Cards (unchanged sizing behavior) -->
+      <!-- Cards -->
       <div class="cards-grid" aria-label="Platform signup cards">
 
         <!-- Acebet -->
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img src="/assets/rainbet.png" alt="Acebet" loading="lazy"
+              <img src="/assets/rainbet.png" alt="Acebet"
+                   loading="lazy"
                    onerror="this.onerror=null;this.src='/assets/logo.png';">
             </div>
 
@@ -261,7 +267,8 @@
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img src="/assets/packdraw.png" alt="Packdraw" loading="lazy"
+              <img src="/assets/packdraw.png" alt="Packdraw"
+                   loading="lazy"
                    onerror="this.onerror=null;this.src='/assets/logo.png';">
             </div>
 
@@ -293,7 +300,8 @@
         <div class="card-container">
           <div class="MuiBox-root css-1o7r9kk hub-card">
             <div class="MuiBox-root css-1t0wa4v">
-              <img src="/assets/clash.png" alt="Clash.gg" loading="lazy"
+              <img src="/assets/clash.png" alt="Clash.gg"
+                   loading="lazy"
                    onerror="this.onerror=null;this.src='/assets/logo.png';">
             </div>
 
@@ -426,4 +434,3 @@
   </script>
 </body>
 </html>
-
