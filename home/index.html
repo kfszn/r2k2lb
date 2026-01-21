@@ -409,29 +409,39 @@
       const closeBtn = document.getElementById('close-btn');
       const minimizedIcon = document.getElementById('minimized-icon');
       const openBtn = document.getElementById('open-btn');
+      let isDragging = false;
+      let offsetX, offsetY;
 
-      dragHandle.onmousedown = function (event) {
-        event.preventDefault();
-        const startX = event.clientX - player.offsetLeft;
-        const startY = event.clientY - player.offsetTop;
-        function onMouseMove(e) {
-          player.style.left = e.clientX - startX + 'px';
-          player.style.top  = e.clientY - startY + 'px';
+      dragHandle.addEventListener('mousedown', function (e) {
+        isDragging = true;
+        offsetX = e.clientX - player.getBoundingClientRect().left;
+        offsetY = e.clientY - player.getBoundingClientRect().top;
+      });
+
+      document.addEventListener('mousemove', function (e) {
+        if (isDragging) {
+          player.style.left = (e.clientX - offsetX) + 'px';
+          player.style.top = (e.clientY - offsetY) + 'px';
+          player.style.right = 'auto';
+          player.style.bottom = 'auto';
         }
-        document.addEventListener('mousemove', onMouseMove);
-        document.onmouseup = function () { document.removeEventListener('mousemove', onMouseMove); };
-      };
+      });
 
-      closeBtn.onclick = function () {
+      document.addEventListener('mouseup', function () {
+        isDragging = false;
+      });
+
+      closeBtn.addEventListener('click', function () {
         player.style.display = 'none';
         minimizedIcon.style.display = 'flex';
-      };
-      openBtn.onclick = function () {
+      });
+
+      openBtn.addEventListener('click', function () {
         player.style.display = 'block';
         minimizedIcon.style.display = 'none';
-      };
+      });
     };
   </script>
+
 </body>
 </html>
-

@@ -392,7 +392,7 @@
     }catch(e){
       const msg = String(e);
 
-      // If it’s not a CORS-style failure, just throw it
+      // If it's not a CORS-style failure, just throw it
       if(!msg.includes("Failed to fetch")) throw e;
 
       // 2) Try proxy if it exists

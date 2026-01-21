@@ -66,6 +66,15 @@ img{display:block; max-width:100%}
 --------------------------- */
 .site-header{
   display:flex; align-items:center;
+  justify-content:space-between;
+  padding:18px 28px;
+  background:var(--bg-1);
+  border-bottom:var(--border);
+}
+.logo{font-size:1.3rem; font-weight:800; letter-spacing:-.02em}
+.nav-links{display:flex; gap:32px; font-size:.95rem}
+.nav-links a{opacity:.75; transition:opacity var(--speed)}
+.nav-links a:hover{opacity:1}
 
 /* =========================
    R2K2 Neon Theme (Blue/Purple)
@@ -92,7 +101,7 @@ img{display:block; max-width:100%}
 /* Page base */
 html,body{ background:var(--bg); color:var(--text); }
 
-/* Global “glow” text */
+/* Global "glow" text */
 .glow{
   text-shadow: 0 0 16px var(--glow-blue), 0 0 28px rgba(19,152,255,.25);
 }
