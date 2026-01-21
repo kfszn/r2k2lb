@@ -179,36 +179,37 @@ async function computeLeaderboard({ start_at, end_at, token }) {
   };
 }
 
-export default async function handler(req, res) {
-  // CORS
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+export async function GET(req) {
+  // CORS headers
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
 
   if (ENABLE_EDGE_CACHE_HEADERS) {
-    // Allows CDN caching for a short period; browser still revalidates quickly.
-    // You can tune: s-maxage = CDN, stale-while-revalidate = serve old while refreshing.
-    res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    headers["Cache-Control"] = "public, s-maxage=60, stale-while-revalidate=300";
   } else {
-    res.setHeader("Cache-Control", "no-store");
+    headers["Cache-Control"] = "no-store";
   }
 
-  if (req.method === "OPTIONS") return res.status(200).end();
-
   try {
-    const token = process.env.ACEBET_TOKEN || HARDCODED_ACEBET_TOKEN;
+    const token = process.env.ACEBET_API_TOKEN || HARDCODED_ACEBET_TOKEN;
     if (!token) {
-      return res.status(500).json({
-        error: "missing_token",
-        detail: "Paste token into HARDCODED_ACEBET_TOKEN (top of file) or set ACEBET_TOKEN in Vercel env vars.",
-      });
+      return Response.json(
+        {
+          error: "missing_token",
+          detail: "Paste token into HARDCODED_ACEBET_TOKEN (top of file) or set ACEBET_API_TOKEN in Vercel env vars.",
+        },
+        { status: 500, headers }
+      );
     }
 
-    const urlObj = new URL(req.url, `http://${req.headers.host}`);
-    const prev = urlObj.searchParams.get("prev");
-    const fresh = urlObj.searchParams.get("fresh"); // ?fresh=1 bypass cache
-    const qsStart = urlObj.searchParams.get("start_at");
-    const qsEnd = urlObj.searchParams.get("end_at");
+    const { searchParams } = new URL(req.url);
+    const prev = searchParams.get("prev");
+    const fresh = searchParams.get("fresh");
+    const qsStart = searchParams.get("start_at");
+    const qsEnd = searchParams.get("end_at");
 
     let start_at = isISODate(qsStart) ? qsStart : DEFAULT_START;
 
@@ -218,15 +219,20 @@ export default async function handler(req, res) {
     else end_at = toISODateUTC(new Date());
 
     if (!isISODate(start_at) || !isISODate(end_at)) {
-      return res.status(400).json({
-        error: "bad_dates",
-        detail: "Use YYYY-MM-DD for start_at and end_at (or set DEFAULT_END to a valid date / empty string).",
-      });
+      return Response.json(
+        {
+          error: "bad_dates",
+          detail: "Use YYYY-MM-DD for start_at and end_at (or set DEFAULT_END to a valid date / empty string).",
+        },
+        { status: 400, headers }
+      );
     }
 
     // Ensure start <= end
     if (new Date(`${start_at}T00:00:00Z`) > new Date(`${end_at}T00:00:00Z`)) {
-      const tmp = start_at; start_at = end_at; end_at = tmp;
+      const tmp = start_at;
+      start_at = end_at;
+      end_at = tmp;
     }
 
     // prev window (same length)
@@ -238,26 +244,29 @@ export default async function handler(req, res) {
 
     const totalDays = daysBetweenInclusive(start_at, end_at);
     if (totalDays > DEFAULT_MAX_DAYS) {
-      return res.status(400).json({
-        error: "range_too_large",
-        detail: `Date range is ${totalDays} days (cap ${DEFAULT_MAX_DAYS}). Shorten the window or raise DEFAULT_MAX_DAYS.`,
-      });
+      return Response.json(
+        {
+          error: "range_too_large",
+          detail: `Date range is ${totalDays} days (cap ${DEFAULT_MAX_DAYS}). Shorten the window or raise DEFAULT_MAX_DAYS.`,
+        },
+        { status: 400, headers }
+      );
     }
 
     const key = makeCacheKey({ start_at, end_at, prev });
 
-    // ✅ Serve from cache if fresh and not forced
+    // Serve from cache if fresh and not forced
     const cacheFresh = CACHE.payload && CACHE.key === key && (Date.now() - CACHE.ts) < CACHE_TTL_MS;
     const forceFresh = fresh && fresh !== "0";
 
     if (!forceFresh && cacheFresh) {
-      return res.status(200).json(CACHE.payload);
+      return Response.json(CACHE.payload, { headers });
     }
 
-    // ✅ De-dupe concurrent requests: if one is computing, await it
+    // De-dupe concurrent requests
     if (!forceFresh && CACHE.inflight && CACHE.key === key) {
       const payload = await CACHE.inflight;
-      return res.status(200).json(payload);
+      return Response.json(payload, { headers });
     }
 
     // Compute and cache
@@ -271,9 +280,23 @@ export default async function handler(req, res) {
     })();
 
     const payload = await CACHE.inflight;
-    return res.status(200).json(payload);
+    return Response.json(payload, { headers });
   } catch (e) {
-    CACHE.inflight = null; // safety
-    return res.status(500).json({ error: "leaderboard_failed", detail: String(e) });
+    CACHE.inflight = null;
+    return Response.json(
+      { error: "leaderboard_failed", detail: String(e) },
+      { status: 500, headers: { ...headers, "Cache-Control": "no-store" } }
+    );
   }
+}
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
+  });
 }

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createBrowserClient } from "@/lib/supabase/client";
 import { useActiveTournament } from "@/hooks/use-tournament-realtime";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { QuickActions } from "@/components/admin/quick-actions";
@@ -12,14 +14,42 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap } from "lucide-react";
+import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, ShieldAlert } from "lucide-react";
+import { ClaimsManager } from "@/components/admin/claims-manager";
+
+const ADMIN_EMAIL = "business.r2k2@gmail.com";
 
 export default function AdminPage() {
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [userEmail, setUserEmail] = useState<string>("");
   const { tournament, isLoading, refresh } = useActiveTournament();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEntrantsDialog, setShowEntrantsDialog] = useState(false);
 
-  if (isLoading) {
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push('/auth/login?redirect=/admin');
+        return;
+      }
+
+      setUserEmail(user.email || "");
+      
+      if (user.email === ADMIN_EMAIL) {
+        setIsAuthorized(true);
+      } else {
+        setIsAuthorized(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (isAuthorized === null || isLoading) {
     return (
       <main className="min-h-screen bg-background">
         <div className="flex h-screen items-center justify-center">
@@ -27,6 +57,36 @@ export default function AdminPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-muted-foreground">Loading admin panel...</p>
           </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (isAuthorized === false) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="flex h-screen items-center justify-center">
+          <Card className="max-w-md">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center gap-4 text-center">
+                <div className="rounded-full bg-destructive/10 p-3">
+                  <ShieldAlert className="h-8 w-8 text-destructive" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">Access Denied</h2>
+                  <p className="mt-2 text-muted-foreground">
+                    You don't have permission to access the admin panel.
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Logged in as: {userEmail}
+                  </p>
+                </div>
+                <Button onClick={() => router.push('/home')} className="mt-4">
+                  Return to Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
     );
@@ -75,7 +135,7 @@ export default function AdminPage() {
 
             {/* Management Tabs */}
             <Tabs defaultValue="matches" className="space-y-4">
-              <TabsList className="grid w-full max-w-lg grid-cols-3 bg-secondary">
+              <TabsList className="grid w-full max-w-2xl grid-cols-4 bg-secondary">
                 <TabsTrigger value="matches" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Swords className="h-4 w-4" />
                   Matches
@@ -83,6 +143,10 @@ export default function AdminPage() {
                 <TabsTrigger value="players" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Users className="h-4 w-4" />
                   Players
+                </TabsTrigger>
+                <TabsTrigger value="claims" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <UserCheck className="h-4 w-4" />
+                  Claims
                 </TabsTrigger>
                 <TabsTrigger value="settings" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Settings className="h-4 w-4" />
@@ -96,6 +160,10 @@ export default function AdminPage() {
 
               <TabsContent value="players">
                 <PlayerManager tournament={tournament} onUpdate={refresh} />
+              </TabsContent>
+
+              <TabsContent value="claims">
+                <ClaimsManager /> {/* Updated to use ClaimsManager */}
               </TabsContent>
 
               <TabsContent value="settings">
