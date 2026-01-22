@@ -71,12 +71,15 @@ export default function AcebetLeaderboard() {
   }, [leaderboard])
 
   const loadLeaderboard = async (previous: boolean) => {
+    console.log('[v0] Loading Acebet leaderboard, previous:', previous)
     setLoading(true)
     setError(null)
     try {
+      const startTime = Date.now()
       const url = previous ? '/api/leaderboard?prev=1' : '/api/leaderboard'
       const res = await fetch(url)
       const data = await res.json()
+      console.log('[v0] Acebet leaderboard loaded in', Date.now() - startTime, 'ms')
       
       if (data.ok) {
         setLeaderboard(data)
@@ -151,6 +154,39 @@ export default function AcebetLeaderboard() {
         </div>
       </section>
 
+      {/* Stats Cards */}
+      {leaderboard && (
+        <section className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            <Card className="bg-card/50 backdrop-blur border-primary/20">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground uppercase font-medium mb-1">Total Wagered</p>
+                    <p className="text-3xl font-bold text-primary">{formatMoney(totalWagered)}</p>
+                  </div>
+                  <TrendingUp className="h-12 w-12 text-primary/40" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            {!showPrevious && (
+              <Card className="bg-card/50 backdrop-blur border-destructive/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase font-medium mb-1">Time Remaining</p>
+                      <p className="text-3xl font-bold text-destructive">{timeRemaining || 'Loading...'}</p>
+                    </div>
+                    <Clock className="h-12 w-12 text-destructive/40" />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Controls */}
       <section className="py-6 border-b border-border/40">
         <div className="container mx-auto px-4">
@@ -174,35 +210,6 @@ export default function AcebetLeaderboard() {
           </div>
         </div>
       </section>
-
-      {/* Stats */}
-      {leaderboard && (
-        <section className="py-8">
-          <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto">
-              <Card className="border-primary/20 bg-card/50 backdrop-blur-sm">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">Total Wagered</p>
-                      <p className="text-3xl font-bold text-primary">{formatMoney(totalWagered)}</p>
-                    </div>
-                    {!showPrevious && (
-                      <div>
-                        <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">Ending In</p>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-5 w-5 text-primary" />
-                          <p className="text-2xl font-bold text-foreground">{timeRemaining}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Leaderboard */}
       <section className="py-12 pb-20">

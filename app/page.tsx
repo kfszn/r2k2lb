@@ -95,7 +95,7 @@ export default function HomePage() {
               name="Clash.gg"
               logo="/assets/clash.png"
               type="MONTHLY LEADERBOARD"
-              href="/"
+              href="/leaderboard/clash"
             />
           </div>
         </div>
@@ -180,40 +180,39 @@ export default function HomePage() {
 }
 
 function PlatformCard({ name, logo, type, href }: { name: string; logo: string; type: string; href: string }) {
-  console.log('[v0] Platform card:', name, 'logo path:', logo);
   return (
-    <Card className="h-full hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 bg-card/50 backdrop-blur group">
-      <CardContent className="p-8 flex flex-col items-center gap-6">
-        <div className="flex justify-center">
-          <div className="w-40 h-40 rounded-2xl bg-secondary/50 p-6 group-hover:scale-105 transition-transform flex items-center justify-center">
-            <img src={logo || "/placeholder.svg"} alt={name} className="w-full h-full object-contain" onError={(e) => console.error('[v0] Failed to load image:', logo)} />
+    <Link href={href} className="block group">
+      <Card className="h-full hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 bg-card/50 backdrop-blur cursor-pointer">
+        <CardContent className="p-8 flex flex-col items-center gap-6">
+          <div className="flex justify-center">
+            <div className="w-40 h-40 rounded-2xl bg-secondary/50 p-6 group-hover:scale-105 transition-transform flex items-center justify-center">
+              <img src={logo || "/placeholder.svg"} alt={name} className="w-full h-full object-contain" />
+            </div>
           </div>
-        </div>
-      </CardContent>
-      <CardContent className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary/10 border border-primary/20">
-          <span className="text-sm font-bold">Code</span>
-          <span className="text-sm font-bold text-primary">R2K2</span>
-        </div>
-      </CardContent>
-      <CardContent className="space-y-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <span>EXCLUSIVE REWARDS</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          <span>{type}</span>
-        </div>
-      </CardContent>
-      <CardContent className="pt-2">
-        <Link href={href}>
+        </CardContent>
+        <CardContent className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary/10 border border-primary/20">
+            <span className="text-sm font-bold">Code</span>
+            <span className="text-sm font-bold text-primary">R2K2</span>
+          </div>
+        </CardContent>
+        <CardContent className="space-y-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span>EXCLUSIVE REWARDS</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <span>{type}</span>
+          </div>
+        </CardContent>
+        <CardContent className="pt-2">
           <Button className="w-full" size="lg">
             Sign Up
           </Button>
-        </Link>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   )
 }
 

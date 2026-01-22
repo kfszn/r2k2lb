@@ -1,277 +1,312 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Trophy, TrendingUp, Clock, ArrowLeft, Loader2 } from 'lucide-react'
+import { Trophy, Sparkles, TrendingUp } from 'lucide-react'
 
 interface LeaderboardEntry {
-  rank: number
-  name: string
-  avatar?: string
+  username: string
   wagered: number
-  prize: number
+  avatar?: string
 }
 
-interface LeaderboardData {
-  entries: LeaderboardEntry[]
-  totalWagered: number
-  targetWager: number
-  prizePool: number
-  endsAt: string
-}
+const REWARDS = [800, 550, 250, 150, 100, 75, 50, 30, 20, 20]
 
-export default function PackdrawLeaderboardPage() {
-  const [data, setData] = useState<LeaderboardData | null>(null)
+export default function PackdrawLeaderboard() {
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [timeLeft, setTimeLeft] = useState('')
-  const [viewPrevious, setViewPrevious] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchLeaderboard()
-  }, [viewPrevious])
+    loadLeaderboard()
+  }, [])
 
-  useEffect(() => {
-    if (!data?.endsAt) return
-
-    const updateCountdown = () => {
-      const now = new Date().getTime()
-      const end = new Date(data.endsAt).getTime()
-      const diff = end - now
-
-      if (diff <= 0) {
-        setTimeLeft('ENDED')
-        return
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-
-      setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`)
-    }
-
-    updateCountdown()
-    const interval = setInterval(updateCountdown, 1000)
-    return () => clearInterval(interval)
-  }, [data?.endsAt])
-
-  const fetchLeaderboard = async () => {
+  const loadLeaderboard = async () => {
     setLoading(true)
-    setError('')
-
+    setError(null)
     try {
-      const url = viewPrevious 
-        ? '/api/packdraw?prev=1'
-        : '/api/packdraw'
+      const res = await fetch('/api/packdraw')
+      const data = await res.json()
       
-      const res = await fetch(url)
-      if (!res.ok) throw new Error('Failed to fetch leaderboard')
+      console.log('[v0] Packdraw API response:', data)
       
-      const result = await res.json()
-      setData(result)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load leaderboard')
+      // Handle different possible response formats
+      let leaderboardData: LeaderboardEntry[] = []
+      
+      if (Array.isArray(data)) {
+        leaderboardData = data
+      } else if (data.leaderboard && Array.isArray(data.leaderboard)) {
+        leaderboardData = data.leaderboard
+      } else if (data.entries && Array.isArray(data.entries)) {
+        leaderboardData = data.entries
+      } else if (data.data && Array.isArray(data.data)) {
+        leaderboardData = data.data
+      }
+      
+      setEntries(leaderboardData.slice(0, 10))
+    } catch (e) {
+      console.error('[v0] Failed to fetch Packdraw leaderboard:', e)
+      setError('Failed to fetch leaderboard')
     } finally {
       setLoading(false)
     }
   }
 
-  const progress = data ? Math.min((data.totalWagered / data.targetWager) * 100, 100) : 0
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading leaderboard...</p>
-        </div>
-      </div>
-    )
+  const formatMoney = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(amount)
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="text-destructive text-xl font-bold">Error</div>
-              <p className="text-muted-foreground">{error}</p>
-              <Button onClick={() => fetchLeaderboard()}>Retry</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  const maskName = (name: string) => {
+    if (!name || name.length <= 3) return name
+    return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
   }
 
-  const top3 = data?.entries.slice(0, 3) || []
-  const rest = data?.entries.slice(3, 10) || []
+  const totalWagered = entries.reduce((sum, entry: any) => sum + (entry.wagerAmount || 0), 0)
+  
+  // Calculate time remaining (30 day period from 1-17-2026)
+  const [timeRemaining, setTimeRemaining] = useState('')
+  
+  useEffect(() => {
+    const calculateTimeRemaining = () => {
+      const startDate = new Date('2026-01-17T00:00:00.000Z')
+      const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      const now = new Date()
+      const diff = endDate.getTime() - now.getTime()
+      
+      if (diff <= 0) {
+        setTimeRemaining('Period Ended')
+        return
+      }
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+      
+      setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`)
+    }
+    
+    calculateTimeRemaining()
+    const interval = setInterval(calculateTimeRemaining, 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/home" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <Image src="/assets/logo.png" alt="R2K2" width={48} height={48} className="rounded-lg" />
             <span className="text-2xl font-bold">
               R2K<span className="text-primary">2</span>
             </span>
           </Link>
-          <Link href="/home">
-            <Button variant="outline" size="sm" className="bg-transparent">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          </Link>
+          <nav className="hidden md:flex items-center gap-8">
+            <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
+            <Link href="/leaderboard/packdraw" className="text-sm font-medium text-primary">Leaderboards</Link>
+            <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">Raffle</Link>
+          </nav>
+          <a href="https://packdraw.com/?ref=r2k2" target="_blank" rel="noopener">
+            <Button size="sm">Join Packdraw</Button>
+          </a>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-12 bg-gradient-to-b from-primary/10 via-background to-background">
+      <section className="relative overflow-hidden py-16 bg-gradient-to-b from-primary/10 to-background">
         <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-8">
-            <div className="flex items-center justify-center gap-4">
-              <Image src="/assets/packdraw.png" alt="Packdraw" width={64} height={64} className="rounded-lg" />
-              <h1 className="text-4xl md:text-5xl font-bold">Packdraw Leaderboard</h1>
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40">
+              <Trophy className="h-6 w-6 text-primary" />
+              <span className="text-3xl font-bold text-primary">$2,000</span>
             </div>
-            <p className="text-xl text-muted-foreground">
-              Live leaderboard tracking for code R2K2
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+              Monthly Code <span className="text-primary">R2K2</span> Leaderboard
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Every <strong>PACK</strong> opened on Packdraw under Code <strong>R2K2</strong> counts towards your score.
+              <br />
+              <em className="text-sm">The leaderboard updates in real-time.</em>
             </p>
-          </div>
-
-          {/* Prize Pool Card */}
-          <Card className="max-w-2xl mx-auto bg-gradient-to-br from-primary/20 to-background border-primary/30">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="flex items-center justify-center gap-2">
-                <Trophy className="h-6 w-6 text-primary" />
-                <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Prize Pool</span>
-              </div>
-              <div className="text-5xl font-bold text-primary">
-                ${data?.prizePool.toLocaleString() || '0'}
-              </div>
-              
-              {!viewPrevious && (
-                <>
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm font-mono">{timeLeft}</span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Total Wagered</span>
-                      <span className="font-bold">${data?.totalWagered.toLocaleString()}</span>
-                    </div>
-                    <div className="h-3 bg-secondary rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-500"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {progress.toFixed(1)}% of ${data?.targetWager.toLocaleString()} target
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Toggle Button */}
-          <div className="flex justify-center mt-6">
-            <Button
-              variant="outline"
-              onClick={() => setViewPrevious(!viewPrevious)}
-              className="bg-transparent"
-            >
-              {viewPrevious ? 'View Current Leaderboard' : 'View Previous Leaderboard'}
-            </Button>
+            <div className="inline-block px-4 py-2 bg-destructive/10 border border-destructive/40 rounded-lg">
+              <p className="text-destructive font-bold">It Only Takes One!</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Top 3 */}
-      {top3.length > 0 && (
-        <section className="py-12">
+      {/* Stats Cards */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+          <Card className="bg-card/50 backdrop-blur border-primary/20">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground uppercase font-medium mb-1">Total Wagered</p>
+                  <p className="text-3xl font-bold text-primary">{formatMoney(totalWagered)}</p>
+                </div>
+                <TrendingUp className="h-12 w-12 text-primary/40" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-card/50 backdrop-blur border-destructive/20">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground uppercase font-medium mb-1">Time Remaining</p>
+                  <p className="text-3xl font-bold text-destructive">{timeRemaining || 'Loading...'}</p>
+                </div>
+                <Trophy className="h-12 w-12 text-destructive/40" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Leaderboard */}
+      {!loading && entries.length > 0 && (
+        <section className="py-12 pb-20">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold text-center mb-8">Top 3 Winners</h2>
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {top3.map((entry) => (
-                <TopCard key={entry.rank} entry={entry} />
-              ))}
+            <div className="max-w-5xl mx-auto space-y-6">
             </div>
           </div>
         </section>
       )}
 
-      {/* Ranks 4-10 */}
-      {rest.length > 0 && (
-        <section className="py-12 bg-secondary/30">
-          <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold text-center mb-8">Leaderboard Rankings</h2>
-            <div className="max-w-4xl mx-auto space-y-3">
-              {rest.map((entry) => (
-                <LeaderboardRow key={entry.rank} entry={entry} />
-              ))}
+      {/* Leaderboard */}
+      <section className="py-12 pb-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto space-y-6">
+            {loading && (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                <p className="mt-4 text-muted-foreground">Loading leaderboard...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="text-center py-12">
+                <p className="text-destructive text-lg">{error}</p>
+              </div>
+            )}
+
+            {!loading && !error && entries.length > 0 && (
+              <>
+                {/* Top 3 */}
+                <div className="grid md:grid-cols-3 gap-6 mb-12">
+                  {entries.slice(0, 3).map((entry, idx) => (
+                    <TopCard
+                      key={idx}
+                      rank={idx + 1}
+                      entry={entry}
+                      reward={REWARDS[idx]}
+                      formatMoney={formatMoney}
+                      maskName={maskName}
+                    />
+                  ))}
+                </div>
+
+                {/* Rest */}
+                <div className="space-y-3">
+                  {entries.slice(3, 10).map((entry, idx) => (
+                    <LeaderboardRow
+                      key={idx}
+                      rank={idx + 4}
+                      entry={entry}
+                      reward={REWARDS[idx + 3]}
+                      formatMoney={formatMoney}
+                      maskName={maskName}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {!loading && !error && entries.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">No leaderboard data available</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border/40 bg-card/30 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <h3 className="font-semibold mb-4">Company</h3>
+              <p className="text-sm text-muted-foreground">© 2025 R2K2<br />All Rights Reserved</p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Socials</h3>
+              <div className="space-y-2">
+                <a href="https://kick.com/R2Ktwo" target="_blank" rel="noopener" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Kick</a>
+                <a href="https://discord.gg/DwpA8vaGPj" target="_blank" rel="noopener" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Discord</a>
+              </div>
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <h3 className="font-semibold mb-4">Responsible Gaming</h3>
+              <p className="text-xs text-muted-foreground">
+                Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.
+              </p>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </footer>
     </div>
   )
 }
 
-function TopCard({ entry }: { entry: LeaderboardEntry }) {
-  const colors = {
-    1: { border: '#FFD700', glow: 'rgba(255, 215, 0, 0.3)' },
-    2: { border: '#C0C0C0', glow: 'rgba(192, 192, 192, 0.3)' },
-    3: { border: '#CD7F32', glow: 'rgba(205, 127, 50, 0.3)' }
-  }
-  const color = colors[entry.rank as keyof typeof colors]?.border || '#888'
-  const glow = colors[entry.rank as keyof typeof colors]?.glow || 'rgba(136, 136, 136, 0.3)'
-
+function TopCard({ rank, entry, reward, formatMoney, maskName }: {
+  rank: number
+  entry: LeaderboardEntry
+  reward: number
+  formatMoney: (n: number) => string
+  maskName: (s: string) => string
+}) {
+  const colors = ['#FFD700', '#C0C0C0', '#CD7F32']
+  const color = colors[rank - 1]
+  
   return (
-    <Card 
-      className="relative overflow-hidden border-2 transition-all duration-300 hover:scale-105"
-      style={{ 
-        borderColor: color,
-        boxShadow: `0 0 30px ${glow}, 0 0 60px ${glow}`
-      }}
-    >
+    <Card className="relative overflow-hidden group hover:scale-105 transition-transform" style={{ boxShadow: `0 0 40px ${color}` }}>
       <CardContent className="p-6 text-center space-y-4">
-        <div className="absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold border-2" style={{ borderColor: color, background: 'rgba(0,0,0,0.5)' }}>
-          #{entry.rank}
+        <div className="absolute top-0 right-0 px-3 py-1 rounded-bl-lg font-bold text-2xl" style={{ background: color, color: '#000' }}>
+          #{rank}
         </div>
-
+        
         {entry.avatar ? (
           <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4" style={{ borderColor: color }}>
-            <Image src={entry.avatar || "/placeholder.svg"} alt={entry.name} fill className="object-cover" />
+            <Image src={entry.avatar || "/placeholder.svg"} alt={entry.username} fill className="object-cover" />
           </div>
         ) : (
           <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl font-bold border-4 bg-black" style={{ borderColor: color, color: '#fff' }}>
-            {entry.name.charAt(0).toUpperCase()}
+            {entry.username?.charAt(0).toUpperCase() || '?'}
           </div>
         )}
-
+        
         <div>
-          <div className="font-bold text-lg">{entry.name}</div>
+          <p className="text-lg font-bold">{maskName(entry.username)}</p>
         </div>
-
-        <div className="space-y-2 pt-4 border-t border-border/40">
+        
+        <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Wagered</span>
-            <span className="font-bold text-lg">${entry.wagered.toLocaleString()}</span>
+            <span className="text-muted-foreground">Wagered:</span>
+            <span className="font-bold text-foreground">{formatMoney(entry.wagerAmount || 0)}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Prize</span>
-            <span className="font-bold text-lg text-primary">${entry.prize.toLocaleString()}</span>
+            <span className="text-muted-foreground">Prize:</span>
+            <span className="font-bold" style={{ color: '#39ff93' }}>${reward}</span>
           </div>
         </div>
       </CardContent>
@@ -279,37 +314,41 @@ function TopCard({ entry }: { entry: LeaderboardEntry }) {
   )
 }
 
-function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
+function LeaderboardRow({ rank, entry, reward, formatMoney, maskName }: {
+  rank: number
+  entry: LeaderboardEntry
+  reward: number
+  formatMoney: (n: number) => string
+  maskName: (s: string) => string
+}) {
   return (
-    <Card className="hover:shadow-lg hover:shadow-primary/20 transition-all">
+    <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:shadow-xl hover:shadow-primary/10 transition-all">
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
-          <div className="w-12 text-center">
-            <div className="text-xl font-bold text-muted-foreground">#{entry.rank}</div>
-          </div>
-
+          <div className="text-2xl font-bold text-muted-foreground w-12">#{rank}</div>
+          
           {entry.avatar ? (
             <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
-              <Image src={entry.avatar || "/placeholder.svg"} alt={entry.name} fill className="object-cover" />
+              <Image src={entry.avatar || "/placeholder.svg"} alt={entry.username} fill className="object-cover" />
             </div>
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold border-2 border-primary bg-black text-white">
-              {entry.name.charAt(0).toUpperCase()}
+              {entry.username?.charAt(0).toUpperCase() || '?'}
             </div>
           )}
-
-          <div className="flex-1 min-w-0">
-            <div className="font-bold truncate">{entry.name}</div>
+          
+          <div className="flex-1">
+            <p className="font-bold">{maskName(entry.username)}</p>
           </div>
-
-          <div className="flex items-center gap-8">
+          
+          <div className="flex gap-8 items-center">
             <div className="text-right">
-              <div className="text-xs text-muted-foreground uppercase">Wagered</div>
-              <div className="font-bold text-lg">${entry.wagered.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground uppercase">Wagered</p>
+              <p className="text-lg font-bold text-foreground">{formatMoney(entry.wagerAmount || 0)}</p>
             </div>
             <div className="text-right">
-              <div className="text-xs text-muted-foreground uppercase">Prize</div>
-              <div className="font-bold text-lg text-primary">${entry.prize.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground uppercase">Prize</p>
+              <p className="text-lg font-bold" style={{ color: '#39ff93' }}>${reward}</p>
             </div>
           </div>
         </div>

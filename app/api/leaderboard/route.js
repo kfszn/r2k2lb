@@ -27,8 +27,8 @@ const DEFAULT_DELAY_MS = 0;
 // Safety cap (days)
 const DEFAULT_MAX_DAYS = 180;
 
-// Cache TTL (ms). 10 minutes is a good balance.
-const CACHE_TTL_MS = 10 * 60 * 1000;
+// Cache TTL (ms). 5 minutes for faster responses
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 // OPTIONAL: If you want the response cacheable by CDNs too
 // (still safe because you are not returning private token, only aggregated results)
