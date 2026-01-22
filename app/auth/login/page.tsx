@@ -47,15 +47,25 @@ export default function LoginPage() {
 
   const handleDiscordLogin = async () => {
     setLoading(true)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'discord',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/account`,
-      },
-    })
+    setError('')
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'discord',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=/account`,
+        },
+      })
 
-    if (error) {
-      setError(error.message)
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+      } else if (!data?.url) {
+        setError('Discord login is not configured. Please use email/password login or contact support.')
+        setLoading(false)
+      }
+    } catch (err) {
+      setError('Discord login failed. Please try email/password login instead.')
       setLoading(false)
     }
   }
@@ -68,7 +78,7 @@ export default function LoginPage() {
             <Image src="/assets/logo.png" alt="R2K2" width={64} height={64} className="rounded-lg" />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Sign in to claim your leaderboard account</CardDescription>
+          <CardDescription>Sign in to claim your R2K2.GG account</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
@@ -116,26 +126,6 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full bg-transparent"
-            onClick={handleDiscordLogin}
-            disabled={loading}
-          >
-            <Image src="/assets/discord.png" alt="Discord" width={20} height={20} className="mr-2" />
-            Discord
-          </Button>
 
           <div className="text-center text-sm">
             <span className="text-muted-foreground">{"Don't have an account? "}</span>

@@ -4,42 +4,14 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, TrendingUp, Sparkles } from 'lucide-react'
-import Image from 'next/image'
 import { KickMiniPlayer } from '@/components/kick-mini-player'
+import { Header } from '@/components/header'
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <KickMiniPlayer />
-      {/* Header */}
-      <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <Image src="/assets/logo.png" alt="R2K2" width={48} height={48} className="rounded-lg" />
-            <span className="text-2xl font-bold">
-              R2K<span className="text-primary">2</span>
-            </span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
-            <Link href="#platforms" className="text-sm font-medium hover:text-primary transition-colors">Leaderboards</Link>
-            <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">Raffle</Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link href="/tournament">
-              <Button size="sm" variant="outline" className="hidden md:flex bg-transparent">
-                <Trophy className="mr-2 h-4 w-4" />
-                Tournament
-              </Button>
-            </Link>
-            <Link href="/auth/login">
-              <Button size="sm">
-                Login
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -53,21 +25,13 @@ export default function HomePage() {
             <h1 className="text-4xl md:text-5xl font-bold leading-tight text-balance">
               Compete on Our <span className="text-primary">Leaderboards</span>
             </h1>
-            <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
-              Join exclusive leaderboard competitions across multiple platforms. Unlock rewards and climb the ranks with code R2K2.
+            <p className="text-2xl font-bold text-primary mt-2">
+              $5,000+ in Monthly/Weekly Leaderboards
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-              <Link href="#platforms">
-                <Button size="lg" className="w-full sm:w-auto">
-                  View Platforms
-                </Button>
-              </Link>
-              <Link href="/raffle">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent">
-                  Enter Raffle
-                </Button>
-              </Link>
-            </div>
+            <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
+              Plus $1,000's in additional rewards. Join exclusive competitions across multiple platforms and climb the ranks with code R2K2.
+            </p>
+
           </div>
         </div>
       </section>
@@ -84,27 +48,104 @@ export default function HomePage() {
             <PlatformCard
               name="Acebet"
               logo="/assets/rainbet.png"
-              type="MONTHLY LEADERBOARD"
               href="/leaderboard/acebet"
+              signupUrl="https://acebet.com/welcome/r/r2k2"
+              rewards={[
+                "$2,500 Monthly Leaderboard",
+                "$250-$500 Weekly Leaderboards",
+                "First Time Deposit Bonus",
+                "Monthly Wager Bonuses",
+                "VIP Rewards",
+                "Weekly Slot Tournaments",
+                "Daily Stream Giveaways",
+                "Lossback"
+              ]}
             />
             <PlatformCard
               name="Packdraw"
               logo="/assets/packdraw.png"
-              type="LIVE LEADERBOARD"
               href="/leaderboard/packdraw"
+              signupUrl="https://packdraw.com/?ref=R2K2"
+              rewards={[
+                "Monthly Leaderboard",
+                "Rank Up Rewards",
+                "First Time Deposit Bonus",
+                "Lossback",
+                "VIP Rewards"
+              ]}
             />
             <PlatformCard
               name="Clash.gg"
               logo="/assets/clash.png"
-              type="MONTHLY LEADERBOARD"
               href="/leaderboard/clash"
+              signupUrl="https://clash.gg/r/R2K2"
+              rewards={[
+                "Coming Soon",
+                "Stay tuned for updates"
+              ]}
             />
           </div>
         </div>
       </section>
 
-      {/* Social Section */}
+      {/* Rewards Section */}
       <section className="py-12 md:py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">What We Offer</h2>
+            <p className="text-base text-muted-foreground">Exclusive perks for R2K2 code users</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {/* 1st Time Deposit Bonus */}
+            <Card className="bg-card/50 backdrop-blur border-primary/20 hover:border-primary/40 transition-all">
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <Trophy className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">1st Time Deposit Bonus</h3>
+                <p className="text-sm text-muted-foreground">Available on Packdraw and Acebet for new users using code R2K2</p>
+              </CardContent>
+            </Card>
+
+            {/* Wager Rewards */}
+            <Card className="bg-card/50 backdrop-blur border-primary/20 hover:border-primary/40 transition-all">
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Wager Rewards</h3>
+                <p className="text-sm text-muted-foreground">Earn rewards based on your wager volume on Packdraw and Acebet</p>
+              </CardContent>
+            </Card>
+
+            {/* Loss Back */}
+            <Card className="bg-card/50 backdrop-blur border-primary/20 hover:border-primary/40 transition-all">
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Loss Back</h3>
+                <p className="text-sm text-muted-foreground">Get a percentage of your losses back on both Packdraw and Acebet</p>
+              </CardContent>
+            </Card>
+
+            {/* Weekly Slot Tournaments */}
+            <Card className="bg-card/50 backdrop-blur border-primary/20 hover:border-primary/40 transition-all">
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <Trophy className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Weekly Slot Tournaments</h3>
+                <p className="text-sm text-muted-foreground">Compete for $100-$50 prizes in weekly tournaments for code users</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Section */}
+      <section className="py-12 md:py-16 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold mb-3">Join Our Community</h2>
@@ -181,47 +222,46 @@ export default function HomePage() {
   )
 }
 
-function PlatformCard({ name, logo, type, href }: { name: string; logo: string; type: string; href: string }) {
-  console.log('[v0] PlatformCard rendered:', name, 'href:', href)
+function PlatformCard({ name, logo, href, signupUrl, rewards }: { name: string; logo: string; href: string; signupUrl: string; rewards: string[] }) {
   return (
-    <Link 
-      href={href} 
-      className="block group" 
-      onClick={(e) => {
-        console.log('[v0] Platform card clicked:', name, 'href:', href)
-      }}
-    >
-      <Card className="h-full hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 bg-card/50 backdrop-blur cursor-pointer">
+    <Card className="h-full hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 bg-card/50 backdrop-blur">
+      <Link href={href} className="block group">
         <CardContent className="p-8 flex flex-col items-center gap-6">
           <div className="flex justify-center">
-            <div className="w-40 h-40 rounded-2xl bg-secondary/50 p-6 group-hover:scale-105 transition-transform flex items-center justify-center">
+            <div className="w-40 h-40 rounded-2xl bg-secondary/50 p-6 group-hover:scale-105 transition-transform flex items-center justify-center cursor-pointer">
               <img src={logo || "/placeholder.svg"} alt={name} className="w-full h-full object-contain" />
             </div>
           </div>
         </CardContent>
-        <CardContent className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary/10 border border-primary/20">
-            <span className="text-sm font-bold">Code</span>
-            <span className="text-sm font-bold text-primary">R2K2</span>
-          </div>
-        </CardContent>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span>EXCLUSIVE REWARDS</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            <span>{type}</span>
-          </div>
-        </CardContent>
-        <CardContent className="pt-2">
+      </Link>
+      <CardContent className="text-center space-y-2">
+        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary/10 border border-primary/20">
+          <span className="text-sm font-bold">Code</span>
+          <span className="text-sm font-bold text-primary">R2K2</span>
+        </div>
+      </CardContent>
+      <CardContent className="space-y-2 px-6">
+        <div className="flex items-center gap-2 text-sm font-semibold text-primary mb-2">
+          <Sparkles className="h-4 w-4" />
+          <span>EXCLUSIVE REWARDS</span>
+        </div>
+        <ul className="space-y-1.5 text-xs text-muted-foreground">
+          {rewards.map((reward, index) => (
+            <li key={index} className="flex items-start gap-2">
+              <span className="text-primary mt-0.5">•</span>
+              <span>{reward}</span>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+      <CardContent className="pt-4">
+        <a href={signupUrl} target="_blank" rel="noopener noreferrer">
           <Button className="w-full" size="lg">
             Sign Up
           </Button>
-        </CardContent>
-      </Card>
-    </Link>
+        </a>
+      </CardContent>
+    </Card>
   )
 }
 

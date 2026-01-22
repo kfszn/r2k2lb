@@ -210,26 +210,6 @@ export default function SignUpPage() {
             </Button>
           </form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full bg-transparent"
-            onClick={handleDiscordSignUp}
-            disabled={loading}
-          >
-            <Image src="/assets/discord.png" alt="Discord" width={20} height={20} className="mr-2" />
-            Discord
-          </Button>
-
           <div className="text-center text-sm">
             <span className="text-muted-foreground">Already have an account? </span>
             <Link href="/auth/login" className="text-primary hover:underline">

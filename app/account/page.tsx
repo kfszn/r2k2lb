@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { createBrowserClient } from '@supabase/ssr'
 import Image from 'next/image'
 import { Trophy, TrendingUp, CheckCircle2, Clock, XCircle } from 'lucide-react'
+import { Header } from '@/components/header'
 
 interface UserClaim {
   id: string
@@ -92,7 +93,7 @@ export default function AccountPage() {
 
   async function handleSignOut() {
     await supabase.auth.signOut()
-    router.push('/home')
+    router.push('/')
     router.refresh()
   }
 
@@ -109,20 +110,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/home" className="flex items-center gap-3">
-            <Image src="/assets/logo.png" alt="R2K2" width={48} height={48} className="rounded-lg" />
-            <span className="text-2xl font-bold">
-              R2K<span className="text-primary">2</span>
-            </span>
-          </Link>
-          <Button variant="outline" onClick={handleSignOut} className="bg-transparent">
-            Sign Out
-          </Button>
-        </div>
-      </header>
+      <Header />
 
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="space-y-8">

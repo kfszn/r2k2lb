@@ -8,39 +8,26 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'R2K2 Tournaments - Live Slot Bracket Battles',
-  description: 'Join live slot tournaments with real-time bracket battles. Compete for prizes on Acebet with R2K2!',
+  title: 'R2K2 - Exclusive Rewards & Leaderboards',
+  description: '$5,000+ in monthly leaderboards plus exclusive rewards. Use code R2K2 on Acebet, Packdraw, and Clash.gg for bonuses, wager rewards, and more!',
   metadataBase: new URL('https://www.r2k2.gg'),
   openGraph: {
-    title: 'R2K2 Tournaments',
-    description: 'Live slot bracket battles with real-time updates. Join the action!',
+    title: 'R2K2 - Exclusive Rewards & Leaderboards',
+    description: '$5,000+ in monthly leaderboards plus exclusive rewards with code R2K2',
     url: 'https://www.r2k2.gg',
     siteName: 'R2K2',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'R2K2 Tournaments',
-    description: 'Live slot bracket battles with real-time updates',
+    title: 'R2K2 - Exclusive Rewards & Leaderboards',
+    description: '$5,000+ in monthly leaderboards plus exclusive rewards',
   },
-  generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/assets/logo.png',
+    apple: '/assets/logo.png',
   },
+    generator: 'v0.app'
 }
 
 export default function RootLayout({

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Sparkles, TrendingUp } from 'lucide-react'
+import SiteHeader from '@/components/header' // Correctly imported SiteHeader
+import Image from 'next/image'
 
 interface LeaderboardEntry {
   username: string
@@ -100,25 +101,7 @@ export default function PackdrawLeaderboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <Image src="/assets/logo.png" alt="R2K2" width={48} height={48} className="rounded-lg" />
-            <span className="text-2xl font-bold">
-              R2K<span className="text-primary">2</span>
-            </span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
-            <Link href="/leaderboard/packdraw" className="text-sm font-medium text-primary">Leaderboards</Link>
-            <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">Raffle</Link>
-          </nav>
-          <a href="https://packdraw.com/?ref=r2k2" target="_blank" rel="noopener">
-            <Button size="sm">Join Packdraw</Button>
-          </a>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-16 bg-gradient-to-b from-primary/10 to-background">

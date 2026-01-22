@@ -82,7 +82,7 @@ export default function AdminPage() {
                     Logged in as: {userEmail}
                   </p>
                 </div>
-                <Button onClick={() => router.push('/home')} className="mt-4">
+                <Button onClick={() => router.push('/')} className="mt-4">
                   Return to Home
                 </Button>
               </div>
