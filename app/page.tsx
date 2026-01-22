@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -180,8 +182,15 @@ export default function HomePage() {
 }
 
 function PlatformCard({ name, logo, type, href }: { name: string; logo: string; type: string; href: string }) {
+  console.log('[v0] PlatformCard rendered:', name, 'href:', href)
   return (
-    <Link href={href} className="block group">
+    <Link 
+      href={href} 
+      className="block group" 
+      onClick={(e) => {
+        console.log('[v0] Platform card clicked:', name, 'href:', href)
+      }}
+    >
       <Card className="h-full hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 bg-card/50 backdrop-blur cursor-pointer">
         <CardContent className="p-8 flex flex-col items-center gap-6">
           <div className="flex justify-center">
