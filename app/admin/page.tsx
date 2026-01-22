@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, ShieldAlert } from "lucide-react";
 import { ClaimsManager } from "@/components/admin/claims-manager";
+import { EmailVerificationTool } from "@/components/admin/email-verification-tool"; // Import EmailVerificationTool
 
 const ADMIN_EMAIL = "business.r2k2@gmail.com";
 
@@ -167,31 +168,47 @@ export default function AdminPage() {
               </TabsContent>
 
               <TabsContent value="settings">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Tournament Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                      <div className="rounded-lg border border-border p-4">
-                        <p className="text-xs font-medium text-muted-foreground">Tournament ID</p>
-                        <p className="mt-1 font-mono text-sm">{tournament.id.slice(0, 8)}...</p>
+                <div className="space-y-6">
+                  {/* Email Verification Tool */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <ShieldAlert className="h-5 w-5 text-primary" />
+                        Email Verification
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <EmailVerificationTool />
+                    </CardContent>
+                  </Card>
+
+                  {/* Tournament Settings */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Tournament Settings</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="rounded-lg border border-border p-4">
+                          <p className="text-xs font-medium text-muted-foreground">Tournament ID</p>
+                          <p className="mt-1 font-mono text-sm">{tournament.id.slice(0, 8)}...</p>
+                        </div>
+                        <div className="rounded-lg border border-border p-4">
+                          <p className="text-xs font-medium text-muted-foreground">Created</p>
+                          <p className="mt-1 text-sm">{new Date(tournament.created_at).toLocaleString()}</p>
+                        </div>
+                        <div className="rounded-lg border border-border p-4">
+                          <p className="text-xs font-medium text-muted-foreground">Game</p>
+                          <p className="mt-1 text-sm">{tournament.game_name}</p>
+                        </div>
+                        <div className="rounded-lg border border-border p-4">
+                          <p className="text-xs font-medium text-muted-foreground">Bet Amount</p>
+                          <p className="mt-1 text-sm">${tournament.bet_amount}</p>
+                        </div>
                       </div>
-                      <div className="rounded-lg border border-border p-4">
-                        <p className="text-xs font-medium text-muted-foreground">Created</p>
-                        <p className="mt-1 text-sm">{new Date(tournament.created_at).toLocaleString()}</p>
-                      </div>
-                      <div className="rounded-lg border border-border p-4">
-                        <p className="text-xs font-medium text-muted-foreground">Game</p>
-                        <p className="mt-1 text-sm">{tournament.game_name}</p>
-                      </div>
-                      <div className="rounded-lg border border-border p-4">
-                        <p className="text-xs font-medium text-muted-foreground">Bet Amount</p>
-                        <p className="mt-1 text-sm">${tournament.bet_amount}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
             </Tabs>
           </div>

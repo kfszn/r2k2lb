@@ -34,7 +34,7 @@ export default function SignUpPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -44,6 +44,10 @@ export default function SignUpPage() {
 
     if (error) {
       setError(error.message)
+      setLoading(false)
+    } else if (data?.user && data?.user?.identities?.length === 0) {
+      // User already exists but hasn't verified email
+      setError('This email is already registered but not verified. Please check your email (including spam folder) for the verification link, or contact support if you need help.')
       setLoading(false)
     } else {
       setSuccess(true)
@@ -141,8 +145,26 @@ export default function SignUpPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
-              {error}
+            <div className="space-y-3">
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+              {error.includes('already registered but not verified') && (
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  className="w-full bg-transparent"
+                  onClick={handleResendEmail}
+                  disabled={resending}
+                >
+                  {resending ? 'Resending...' : 'Resend Verification Email'}
+                </Button>
+              )}
+              {resendSuccess && (
+                <div className="bg-primary/10 border border-primary/20 text-primary px-4 py-3 rounded-lg text-sm">
+                  Verification email resent! Check your inbox and spam folder.
+                </div>
+              )}
             </div>
           )}
 
