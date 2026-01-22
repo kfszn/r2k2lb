@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Clock, DollarSign, TrendingUp } from 'lucide-react'
@@ -292,7 +293,13 @@ function TopCard({ rank, entry, reward, formatMoney, maskName }: {
         
         {entry.avatar ? (
           <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4" style={{ borderColor: color }}>
-            {/* Image component should be imported and used here */}
+            <Image
+              src={entry.avatar || "/placeholder.svg"}
+              alt={entry.name}
+              fill
+              className="object-cover"
+              crossOrigin="anonymous"
+            />
           </div>
         ) : (
           <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl font-bold border-4 bg-black" style={{ borderColor: color, color: '#fff' }}>
@@ -334,7 +341,13 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName }: {
           
           {entry.avatar ? (
             <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
-              {/* Image component should be imported and used here */}
+              <Image
+                src={entry.avatar || "/placeholder.svg"}
+                alt={entry.name}
+                fill
+                className="object-cover"
+                crossOrigin="anonymous"
+              />
             </div>
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold border-2 border-primary bg-black text-white">
