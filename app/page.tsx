@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, TrendingUp, Sparkles } from 'lucide-react'
 import { KickMiniPlayer } from '@/components/kick-mini-player'
 import { GiveawayCounter } from '@/components/giveaway-counter'
+import { Header } from '@/components/header'
 
 export default function HomePage() {
   return (
@@ -14,6 +15,7 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-4">
         <GiveawayCounter />
       </div>
+      <Header />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
