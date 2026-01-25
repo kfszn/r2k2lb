@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from 'lucide-react'
 import { Header } from '@/components/header'
+import { GiveawayBanner } from '@/components/giveaway-banner'
 import { ArrowLeft } from 'lucide-react'
 
 export default function ClashLeaderboardPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background">
+      <GiveawayBanner />
       <Header />
-
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b border-border/40">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background"></div>

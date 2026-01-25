@@ -4,6 +4,7 @@ import React from "react";
 import { useState } from "react";
 import { useActiveTournament } from "@/hooks/use-tournament-realtime";
 import Header from "@/components/header";
+import { GiveawayBanner } from "@/components/giveaway-banner";
 import { QuickActions } from "@/components/admin/quick-actions";
 import { TournamentStats } from "@/components/admin/tournament-stats";
 import { MatchManager } from "@/components/admin/match-manager";

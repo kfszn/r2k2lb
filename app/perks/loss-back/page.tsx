@@ -2,11 +2,13 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
+import { GiveawayBanner } from '@/components/giveaway-banner'
 import { Shield, TrendingDown } from 'lucide-react'
 
 export default function LossBackPage() {
   return (
     <div className="min-h-screen bg-background">
+      <GiveawayBanner />
       <Header />
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto space-y-8">
