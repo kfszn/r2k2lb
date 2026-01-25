@@ -70,6 +70,20 @@ export default function WagerRewardsPage() {
                     <span className="text-blue-500 mt-0.5">✓</span>
                     <p className="text-sm text-muted-foreground">Automatically credited when you reach each $10,000 wager milestone</p>
                   </div>
+                  <div className="pt-4 space-y-3 border-t border-border/30">
+                    <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer">
+                      <Button className="w-full gap-2" size="sm">
+                        <Trophy className="h-4 w-4" />
+                        Redeem Rewards
+                      </Button>
+                    </a>
+                    <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                      <div className="flex gap-2 items-start">
+                        <AlertCircle className="h-3 w-3 text-destructive mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-destructive/80"><span className="font-medium text-destructive">Monthly Reset:</span> You are responsible for redeeming within the month. Unredeemed rewards do not carry over. No exceptions.</p>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -116,6 +130,20 @@ export default function WagerRewardsPage() {
                   <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                     <span className="text-amber-500 mt-0.5">✓</span>
                     <p className="text-sm text-muted-foreground">Automatically credited when you reach each $100,000 wager milestone</p>
+                  </div>
+                  <div className="pt-4 space-y-3 border-t border-border/30">
+                    <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer">
+                      <Button className="w-full gap-2" size="sm">
+                        <Trophy className="h-4 w-4" />
+                        Redeem Rewards
+                      </Button>
+                    </a>
+                    <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                      <div className="flex gap-2 items-start">
+                        <AlertCircle className="h-3 w-3 text-destructive mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-destructive/80"><span className="font-medium text-destructive">Monthly Reset:</span> You are responsible for redeeming within the month. Unredeemed rewards do not carry over. No exceptions.</p>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
