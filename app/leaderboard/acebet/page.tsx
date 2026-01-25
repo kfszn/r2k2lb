@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Clock, DollarSign, TrendingUp } from 'lucide-react'
-import { GiveawayBanner } from '@/components/giveaway-banner'
+import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 
 interface LeaderboardEntry {

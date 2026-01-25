@@ -3,12 +3,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
 import { Header } from '@/components/header'
-import { GiveawayBanner } from '@/components/giveaway-banner'
+import { GiveawayCounter } from '@/components/giveaway-counter'
 
 export default function RafflePage() {
   return (
     <div className="min-h-screen bg-background">
-      <GiveawayBanner />
+      <div className="container mx-auto px-4 py-4">
+        <GiveawayCounter />
+      </div>
       <Header />
       <main className="container mx-auto px-4 py-20">
         <Card className="max-w-2xl mx-auto">

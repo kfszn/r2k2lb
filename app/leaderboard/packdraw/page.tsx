@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Sparkles, TrendingUp } from 'lucide-react'
 import SiteHeader from '@/components/header' // Correctly imported SiteHeader
-import { GiveawayBanner } from '@/components/giveaway-banner'
+import { GiveawayCounter } from '@/components/giveaway-counter'
 import Image from 'next/image'
 
 interface LeaderboardEntry {

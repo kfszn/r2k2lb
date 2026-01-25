@@ -7,7 +7,7 @@ import { LiveEntries } from "@/components/tournament/live-entries";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Trophy } from "lucide-react";
 import Header from "@/components/header";
-import { GiveawayBanner } from "@/components/giveaway-banner";
+import { GiveawayCounter } from "@/components/giveaway-counter";
 import { useBracket } from "@/lib/bracket-context";
 
 export default function TournamentPage() {
@@ -16,7 +16,9 @@ export default function TournamentPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <GiveawayBanner />
+      <div className="container mx-auto px-4 py-4">
+        <GiveawayCounter />
+      </div>
       <Header />
 
       {hasBracket ? (
