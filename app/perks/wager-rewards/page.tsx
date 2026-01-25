@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
-import { Trophy, TrendingUp, Zap, Crown } from 'lucide-react'
+import { Trophy, TrendingUp, Zap, Crown, AlertCircle } from 'lucide-react'
 
 export default function WagerRewardsPage() {
   return (
@@ -193,6 +193,36 @@ export default function WagerRewardsPage() {
               <div className="space-y-2 p-3 rounded-lg bg-secondary/20 border border-border/50">
                 <p className="font-medium text-sm">Automatic Credits</p>
                 <p className="text-sm text-muted-foreground">Rewards are automatically credited to your account when you hit each milestone. No manual claiming required</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Redeem Section */}
+          <Card className="bg-gradient-to-r from-primary/20 via-card to-primary/10 border border-primary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-6 w-6 text-primary" />
+                Ready to Redeem Your Rewards?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Join our Discord community to create a support ticket and redeem your earned rewards.
+              </p>
+              <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer">
+                <Button size="lg" className="w-full gap-2">
+                  <Trophy className="h-5 w-5" />
+                  Redeem on Discord - discord.gg/r2k2
+                </Button>
+              </a>
+              <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <div className="flex gap-2 items-start">
+                  <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                  <div className="space-y-1">
+                    <p className="font-medium text-sm text-destructive">Your Responsibility</p>
+                    <p className="text-xs text-destructive/80">Rewards reset monthly with no exceptions. You are responsible for keeping track of your wagers and redeeming rewards within the month they are earned. Unredeemed rewards do not carry over.</p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
