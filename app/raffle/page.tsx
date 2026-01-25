@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
-import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 
 export default function RafflePage() {
@@ -11,7 +10,6 @@ export default function RafflePage() {
       <div className="container mx-auto px-4 py-4">
         <GiveawayCounter />
       </div>
-      <Header />
       <main className="container mx-auto px-4 py-20">
         <Card className="max-w-2xl mx-auto">
           <CardHeader>

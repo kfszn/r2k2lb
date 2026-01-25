@@ -6,9 +6,9 @@ import { WinnersCircle } from "@/components/tournament/winners-circle";
 import { LiveEntries } from "@/components/tournament/live-entries";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Trophy } from "lucide-react";
-import Header from "@/components/header";
 import { GiveawayCounter } from "@/components/giveaway-counter";
 import { useBracket } from "@/lib/bracket-context";
+import { Header } from "@/components/header";
 
 export default function TournamentPage() {
   const { matches } = useBracket();
@@ -23,7 +23,6 @@ export default function TournamentPage() {
 
       {hasBracket ? (
         <main className="min-h-screen bg-background">
-          <Header />
           <div className="container mx-auto px-4 py-8 max-w-7xl">
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -66,8 +65,6 @@ export default function TournamentPage() {
         </main>
       ) : (
         <main className="min-h-screen bg-background">
-          <Header />
-
           <div className="container mx-auto px-4 py-8 max-w-7xl">
             {/* No Tournament Banner */}
             <div className="flex flex-col items-center justify-center py-12 text-center mb-8">
