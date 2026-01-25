@@ -6,13 +6,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, TrendingUp, Sparkles } from 'lucide-react'
 import { KickMiniPlayer } from '@/components/kick-mini-player'
 import { Header } from '@/components/header'
-import { GiveawayBanner } from '@/components/giveaway-banner'
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <KickMiniPlayer />
-      <GiveawayBanner />
       <Header />
 
       {/* Hero Section */}
