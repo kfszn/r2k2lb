@@ -130,7 +130,7 @@ function Header() {
               <nav className="flex flex-col gap-4 mt-8">
                 <Link 
                   href="/" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2"
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                   onClick={() => setOpen(false)}
                 >
                   Home
@@ -138,16 +138,16 @@ function Header() {
                 <div className="space-y-2">
                   <button 
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center gap-1 w-full"
+                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Leaderboards
                     <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {dropdownOpen && (
-                    <div className="flex flex-col gap-2 pl-4">
+                    <div className="flex flex-col gap-2">
                       <Link 
                         href="/leaderboard/acebet"
-                        className="text-base font-medium hover:text-primary transition-colors py-2"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                         onClick={() => {
                           setOpen(false)
                           setDropdownOpen(false)
@@ -157,7 +157,7 @@ function Header() {
                       </Link>
                       <Link 
                         href="/leaderboard/packdraw"
-                        className="text-base font-medium hover:text-primary transition-colors py-2"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                         onClick={() => {
                           setOpen(false)
                           setDropdownOpen(false)
@@ -170,14 +170,14 @@ function Header() {
                 </div>
                 <Link 
                   href="/raffle" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2"
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                   onClick={() => setOpen(false)}
                 >
                   Raffle
                 </Link>
                 <Link 
                   href="/tournament" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2"
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                   onClick={() => setOpen(false)}
                 >
                   Tournament
@@ -185,25 +185,19 @@ function Header() {
                 {isAdmin && (
                   <Link 
                     href="/admin" 
-                    className="text-base font-medium hover:text-primary transition-colors py-2"
+                    className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                     onClick={() => setOpen(false)}
                   >
                     Admin
                   </Link>
                 )}
-                <div className="pt-4 border-t border-border">
-                  {user ? (
+                {user && (
+                  <div className="pt-4 border-t border-border">
                     <Button onClick={handleSignOut} className="w-full">
                       Sign Out
                     </Button>
-                  ) : (
-                    <Link href="/auth/login" onClick={() => setOpen(false)}>
-                      <Button className="w-full">
-                        Login
-                      </Button>
-                    </Link>
-                  )}
-                </div>
+                  </div>
+                )}
               </nav>
             </SheetContent>
           </Sheet>
