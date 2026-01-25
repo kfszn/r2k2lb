@@ -108,16 +108,19 @@ export function generateBracket(players: TournamentPlayer[]): {
   const numRounds = Math.ceil(Math.log2(numPlayers));
   const bracketSize = Math.pow(2, numRounds);
   
-  // Seed players using standard bracket seeding
+  // Seed players - fill from first position, leaving nulls for byes
   const seededPlayers: (TournamentPlayer | null)[] = new Array(bracketSize).fill(null);
   
   for (let i = 0; i < players.length; i++) {
     seededPlayers[i] = players[i];
   }
   
-  // Generate first round matches
+  // Generate first round matches - only (numPlayers - 1) matches needed for single elimination
+  // Each match has one winner, so n players need n-1 matches total
   let matchNumber = 1;
-  for (let i = 0; i < bracketSize / 2; i++) {
+  const firstRoundMatches = Math.ceil(numPlayers / 2);
+  
+  for (let i = 0; i < firstRoundMatches; i++) {
     const player1 = seededPlayers[i * 2];
     const player2 = seededPlayers[i * 2 + 1];
     
@@ -130,7 +133,7 @@ export function generateBracket(players: TournamentPlayer[]): {
   }
   
   // Generate subsequent round matches (empty, to be filled as tournament progresses)
-  let matchesInRound = bracketSize / 4;
+  let matchesInRound = Math.ceil(firstRoundMatches / 2);
   for (let round = 2; round <= numRounds; round++) {
     for (let i = 0; i < matchesInRound; i++) {
       matches.push({
@@ -140,7 +143,7 @@ export function generateBracket(players: TournamentPlayer[]): {
         player2_id: null,
       });
     }
-    matchesInRound = matchesInRound / 2;
+    matchesInRound = Math.ceil(matchesInRound / 2);
   }
   
   return matches;
