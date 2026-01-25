@@ -30,21 +30,21 @@ export function GiveawayCounter() {
   }, []);
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 backdrop-blur-sm hover:bg-primary/15 transition-all duration-300">
-      <Gift className="h-4 w-4 text-primary animate-pulse" />
-      <div className="flex flex-col gap-0.5">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Total Given Away
-        </span>
-        <span className="text-sm font-bold text-primary">
-          {loading ? 'Loading...' : total}
-        </span>
+    <div className="w-full bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border-b border-primary/20 backdrop-blur-sm">
+      <div className="container mx-auto px-4 py-2">
+        <div className="flex items-center justify-center gap-2">
+          <Gift className="h-3.5 w-3.5 text-primary animate-pulse flex-shrink-0" />
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Total Given Away:
+          </span>
+          <span className="text-xs font-bold text-primary">
+            {loading ? 'Loading...' : total}
+          </span>
+          {!loading && (
+            <span className="text-xs text-primary/60 ml-1">Live</span>
+          )}
+        </div>
       </div>
-      {!loading && (
-        <span className="text-xs text-muted-foreground ml-2 opacity-50">
-          Live
-        </span>
-      )}
     </div>
   );
 }

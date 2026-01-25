@@ -8,9 +8,7 @@ import { Gift, Zap } from 'lucide-react'
 export default function FirstDepositBonusPage() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4">
-        <GiveawayCounter />
-      </div>
+      <GiveawayCounter />
       <Header />
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto space-y-8">

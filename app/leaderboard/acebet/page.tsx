@@ -113,6 +113,7 @@ export default function AcebetLeaderboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <GiveawayCounter />
       <Header />
 
       {/* Hero Section */}

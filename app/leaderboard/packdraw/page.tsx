@@ -100,6 +100,7 @@ export default function PackdrawLeaderboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <GiveawayCounter />
       <SiteHeader />
 
       {/* Hero Section */}

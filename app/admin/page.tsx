@@ -50,6 +50,8 @@ export default function AdminPage() {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
         <div className="flex h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -63,6 +65,7 @@ export default function AdminPage() {
   if (!isAuthorized) {
     return (
       <main className="min-h-screen bg-background">
+        <GiveawayCounter />
         <Header />
         <div className="flex h-screen items-center justify-center px-4">
           <Card className="w-full max-w-md">
@@ -105,6 +108,7 @@ export default function AdminPage() {
   if (currentView === "dashboard") {
     return (
       <main className="min-h-screen bg-background">
+        <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
@@ -142,6 +146,7 @@ export default function AdminPage() {
   if (currentView === "tournament") {
     return (
       <main className="min-h-screen bg-background">
+        <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-6">
@@ -174,6 +179,7 @@ export default function AdminPage() {
   if (currentView === "tournament-detail" && selectedTournament) {
     return (
       <main className="min-h-screen bg-background">
+        <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
           <TournamentDetailView
@@ -192,6 +198,7 @@ export default function AdminPage() {
   if (currentView === "website") {
     return (
       <main className="min-h-screen bg-background">
+        <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-6">

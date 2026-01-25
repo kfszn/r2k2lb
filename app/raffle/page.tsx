@@ -8,9 +8,7 @@ import { Header } from '@/components/header'
 export default function RafflePage() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4">
-        <GiveawayCounter />
-      </div>
+      <GiveawayCounter />
       <Header />
       <main className="container mx-auto px-4 py-20">
         <Card className="max-w-2xl mx-auto">
