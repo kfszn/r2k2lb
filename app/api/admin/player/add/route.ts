@@ -106,9 +106,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { tournamentId, acebetUsername, kickUsername } = body;
 
-    if (!tournamentId || !acebetUsername) {
+    // At least one username must be provided
+    if (!tournamentId || (!acebetUsername && !kickUsername)) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "At least one username (Acebet or Kick) is required" },
         { status: 400 }
       );
     }
@@ -149,12 +150,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if player already registered - use maybeSingle() to handle 0 rows gracefully
+    // Use Acebet username as unique identifier if provided, otherwise Kick username
+    const uniqueIdentifier = acebetUsername || kickUsername;
+
+    // Check if player already registered
     const { data: existingPlayer, error: checkError } = await supabase
       .from("tournament_players")
       .select("id")
       .eq("tournament_id", tournamentId)
-      .eq("acebet_username", acebetUsername.toLowerCase())
+      .or(`acebet_username.eq.${acebetUsername?.toLowerCase() || ''}, kick_username.eq.${kickUsername?.toLowerCase() || ''}`)
       .maybeSingle();
 
     if (checkError) {
@@ -168,27 +172,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate Acebet username using validation endpoint
-    const { valid: isValid, user: acebetUser, error: validationError } = await validateAcebetUser(acebetUsername);
-    if (!isValid) {
-      return NextResponse.json(
-        { error: `Invalid Acebet username - ${validationError || "user not found under R2K2 affiliate"}` },
-        { status: 400 }
-      );
+    // If Acebet username provided, validate and get stats
+    let acebetStats = { wagered: 0, active: false };
+    let aceValidated = false;
+
+    if (acebetUsername) {
+      const { valid: isValid, user: acebetUser, error: validationError } = await validateAcebetUser(acebetUsername);
+      if (!isValid) {
+        return NextResponse.json(
+          { error: `Invalid Acebet username - ${validationError || "user not found under R2K2 affiliate"}` },
+          { status: 400 }
+        );
+      }
+      acebetStats = {
+        wagered: acebetUser?.wagered || 0,
+        active: acebetUser?.active || false,
+      };
+      aceValidated = true;
     }
 
-    // Add player with Acebet stats
+    // Add player
     const { data: player, error: playerError } = await supabase
       .from("tournament_players")
       .insert({
         tournament_id: tournamentId,
-        acebet_username: acebetUsername.toLowerCase(),
-        kick_username: kickUsername || acebetUsername,
+        acebet_username: acebetUsername ? acebetUsername.toLowerCase() : null,
+        kick_username: kickUsername?.toLowerCase() || acebetUsername?.toLowerCase(),
         display_name: kickUsername || acebetUsername,
         status: "registered",
-        acebet_wager: acebetUser?.wagered || 0,
-        acebet_active: acebetUser?.active || false,
-        acebet_validated: true,
+        acebet_wager: acebetStats.wagered,
+        acebet_active: acebetStats.active,
+        acebet_validated: aceValidated,
       })
       .select()
       .single();
