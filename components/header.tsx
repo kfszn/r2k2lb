@@ -8,7 +8,6 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { GiveawayCounter } from '@/components/giveaway-counter'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,18 +46,13 @@ function Header() {
 
   return (
     <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-bold text-white">
             R
           </div>
           <span className="font-bold text-lg hidden sm:inline">R2K2</span>
         </Link>
-
-        {/* Giveaway Counter - Center */}
-        <div className="hidden lg:flex justify-center flex-1">
-          <GiveawayCounter />
-        </div>
         <nav className="hidden md:flex items-center gap-8">
           <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
           <div className="relative group">
