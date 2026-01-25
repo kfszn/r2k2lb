@@ -16,10 +16,16 @@ export async function GET(
       );
     }
 
-    // Fetch bracket matches
+    // Fetch bracket matches with player details
     const { data: matches, error: matchesError } = await supabase
       .from("bracket_matches")
-      .select("*")
+      .select(
+        `
+        *,
+        player1:player1_id(id, kick_username, acebet_username),
+        player2:player2_id(id, kick_username, acebet_username)
+        `
+      )
       .eq("tournament_id", tournamentId)
       .order("round_number")
       .order("match_number");

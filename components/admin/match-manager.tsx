@@ -148,7 +148,7 @@ export function MatchManager({ tournament, onUpdate }: MatchManagerProps) {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="player1-score">
-                  {selectedMatch.player1?.display_name || "Player 1"} Score
+                  {selectedMatch.player1?.kick_username || selectedMatch.player1?.acebet_username || selectedMatch.player1?.display_name || "Player 1"} Score
                 </Label>
                 <Input
                   id="player1-score"
@@ -162,7 +162,7 @@ export function MatchManager({ tournament, onUpdate }: MatchManagerProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="player2-score">
-                  {selectedMatch.player2?.display_name || "Player 2"} Score
+                  {selectedMatch.player2?.kick_username || selectedMatch.player2?.acebet_username || selectedMatch.player2?.display_name || "Player 2"} Score
                 </Label>
                 <Input
                   id="player2-score"
@@ -225,13 +225,13 @@ function MatchRow({ match, onStart, onEdit, isLoading }: MatchRowProps) {
 
         <div className="flex items-center gap-2">
           <PlayerBadge
-            name={match.player1?.display_name}
+            name={match.player1?.kick_username || match.player1?.acebet_username || match.player1?.display_name}
             score={match.player1_score}
             isWinner={match.winner_id === match.player1_id}
           />
           <span className="text-muted-foreground">vs</span>
           <PlayerBadge
-            name={match.player2?.display_name}
+            name={match.player2?.kick_username || match.player2?.acebet_username || match.player2?.display_name}
             score={match.player2_score}
             isWinner={match.winner_id === match.player2_id}
           />

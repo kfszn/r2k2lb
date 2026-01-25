@@ -15,7 +15,7 @@ export function LiveBracket({ matches, players }: LiveBracketProps) {
   const getPlayerName = (playerId: string | null) => {
     if (!playerId) return null;
     const player = players.find((p) => p.id === playerId);
-    return player?.acebet_username || "TBD";
+    return player?.kick_username || player?.acebet_username || "TBD";
   };
 
   // Group matches by round
