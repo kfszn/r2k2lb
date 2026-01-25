@@ -71,7 +71,7 @@ export function BracketDisplay() {
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-xs text-foreground truncate">
-                                {match.player1?.acebet_username || 'TBD'}
+                                {match.player1?.kick_username || match.player1?.acebet_username || 'TBD'}
                               </p>
                             </div>
                             <span className="text-xs font-bold text-primary flex-shrink-0">BYE</span>
@@ -89,7 +89,7 @@ export function BracketDisplay() {
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <p className="font-semibold text-foreground truncate">
-                                  {match.player1?.acebet_username || '—'}
+                                  {match.player1?.kick_username || match.player1?.acebet_username || '—'}
                                 </p>
                               </div>
                               <div className="text-right flex-shrink-0">
@@ -118,7 +118,7 @@ export function BracketDisplay() {
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <p className="font-semibold text-foreground truncate">
-                                  {match.player2?.acebet_username || '—'}
+                                  {match.player2?.kick_username || match.player2?.acebet_username || '—'}
                                 </p>
                               </div>
                               <div className="text-right flex-shrink-0">
