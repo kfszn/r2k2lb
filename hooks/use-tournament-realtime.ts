@@ -20,7 +20,7 @@ async function fetchTournament(tournamentId: string): Promise<TournamentWithDeta
     .from("tournament_players")
     .select("*")
     .eq("tournament_id", tournamentId)
-    .order("seed", { ascending: true });
+    .order("seed_number", { ascending: true });
   
   const { data: matches } = await supabase
     .from("bracket_matches")
@@ -31,7 +31,7 @@ async function fetchTournament(tournamentId: string): Promise<TournamentWithDeta
       winner:tournament_players!bracket_matches_winner_id_fkey(*)
     `)
     .eq("tournament_id", tournamentId)
-    .order("round", { ascending: true })
+    .order("round_number", { ascending: true })
     .order("match_number", { ascending: true });
   
   return {
@@ -109,34 +109,40 @@ export function useTournamentRealtime(tournamentId: string | null) {
 }
 
 export function useActiveTournament() {
-  const { data, error, isLoading: isIdLoading, mutate } = useSWR("active-tournament", async () => {
-    const supabase = createClient();
-    
-    const { data: tournament, error: queryError } = await supabase
-      .from("tournaments")
-      .select("id")
-      .in("status", ["pending", "registration", "in_progress"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(); // Use maybeSingle instead of single to avoid error when no rows
-    
-    if (queryError) {
-      console.log("[v0] Error fetching active tournament:", queryError);
+  const { data, error, isLoading: isIdLoading, mutate: mutateId } = useSWR(
+    "active-tournament",
+    async () => {
+      const supabase = createClient();
+
+      const { data: tournament, error: queryError } = await supabase
+        .from("tournaments")
+        .select("id")
+        .in("status", ["pending", "registration", "active"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (queryError) {
+        console.error("[v0] Error fetching active tournament:", queryError);
+      }
+
+      return tournament?.id || null;
+    },
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 0,
+      focusThrottleInterval: 1000,
     }
-    
-    return tournament?.id || null;
-  });
+  );
 
-  const { tournament, isLoading: isTournamentLoading } = useTournamentRealtime(data || null);
+  const { tournament, isLoading: isTournamentLoading, refresh: refreshTournament } = useTournamentRealtime(data || null);
 
-  // Only show loading if we're still fetching the tournament ID
-  // Once we know there's no active tournament (data is explicitly null after fetch), stop loading
   const isLoading = isIdLoading || (data !== null && data !== undefined && isTournamentLoading);
 
   return {
     tournament,
     isLoading,
     isError: error,
-    refresh: mutate,
+    refresh: refreshTournament || mutateId,
   };
 }

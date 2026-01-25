@@ -35,16 +35,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
-  // Admin route - check if user is admin
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/auth/login?redirect=/admin', request.url))
-    }
-    if (user.email !== 'business.r2k2@gmail.com') {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
-  }
-
   return supabaseResponse
 }
 

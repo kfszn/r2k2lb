@@ -31,17 +31,28 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      console.log("[v0] Attempting login with email:", email)
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-    if (error) {
-      setError(error.message)
+      console.log("[v0] Login response - error:", error, "data:", data)
+
+      if (error) {
+        console.log("[v0] Login error occurred:", error.message)
+        setError(error.message)
+        setLoading(false)
+      } else if (data?.user) {
+        console.log("[v0] Login successful for user:", data.user.email)
+        // Do a hard redirect to force page reload and session detection
+        window.location.href = '/'
+      }
+    } catch (err: any) {
+      console.log("[v0] Login exception:", err)
+      setError(err?.message || 'Login failed. Please try again.')
       setLoading(false)
-    } else {
-      router.push('/account')
-      router.refresh()
     }
   }
 
@@ -53,7 +64,7 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/account`,
+          redirectTo: `${window.location.origin}/auth/callback?next=/`,
         },
       })
 
@@ -83,7 +94,11 @@ export default function LoginPage() {
         <CardContent className="space-y-4">
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
-              {error}
+              <div className="font-semibold">Login failed</div>
+              <div>{error}</div>
+              {error.includes('Invalid') && (
+                <div className="mt-2 text-xs">Tip: Make sure your email and password are correct. If you don't have an account yet, please sign up first.</div>
+              )}
             </div>
           )}
 
@@ -135,7 +150,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center">
-            <Link href="/home" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               ← Back to Home
             </Link>
           </div>

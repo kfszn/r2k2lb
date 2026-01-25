@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { createBrowserClient } from "@/lib/supabase/client";
+import React from "react";
+import { useState } from "react";
 import { useActiveTournament } from "@/hooks/use-tournament-realtime";
-import { AdminHeader } from "@/components/admin/admin-header";
+import Header from "@/components/header";
 import { QuickActions } from "@/components/admin/quick-actions";
 import { TournamentStats } from "@/components/admin/tournament-stats";
 import { MatchManager } from "@/components/admin/match-manager";
@@ -14,43 +13,40 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, ShieldAlert } from "lucide-react";
+import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, Lock, ShieldAlert, ArrowLeft, LayoutList } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { ClaimsManager } from "@/components/admin/claims-manager";
-import { EmailVerificationTool } from "@/components/admin/email-verification-tool"; // Import EmailVerificationTool
+import { EmailVerificationTool } from "@/components/admin/email-verification-tool";
+import { AllTournamentsManager } from "@/components/admin/all-tournaments-manager";
+import { TournamentSelector } from "@/components/admin/tournament-selector";
+import { TournamentDetailView } from "@/components/admin/tournament-detail-view";
 
-const ADMIN_EMAIL = "business.r2k2@gmail.com";
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
+
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail";
 
 export default function AdminPage() {
-  const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
-  const [userEmail, setUserEmail] = useState<string>("");
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [currentView, setCurrentView] = useState<AdminView>("dashboard");
+  const [selectedTournament, setSelectedTournament] = useState<any>(null);
   const { tournament, isLoading, refresh } = useActiveTournament();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEntrantsDialog, setShowEntrantsDialog] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = createBrowserClient();
-      const { data: { user } } = await supabase.auth.getUser();
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === ADMIN_PASSWORD) {
+      setIsAuthorized(true);
+      setPasswordError("");
+    } else {
+      setPasswordError("Incorrect password");
+      setPasswordInput("");
+    }
+  };
 
-      if (!user) {
-        router.push('/auth/login?redirect=/admin');
-        return;
-      }
-
-      setUserEmail(user.email || "");
-      
-      if (user.email === ADMIN_EMAIL) {
-        setIsAuthorized(true);
-      } else {
-        setIsAuthorized(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  if (isAuthorized === null || isLoading) {
+  if (isLoading) {
     return (
       <main className="min-h-screen bg-background">
         <div className="flex h-screen items-center justify-center">
@@ -63,29 +59,40 @@ export default function AdminPage() {
     );
   }
 
-  if (isAuthorized === false) {
+  if (!isAuthorized) {
     return (
       <main className="min-h-screen bg-background">
-        <div className="flex h-screen items-center justify-center">
-          <Card className="max-w-md">
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center gap-4 text-center">
-                <div className="rounded-full bg-destructive/10 p-3">
-                  <ShieldAlert className="h-8 w-8 text-destructive" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">Access Denied</h2>
-                  <p className="mt-2 text-muted-foreground">
-                    You don't have permission to access the admin panel.
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Logged in as: {userEmail}
-                  </p>
-                </div>
-                <Button onClick={() => router.push('/')} className="mt-4">
-                  Return to Home
-                </Button>
+        <Header />
+        <div className="flex h-screen items-center justify-center px-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="space-y-2 text-center">
+              <div className="flex justify-center mb-4">
+                <Lock className="h-8 w-8 text-primary" />
               </div>
+              <CardTitle>Admin Access</CardTitle>
+              <p className="text-sm text-muted-foreground">Enter the admin password to continue</p>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Input
+                    type="password"
+                    placeholder="Enter password"
+                    value={passwordInput}
+                    onChange={(e) => {
+                      setPasswordInput(e.target.value);
+                      setPasswordError("");
+                    }}
+                    autoFocus
+                  />
+                  {passwordError && (
+                    <p className="text-sm text-destructive">{passwordError}</p>
+                  )}
+                </div>
+                <Button type="submit" className="w-full">
+                  Unlock Admin Panel
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </div>
@@ -93,142 +100,120 @@ export default function AdminPage() {
     );
   }
 
-  return (
-    <main className="min-h-screen bg-background">
-      <AdminHeader />
-
-      <div className="container mx-auto px-4 py-6">
-        {!tournament ? (
-          /* No Tournament State */
-          <div className="flex flex-col items-center justify-center gap-8 py-16">
-            <div className="relative">
-              <div className="absolute -inset-4 animate-pulse rounded-full bg-primary/20 blur-xl" />
-              <div className="relative rounded-full bg-gradient-to-br from-primary/20 to-accent/20 p-8">
-                <Trophy className="h-16 w-16 text-primary" />
-              </div>
-            </div>
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-foreground">
-                Ready to Start a Tournament?
-              </h2>
-              <p className="mt-3 max-w-md text-muted-foreground">
-                Create a new tournament bracket and let viewers join via chat commands
-              </p>
-            </div>
-            <Button onClick={() => setShowCreateDialog(true)} size="lg" className="gap-2">
-              <Zap className="h-5 w-5" />
-              Create Tournament
-            </Button>
-          </div>
-        ) : (
-          /* Active Tournament State */
-          <div className="space-y-6">
-            {/* Quick Actions Bar */}
-            <QuickActions 
-              tournament={tournament} 
-              onUpdate={refresh}
-              onViewEntrants={() => setShowEntrantsDialog(true)}
-              onCreateNew={() => setShowCreateDialog(true)}
-            />
-
-            {/* Stats Cards */}
-            <TournamentStats tournament={tournament} />
-
-            {/* Management Tabs */}
-            <Tabs defaultValue="matches" className="space-y-4">
-              <TabsList className="grid w-full max-w-2xl grid-cols-4 bg-secondary">
-                <TabsTrigger value="matches" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Swords className="h-4 w-4" />
-                  Matches
-                </TabsTrigger>
-                <TabsTrigger value="players" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Users className="h-4 w-4" />
-                  Players
-                </TabsTrigger>
-                <TabsTrigger value="claims" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <UserCheck className="h-4 w-4" />
-                  Claims
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Settings className="h-4 w-4" />
-                  Settings
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="matches">
-                <MatchManager tournament={tournament} onUpdate={refresh} />
-              </TabsContent>
-
-              <TabsContent value="players">
-                <PlayerManager tournament={tournament} onUpdate={refresh} />
-              </TabsContent>
-
-              <TabsContent value="claims">
-                <ClaimsManager /> {/* Updated to use ClaimsManager */}
-              </TabsContent>
-
-              <TabsContent value="settings">
-                <div className="space-y-6">
-                  {/* Email Verification Tool */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <ShieldAlert className="h-5 w-5 text-primary" />
-                        Email Verification
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <EmailVerificationTool />
-                    </CardContent>
-                  </Card>
-
-                  {/* Tournament Settings */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Tournament Settings</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <div className="rounded-lg border border-border p-4">
-                          <p className="text-xs font-medium text-muted-foreground">Tournament ID</p>
-                          <p className="mt-1 font-mono text-sm">{tournament.id.slice(0, 8)}...</p>
-                        </div>
-                        <div className="rounded-lg border border-border p-4">
-                          <p className="text-xs font-medium text-muted-foreground">Created</p>
-                          <p className="mt-1 text-sm">{new Date(tournament.created_at).toLocaleString()}</p>
-                        </div>
-                        <div className="rounded-lg border border-border p-4">
-                          <p className="text-xs font-medium text-muted-foreground">Game</p>
-                          <p className="mt-1 text-sm">{tournament.game_name}</p>
-                        </div>
-                        <div className="rounded-lg border border-border p-4">
-                          <p className="text-xs font-medium text-muted-foreground">Bet Amount</p>
-                          <p className="mt-1 text-sm">${tournament.bet_amount}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+  // Dashboard View
+  if (currentView === "dashboard") {
+    return (
+      <main className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("tournament")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-8 w-8 text-primary" />
+                  <CardTitle>Tournament Management</CardTitle>
                 </div>
-              </TabsContent>
-            </Tabs>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Create tournaments, manage matches, verify entries, and handle claims</p>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("website")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Settings className="h-8 w-8 text-primary" />
+                  <CardTitle>Website Management</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Manage user accounts, email verification, and website settings</p>
+              </CardContent>
+            </Card>
           </div>
-        )}
-      </div>
+        </div>
+      </main>
+    );
+  }
 
-      <CreateTournamentDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        onCreated={refresh}
-      />
+  // Tournament Management View - Show Tournament Selector
+  if (currentView === "tournament") {
+    return (
+      <main className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Tournament Management</h1>
+          </div>
 
-      {tournament && (
-        <EntrantsDialog
-          open={showEntrantsDialog}
-          onOpenChange={setShowEntrantsDialog}
-          tournament={tournament}
-          onRefresh={refresh}
-        />
-      )}
-    </main>
-  );
+          <TournamentSelector 
+            onSelectTournament={(t) => {
+              setSelectedTournament(t);
+              setCurrentView("tournament-detail");
+            }}
+            onCreateNew={() => setShowCreateDialog(true)}
+          />
+
+          <CreateTournamentDialog
+            open={showCreateDialog}
+            onOpenChange={setShowCreateDialog}
+            onCreated={refresh}
+          />
+        </div>
+      </main>
+    );
+  }
+
+  // Tournament Detail View
+  if (currentView === "tournament-detail" && selectedTournament) {
+    return (
+      <main className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <TournamentDetailView
+            tournament={selectedTournament}
+            onBack={() => {
+              setSelectedTournament(null);
+              setCurrentView("tournament");
+            }}
+          />
+        </div>
+      </main>
+    );
+  }
+
+  // Website Management View
+  if (currentView === "website") {
+    return (
+      <main className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Website Management</h1>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-primary" />
+                Email Verification
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EmailVerificationTool />
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    );
+  }
 }

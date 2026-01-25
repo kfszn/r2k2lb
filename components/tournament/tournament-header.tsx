@@ -109,3 +109,5 @@ function StatCard({ icon: Icon, label, value, subValue, iconColor = "text-primar
     </Card>
   );
 }
+
+export default TournamentHeader;

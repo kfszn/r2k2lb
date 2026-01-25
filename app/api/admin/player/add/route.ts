@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const ACEBET_API_URL = "https://api.acebet.com/affiliates/detailed-summary/v2";
 const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
 
 interface AcebetUser {
@@ -21,60 +20,85 @@ interface AcebetUser {
   lastSeen: string;
 }
 
-interface AcebetResponse {
-  Users: AcebetUser[];
-}
-
-// Cache the user list for 5 minutes to avoid excessive API calls
+// Cache the user list for 5 minutes
 let cachedUsers: AcebetUser[] | null = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
 
-async function getAcebetUsers(): Promise<AcebetUser[]> {
+// Start date for counting wagers: 12/26/2025 EST (12am UTC)
+const WAGER_WINDOW_START = "2025-12-26";
+
+async function fetchAcebetUsers(): Promise<AcebetUser[]> {
   const now = Date.now();
-  
-  if (cachedUsers && (now - cacheTimestamp) < CACHE_DURATION) {
+
+  // Return cached data if still valid
+  if (cachedUsers && now - cacheTimestamp < CACHE_DURATION) {
+    console.log("[v0] Returning cached Acebet users");
     return cachedUsers;
   }
 
   if (!ACEBET_TOKEN) {
-    console.warn("ACEBET_API_TOKEN not configured");
+    console.error("[v0] ACEBET_API_TOKEN not configured");
     return [];
   }
 
   try {
-    const response = await fetch(ACEBET_API_URL, {
+    // Use the wager window start date to get cumulative wager data
+    const url = `https://api.acebet.com/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
+
+    console.log("[v0] Fetching Acebet users from:", url);
+
+    const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${ACEBET_TOKEN}`,
-        "Content-Type": "application/json",
       },
+      cache: "no-store",
     });
 
+    console.log("[v0] Acebet API response status:", response.status);
+
     if (!response.ok) {
-      console.error("Acebet API error:", response.status);
+      const errorText = await response.text().catch(() => "");
+      console.error("[v0] Acebet API error:", response.status, errorText);
       return cachedUsers || [];
     }
 
-    const data: AcebetResponse = await response.json();
-    cachedUsers = data.Users || [];
+    const data = await response.json().catch(() => null);
+    console.log("[v0] Acebet API response - data type:", typeof data, "is array:", Array.isArray(data));
+
+    cachedUsers = Array.isArray(data) ? data : [];
     cacheTimestamp = now;
+
+    console.log("[v0] Cached", cachedUsers.length, "Acebet users");
     return cachedUsers;
   } catch (error) {
-    console.error("Error fetching Acebet users:", error);
+    console.error("[v0] Error fetching Acebet users:", error instanceof Error ? error.message : error);
     return cachedUsers || [];
   }
 }
 
-async function validateAcebetUser(username: string): Promise<{ valid: boolean; user?: AcebetUser }> {
-  if (!ACEBET_TOKEN) {
-    console.warn("ACEBET_API_TOKEN not configured, skipping validation");
-    return { valid: true };
-  }
+async function validateAcebetUser(username: string) {
+  try {
+    console.log("[v0] Validating Acebet username:", username);
 
-  const users = await getAcebetUsers();
-  const user = users.find(u => u.name.toLowerCase() === username.toLowerCase());
-  
-  return { valid: !!user, user };
+    const users = await fetchAcebetUsers();
+    console.log("[v0] Total users available:", users.length);
+
+    const user = users.find(
+      (u) => u.name && u.name.toLowerCase() === username.toLowerCase()
+    );
+
+    if (!user) {
+      console.log("[v0] User not found:", username);
+      return { valid: false, user: null, error: `User "${username}" not found under R2K2 affiliate` };
+    }
+
+    console.log("[v0] User found:", user.name, "active:", user.active);
+    return { valid: true, user };
+  } catch (error) {
+    console.error("[v0] Error validating user:", error instanceof Error ? error.message : error);
+    return { valid: false, user: null, error: "Validation error" };
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -105,7 +129,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (tournament.status !== "registration") {
+    if (!["pending", "registration"].includes(tournament.status)) {
       return NextResponse.json(
         { error: "Tournament is not accepting registrations" },
         { status: 400 }
@@ -125,13 +149,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if player already registered
-    const { data: existingPlayer } = await supabase
+    // Check if player already registered - use maybeSingle() to handle 0 rows gracefully
+    const { data: existingPlayer, error: checkError } = await supabase
       .from("tournament_players")
       .select("id")
       .eq("tournament_id", tournamentId)
       .eq("acebet_username", acebetUsername.toLowerCase())
-      .single();
+      .maybeSingle();
+
+    if (checkError) {
+      console.error("[v0] Error checking existing player:", checkError);
+    }
 
     if (existingPlayer) {
       return NextResponse.json(
@@ -140,16 +168,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate Acebet username (optional based on token availability)
-    const { valid: isValid } = await validateAcebetUser(acebetUsername);
-    if (!isValid && ACEBET_TOKEN) {
+    // Validate Acebet username using validation endpoint
+    const { valid: isValid, user: acebetUser, error: validationError } = await validateAcebetUser(acebetUsername);
+    if (!isValid) {
       return NextResponse.json(
-        { error: "Invalid Acebet username - user not found under R2K2 affiliate" },
+        { error: `Invalid Acebet username - ${validationError || "user not found under R2K2 affiliate"}` },
         { status: 400 }
       );
     }
 
-    // Add player
+    // Add player with Acebet stats
     const { data: player, error: playerError } = await supabase
       .from("tournament_players")
       .insert({
@@ -158,6 +186,9 @@ export async function POST(request: NextRequest) {
         kick_username: kickUsername || acebetUsername,
         display_name: kickUsername || acebetUsername,
         status: "registered",
+        acebet_wager: acebetUser?.wagered || 0,
+        acebet_active: acebetUser?.active || false,
+        acebet_validated: true,
       })
       .select()
       .single();

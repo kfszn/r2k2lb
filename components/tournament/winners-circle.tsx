@@ -8,7 +8,8 @@ import { createClient } from "@/lib/supabase/client";
 
 interface Winner {
   acebet_username: string;
-  win_count: number;
+  tournament_name: string;
+  prize_amount: number;
 }
 
 export function WinnersCircle() {
@@ -21,9 +22,9 @@ export function WinnersCircle() {
     async function fetchWinners() {
       const { data, error } = await supabase
         .from("tournament_winners")
-        .select("acebet_username, win_count")
-        .order("win_count", { ascending: false })
-        .order("updated_at", { ascending: false });
+        .select("acebet_username, tournament_name, prize_amount")
+        .order("won_at", { ascending: false })
+        .limit(20);
 
       if (!error && data) {
         setWinners(data);

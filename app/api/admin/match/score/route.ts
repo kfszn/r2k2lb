@@ -52,45 +52,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update winner's best multiplier if higher
-    const winnerScore = player1Score > player2Score ? player1Score : player2Score;
-    const { data: winner } = await supabase
+    // Update winner status
+    await supabase
       .from("tournament_players")
-      .select("best_multiplier")
-      .eq("id", winnerId)
-      .single();
+      .update({ status: "checked_in" })
+      .eq("id", winnerId);
 
-    if (!winner?.best_multiplier || winnerScore > winner.best_multiplier) {
-      await supabase
-        .from("tournament_players")
-        .update({ best_multiplier: winnerScore, status: "checked_in" })
-        .eq("id", winnerId);
-    } else {
-      await supabase
-        .from("tournament_players")
-        .update({ status: "checked_in" })
-        .eq("id", winnerId);
-    }
-
-    // Update loser's best multiplier and status
-    const loserScore = player1Score > player2Score ? player2Score : player1Score;
-    const { data: loser } = await supabase
+    // Update loser status
+    await supabase
       .from("tournament_players")
-      .select("best_multiplier")
-      .eq("id", loserId)
-      .single();
-
-    if (!loser?.best_multiplier || loserScore > loser.best_multiplier) {
-      await supabase
-        .from("tournament_players")
-        .update({ best_multiplier: loserScore, status: "eliminated" })
-        .eq("id", loserId);
-    } else {
-      await supabase
-        .from("tournament_players")
-        .update({ status: "eliminated" })
-        .eq("id", loserId);
-    }
+      .update({ status: "eliminated" })
+      .eq("id", loserId);
 
     // Find the next match for the winner and add them
     const { data: nextMatches } = await supabase
@@ -128,36 +100,29 @@ export async function POST(request: NextRequest) {
       // Get winner's Acebet username and record in winners table
       const { data: winnerPlayer } = await supabase
         .from("tournament_players")
-        .select("acebet_username")
+        .select("acebet_username, kick_username")
         .eq("id", winnerId)
         .single();
 
       if (winnerPlayer?.acebet_username) {
-        // Check if winner already exists in winners table
-        const { data: existingWinner } = await supabase
-          .from("tournament_winners")
-          .select("*")
-          .eq("acebet_username", winnerPlayer.acebet_username)
+        // Get tournament details
+        const { data: tournamentData } = await supabase
+          .from("tournaments")
+          .select("name")
+          .eq("id", match.tournament_id)
           .single();
 
-        if (existingWinner) {
-          // Increment win count
-          await supabase
-            .from("tournament_winners")
-            .update({ 
-              win_count: existingWinner.win_count + 1,
-              updated_at: new Date().toISOString()
-            })
-            .eq("id", existingWinner.id);
-        } else {
-          // Add new winner
-          await supabase
-            .from("tournament_winners")
-            .insert({
-              acebet_username: winnerPlayer.acebet_username,
-              win_count: 1,
-            });
-        }
+        // Add new winner record
+        await supabase
+          .from("tournament_winners")
+          .insert({
+            tournament_id: match.tournament_id,
+            tournament_name: tournamentData?.name || "Tournament",
+            acebet_username: winnerPlayer.acebet_username,
+            kick_username: winnerPlayer.kick_username,
+            prize_amount: 0, // Will be updated later if needed
+            won_at: new Date().toISOString(),
+          });
       }
 
       // Mark tournament as completed

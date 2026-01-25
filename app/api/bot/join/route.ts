@@ -1,81 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const ACEBET_API_URL = "https://api.acebet.com/affiliates/detailed-summary/v2";
-const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
-
-interface AcebetUser {
-  userId: number;
-  name: string;
-  avatar: string;
-  badge: string | null;
-  role: string;
-  active: boolean;
-  isPrivate: boolean;
-  premiumUntil: string | null;
-  wagered: number;
-  deposited: number;
-  earned: number;
-  xp: number;
-  firstSeen: string;
-  lastSeen: string;
-}
-
-interface AcebetResponse {
-  Users: AcebetUser[];
-}
-
-// Cache the user list for 5 minutes to avoid excessive API calls
-let cachedUsers: AcebetUser[] | null = null;
-let cacheTimestamp = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-async function getAcebetUsers(): Promise<AcebetUser[]> {
-  const now = Date.now();
-  
-  // Return cached data if still valid
-  if (cachedUsers && (now - cacheTimestamp) < CACHE_DURATION) {
-    return cachedUsers;
-  }
-
-  if (!ACEBET_TOKEN) {
-    console.warn("ACEBET_API_TOKEN not configured");
-    return [];
-  }
-
+async function validateAcebetUser(username: string) {
   try {
-    const response = await fetch(ACEBET_API_URL, {
-      headers: {
-        Authorization: `Bearer ${ACEBET_TOKEN}`,
-        "Content-Type": "application/json",
-      },
+    const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
+    const response = await fetch(`${baseUrl}/api/acebet/validate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
     });
 
+    console.log("[v0] Validation API response status:", response.status);
+
     if (!response.ok) {
-      console.error("Acebet API error:", response.status);
-      return cachedUsers || [];
+      const error = await response.json().catch(() => ({}));
+      console.log("[v0] Validation API error:", error);
+      return { valid: false, user: null, error: error.message };
     }
 
-    const data: AcebetResponse = await response.json();
-    cachedUsers = data.Users || [];
-    cacheTimestamp = now;
-    return cachedUsers;
+    const data = await response.json();
+    console.log("[v0] User validated:", data.user?.name, "active:", data.user?.active);
+    return { valid: true, user: data.user };
   } catch (error) {
-    console.error("Error fetching Acebet users:", error);
-    return cachedUsers || [];
+    console.error("[v0] Error calling validation API:", error instanceof Error ? error.message : error);
+    return { valid: false, user: null, error: "Validation service unavailable" };
   }
-}
-
-async function validateAcebetUser(username: string): Promise<{ valid: boolean; user?: AcebetUser }> {
-  if (!ACEBET_TOKEN) {
-    console.warn("ACEBET_API_TOKEN not configured, skipping validation");
-    return { valid: true };
-  }
-
-  const users = await getAcebetUsers();
-  const user = users.find(u => u.name.toLowerCase() === username.toLowerCase());
-  
-  return { valid: !!user, user };
 }
 
 export async function POST(request: NextRequest) {
@@ -147,32 +96,36 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Validate Acebet username and get user data
-    const { valid: isValid, user: acebetUser } = await validateAcebetUser(acebetUsername);
-    if (!isValid && ACEBET_TOKEN) {
+    // Validate Acebet username using validation endpoint
+    console.log("[v0] Validating player:", acebetUsername);
+    const { valid: isValid, user: acebetUser, error: validationError } = await validateAcebetUser(acebetUsername);
+
+    if (!isValid) {
+      console.log("[v0] Validation failed:", validationError);
       return NextResponse.json({
         success: false,
-        message: `@${kickUsername} Entry DENIED - Not under code R2K2. Sign up at acebet.com with code R2K2!`,
+        message: `@${kickUsername} Entry DENIED - ${validationError || "Not under code R2K2. Sign up at acebet.com with code R2K2!"}`,
       });
     }
 
-    // Check if user meets requirements
-    if (acebetUser && ACEBET_TOKEN) {
-      // Check active requirement
-      if (tournament.require_active && !acebetUser.active) {
-        return NextResponse.json({
-          success: false,
-          message: `@${kickUsername} Entry DENIED - You must be active under code R2K2 to enter.`,
-        });
-      }
+    console.log("[v0] Player validated successfully");
 
-      // Check minimum wager requirement
-      if (tournament.min_wager && acebetUser.wagered < tournament.min_wager) {
-        return NextResponse.json({
-          success: false,
-          message: `@${kickUsername} Entry DENIED - Not enough wager. You need $${tournament.min_wager.toLocaleString()} wagered (you have $${acebetUser.wagered.toLocaleString()}).`,
-        });
-      }
+    // Check active requirement if needed
+    if (tournament.require_active && acebetUser && !acebetUser.active) {
+      console.log("[v0] Player rejected - not active:", kickUsername);
+      return NextResponse.json({
+        success: false,
+        message: `@${kickUsername} Entry DENIED - You must be active under code R2K2 to enter.`,
+      });
+    }
+
+    // Check minimum wager requirement if needed
+    if (tournament.min_wager && acebetUser && acebetUser.wagered < tournament.min_wager) {
+      console.log("[v0] Player rejected - insufficient wager:", kickUsername);
+      return NextResponse.json({
+        success: false,
+        message: `@${kickUsername} Entry DENIED - Not enough wager. You need $${tournament.min_wager.toLocaleString()} wagered (you have $${acebetUser.wagered.toLocaleString()}).`,
+      });
     }
 
     // Register player with Acebet data
@@ -189,12 +142,14 @@ export async function POST(request: NextRequest) {
       });
 
     if (playerError) {
-      console.error("Error registering player:", playerError);
+      console.error("[v0] Error registering player:", playerError);
       return NextResponse.json({
         success: false,
         message: `@${kickUsername} Failed to register. Please try again.`,
       });
     }
+
+    console.log("[v0] Player registered successfully:", kickUsername);
 
     // Log the registration
     await supabase.from("tournament_chat_log").insert({

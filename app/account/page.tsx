@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { createBrowserClient } from '@supabase/ssr'
 import Image from 'next/image'
 import { Trophy, TrendingUp, CheckCircle2, Clock, XCircle } from 'lucide-react'
-import { Header } from '@/components/header'
+import Header from '@/components/header'
 
 interface UserClaim {
   id: string
