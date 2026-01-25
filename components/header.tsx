@@ -77,6 +77,33 @@ function Header() {
           </div>
           <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">Raffle</Link>
           <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors">Tournament</Link>
+          <div className="relative group">
+            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+              Code Perks
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <div className="absolute left-0 mt-0 hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[200px] z-50">
+              <Link 
+                href="/perks/wager-rewards" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors first:rounded-t-lg"
+              >
+                Wager Rewards
+              </Link>
+              <Link 
+                href="/perks/first-deposit" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                First Time Deposit Bonus
+              </Link>
+              <Link 
+                href="/perks/loss-back" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Loss-back
+              </Link>
+            </div>
+          </div>
+          <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary transition-colors">Discord</a>
           {isAdmin && (
             <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">Admin</Link>
           )}
@@ -182,6 +209,57 @@ function Header() {
                 >
                   Tournament
                 </Link>
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
+                  >
+                    Code Perks
+                    <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {dropdownOpen && (
+                    <div className="flex flex-col gap-2">
+                      <Link 
+                        href="/perks/wager-rewards"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                        onClick={() => {
+                          setOpen(false)
+                          setDropdownOpen(false)
+                        }}
+                      >
+                        Wager Rewards
+                      </Link>
+                      <Link 
+                        href="/perks/first-deposit"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                        onClick={() => {
+                          setOpen(false)
+                          setDropdownOpen(false)
+                        }}
+                      >
+                        First Time Deposit Bonus
+                      </Link>
+                      <Link 
+                        href="/perks/loss-back"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                        onClick={() => {
+                          setOpen(false)
+                          setDropdownOpen(false)
+                        }}
+                      >
+                        Loss-back
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <a 
+                  href="https://discord.gg/r2k2" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                >
+                  Discord
+                </a>
                 {isAdmin && (
                   <Link 
                     href="/admin" 
