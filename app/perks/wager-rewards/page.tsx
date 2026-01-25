@@ -215,8 +215,8 @@ export default function WagerRewardsPage() {
                 <p className="text-sm text-muted-foreground">All wager totals reset at the beginning of each month, allowing you to earn rewards multiple times throughout the year</p>
               </div>
               <div className="space-y-2 p-3 rounded-lg bg-secondary/20 border border-border/50">
-                <p className="font-medium text-sm">Stacking Rewards</p>
-                <p className="text-sm text-muted-foreground">If you wager $150,000 in a month, you earn both Tier 1 ($150) and Tier 2 ($100) rewards for a total of $250</p>
+                <p className="font-medium text-sm">How Payouts Work</p>
+                <p className="text-sm text-muted-foreground">You're paid the difference between your last claimed tier and your current tier. For example: claim $100 at 100k wagers, then reach 120k wagers, you only receive the $20 difference (for the additional 20k wagers)</p>
               </div>
               <div className="space-y-2 p-3 rounded-lg bg-secondary/20 border border-border/50">
                 <p className="font-medium text-sm">Automatic Credits</p>
