@@ -219,8 +219,8 @@ export default function WagerRewardsPage() {
                 <p className="text-sm text-muted-foreground">You're paid the difference between your last claimed tier and your current tier. For example: claim $100 at 100k wagers, then reach 120k wagers, you only receive the $20 difference (for the additional 20k wagers)</p>
               </div>
               <div className="space-y-2 p-3 rounded-lg bg-secondary/20 border border-border/50">
-                <p className="font-medium text-sm">Automatic Credits</p>
-                <p className="text-sm text-muted-foreground">Rewards are automatically credited to your account when you hit each milestone. No manual claiming required</p>
+                <p className="font-medium text-sm">Redemption Process</p>
+                <p className="text-sm text-muted-foreground">Head to our Discord (discord.gg/r2k2) and create a support ticket with your wager proof. Our team will verify your wagers and process your reward payout within 24-48 hours</p>
               </div>
             </CardContent>
           </Card>
