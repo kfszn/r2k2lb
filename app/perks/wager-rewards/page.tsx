@@ -225,36 +225,6 @@ export default function WagerRewardsPage() {
             </CardContent>
           </Card>
 
-          {/* Redeem Section */}
-          <Card className="bg-gradient-to-r from-primary/20 via-card to-primary/10 border border-primary/30">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-6 w-6 text-primary" />
-                Ready to Redeem Your Rewards?
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Join our Discord community to create a support ticket and redeem your earned rewards.
-              </p>
-              <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Redeem on Discord - discord.gg/r2k2
-                </Button>
-              </a>
-              <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                <div className="flex gap-2 items-start">
-                  <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                  <div className="space-y-1">
-                    <p className="font-medium text-sm text-destructive">Your Responsibility</p>
-                    <p className="text-xs text-destructive/80">Rewards reset monthly with no exceptions. You are responsible for keeping track of your wagers and redeeming rewards within the month they are earned. Unredeemed rewards do not carry over.</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* CTA */}
           <div className="text-center space-y-4 py-6">
             <p className="text-lg text-muted-foreground">Ready to start earning wager rewards?</p>
