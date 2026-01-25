@@ -44,8 +44,8 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
   const handleSaveScore = (matchId: string) => {
     if (!editingScore) return;
 
-    const score1 = parseInt(editingScore.score1, 10);
-    const score2 = parseInt(editingScore.score2, 10);
+    const score1 = parseFloat(editingScore.score1);
+    const score2 = parseFloat(editingScore.score2);
 
     if (isNaN(score1) || isNaN(score2)) {
       alert('Please enter valid numbers for both scores');
@@ -129,6 +129,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                                 <Input
                                   type="number"
                                   min="0"
+                                  step="0.01"
                                   value={editingScore.score1}
                                   onChange={(e) =>
                                     setEditingScore({
@@ -142,6 +143,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                                 <Input
                                   type="number"
                                   min="0"
+                                  step="0.01"
                                   value={editingScore.score2}
                                   onChange={(e) =>
                                     setEditingScore({
