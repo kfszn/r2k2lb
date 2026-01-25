@@ -61,13 +61,14 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     
     // Round 1 with byes: players get byes first, then regular matches
     let playerIndex = 0;
+    let matchNumber = 0;
     
     // Create bye matches (player vs null automatically advances)
     for (let i = 0; i < byeCount; i++) {
       newMatches.push({
-        id: `match-1-${i}`,
+        id: `match-1-${matchNumber}`,
         round: 1,
-        matchNumber: i,
+        matchNumber: matchNumber,
         player1: players[playerIndex] || null,
         player2: null, // Bye - no second player
         player1Score: 0,
@@ -75,14 +76,16 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
         status: 'pending',
       });
       playerIndex++;
+      matchNumber++;
     }
     
     // Create regular matches with remaining players
-    for (let i = byeCount; i < nextPowerOfTwo / 2; i++) {
+    const remainingPlayers = players.length - byeCount;
+    for (let i = 0; i < remainingPlayers / 2; i++) {
       newMatches.push({
-        id: `match-1-${i}`,
+        id: `match-1-${matchNumber}`,
         round: 1,
-        matchNumber: i,
+        matchNumber: matchNumber,
         player1: players[playerIndex] || null,
         player2: players[playerIndex + 1] || null,
         player1Score: 0,
@@ -90,6 +93,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
         status: 'pending',
       });
       playerIndex += 2;
+      matchNumber++;
     }
 
     // Generate subsequent rounds
@@ -100,15 +104,16 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
       const matchesInRound = currentRoundMatches / 2;
       for (let i = 0; i < matchesInRound; i++) {
         newMatches.push({
-          id: `match-${round}-${i}`,
+          id: `match-${round}-${matchNumber}`,
           round,
-          matchNumber: i,
+          matchNumber: matchNumber,
           player1: null,
           player2: null,
           player1Score: 0,
           player2Score: 0,
           status: 'pending',
         });
+        matchNumber++;
       }
       currentRoundMatches = matchesInRound;
     }
