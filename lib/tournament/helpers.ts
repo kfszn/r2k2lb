@@ -1,13 +1,13 @@
 import type { TournamentPlayer } from "@/lib/types/tournament";
 
 export function generateBracket(players: TournamentPlayer[]): {
-  round: number;
+  round_number: number;
   match_number: number;
   player1_id: string | null;
   player2_id: string | null;
 }[] {
   const matches: {
-    round: number;
+    round_number: number;
     match_number: number;
     player1_id: string | null;
     player2_id: string | null;
@@ -31,7 +31,7 @@ export function generateBracket(players: TournamentPlayer[]): {
     const player2 = seededPlayers[i * 2 + 1];
     
     matches.push({
-      round: 1,
+      round_number: 1,
       match_number: matchNumber++,
       player1_id: player1?.id || null,
       player2_id: player2?.id || null,
@@ -43,7 +43,7 @@ export function generateBracket(players: TournamentPlayer[]): {
   for (let round = 2; round <= numRounds; round++) {
     for (let i = 0; i < matchesInRound; i++) {
       matches.push({
-        round,
+        round_number: round,
         match_number: matchNumber++,
         player1_id: null,
         player2_id: null,

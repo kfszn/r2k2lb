@@ -6,7 +6,8 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Clock, DollarSign, TrendingUp } from 'lucide-react'
-import Header from '@/components/header'
+import { GiveawayCounter } from '@/components/giveaway-counter'
+import { Header } from '@/components/header'
 
 interface LeaderboardEntry {
   userId: number
@@ -112,6 +113,7 @@ export default function AcebetLeaderboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <GiveawayCounter />
       <Header />
 
       {/* Hero Section */}

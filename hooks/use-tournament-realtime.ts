@@ -130,10 +130,37 @@ export function useActiveTournament() {
     },
     {
       revalidateOnFocus: true,
+      refreshInterval: 3000, // Poll every 3 seconds to catch new tournaments
       dedupingInterval: 0,
       focusThrottleInterval: 1000,
     }
   );
+
+  // Subscribe to tournament table changes to detect when a new one goes live
+  useEffect(() => {
+    const supabase = createClient();
+
+    const tournamentChannel = supabase
+      .channel("active-tournament-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "tournaments",
+          filter: "status=in.(pending,registration,active)",
+        },
+        () => {
+          console.log("[v0] Tournament status changed, refreshing active tournament");
+          mutateId();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(tournamentChannel);
+    };
+  }, [mutateId]);
 
   const { tournament, isLoading: isTournamentLoading, refresh: refreshTournament } = useTournamentRealtime(data || null);
 

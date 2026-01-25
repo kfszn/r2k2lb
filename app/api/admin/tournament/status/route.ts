@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validStatuses = ["pending", "registration", "in_progress", "completed", "cancelled"];
+    const validStatuses = ["pending", "registration", "active", "completed", "cancelled"];
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
         { error: "Invalid status" },
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // If starting tournament, generate bracket first
-    if (status === "in_progress") {
+    if (status === "active") {
       // Get players for bracket generation
       const { data: players, error: playersError } = await supabase
         .from("tournament_players")

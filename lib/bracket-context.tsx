@@ -54,24 +54,48 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     if (players.length < 2) return;
 
     const newMatches: BracketMatch[] = [];
-    const numRounds = Math.ceil(Math.log2(players.length));
     
-    // Generate first round matches
-    for (let i = 0; i < players.length; i += 2) {
+    // Find the next power of 2
+    const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(players.length)));
+    const byeCount = nextPowerOfTwo - players.length;
+    
+    // Round 1 with byes: players get byes first, then regular matches
+    let playerIndex = 0;
+    
+    // Create bye matches (player vs null automatically advances)
+    for (let i = 0; i < byeCount; i++) {
       newMatches.push({
-        id: `match-1-${Math.floor(i / 2)}`,
+        id: `match-1-${i}`,
         round: 1,
-        matchNumber: Math.floor(i / 2),
-        player1: players[i] || null,
-        player2: players[i + 1] || null,
+        matchNumber: i,
+        player1: players[playerIndex] || null,
+        player2: null, // Bye - no second player
         player1Score: 0,
         player2Score: 0,
         status: 'pending',
       });
+      playerIndex++;
+    }
+    
+    // Create regular matches with remaining players
+    for (let i = byeCount; i < nextPowerOfTwo / 2; i++) {
+      newMatches.push({
+        id: `match-1-${i}`,
+        round: 1,
+        matchNumber: i,
+        player1: players[playerIndex] || null,
+        player2: players[playerIndex + 1] || null,
+        player1Score: 0,
+        player2Score: 0,
+        status: 'pending',
+      });
+      playerIndex += 2;
     }
 
-    // Generate subsequent rounds (with TBD slots for winners to advance to)
-    let currentRoundMatches = newMatches.length;
+    // Generate subsequent rounds
+    const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
+    let currentRoundMatches = nextPowerOfTwo / 2;
+    
     for (let round = 2; round <= numRounds; round++) {
       const matchesInRound = currentRoundMatches / 2;
       for (let i = 0; i < matchesInRound; i++) {
@@ -89,7 +113,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
       currentRoundMatches = matchesInRound;
     }
 
-    console.log('[v0] Generated bracket with', newMatches.length, 'matches');
+    console.log('[v0] Generated bracket with', newMatches.length, 'matches (', byeCount, 'byes for', players.length, 'players)');
     setMatches(newMatches);
     localStorage.setItem('bracket-matches', JSON.stringify(newMatches));
   }, []);
@@ -116,23 +140,67 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
 
       // Advance winner to next round
       const match = updated.find(m => m.id === matchId);
-      if (match && match.round < Math.ceil(Math.log2(updated.length))) {
-        const nextRound = match.round + 1;
-        const nextMatchIndex = Math.floor(match.matchNumber / 2);
-        const isPlayer1Slot = match.matchNumber % 2 === 0;
+      if (match) {
+        const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(updated.filter(m => m.round === 1).length * 2)));
+        const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
+        
+        if (match.round < numRounds) {
+          const nextRound = match.round + 1;
+          const nextMatchIndex = Math.floor(match.matchNumber / 2);
+          const isPlayer1Slot = match.matchNumber % 2 === 0;
 
-        updated = updated.map(m => {
-          if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
-            const winnerPlayer = match.player1?.id === winnerId ? match.player1 : match.player2;
-            if (isPlayer1Slot) {
-              return { ...m, player1: winnerPlayer };
-            } else {
-              return { ...m, player2: winnerPlayer };
+          updated = updated.map(m => {
+            if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
+              const winnerPlayer = match.player1?.id === winnerId ? match.player1 : match.player2;
+              if (isPlayer1Slot) {
+                return { ...m, player1: winnerPlayer };
+              } else {
+                return { ...m, player2: winnerPlayer };
+              }
             }
-          }
-          return m;
-        });
+            return m;
+          });
+        }
       }
+
+      // Auto-advance bye winners (matches with null player2)
+      updated = updated.map(match => {
+        if (match.status !== 'completed' && match.player2 === null && match.player1) {
+          // Auto-complete bye match
+          return {
+            ...match,
+            winnerId: match.player1.id,
+            status: 'completed',
+          };
+        }
+        return match;
+      });
+
+      // Advance auto-completed byes to next round
+      updated.forEach(match => {
+        if (match.status === 'completed' && match.winnerId && match.player2 === null) {
+          const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(updated.filter(m => m.round === 1).length * 2)));
+          const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
+          
+          if (match.round < numRounds) {
+            const nextRound = match.round + 1;
+            const nextMatchIndex = Math.floor(match.matchNumber / 2);
+            const isPlayer1Slot = match.matchNumber % 2 === 0;
+
+            updated = updated.map(m => {
+              if (m.round === nextRound && m.matchNumber === nextMatchIndex && !m.player1 && !m.player2) {
+                const winnerPlayer = match.player1?.id === match.winnerId ? match.player1 : match.player2;
+                if (isPlayer1Slot) {
+                  return { ...m, player1: winnerPlayer };
+                } else {
+                  return { ...m, player2: winnerPlayer };
+                }
+              }
+              return m;
+            });
+          }
+        }
+      });
 
       localStorage.setItem('bracket-matches', JSON.stringify(updated));
       return updated;

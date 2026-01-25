@@ -6,15 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Sparkles, TrendingUp } from 'lucide-react'
 import SiteHeader from '@/components/header' // Correctly imported SiteHeader
+import { GiveawayCounter } from '@/components/giveaway-counter'
 import Image from 'next/image'
 
 interface LeaderboardEntry {
-  username: string
-  wagered: number
-  avatar?: string
+  username: string;
+  wagered: number;
+  avatar?: string;
 }
-
-const REWARDS = [800, 550, 250, 150, 100, 75, 50, 30, 20, 20]
 
 export default function PackdrawLeaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
@@ -101,6 +100,7 @@ export default function PackdrawLeaderboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <GiveawayCounter />
       <SiteHeader />
 
       {/* Hero Section */}
@@ -253,7 +253,7 @@ export default function PackdrawLeaderboard() {
 
 function TopCard({ rank, entry, reward, formatMoney, maskName }: {
   rank: number
-  entry: LeaderboardEntry
+  entry: any
   reward: number
   formatMoney: (n: number) => string
   maskName: (s: string) => string
@@ -299,7 +299,7 @@ function TopCard({ rank, entry, reward, formatMoney, maskName }: {
 
 function LeaderboardRow({ rank, entry, reward, formatMoney, maskName }: {
   rank: number
-  entry: LeaderboardEntry
+  entry: any
   reward: number
   formatMoney: (n: number) => string
   maskName: (s: string) => string
@@ -339,3 +339,5 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName }: {
     </Card>
   )
 }
+
+const REWARDS = [800, 550, 250, 150, 100, 75, 50, 30, 20, 20]

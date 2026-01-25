@@ -83,8 +83,9 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
   );
 
   const handleAddPlayer = async () => {
-    if (!aceUsername.trim()) {
-      setError('Acebet username is required');
+    // At least one username is required
+    if (!aceUsername.trim() && !kickUsername.trim()) {
+      setError('Please enter either an Acebet username or Kick username');
       return;
     }
 
@@ -97,8 +98,8 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tournamentId: tournament.id,
-          acebetUsername: aceUsername,
-          kickUsername: kickUsername || aceUsername,
+          acebetUsername: aceUsername.trim() || null,
+          kickUsername: kickUsername.trim() || aceUsername.trim(),
         }),
       });
 
@@ -177,22 +178,29 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-bold">{tournament.name}</h1>
-              <Badge className="text-base">{status}</Badge>
+              <Badge className="text-base">{status === 'registration' ? 'Registering' : status === 'active' ? 'Live' : 'Closed'}</Badge>
             </div>
-            <div className="w-48">
-              <Select value={status} onValueChange={handleStatusChange} disabled={statusLoading}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="registration">Registering</SelectItem>
-                  <SelectItem value="active">Live</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="completed">Closed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex gap-3 items-end">
+              <div className="w-48">
+                <label className="text-sm font-medium text-muted-foreground">Tournament Status</label>
+                <Select value={status} onValueChange={setStatus} disabled={statusLoading}>
+                  <SelectTrigger className="w-full mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="registration">Registering</SelectItem>
+                    <SelectItem value="active">Live</SelectItem>
+                    <SelectItem value="completed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button 
+                onClick={() => handleStatusChange(status)}
+                disabled={statusLoading || status === tournament.status}
+                size="sm"
+              >
+                {statusLoading ? 'Saving...' : 'Save'}
+              </Button>
             </div>
           </div>
           <p className="text-muted-foreground">{tournament.game_name} • ${tournament.bet_amount} bet</p>
@@ -332,7 +340,7 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
           <DialogHeader>
             <DialogTitle>Add Player to Tournament</DialogTitle>
             <DialogDescription>
-              Enter the player's Acebet username to add them to this tournament. Their stats will be verified via the API.
+              Enter at least one username (Acebet or Kick). If Acebet is provided, stats will be verified via the API.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -344,7 +352,7 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Acebet Username *</label>
+              <label className="text-sm font-medium">Acebet Username</label>
               <Input
                 placeholder="Enter Acebet username"
                 value={aceUsername}
@@ -354,23 +362,29 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
                 }}
                 disabled={isLoading}
               />
+              <p className="text-xs text-muted-foreground">
+                Optional - if provided, stats will be pulled from API
+              </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Kick Username (optional)</label>
+              <label className="text-sm font-medium">Kick Username</label>
               <Input
                 placeholder="Enter Kick username"
                 value={kickUsername}
                 onChange={e => setKickUsername(e.target.value)}
                 disabled={isLoading}
               />
+              <p className="text-xs text-muted-foreground">
+                Optional - at least one username is required
+              </p>
             </div>
 
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowAddDialog(false)} disabled={isLoading}>
                 Cancel
               </Button>
-              <Button onClick={handleAddPlayer} disabled={isLoading} className="gap-2">
+              <Button onClick={handleAddPlayer} disabled={isLoading || (!aceUsername.trim() && !kickUsername.trim())} className="gap-2">
                 {isLoading ? 'Adding...' : 'Add Player'}
               </Button>
             </div>

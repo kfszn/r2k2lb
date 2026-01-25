@@ -48,10 +48,10 @@ function Header() {
     <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <Image src="/assets/logo.png" alt="R2K2" width={48} height={48} className="rounded-lg" />
-          <span className="text-2xl font-bold text-foreground">
-            R<span className="text-foreground">2</span>K<span className="text-foreground">2</span>
-          </span>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-bold text-white">
+            R
+          </div>
+          <span className="font-bold text-lg hidden sm:inline">R2K2</span>
         </Link>
         <nav className="hidden md:flex items-center gap-8">
           <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
@@ -77,6 +77,33 @@ function Header() {
           </div>
           <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">Raffle</Link>
           <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors">Tournament</Link>
+          <div className="relative group">
+            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+              Code Perks
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <div className="absolute left-0 mt-0 hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[200px] z-50">
+              <Link 
+                href="/perks/wager-rewards" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors first:rounded-t-lg"
+              >
+                Wager Rewards
+              </Link>
+              <Link 
+                href="/perks/first-deposit" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                First Time Deposit Bonus
+              </Link>
+              <Link 
+                href="/perks/loss-back" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Loss-back
+              </Link>
+            </div>
+          </div>
+          <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary transition-colors">Discord</a>
           {isAdmin && (
             <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">Admin</Link>
           )}
@@ -130,7 +157,7 @@ function Header() {
               <nav className="flex flex-col gap-4 mt-8">
                 <Link 
                   href="/" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2"
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                   onClick={() => setOpen(false)}
                 >
                   Home
@@ -138,16 +165,16 @@ function Header() {
                 <div className="space-y-2">
                   <button 
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center gap-1 w-full"
+                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Leaderboards
                     <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {dropdownOpen && (
-                    <div className="flex flex-col gap-2 pl-4">
+                    <div className="flex flex-col gap-2">
                       <Link 
                         href="/leaderboard/acebet"
-                        className="text-base font-medium hover:text-primary transition-colors py-2"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                         onClick={() => {
                           setOpen(false)
                           setDropdownOpen(false)
@@ -157,7 +184,7 @@ function Header() {
                       </Link>
                       <Link 
                         href="/leaderboard/packdraw"
-                        className="text-base font-medium hover:text-primary transition-colors py-2"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                         onClick={() => {
                           setOpen(false)
                           setDropdownOpen(false)
@@ -170,40 +197,85 @@ function Header() {
                 </div>
                 <Link 
                   href="/raffle" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2"
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                   onClick={() => setOpen(false)}
                 >
                   Raffle
                 </Link>
                 <Link 
                   href="/tournament" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2"
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                   onClick={() => setOpen(false)}
                 >
                   Tournament
                 </Link>
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
+                  >
+                    Code Perks
+                    <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {dropdownOpen && (
+                    <div className="flex flex-col gap-2">
+                      <Link 
+                        href="/perks/wager-rewards"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                        onClick={() => {
+                          setOpen(false)
+                          setDropdownOpen(false)
+                        }}
+                      >
+                        Wager Rewards
+                      </Link>
+                      <Link 
+                        href="/perks/first-deposit"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                        onClick={() => {
+                          setOpen(false)
+                          setDropdownOpen(false)
+                        }}
+                      >
+                        First Time Deposit Bonus
+                      </Link>
+                      <Link 
+                        href="/perks/loss-back"
+                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                        onClick={() => {
+                          setOpen(false)
+                          setDropdownOpen(false)
+                        }}
+                      >
+                        Loss-back
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <a 
+                  href="https://discord.gg/r2k2" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                >
+                  Discord
+                </a>
                 {isAdmin && (
                   <Link 
                     href="/admin" 
-                    className="text-base font-medium hover:text-primary transition-colors py-2"
+                    className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                     onClick={() => setOpen(false)}
                   >
                     Admin
                   </Link>
                 )}
-                <div className="pt-4 border-t border-border">
-                  {user ? (
+                {user && (
+                  <div className="pt-4 border-t border-border">
                     <Button onClick={handleSignOut} className="w-full">
                       Sign Out
                     </Button>
-                  ) : (
-                    <Link href="/auth/login" onClick={() => setOpen(false)}>
-                      <Button className="w-full">
-                        Login
-                      </Button>
-                    </Link>
-                  )}
-                </div>
+                  </div>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

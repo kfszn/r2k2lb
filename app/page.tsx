@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, TrendingUp, Sparkles } from 'lucide-react'
 import { KickMiniPlayer } from '@/components/kick-mini-player'
+import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <GiveawayCounter />
       <KickMiniPlayer />
       <Header />
 

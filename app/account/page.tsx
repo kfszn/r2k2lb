@@ -13,7 +13,8 @@ import { Badge } from '@/components/ui/badge'
 import { createBrowserClient } from '@supabase/ssr'
 import Image from 'next/image'
 import { Trophy, TrendingUp, CheckCircle2, Clock, XCircle } from 'lucide-react'
-import Header from '@/components/header'
+import { Header } from '@/components/header'
+import { GiveawayCounter } from '@/components/giveaway-counter'
 
 interface UserClaim {
   id: string
@@ -100,6 +101,7 @@ export default function AccountPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
+        <GiveawayCounter />
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading...</p>
@@ -110,6 +112,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <GiveawayCounter />
       <Header />
 
       <div className="container mx-auto px-4 py-12 max-w-4xl">

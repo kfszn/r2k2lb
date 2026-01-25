@@ -51,6 +51,12 @@ export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
   );
 
   const handleAddPlayer = async () => {
+    // At least one username is required
+    if (!aceUsername.trim() && !kickUsername.trim()) {
+      alert("Please enter either an Acebet username or Kick username");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch("/api/admin/player/add", {
@@ -58,8 +64,8 @@ export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tournamentId: tournament.id,
-          acebetUsername: aceUsername,
-          kickUsername: kickUsername || aceUsername,
+          acebetUsername: aceUsername.trim() || null,
+          kickUsername: kickUsername.trim() || aceUsername.trim(),
         }),
       });
 
@@ -187,17 +193,20 @@ export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="ace-username">Acebet Username *</Label>
+              <Label htmlFor="ace-username">Acebet Username</Label>
               <Input
                 id="ace-username"
                 placeholder="Enter Acebet username"
                 value={aceUsername}
                 onChange={(e) => setAceUsername(e.target.value)}
               />
+              <p className="text-xs text-muted-foreground">
+                Optional - if provided, stats will be pulled from API
+              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="kick-username">Kick Username (optional)</Label>
+              <Label htmlFor="kick-username">Kick Username</Label>
               <Input
                 id="kick-username"
                 placeholder="Enter Kick username"
@@ -205,7 +214,7 @@ export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
                 onChange={(e) => setKickUsername(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Leave blank to use Acebet username as display name
+                Optional - at least one username is required
               </p>
             </div>
           </div>
@@ -214,7 +223,7 @@ export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddPlayer} disabled={isLoading || !aceUsername}>
+            <Button onClick={handleAddPlayer} disabled={isLoading || (!aceUsername.trim() && !kickUsername.trim())}>
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (

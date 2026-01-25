@@ -103,7 +103,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex-1">
                             <p className="font-medium">
-                              {match.player1?.acebet_username || 'TBD'}
+                              {match.player1?.kick_username || match.player1?.acebet_username || 'TBD'}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               Score: {match.player1Score}
@@ -112,7 +112,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                           <ChevronRight className="h-4 w-4 text-muted-foreground mx-2" />
                           <div className="flex-1 text-right">
                             <p className="font-medium">
-                              {match.player2?.acebet_username || 'TBD'}
+                              {match.player2?.kick_username || match.player2?.acebet_username || 'TBD'}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               Score: {match.player2Score}
@@ -136,7 +136,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                                       score1: e.target.value,
                                     })
                                   }
-                                  placeholder={`${match.player1.acebet_username} score`}
+                                  placeholder={`${match.player1?.kick_username || match.player1?.acebet_username} score`}
                                   className="flex-1"
                                 />
                                 <Input
@@ -149,7 +149,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                                       score2: e.target.value,
                                     })
                                   }
-                                  placeholder={`${match.player2.acebet_username} score`}
+                                  placeholder={`${match.player2?.kick_username || match.player2?.acebet_username} score`}
                                   className="flex-1"
                                 />
                                 <Button
