@@ -27,9 +27,9 @@ export function TournamentSelector({ onSelectTournament, onCreateNew }: Tourname
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
-    showActive: true,
-    showCompleted: true,
-    showCancelled: false,
+    showLive: true,
+    showRegistering: true,
+    showClosed: true,
   });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
@@ -122,9 +122,9 @@ export function TournamentSelector({ onSelectTournament, onCreateNew }: Tourname
   };
 
   const filteredTournaments = tournaments.filter(t => {
-    if (filters.showActive && ['pending', 'registration', 'active', 'paused'].includes(t.status)) return true;
-    if (filters.showCompleted && t.status === 'completed') return true;
-    if (filters.showCancelled && t.status === 'cancelled') return true;
+    if (filters.showLive && t.status === 'active') return true;
+    if (filters.showRegistering && ['pending', 'registration', 'paused'].includes(t.status)) return true;
+    if (filters.showClosed && ['completed', 'cancelled'].includes(t.status)) return true;
     return false;
   });
 
@@ -154,28 +154,28 @@ export function TournamentSelector({ onSelectTournament, onCreateNew }: Tourname
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-3">
             <Button
-              variant={filters.showActive ? 'default' : 'outline'}
+              variant={filters.showLive ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setFilters({ ...filters, showActive: !filters.showActive })}
+              onClick={() => setFilters({ ...filters, showLive: !filters.showLive })}
             >
-              {filters.showActive ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-              Active & Registering
+              {filters.showLive ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+              Live
             </Button>
             <Button
-              variant={filters.showCompleted ? 'default' : 'outline'}
+              variant={filters.showRegistering ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setFilters({ ...filters, showCompleted: !filters.showCompleted })}
+              onClick={() => setFilters({ ...filters, showRegistering: !filters.showRegistering })}
             >
-              {filters.showCompleted ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-              Completed
+              {filters.showRegistering ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+              Registering
             </Button>
             <Button
-              variant={filters.showCancelled ? 'default' : 'outline'}
+              variant={filters.showClosed ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setFilters({ ...filters, showCancelled: !filters.showCancelled })}
+              onClick={() => setFilters({ ...filters, showClosed: !filters.showClosed })}
             >
-              {filters.showCancelled ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-              Cancelled
+              {filters.showClosed ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+              Closed
             </Button>
           </div>
         </CardContent>
