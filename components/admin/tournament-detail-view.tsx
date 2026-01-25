@@ -177,22 +177,29 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-bold">{tournament.name}</h1>
-              <Badge className="text-base">{status}</Badge>
+              <Badge className="text-base">{status === 'registration' ? 'Registering' : status === 'active' ? 'Live' : 'Closed'}</Badge>
             </div>
-            <div className="w-48">
-              <Select value={status} onValueChange={handleStatusChange} disabled={statusLoading}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="registration">Registering</SelectItem>
-                  <SelectItem value="active">Live</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="completed">Closed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex gap-3 items-end">
+              <div className="w-48">
+                <label className="text-sm font-medium text-muted-foreground">Tournament Status</label>
+                <Select value={status} onValueChange={setStatus} disabled={statusLoading}>
+                  <SelectTrigger className="w-full mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="registration">Registering</SelectItem>
+                    <SelectItem value="active">Live</SelectItem>
+                    <SelectItem value="completed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button 
+                onClick={() => handleStatusChange(status)}
+                disabled={statusLoading || status === tournament.status}
+                size="sm"
+              >
+                {statusLoading ? 'Saving...' : 'Save'}
+              </Button>
             </div>
           </div>
           <p className="text-muted-foreground">{tournament.game_name} • ${tournament.bet_amount} bet</p>
