@@ -82,24 +82,50 @@ function Header() {
               Code Perks
               <ChevronDown className="h-4 w-4" />
             </button>
-            <div className="absolute left-0 mt-0 hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[200px] z-50">
+            <div className="absolute left-0 mt-0 hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[240px] z-50">
+              {/* Acebet Section */}
+              <div className="px-4 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider border-b border-border/20">
+                Acebet
+              </div>
               <Link 
-                href="/perks/wager-rewards" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors first:rounded-t-lg"
+                href="/perks/acebet/wager-rewards" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Wager Rewards
               </Link>
               <Link 
-                href="/perks/first-deposit" 
+                href="/perks/acebet/first-deposit" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 First Time Deposit Bonus
               </Link>
               <Link 
-                href="/perks/loss-back" 
+                href="/perks/acebet/loss-back" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Loss-back
+              </Link>
+              {/* PackDraw Section */}
+              <div className="px-4 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider border-t border-b border-border/20 mt-2">
+                PackDraw
+              </div>
+              <Link 
+                href="/perks/packdraw/welcome-bonus" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Welcome Bonus
+              </Link>
+              <Link 
+                href="/perks/packdraw/lucky-draw-rewards" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Lucky Draw Rewards
+              </Link>
+              <Link 
+                href="/perks/packdraw/seasonal-bonus" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors last:rounded-b-lg"
+              >
+                Seasonal Bonus
               </Link>
             </div>
           </div>
@@ -218,37 +244,77 @@ function Header() {
                     <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {dropdownOpen && (
-                    <div className="flex flex-col gap-2">
-                      <Link 
-                        href="/perks/wager-rewards"
-                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                        onClick={() => {
-                          setOpen(false)
-                          setDropdownOpen(false)
-                        }}
-                      >
-                        Wager Rewards
-                      </Link>
-                      <Link 
-                        href="/perks/first-deposit"
-                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                        onClick={() => {
-                          setOpen(false)
-                          setDropdownOpen(false)
-                        }}
-                      >
-                        First Time Deposit Bonus
-                      </Link>
-                      <Link 
-                        href="/perks/loss-back"
-                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                        onClick={() => {
-                          setOpen(false)
-                          setDropdownOpen(false)
-                        }}
-                      >
-                        Loss-back
-                      </Link>
+                    <div className="flex flex-col gap-3 bg-secondary/30 rounded-lg p-3">
+                      <div>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Acebet</p>
+                        <div className="flex flex-col gap-2">
+                          <Link 
+                            href="/perks/acebet/wager-rewards"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            Wager Rewards
+                          </Link>
+                          <Link 
+                            href="/perks/acebet/first-deposit"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            First Time Deposit Bonus
+                          </Link>
+                          <Link 
+                            href="/perks/acebet/loss-back"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            Loss-back
+                          </Link>
+                        </div>
+                      </div>
+                      <div className="border-t border-border/20 pt-3">
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">PackDraw</p>
+                        <div className="flex flex-col gap-2">
+                          <Link 
+                            href="/perks/packdraw/welcome-bonus"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            Welcome Bonus
+                          </Link>
+                          <Link 
+                            href="/perks/packdraw/lucky-draw-rewards"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            Lucky Draw Rewards
+                          </Link>
+                          <Link 
+                            href="/perks/packdraw/seasonal-bonus"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            Seasonal Bonus
+                          </Link>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
