@@ -19,31 +19,35 @@ export default function FirstTimeDepositBonusPage() {
               <h1 className="text-4xl font-bold">First Time Deposit Bonus</h1>
             </div>
             <p className="text-lg text-muted-foreground">
-              Get a bonus on your first deposit with code R2K2
+              100% match bonus + automatic 5% bonus on every deposit with code R2K2
             </p>
           </div>
 
           {/* Main Bonus Card */}
           <Card className="bg-gradient-to-br from-primary/10 via-card to-secondary/20 border-primary/30">
             <CardHeader>
-              <CardTitle className="text-2xl">Welcome Bonus</CardTitle>
+              <CardTitle className="text-2xl">Welcome Bonus Structure</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-lg">First Deposit Match</h3>
-                  <p className="text-3xl font-bold text-primary">Up to 100%</p>
+                  <h3 className="font-semibold text-lg">100% First Deposit Match</h3>
+                  <p className="text-3xl font-bold text-primary">Up to $200</p>
                   <p className="text-sm text-muted-foreground">
-                    Get a percentage match on your first deposit
+                    Get an instant 100% match on your first deposit, capped at $200 bonus
                   </p>
                   <div className="pt-4 space-y-2 text-sm">
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      One-time bonus on first deposit
+                      100% deposit match
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      Instant bonus credits
+                      5x playthrough required
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className="text-primary">✓</span>
+                      No deals/draw mode battles
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
@@ -55,20 +59,20 @@ export default function FirstTimeDepositBonusPage() {
                   <h3 className="font-semibold">Bonus Details</h3>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <span className="font-medium">Bonus Type:</span>
-                      <span className="text-muted-foreground ml-2">Deposit match</span>
-                    </li>
-                    <li>
                       <span className="font-medium">Match Rate:</span>
-                      <span className="text-primary font-bold ml-2">Up to 100%</span>
+                      <span className="text-primary font-bold ml-2">100%</span>
                     </li>
                     <li>
-                      <span className="font-medium">Eligibility:</span>
-                      <span className="text-muted-foreground ml-2">New players only</span>
+                      <span className="font-medium">Max Bonus:</span>
+                      <span className="text-primary font-bold ml-2">$200</span>
                     </li>
                     <li>
-                      <span className="font-medium">Code Required:</span>
-                      <span className="text-primary font-bold ml-2">R2K2</span>
+                      <span className="font-medium">Playthrough:</span>
+                      <span className="text-muted-foreground ml-2">5x bonus amount</span>
+                    </li>
+                    <li>
+                      <span className="font-medium">Game Modes:</span>
+                      <span className="text-muted-foreground ml-2">Regular play only</span>
                     </li>
                   </ul>
                 </div>
@@ -76,34 +80,57 @@ export default function FirstTimeDepositBonusPage() {
             </CardContent>
           </Card>
 
-          {/* Deposit Tiers */}
+          {/* Extra 5% Bonus Card */}
+          <Card className="border-amber-500/50 bg-amber-500/5">
+            <CardHeader>
+              <CardTitle className="text-amber-600 dark:text-amber-400">Automatic 5% Deposit Bonus</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-muted-foreground">
+                Every deposit made with code R2K2 automatically receives an additional <span className="font-bold text-amber-600 dark:text-amber-400">5% bonus</span> - for new players and existing players!
+              </p>
+              <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/30">
+                <p className="text-sm">
+                  <span className="font-semibold">Example:</span> Deposit $100 → Receive $5 instant bonus (no playthrough required on the 5% bonus)
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                The automatic 5% bonus is credited immediately and can be used on any game mode
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Playthrough Breakdown */}
           <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle>Deposit Bonus Tiers</CardTitle>
+              <CardTitle>Playthrough Requirements</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Starter Deposit</p>
-                    <p className="text-2xl font-bold text-primary mb-2">$10 - $50</p>
-                    <p className="text-sm text-muted-foreground">50% match bonus</p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Standard Deposit</p>
-                    <p className="text-2xl font-bold text-primary mb-2">$50 - $200</p>
-                    <p className="text-sm text-muted-foreground">75% match bonus</p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Premium Deposit</p>
-                    <p className="text-2xl font-bold text-primary mb-2">$200 - $500</p>
-                    <p className="text-sm text-muted-foreground">100% match bonus</p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Elite Deposit</p>
-                    <p className="text-2xl font-bold text-primary mb-2">$500+</p>
-                    <p className="text-sm text-muted-foreground">100% match bonus + extras</p>
-                  </div>
+                <div className="border border-border/50 rounded-lg p-4 space-y-2">
+                  <p className="font-semibold text-sm">5x Playthrough Calculation</p>
+                  <p className="text-sm text-muted-foreground">Playthrough = Bonus Amount × 5</p>
+                  <p className="text-sm font-bold text-primary">
+                    Example: $200 bonus × 5 = $1,000 required playthrough
+                  </p>
+                </div>
+
+                <div className="border border-border/50 rounded-lg p-4 space-y-2">
+                  <p className="font-semibold text-sm">Allowed Game Modes</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>✓ Regular head-to-head matches</li>
+                    <li>✓ Standard tournaments</li>
+                    <li>✓ All normal game types</li>
+                    <li>✗ Deals (not eligible)</li>
+                    <li>✗ Draw Mode Battles (not eligible)</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                  <p className="text-sm font-semibold text-green-700 dark:text-green-500 mb-2">Bonus Withdrawal</p>
+                  <p className="text-sm text-muted-foreground">
+                    Once you complete the 5x playthrough, your bonus converts to cash and can be withdrawn immediately
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -123,8 +150,8 @@ export default function FirstTimeDepositBonusPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium">Sign Up with Code</p>
-                    <p className="text-sm text-muted-foreground">Create your account using code R2K2</p>
+                    <p className="font-medium">Sign Up with Code R2K2</p>
+                    <p className="text-sm text-muted-foreground">Create your account using code R2K2 at signup</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -135,7 +162,7 @@ export default function FirstTimeDepositBonusPage() {
                   </div>
                   <div>
                     <p className="font-medium">Make Your First Deposit</p>
-                    <p className="text-sm text-muted-foreground">Deposit funds into your new account</p>
+                    <p className="text-sm text-muted-foreground">Deposit any amount (bonus capped at $200)</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -145,8 +172,8 @@ export default function FirstTimeDepositBonusPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium">Automatic Bonus Credit</p>
-                    <p className="text-sm text-muted-foreground">Bonus is instantly added to your account</p>
+                    <p className="font-medium">Instant Bonus Credit</p>
+                    <p className="text-sm text-muted-foreground">100% match bonus + automatic 5% bonus credited immediately</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -156,34 +183,51 @@ export default function FirstTimeDepositBonusPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium">Start Playing</p>
-                    <p className="text-sm text-muted-foreground">Use your deposit + bonus to place wagers</p>
+                    <p className="font-medium">Play & Complete Playthrough</p>
+                    <p className="text-sm text-muted-foreground">Wager the bonus amount 5x (excluding deals and draw mode battles)</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary font-bold">
+                      5
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-medium">Bonus Converts to Cash</p>
+                    <p className="text-sm text-muted-foreground">After playthrough is complete, withdraw anytime</p>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Example */}
+          {/* Examples */}
           <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle>Example</CardTitle>
+              <CardTitle>Bonus Examples</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-3 bg-secondary/20 rounded-lg">
-                <p className="text-sm">
-                  <span className="font-medium">You:</span> Deposit $300 with code R2K2
-                </p>
+            <CardContent className="space-y-4">
+              <div className="border border-border/50 rounded-lg p-4 space-y-3">
+                <p className="font-semibold text-sm">Scenario: First-Time Deposit</p>
+                <div className="space-y-2 text-sm">
+                  <p><span className="font-medium">Your Deposit:</span> $150 with code R2K2</p>
+                  <p><span className="font-medium">100% Match Bonus:</span> $150</p>
+                  <p><span className="font-medium">Automatic 5% Bonus:</span> $7.50</p>
+                  <p className="font-bold text-primary">Total Balance: $307.50</p>
+                  <p className="text-xs text-muted-foreground">Playthrough needed: $150 × 5 = $750 (on 100% bonus)</p>
+                </div>
               </div>
-              <div className="p-3 bg-secondary/20 rounded-lg">
-                <p className="text-sm">
-                  <span className="font-medium">Bonus Rate:</span> 100% match (Premium tier)
-                </p>
-              </div>
-              <div className="p-3 bg-primary/20 rounded-lg border border-primary/30">
-                <p className="text-sm">
-                  <span className="font-medium">Total Balance:</span> $300 deposit + $300 bonus = <span className="font-bold text-primary">$600</span>
-                </p>
+
+              <div className="border border-border/50 rounded-lg p-4 space-y-3">
+                <p className="font-semibold text-sm">Scenario: Maximum Deposit</p>
+                <div className="space-y-2 text-sm">
+                  <p><span className="font-medium">Your Deposit:</span> $300+ with code R2K2</p>
+                  <p><span className="font-medium">100% Match Bonus (capped):</span> $200</p>
+                  <p><span className="font-medium">Automatic 5% Bonus:</span> $15</p>
+                  <p className="font-bold text-primary">Total Balance: $515+</p>
+                  <p className="text-xs text-muted-foreground">Playthrough needed: $200 × 5 = $1,000 (on 100% bonus)</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -195,19 +239,25 @@ export default function FirstTimeDepositBonusPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <p className="text-muted-foreground">
-                • This bonus is only available for new player accounts
+                • This 100% match bonus is only available for new player accounts (first deposit)
               </p>
               <p className="text-muted-foreground">
-                • Code R2K2 must be used at signup to qualify
+                • Code R2K2 must be used at signup to qualify for the 100% bonus
               </p>
               <p className="text-muted-foreground">
-                • Bonus is credited instantly after first deposit
+                • Automatic 5% deposit bonus applies to all deposits made with code R2K2
               </p>
               <p className="text-muted-foreground">
-                • Standard bonus terms and conditions apply
+                • 5x playthrough is required on the 100% match bonus before withdrawal
               </p>
               <p className="text-muted-foreground">
-                • One bonus per player account
+                • Playthrough applies only to regular play modes - Deals and Draw Mode Battles do not count
+              </p>
+              <p className="text-muted-foreground">
+                • Maximum 100% bonus is $200
+              </p>
+              <p className="text-muted-foreground">
+                • The automatic 5% bonus has no playthrough requirement and can be used on any game mode
               </p>
             </CardContent>
           </Card>
@@ -221,13 +271,6 @@ export default function FirstTimeDepositBonusPage() {
                 Sign Up with Code R2K2
               </Button>
             </a>
-          </div>
-
-          {/* Back Link */}
-          <div className="text-center">
-            <Link href="/">
-              <Button variant="outline">Return to Home</Button>
-            </Link>
           </div>
         </div>
       </main>
