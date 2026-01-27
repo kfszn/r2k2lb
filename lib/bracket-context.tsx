@@ -171,7 +171,6 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
       // Auto-advance bye winners (matches with null player2)
       updated = updated.map(match => {
         if (match.status !== 'completed' && match.player2 === null && match.player1) {
-          // Auto-complete bye match
           return {
             ...match,
             winnerId: match.player1.id,
@@ -193,12 +192,16 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             const isPlayer1Slot = match.matchNumber % 2 === 0;
 
             updated = updated.map(m => {
-              if (m.round === nextRound && m.matchNumber === nextMatchIndex && !m.player1 && !m.player2) {
+              if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
                 const winnerPlayer = match.player1?.id === match.winnerId ? match.player1 : match.player2;
                 if (isPlayer1Slot) {
-                  return { ...m, player1: winnerPlayer };
+                  if (!m.player1) {
+                    return { ...m, player1: winnerPlayer };
+                  }
                 } else {
-                  return { ...m, player2: winnerPlayer };
+                  if (!m.player2) {
+                    return { ...m, player2: winnerPlayer };
+                  }
                 }
               }
               return m;
