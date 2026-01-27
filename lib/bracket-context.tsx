@@ -52,28 +52,31 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   const generateBracket = useCallback((players: BracketPlayer[]) => {
     if (players.length < 2) return;
 
+    // Shuffle players for random seeding
+    const shuffled = [...players].sort(() => Math.random() - 0.5);
+
     const newMatches: BracketMatch[] = [];
     
     // Find the next power of 2
-    const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(players.length)));
-    const byeCount = nextPowerOfTwo - players.length;
+    const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(shuffled.length)));
+    const byeCount = nextPowerOfTwo - shuffled.length;
     const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
     
     // For a proper bracket with byes:
-    // - Top seeds (1, 2, etc.) get byes and appear directly in R2
-    // - Lower seeds play in R1
+    // - Random players get byes and appear directly in R2
+    // - Remaining players play in R1
     // 
     // For 6 players (8 slots, 2 byes):
-    // R1: match 0 = seed 5 vs seed 4, match 1 = seed 3 vs seed 6
-    // R2: match 0 = seed 1 (bye) vs winner R1-0, match 1 = winner R1-1 vs seed 2 (bye)
+    // R1: 2 matches with 4 players
+    // R2: 2 matches with bye players pre-seeded
     // Finals: winner R2-0 vs winner R2-1
     
-    // Players who play in R1 (lower seeds)
+    // Players who play in R1 (no byes)
     const r1PlayerCount = (nextPowerOfTwo / 2 - byeCount) * 2;
-    const r1Players = players.slice(byeCount); // Players without byes
+    const r1Players = shuffled.slice(byeCount); // Players without byes
     
-    // Players who get byes (top seeds) - go directly to R2
-    const byePlayers = players.slice(0, byeCount);
+    // Players who get byes - go directly to R2
+    const byePlayers = shuffled.slice(0, byeCount);
     
     let matchNumber = 0;
     
