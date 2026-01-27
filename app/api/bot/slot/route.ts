@@ -35,11 +35,11 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Find active tournament (in progress)
+    // Find active tournament (live)
     const { data: tournament, error: tournamentError } = await supabase
       .from("tournaments")
       .select("id, name")
-      .eq("status", "in_progress")
+      .eq("status", "live")
       .order("created_at", { ascending: false })
       .limit(1)
       .single();

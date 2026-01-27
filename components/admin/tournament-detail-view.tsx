@@ -178,7 +178,7 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-bold">{tournament.name}</h1>
-              <Badge className="text-base">{status === 'registration' ? 'Registering' : status === 'active' ? 'Live' : 'Closed'}</Badge>
+                  <Badge className="text-base">{status === 'registration' ? 'Registering' : status === 'live' ? 'Live' : 'Closed'}</Badge>
             </div>
             <div className="flex gap-3 items-end">
               <div className="w-48">
