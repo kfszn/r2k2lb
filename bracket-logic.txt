@@ -1,0 +1,129 @@
+BRACKET TOURNAMENT LOGIC
+========================
+
+DATA STRUCTURES:
+================
+
+BracketPlayer:
+- id: unique identifier
+- acebet_username: player username
+- kick_username: player username
+
+BracketMatch:
+- id: unique match identifier (format: "match-{roundIndex}-{matchIndex}")
+- roundIndex: 0 for first round, 1 for next, etc.
+- matchIndex: position within that round
+- slotAId: entrant ID in slot A (or null for bye/empty)
+- slotBId: entrant ID in slot B (or null for bye/empty)
+- winnerId: ID of winning entrant (null if not completed)
+- nextMatchId: which match this winner advances to
+- nextSlot: 'A' or 'B' - which slot in the next match
+- player1Score / player2Score: current scores
+- status: 'pending' | 'live' | 'completed'
+
+
+BRACKET GENERATION ALGORITHM:
+=============================
+
+1. INPUT: Array of N players (2-20 entrants)
+
+2. SHUFFLE: Randomly shuffle players for fair seeding
+
+3. CALCULATE BRACKET SIZE:
+   - S = nextPowerOf2(N)
+   - numRounds = log2(S)
+   - Example: 10 players → S=16, numRounds=4
+
+4. GENERATE CANONICAL SEED ORDER:
+   Uses recursive algorithm for deterministic seeding:
+   - For size 2: [1, 2]
+   - For size 4: [1, 4, 2, 3]
+   - For size 8: [1, 8, 4, 5, 2, 7, 3, 6]
+   - For size 16: [1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11]
+   
+   This ensures top seeds get byes and favorable matchups.
+
+5. PLACE ENTRANTS:
+   - Create array of S positions
+   - For each position (0 to S-1):
+     - Get seed number from seedOrder[position]
+     - If seed <= N: place shuffled[seed-1].id at position
+     - Else: leave position null (bye/empty slot)
+   
+   Example (10 players, S=16):
+   - Position 0: seed 1 → shuffled[0]
+   - Position 1: seed 16 → null (bye)
+   - Position 2: seed 8 → shuffled[7]
+   - Position 3: seed 9 → shuffled[8]
+   - etc...
+
+6. CREATE R0 (FIRST ROUND) MATCHES:
+   - Iterate through positions in pairs: (0,1), (2,3), (4,5), etc.
+   - For each pair (posA, posB):
+     - If EITHER position has an entrant (not both null):
+       - Create match with slotA=posA, slotB=posB
+       - nextMatchId = "match-1-{floor(matchIdx/2)}"
+       - nextSlot = (matchIdx % 2 === 0) ? 'A' : 'B'
+   
+   Result: Only non-empty pairs create matches
+   Example: 10 players with S=16 creates exactly 5 R0 matches
+            (pairs with both null are skipped)
+
+7. CREATE SUBSEQUENT ROUNDS (R1, R2, ...):
+   - R1 match count = ceil(R0 matches / 2)
+   - Each round: matches advance to next round following pattern:
+     - Match 0 → next match 0, slot A
+     - Match 1 → next match 0, slot B
+     - Match 2 → next match 1, slot A
+     - Match 3 → next match 1, slot B
+     - etc.
+
+8. STORE MATCHES:
+   - Save all matches to state and localStorage
+   - All matches start with empty slots (null) except R0
+   - R0 winners fill R1 slots as they complete
+
+
+WINNER ADVANCEMENT:
+===================
+
+1. WHEN MATCH WINNER SET:
+   - Mark match as 'completed', set winnerId
+
+2. PROPAGATE WINNER:
+   - Find nextMatchId and nextSlot from current match
+   - Place winnerId in next match's designated slot
+   - Check if next match can auto-resolve
+
+3. AUTO-RESOLVE:
+   - If next match has one filled slot and one null:
+     - Auto-advance the filled entrant (they beat a bye)
+     - Mark match completed, set as winner
+     - Recursively propagate auto-winner to next round
+
+4. STOP CONDITION:
+   - Reach finals (no nextMatchId) = bracket winner
+
+
+KEY FEATURES:
+=============
+
+✓ Handles 2-20 entrants
+✓ Deterministic seed ordering (top seeds get byes)
+✓ Random player shuffling (fair seeding)
+✓ Auto-propagation through bracket
+✓ Auto-resolution for bye matches
+✓ Proper advancing to correct slots (no collisions)
+✓ Works for non-power-of-2 player counts
+✓ Cascade auto-wins (bye chain auto-advances)
+
+
+TESTING SCENARIOS:
+==================
+
+2 players (S=2):   1 match in R0, 1 match in R1 (finals)
+3 players (S=4):   2 matches in R0 (1 real, 1 bye), 2 matches in R1, 1 in R2
+4 players (S=4):   2 matches in R0, 2 matches in R1, 1 in R2
+6 players (S=8):   3 matches in R0, 4 matches in R1, 2 in R2, 1 in R3
+10 players (S=16): 5 matches in R0, 8 matches in R1, 4 in R2, 2 in R3, 1 in R4
+16 players (S=16): 8 matches in R0, 4 in R1, 2 in R2, 1 in R3
