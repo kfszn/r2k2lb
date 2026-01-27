@@ -53,8 +53,11 @@ function Header() {
           </div>
           <span className="font-bold text-base md:text-lg">R2K2</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-8">
-          <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
+        <nav className="hidden md:flex items-center gap-6">
+          <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
+            Home
+          </Link>
+          
           <div className="relative group">
             <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
               Leaderboards
@@ -75,8 +78,7 @@ function Header() {
               </Link>
             </div>
           </div>
-          <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">Raffle</Link>
-          <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors">Tournament</Link>
+
           <div className="relative group">
             <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
               Code Perks
@@ -129,9 +131,23 @@ function Header() {
               </Link>
             </div>
           </div>
-          <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary transition-colors">Discord</a>
+
+          <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">
+            Raffle
+          </Link>
+          
+          <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors">
+            Tournament
+          </Link>
+          
+          <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary transition-colors">
+            Discord
+          </a>
+
           {isAdmin && (
-            <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">Admin</Link>
+            <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors text-yellow-600">
+              Admin
+            </Link>
           )}
         </nav>
         <div className="flex items-center gap-3">
@@ -188,6 +204,7 @@ function Header() {
                 >
                   Home
                 </Link>
+
                 <div className="space-y-2">
                   <button 
                     onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -221,20 +238,7 @@ function Header() {
                     </div>
                   )}
                 </div>
-                <Link 
-                  href="/raffle" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                  onClick={() => setOpen(false)}
-                >
-                  Raffle
-                </Link>
-                <Link 
-                  href="/tournament" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                  onClick={() => setOpen(false)}
-                >
-                  Tournament
-                </Link>
+
                 <div className="space-y-2">
                   <button 
                     onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -318,6 +322,23 @@ function Header() {
                     </div>
                   )}
                 </div>
+
+                <Link 
+                  href="/raffle" 
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                  onClick={() => setOpen(false)}
+                >
+                  Raffle
+                </Link>
+
+                <Link 
+                  href="/tournament" 
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                  onClick={() => setOpen(false)}
+                >
+                  Tournament
+                </Link>
+
                 <a 
                   href="https://discord.gg/r2k2" 
                   target="_blank" 
@@ -326,15 +347,17 @@ function Header() {
                 >
                   Discord
                 </a>
+
                 {isAdmin && (
                   <Link 
                     href="/admin" 
-                    className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                    className="text-base font-medium hover:text-primary transition-colors py-2 text-center text-yellow-600"
                     onClick={() => setOpen(false)}
                   >
                     Admin
                   </Link>
                 )}
+
                 {user && (
                   <div className="pt-4 border-t border-border">
                     <Button onClick={handleSignOut} className="w-full">
