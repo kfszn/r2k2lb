@@ -5,7 +5,7 @@ import { generateBracket } from "@/lib/tournament/utils";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tournamentId, status } = body;
+    const { tournamentId, status, winner } = body;
 
     if (!tournamentId || !status) {
       return NextResponse.json(
@@ -23,6 +23,31 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createClient();
+
+    // If completing tournament and winner data is provided, record to winners circle
+    if (status === "completed" && winner) {
+      // Get tournament name
+      const { data: tournamentData } = await supabase
+        .from("tournaments")
+        .select("name")
+        .eq("id", tournamentId)
+        .single();
+
+      const { error: winnerError } = await supabase
+        .from("tournament_winners")
+        .insert({
+          acebet_username: winner.acebet_username,
+          kick_username: winner.kick_username,
+          tournament_id: tournamentId,
+          tournament_name: tournamentData?.name || "Tournament",
+          prize_amount: winner.prize_amount || 0,
+        });
+
+      if (winnerError) {
+        console.error("Error recording tournament winner:", winnerError);
+        // Continue with status update even if winner recording fails
+      }
+    }
 
     // If starting tournament, generate bracket first
     if (status === "active") {
