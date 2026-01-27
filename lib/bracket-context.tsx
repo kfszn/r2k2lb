@@ -47,8 +47,11 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('bracket-matches');
+      console.log("[v0] Bracket context - loading matches from localStorage:", saved ? `found ${JSON.parse(saved).length} matches` : 'no data found');
       if (saved) {
-        setMatches(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        console.log("[v0] Parsed matches count:", parsed.length);
+        setMatches(parsed);
       }
       const savedAliveMap = localStorage.getItem('bracket-alive-map');
       if (savedAliveMap) {

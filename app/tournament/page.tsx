@@ -22,14 +22,17 @@ export default function TournamentPage() {
     const checkTournamentStatus = async () => {
       try {
         const supabase = createClient();
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("tournaments")
           .select("status")
           .order("created_at", { ascending: false })
           .limit(1)
           .single();
 
-        setTournamentStatus(data?.status || null);
+        console.log("[v0] Tournament query - data:", data, "error:", error);
+        const status = data?.status || null;
+        console.log("[v0] Set tournament status to:", status);
+        setTournamentStatus(status);
       } catch (error) {
         console.error("[v0] Error fetching tournament status:", error);
         setTournamentStatus(null);
@@ -48,6 +51,7 @@ export default function TournamentPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "tournaments" },
         (payload) => {
+          console.log("[v0] Tournament realtime update:", payload.new?.status);
           if (payload.new?.status) {
             setTournamentStatus(payload.new.status);
           }
@@ -60,9 +64,11 @@ export default function TournamentPage() {
     };
   }, []);
 
-  // Show bracket only if tournament is LIVE status AND matches exist
-  const isLive = tournamentStatus === "LIVE";
-  const hasBracket = matches.length > 0 && isLive && isLoaded;
+  // Show bracket if tournament is LIVE status AND matches exist
+  // Don't require isLoaded since we show "No Active Tournament" if truly no tournament
+  const isLive = tournamentStatus === "LIVE" || (tournamentStatus === null && matches.length > 0);
+  console.log("[v0] Tournament page DEBUG - matches.length:", matches.length, "tournamentStatus:", tournamentStatus, "isLoaded:", isLoaded, "isLive:", isLive);
+  const hasBracket = matches.length > 0 && isLive;
 
   return (
     <div className="min-h-screen bg-background">
