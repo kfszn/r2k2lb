@@ -183,33 +183,49 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
           
           const nextRound = completedMatch.round + 1;
           
-          // Get the R1 match count to determine advancement logic
-          const r1Matches = updated.filter(m => m.round === 1);
-          const r1MatchCount = r1Matches.length;
+          // Get match counts for current and next round
+          const currentRoundMatches = updated.filter(m => m.round === completedMatch.round);
+          const nextRoundMatches = updated.filter(m => m.round === nextRound);
           
-          // For each pair of R1 matches, they advance to one R2 match
-          // R1 matches 0,1 → R2 match 0
-          // R1 matches 2,3 → R2 match 1
-          const nextMatchIndex = Math.floor(completedMatch.matchNumber / 2);
-          const isPlayer1Slot = completedMatch.matchNumber % 2 === 0;
+          if (nextRoundMatches.length === 0) {
+            // No next round, this is the finals winner
+            localStorage.setItem('bracket-matches', JSON.stringify(updated));
+            return updated;
+          }
+          
+          // Calculate advancement mapping based on ratio of matches
+          // If current round has N matches and next round has M matches:
+          // - If N == M: 1:1 mapping (match i → match i, player2 slot)
+          // - If N == 2*M: 2:1 mapping (matches 0,1 → match 0; matches 2,3 → match 1)
+          const ratio = currentRoundMatches.length / nextRoundMatches.length;
+          
+          let nextMatchIndex: number;
+          let slotIsPlayer2: boolean;
+          
+          if (ratio === 1) {
+            // 1:1 mapping - each match advances to same-numbered match
+            nextMatchIndex = completedMatch.matchNumber;
+            slotIsPlayer2 = true; // Winner goes to player2 since bye is in player1
+          } else {
+            // 2:1 or standard bracket mapping
+            nextMatchIndex = Math.floor(completedMatch.matchNumber / 2);
+            slotIsPlayer2 = completedMatch.matchNumber % 2 === 1;
+          }
           
           updated = updated.map(m => {
             if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
-              if (isPlayer1Slot) {
-                // Check if player1 slot is empty (it might have a bye player)
-                if (!m.player1) {
-                  return { ...m, player1: winnerPlayer };
-                } else if (!m.player2) {
-                  // If player1 is taken by bye, place in player2
-                  return { ...m, player2: winnerPlayer };
-                }
-              } else {
-                // Check if player2 slot is empty
+              // Try to place in the appropriate slot, fallback to empty slot
+              if (slotIsPlayer2) {
                 if (!m.player2) {
                   return { ...m, player2: winnerPlayer };
                 } else if (!m.player1) {
-                  // If player2 is taken, place in player1
                   return { ...m, player1: winnerPlayer };
+                }
+              } else {
+                if (!m.player1) {
+                  return { ...m, player1: winnerPlayer };
+                } else if (!m.player2) {
+                  return { ...m, player2: winnerPlayer };
                 }
               }
             }
