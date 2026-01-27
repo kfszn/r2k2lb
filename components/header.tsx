@@ -48,9 +48,13 @@ function Header() {
     <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 md:gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-bold text-white text-sm">
-            R
-          </div>
+          <Image 
+            src="/assets/logo.png" 
+            alt="R2K2 Logo" 
+            width={32} 
+            height={32}
+            className="w-8 h-8 object-contain"
+          />
           <span className="font-bold text-base md:text-lg">R2K2</span>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
