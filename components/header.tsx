@@ -116,16 +116,16 @@ function Header() {
                 Wager Rewards
               </Link>
               <Link 
-                href="/perks/packdraw/lucky-draw-rewards" 
+                href="/perks/packdraw/loss-back" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
-                Lucky Draw Rewards
+                Loss-back
               </Link>
               <Link 
-                href="/perks/packdraw/seasonal-bonus" 
+                href="/perks/packdraw/first-time-deposit-bonus" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors last:rounded-b-lg"
               >
-                Seasonal Bonus
+                First Time Deposit Bonus
               </Link>
             </div>
           </div>
@@ -294,24 +294,24 @@ function Header() {
                             Wager Rewards
                           </Link>
                           <Link 
-                            href="/perks/packdraw/lucky-draw-rewards"
+                            href="/perks/packdraw/loss-back"
                             className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                             onClick={() => {
                               setOpen(false)
                               setDropdownOpen(false)
                             }}
                           >
-                            Lucky Draw Rewards
+                            Loss-back
                           </Link>
                           <Link 
-                            href="/perks/packdraw/seasonal-bonus"
+                            href="/perks/packdraw/first-time-deposit-bonus"
                             className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                             onClick={() => {
                               setOpen(false)
                               setDropdownOpen(false)
                             }}
                           >
-                            Seasonal Bonus
+                            First Time Deposit Bonus
                           </Link>
                         </div>
                       </div>
