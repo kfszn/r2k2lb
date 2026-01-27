@@ -26,7 +26,7 @@ export default function LossBackPage() {
           {/* Main Loss-back Card */}
           <Card className="bg-gradient-to-br from-primary/10 via-card to-secondary/20 border-primary/30">
             <CardHeader>
-              <CardTitle className="text-2xl">Recover Your Losses</CardTitle>
+              <CardTitle className="text-2xl">Recover Your Monthly Losses</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
@@ -34,20 +34,24 @@ export default function LossBackPage() {
                   <h3 className="font-semibold text-lg">Loss-back Recovery</h3>
                   <p className="text-3xl font-bold text-primary">Up to 15%</p>
                   <p className="text-sm text-muted-foreground">
-                    Get a percentage of your losses back based on your wager tier
+                    Get a percentage of your monthly P&L losses back based on your wager tier (max $250)
                   </p>
                   <div className="pt-4 space-y-2 text-sm">
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      Tiered rewards: 5% - 15%
+                      Monthly calculation window
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className="text-primary">✓</span>
+                      Based on P&L (Profit & Loss)
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className="text-primary">✓</span>
+                      Maximum $250 per month
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
                       Claim via Discord ticket
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <span className="text-primary">✓</span>
-                      24-48 hour processing
                     </p>
                   </div>
                 </div>
@@ -67,14 +71,30 @@ export default function LossBackPage() {
                       <span className="text-muted-foreground ml-2">$50K+ = 15%</span>
                     </li>
                     <li>
-                      <span className="font-medium">Claim Method:</span>
-                      <span className="text-primary font-bold ml-2">Discord Ticket</span>
+                      <span className="font-medium">Cycle:</span>
+                      <span className="text-primary font-bold ml-2">Monthly</span>
+                    </li>
+                    <li>
+                      <span className="font-medium">Maximum:</span>
+                      <span className="text-primary font-bold ml-2">$250/month</span>
                     </li>
                   </ul>
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Claim Button - Moved Up */}
+          <div className="text-center space-y-4 bg-primary/5 border border-primary/20 rounded-lg p-6">
+            <h3 className="font-semibold text-lg">Ready to claim your loss-back?</h3>
+            <Link href="https://discord.gg/packdraw" target="_blank" rel="noopener noreferrer">
+              <Button size="lg" className="gap-2">
+                <span>💬</span>
+                Claim Now on Discord
+              </Button>
+            </Link>
+            <p className="text-sm text-muted-foreground">Submit a support ticket with your Acebet stats and we'll verify your P&L within 24-48 hours</p>
+          </div>
 
           {/* Tier Benefits */}
           <Card className="bg-card/50 border-border/50">
@@ -165,22 +185,42 @@ export default function LossBackPage() {
           {/* Example */}
           <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle>Example</CardTitle>
+              <CardTitle>Monthly P&L Loss-back Examples</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-3 bg-secondary/20 rounded-lg">
-                <p className="text-sm">
-                  <span className="font-medium">You:</span> Are a VIP player with 20% loss-back
-                </p>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="border border-border/50 rounded-lg p-4 space-y-2">
+                  <p className="font-semibold text-sm">Scenario 1: Tier 1 Player ($0-$15K wager)</p>
+                  <p className="text-sm text-muted-foreground">Monthly P&L: -$2,000 loss</p>
+                  <p className="text-sm text-muted-foreground">Loss-back Rate: 5%</p>
+                  <p className="text-sm font-bold text-primary">
+                    Calculation: $2,000 × 5% = <span className="text-lg">$100</span>
+                  </p>
+                </div>
+
+                <div className="border border-border/50 rounded-lg p-4 space-y-2">
+                  <p className="font-semibold text-sm">Scenario 2: Tier 2 Player ($15K-$50K wager)</p>
+                  <p className="text-sm text-muted-foreground">Monthly P&L: -$3,500 loss</p>
+                  <p className="text-sm text-muted-foreground">Loss-back Rate: 10%</p>
+                  <p className="text-sm font-bold text-primary">
+                    Calculation: $3,500 × 10% = <span className="text-lg">$350</span> → Capped at <span className="text-lg">$250</span>
+                  </p>
+                </div>
+
+                <div className="border border-border/50 rounded-lg p-4 space-y-2">
+                  <p className="font-semibold text-sm">Scenario 3: Tier 3 Player ($50K+ wager)</p>
+                  <p className="text-sm text-muted-foreground">Monthly P&L: -$5,000 loss</p>
+                  <p className="text-sm text-muted-foreground">Loss-back Rate: 15%</p>
+                  <p className="text-sm font-bold text-primary">
+                    Calculation: $5,000 × 15% = <span className="text-lg">$750</span> → Capped at <span className="text-lg">$250</span>
+                  </p>
+                </div>
               </div>
-              <div className="p-3 bg-secondary/20 rounded-lg">
-                <p className="text-sm">
-                  <span className="font-medium">Weekly Losses:</span> $500 net loss
-                </p>
-              </div>
-              <div className="p-3 bg-primary/20 rounded-lg border border-primary/30">
-                <p className="text-sm">
-                  <span className="font-medium">Loss-back Credit:</span> $500 × 20% = <span className="font-bold text-primary">$100</span>
+
+              <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-500 mb-2">Monthly Maximum</p>
+                <p className="text-sm text-muted-foreground">
+                  All loss-back rewards are capped at <span className="font-bold text-primary">$250 per calendar month</span>. Monthly cycles reset on the 1st of each month.
                 </p>
               </div>
             </CardContent>
@@ -193,40 +233,22 @@ export default function LossBackPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <p className="text-muted-foreground">
-                • Loss-back is calculated on net losses within the promotional week
+                • Loss-back is calculated monthly based on your Acebet account's P&L (Profit & Loss)
               </p>
               <p className="text-muted-foreground">
-                • Bonus funds must be used according to Acebet's standard bonus terms
+                • Monthly cycles run from the 1st to the last day of each calendar month
               </p>
               <p className="text-muted-foreground">
-                • Your tier is determined by your cumulative wager amount
+                • Your tier is determined by your monthly wager amount on Acebet
               </p>
               <p className="text-muted-foreground">
-                • This promotion requires the R2K2 referral code to be used at signup
+                • Maximum loss-back reward per month: <span className="font-bold text-primary">$250</span>
+              </p>
+              <p className="text-muted-foreground">
+                • Claim your loss-back via Discord ticket with your Acebet stats screenshot
+              </p>
+              <p className="text-muted-foreground">
+                • This promotion requires the R2K2 referral code to be used at Acebet signup
               </p>
             </CardContent>
           </Card>
-
-          {/* CTA */}
-          <div className="text-center space-y-4">
-            <p className="text-lg text-muted-foreground">Ready to claim your loss-back?</p>
-            <Link href="https://discord.gg/packdraw" target="_blank" rel="noopener noreferrer">
-              <Button size="lg" className="gap-2">
-                <span>💬</span>
-                Claim Now on Discord
-              </Button>
-            </Link>
-            <p className="text-sm text-muted-foreground">Submit a support ticket with your account details and loss amount</p>
-          </div>
-
-          {/* Back Link */}
-          <div className="text-center">
-            <Link href="/">
-              <Button variant="outline">Return to Home</Button>
-            </Link>
-          </div>
-        </div>
-      </main>
-    </div>
-  )
-}
