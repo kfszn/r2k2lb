@@ -63,85 +63,59 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
       const byeCount = nextPowerOfTwo - shuffled.length;
       const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
       
-      // For a proper bracket with byes:
-      // - Random players get byes and appear directly in R2
-      // - Remaining players play in R1
+      // In a proper bracket with byes:
+      // - R1 has nextPowerOfTwo/2 total slots
+      // - byeCount of those are empty (byes)
+      // - The remaining nextPowerOfTwo/2 - byeCount slots have matches
+      // - So R1 has (nextPowerOfTwo/2 - byeCount) actual matches
+      // - Bye matches (empty slots) are distributed throughout R1
+      //
+      // For 10 players (16 slots, 6 byes):
+      // R1: 8 slots total, 6 are empty (byes), so 2 actual matches
+      // But that's wrong! We should have 5 matches in R1 for 10 players
       // 
-      // For 6 players (8 slots, 2 byes):
-      // R1: 2 matches with 4 players
-      // R2: 2 matches with bye players pre-seeded
-      // Finals: winner R2-0 vs winner R2-1
+      // The correct interpretation: 
+      // - All 10 players play in R1 = 5 matches
+      // - R2 has 5 slots to fill, but only 5 winners come from R1, so 0 byes in R2
+      // - Then R2 to R3: 5 matches needs 8 slots in R3, so 3 byes in R3
       
-      // Players who play in R1 (no byes)
-      const r1PlayerCount = (nextPowerOfTwo / 2 - byeCount) * 2;
-      const r1Players = shuffled.slice(byeCount); // Players without byes
+      const r1MatchCount = shuffled.length / 2;
       
-      // Players who get byes - go directly to R2
-      const byePlayers = shuffled.slice(0, byeCount);
-    
-    let matchNumber = 0;
-    
-    // R1: Only actual matches (no bye matches)
-    const r1MatchCount = r1PlayerCount / 2;
-    for (let i = 0; i < r1MatchCount; i++) {
-      newMatches.push({
-        id: `match-1-${matchNumber}`,
-        round: 1,
-        matchNumber: i,
-        player1: r1Players[i * 2] || null,
-        player2: r1Players[i * 2 + 1] || null,
-        player1Score: 0,
-        player2Score: 0,
-        status: 'pending',
-      });
-      matchNumber++;
-    }
-    
-    // R2: Matches with bye players already placed
-    // For 6 players: R2 has 2 matches
-    // Match 0: Seed 1 (bye) vs winner of R1 match 0
-    // Match 1: Winner of R1 match 1 vs Seed 2 (bye)
-    // But we need to distribute bye players correctly across R2 matches
-    const r2MatchCount = nextPowerOfTwo / 4;
-    for (let i = 0; i < r2MatchCount; i++) {
-      let player1 = null;
-      let player2 = null;
+      let matchNumber = 0;
       
-      // Distribute bye players: byePlayers[i] goes to R2 match i as player1
-      if (i < byePlayers.length) {
-        player1 = byePlayers[i];
-      }
-      
-      newMatches.push({
-        id: `match-2-${matchNumber}`,
-        round: 2,
-        matchNumber: i,
-        player1,
-        player2,
-        player1Score: 0,
-        player2Score: 0,
-        status: 'pending',
-      });
-      matchNumber++;
-    }
-    
-    // Remaining rounds (Finals, etc.)
-    for (let round = 3; round <= numRounds; round++) {
-      const matchesInRound = Math.pow(2, numRounds - round);
-      for (let i = 0; i < matchesInRound; i++) {
+      // R1: All players play (no byes in R1, all real matches)
+      for (let i = 0; i < r1MatchCount; i++) {
         newMatches.push({
-          id: `match-${round}-${matchNumber}`,
-          round,
+          id: `match-1-${matchNumber}`,
+          round: 1,
           matchNumber: i,
-          player1: null,
-          player2: null,
+          player1: shuffled[i * 2] || null,
+          player2: shuffled[i * 2 + 1] || null,
           player1Score: 0,
           player2Score: 0,
           status: 'pending',
         });
         matchNumber++;
       }
-    }
+      
+      // Generate all subsequent rounds
+      for (let round = 2; round <= numRounds; round++) {
+        const prevRoundMatches = Math.pow(2, numRounds - round + 1) / 2;
+        const matchesInRound = prevRoundMatches / 2;
+        for (let i = 0; i < matchesInRound; i++) {
+          newMatches.push({
+            id: `match-${round}-${matchNumber}`,
+            round,
+            matchNumber: i,
+            player1: null,
+            player2: null,
+            player1Score: 0,
+            player2Score: 0,
+            status: 'pending',
+          });
+          matchNumber++;
+        }
+      }
 
     setMatches(newMatches);
     localStorage.setItem('bracket-matches', JSON.stringify(newMatches));
