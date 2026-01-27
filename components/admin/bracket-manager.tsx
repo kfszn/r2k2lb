@@ -12,6 +12,7 @@ interface Tournament {
   id: string;
   name: string;
   status: string;
+  prize_pool?: number;
 }
 
 interface ScoreEditState {
@@ -21,14 +22,14 @@ interface ScoreEditState {
 }
 
 export function BracketManager({ tournament }: { tournament: Tournament }) {
-  const { matches, updateMatchScore, setMatchWinner } = useBracket();
+  const { matches, updateMatchScore, setMatchWinner, getPlayerName } = useBracket();
   const [editingScore, setEditingScore] = useState<ScoreEditState | null>(null);
 
-  // Group matches by round
+  // Group matches by round index
   const matchesByRound = matches.reduce(
     (acc, match) => {
-      if (!acc[match.round]) acc[match.round] = [];
-      acc[match.round].push(match);
+      if (!acc[match.roundIndex]) acc[match.roundIndex] = [];
+      acc[match.roundIndex].push(match);
       return acc;
     },
     {} as Record<number, typeof matches>
@@ -38,10 +39,13 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
     .map(Number)
     .sort((a, b) => a - b);
 
-  const totalRounds = rounds.length;
-
   const handleSetWinner = (matchId: string, winnerId: string) => {
-    setMatchWinner(matchId, winnerId);
+    // Pass tournament info so winner can be recorded when bracket completes
+    setMatchWinner(matchId, winnerId, {
+      id: tournament.id,
+      name: tournament.name,
+      prize: tournament.prize_pool || 0,
+    });
   };
 
   const handleSaveScore = (matchId: string) => {
@@ -59,9 +63,14 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
 
     const match = matches.find(m => m.id === matchId);
     if (match && score1 !== score2) {
-      const winnerId = score1 > score2 ? match.player1?.id : match.player2?.id;
+      const winnerId = score1 > score2 ? match.slotAId : match.slotBId;
       if (winnerId) {
-        setMatchWinner(matchId, winnerId);
+        // Pass tournament info so winner can be recorded when bracket completes
+        setMatchWinner(matchId, winnerId, {
+          id: tournament.id,
+          name: tournament.name,
+          prize: tournament.prize_pool || 0,
+        });
       }
     }
 
@@ -97,7 +106,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                 {/* Round Label */}
                 <div className="text-center mb-2 px-2">
                   <h3 className="font-bold text-xs uppercase tracking-wider text-primary/80">
-                    {round === totalRounds ? 'Finals' : `R${round}`}
+                    {round === rounds.length - 1 ? 'FINALS' : `R${round + 1}`}
                   </h3>
                 </div>
 
@@ -116,18 +125,18 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                           {match.status === 'live' && (
                             <div className="h-0.5 bg-red-500 animate-pulse" />
                           )}
-                          {match.status === 'pending' && match.player2 !== null && (
+                          {match.status === 'pending' && match.slotBId !== null && (
                             <div className="h-0.5 bg-muted" />
                           )}
 
                           <div className="p-2 space-y-1.5">
-                            {/* Bye Match */}
-                            {match.player2 === null ? (
+                            {/* Bye Match (slot is null) */}
+                            {match.slotBId === null && match.slotAId !== null ? (
                               <div className="p-2 rounded bg-primary/10 border border-primary/30">
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-xs text-foreground truncate">
-                                      {match.player1?.kick_username || match.player1?.acebet_username || 'TBD'}
+                                      {getPlayerName(match.slotAId) || 'TBD'}
                                     </p>
                                   </div>
                                   <span className="text-xs font-bold text-primary flex-shrink-0">BYE</span>
@@ -135,10 +144,10 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                               </div>
                             ) : (
                               <>
-                                {/* Player 1 */}
+                                {/* Slot A */}
                                 <div
                                   className={`p-1.5 rounded transition-all duration-200 text-xs cursor-pointer hover:border-primary/60 ${
-                                    match.status === 'completed' && match.winnerId === match.player1?.id
+                                    match.status === 'completed' && match.winnerId === match.slotAId
                                       ? 'bg-primary/15 border border-primary/40'
                                       : 'bg-secondary/30 border border-transparent'
                                   }`}
@@ -146,7 +155,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                                   <div className="flex items-center justify-between gap-2">
                                     <div className="flex-1 min-w-0">
                                       <p className="font-semibold text-foreground truncate">
-                                        {match.player1?.kick_username || match.player1?.acebet_username || '—'}
+                                        {getPlayerName(match.slotAId) || '—'}
                                       </p>
                                     </div>
                                     <div className="text-right flex-shrink-0">
@@ -164,10 +173,10 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                                   <div className="flex-1 h-px bg-border/40" />
                                 </div>
 
-                                {/* Player 2 */}
+                                {/* Slot B */}
                                 <div
                                   className={`p-1.5 rounded transition-all duration-200 text-xs cursor-pointer hover:border-primary/60 ${
-                                    match.status === 'completed' && match.winnerId === match.player2?.id
+                                    match.status === 'completed' && match.winnerId === match.slotBId
                                       ? 'bg-primary/15 border border-primary/40'
                                       : 'bg-secondary/30 border border-transparent'
                                   }`}
@@ -175,7 +184,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                                   <div className="flex items-center justify-between gap-2">
                                     <div className="flex-1 min-w-0">
                                       <p className="font-semibold text-foreground truncate">
-                                        {match.player2?.kick_username || match.player2?.acebet_username || '—'}
+                                        {getPlayerName(match.slotBId) || '—'}
                                       </p>
                                     </div>
                                     <div className="text-right flex-shrink-0">
@@ -264,21 +273,21 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                                           size="sm"
                                           className="flex-1 h-6 text-xs"
                                           onClick={() =>
-                                            handleSetWinner(match.id, match.player1?.id || '')
+                                            handleSetWinner(match.id, match.slotAId || '')
                                           }
                                           disabled={match.status === 'completed'}
                                         >
-                                          P1 Wins
+                                          A Wins
                                         </Button>
                                         <Button
                                           size="sm"
                                           className="flex-1 h-6 text-xs"
                                           onClick={() =>
-                                            handleSetWinner(match.id, match.player2?.id || '')
+                                            handleSetWinner(match.id, match.slotBId || '')
                                           }
                                           disabled={match.status === 'completed'}
                                         >
-                                          P2 Wins
+                                          B Wins
                                         </Button>
                                       </div>
                                     )}

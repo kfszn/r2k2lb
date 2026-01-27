@@ -15,8 +15,8 @@ const HARDCODED_ACEBET_TOKEN =
 // ===============================
 // ✅ EDIT DEFAULT DATES HERE
 // ===============================
-const DEFAULT_START = "2025-12-26";
-const DEFAULT_END = "2026-01-25"; // set "" to use today UTC
+const DEFAULT_START = "2026-01-26";
+const DEFAULT_END = "2026-02-24"; // 30 day cycle
 
 // ===============================
 // ⚡ SPEED / SAFETY KNOBS

@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/client';
 interface Tournament {
   id: string;
   name: string;
-  status: 'pending' | 'registration' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'registration' | 'live' | 'completed' | 'cancelled';
   game_name: string;
   bet_amount: number;
   max_players: number;
@@ -72,6 +72,8 @@ export function AllTournamentsManager() {
         return 'bg-blue-500/10 text-blue-700';
       case 'registration':
         return 'bg-green-500/10 text-green-700';
+      case 'live':
+      case 'active':
       case 'in_progress':
         return 'bg-purple-500/10 text-purple-700';
       case 'completed':
@@ -84,7 +86,7 @@ export function AllTournamentsManager() {
   };
 
   const filteredTournaments = tournaments.filter(t => {
-    if (filters.showActive && ['pending', 'registration', 'in_progress'].includes(t.status)) return true;
+    if (filters.showActive && ['pending', 'registration', 'live', 'in_progress', 'active'].includes(t.status)) return true;
     if (filters.showCompleted && t.status === 'completed') return true;
     if (filters.showCancelled && t.status === 'cancelled') return true;
     return false;

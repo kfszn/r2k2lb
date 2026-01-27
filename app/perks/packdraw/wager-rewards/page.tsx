@@ -9,14 +9,14 @@ import { Crown, TrendingUp, Zap } from 'lucide-react';
 import { useRef } from 'react';
 
 const wagerTiers = [
-  { id: 1, name: 'Bronze', wager: 5000, reward: 25, color: 'from-amber-700 to-amber-600', textColor: 'text-amber-500', borderColor: 'border-amber-500/30', badgeColor: 'bg-gradient-to-br from-amber-600 to-amber-700' },
-  { id: 2, name: 'Silver', wager: 10000, reward: 50, color: 'from-slate-400 to-slate-300', textColor: 'text-slate-400', borderColor: 'border-slate-400/30', badgeColor: 'bg-gradient-to-br from-slate-400 to-slate-500' },
-  { id: 3, name: 'Gold', wager: 20000, reward: 100, color: 'from-yellow-500 to-yellow-400', textColor: 'text-yellow-400', borderColor: 'border-yellow-400/30', badgeColor: 'bg-gradient-to-br from-yellow-400 to-yellow-500' },
-  { id: 4, name: 'Emerald', wager: 30000, reward: 150, color: 'from-emerald-500 to-emerald-400', textColor: 'text-emerald-400', borderColor: 'border-emerald-400/30', badgeColor: 'bg-gradient-to-br from-emerald-400 to-emerald-500' },
-  { id: 5, name: 'Sapphire', wager: 40000, reward: 200, color: 'from-blue-500 to-blue-400', textColor: 'text-blue-400', borderColor: 'border-blue-400/30', badgeColor: 'bg-gradient-to-br from-blue-400 to-blue-500' },
-  { id: 6, name: 'Ruby', wager: 60000, reward: 300, color: 'from-red-500 to-red-400', textColor: 'text-red-400', borderColor: 'border-red-400/30', badgeColor: 'bg-gradient-to-br from-red-400 to-red-500' },
-  { id: 7, name: 'Platinum', wager: 80000, reward: 400, color: 'from-gray-300 to-gray-200', textColor: 'text-gray-300', borderColor: 'border-gray-300/30', badgeColor: 'bg-gradient-to-br from-gray-300 to-gray-400' },
-  { id: 8, name: 'Diamond', wager: 100000, reward: 500, color: 'from-cyan-300 to-blue-300', textColor: 'text-cyan-300', borderColor: 'border-cyan-300/30', badgeColor: 'bg-gradient-to-br from-cyan-300 to-blue-300' },
+  { id: 1, name: 'Bronze', wager: 5000, reward: 25, nameColor: 'text-amber-600', starBg: 'bg-amber-600', borderColor: 'border-amber-600/20' },
+  { id: 2, name: 'Silver', wager: 10000, reward: 50, nameColor: 'text-slate-400', starBg: 'bg-slate-400', borderColor: 'border-slate-400/20' },
+  { id: 3, name: 'Gold', wager: 20000, reward: 100, nameColor: 'text-yellow-500', starBg: 'bg-yellow-500', borderColor: 'border-yellow-500/20' },
+  { id: 4, name: 'Emerald', wager: 30000, reward: 150, nameColor: 'text-emerald-500', starBg: 'bg-emerald-500', borderColor: 'border-emerald-500/20' },
+  { id: 5, name: 'Sapphire', wager: 40000, reward: 200, nameColor: 'text-blue-500', starBg: 'bg-blue-500', borderColor: 'border-blue-500/20' },
+  { id: 6, name: 'Ruby', wager: 60000, reward: 300, nameColor: 'text-red-500', starBg: 'bg-red-500', borderColor: 'border-red-500/20' },
+  { id: 7, name: 'Platinum', wager: 80000, reward: 400, nameColor: 'text-slate-300', starBg: 'bg-slate-300', borderColor: 'border-slate-300/20' },
+  { id: 8, name: 'Diamond', wager: 100000, reward: 500, nameColor: 'text-cyan-400', starBg: 'bg-cyan-400', borderColor: 'border-cyan-400/20' },
 ];
 
 const vipTier = {
@@ -24,9 +24,9 @@ const vipTier = {
   wager: '100K+',
   reward: 'Custom',
   description: 'Exclusive rewards & benefits',
-  color: 'from-purple-600 via-purple-500 to-pink-500',
-  textColor: 'text-purple-400',
-  borderColor: 'border-purple-500/50',
+  nameColor: 'text-purple-500',
+  starBg: 'bg-purple-500',
+  borderColor: 'border-purple-500/20',
 };
 
 export default function WagerRewardsPage() {
@@ -64,9 +64,16 @@ export default function WagerRewardsPage() {
             <p className="text-lg text-muted-foreground">
               Climb the tiers and unlock exclusive monthly rewards based on your wager volume
             </p>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full">
-              <Zap className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-primary">Monthly Reset • Real-Time Tracking</span>
+            <div className="inline-flex flex-col gap-3">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full">
+                <Zap className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">Monthly Reset • Real-Time Tracking</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/50 border border-border/50 rounded-full">
+                <span className="text-sm font-semibold text-foreground">
+                  ⭐ Rewards are stackable with all previous tiers you've reached
+                </span>
+              </div>
             </div>
           </div>
 
@@ -97,24 +104,20 @@ export default function WagerRewardsPage() {
             >
               {wagerTiers.map((tier) => (
                 <div key={tier.id} className="flex-shrink-0 w-64">
-                  <div
-                    className={`h-full rounded-lg border ${tier.borderColor} bg-gradient-to-br ${tier.color} bg-opacity-10 hover:bg-opacity-20 transition-all duration-300 overflow-hidden group cursor-pointer`}
-                  >
+                  <div className="h-full rounded-lg border border-border bg-card hover:bg-card/80 transition-all duration-300 overflow-hidden group cursor-pointer">
                     {/* Badge Header */}
-                    <div className="p-4 flex flex-col items-center justify-center space-y-3 bg-gradient-to-b from-card/50 to-transparent">
-                      <div
-                        className={`w-20 h-20 ${tier.badgeColor} rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
-                      >
+                    <div className="p-4 flex flex-col items-center justify-center space-y-3">
+                      <div className={`w-20 h-20 ${tier.starBg} rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
                         <span className="text-2xl font-bold text-white">⭐</span>
                       </div>
-                      <h3 className={`text-xl font-bold ${tier.textColor}`}>{tier.name}</h3>
+                      <h3 className={`text-xl font-bold ${tier.nameColor}`}>{tier.name}</h3>
                     </div>
 
                     {/* Tier Details */}
                     <div className="px-4 py-6 space-y-4">
                       <div className="space-y-2">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">Monthly Wager</p>
-                        <p className={`text-2xl font-bold ${tier.textColor}`}>
+                        <p className="text-2xl font-bold text-foreground">
                           {formatWager(tier.wager)}
                         </p>
                       </div>
@@ -124,13 +127,23 @@ export default function WagerRewardsPage() {
                       <div className="space-y-2">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">Monthly Reward</p>
                         <div className="flex items-baseline gap-1">
-                          <span className={`text-3xl font-bold ${tier.textColor}`}>${tier.reward}</span>
+                          <span className="text-3xl font-bold text-foreground">${tier.reward}</span>
                           <span className="text-xs text-muted-foreground">cash</span>
                         </div>
                       </div>
 
                       <div className="pt-2 text-xs text-muted-foreground">
-                        ✓ Automatic payout • ✓ No rollover • ✓ Reset monthly
+                        ✓ No rollover • ✓ Monthly reset • ✓ Claim via Discord
+                      </div>
+
+                      {/* Discord Link & Claim Button */}
+                      <div className="pt-4 space-y-2 border-t border-border/30">
+                        <Link href="https://discord.gg/packdraw" target="_blank" rel="noopener noreferrer">
+                          <Button className="w-full gap-2 bg-primary hover:bg-primary/90">
+                            <span>💬</span>
+                            Claim Now
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -139,38 +152,39 @@ export default function WagerRewardsPage() {
 
               {/* VIP Tier */}
               <div className="flex-shrink-0 w-64">
-                <div
-                  className={`h-full rounded-lg border ${vipTier.borderColor} bg-gradient-to-br ${vipTier.color} bg-opacity-20 hover:bg-opacity-30 transition-all duration-300 overflow-hidden group cursor-pointer`}
-                >
+                <div className="h-full rounded-lg border border-border bg-card hover:bg-card/80 transition-all duration-300 overflow-hidden group cursor-pointer">
                   {/* VIP Badge */}
-                  <div className="p-4 flex flex-col items-center justify-center space-y-3 bg-gradient-to-b from-card/50 to-transparent">
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="p-4 flex flex-col items-center justify-center space-y-3">
+                    <div className={`w-20 h-20 ${vipTier.starBg} rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
                       <Crown className="w-10 h-10 text-white" />
                     </div>
-                    <h3 className={`text-xl font-bold ${vipTier.textColor}`}>{vipTier.name}</h3>
+                    <h3 className={`text-xl font-bold ${vipTier.nameColor}`}>{vipTier.name}</h3>
                   </div>
 
                   {/* VIP Details */}
                   <div className="px-4 py-6 space-y-4">
                     <div className="space-y-2">
                       <p className="text-xs text-muted-foreground uppercase tracking-wider">Minimum Wager</p>
-                      <p className={`text-2xl font-bold ${vipTier.textColor}`}>{vipTier.wager}</p>
+                      <p className="text-2xl font-bold text-foreground">{vipTier.wager}</p>
                     </div>
 
                     <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
                     <div className="space-y-2">
                       <p className="text-xs text-muted-foreground uppercase tracking-wider">Exclusive Rewards</p>
-                      <p className="text-xl font-bold text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
+                      <p className="text-xl font-bold text-foreground">
                         {vipTier.reward}
                       </p>
                       <p className="text-xs text-muted-foreground">{vipTier.description}</p>
                     </div>
 
                     <div className="pt-2">
-                      <Button size="sm" className="w-full" variant="outline">
-                        Contact VIP Team
-                      </Button>
+                      <Link href="https://discord.gg/packdraw" target="_blank" rel="noopener noreferrer">
+                        <Button size="sm" className="w-full gap-2">
+                          <span>💬</span>
+                          Claim Rewards
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -214,10 +228,10 @@ export default function WagerRewardsPage() {
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary text-sm font-bold">
                       3
                     </span>
-                    Monthly Payout
+                    Claim Your Reward
                   </h3>
                   <p className="text-sm text-muted-foreground ml-8">
-                    Once you reach a tier threshold, your reward is credited automatically. No rollover required—use it immediately.
+                    Once you reach a tier threshold, submit a ticket in our Discord server to claim your reward. Our team will verify and process your claim.
                   </p>
                 </div>
 
@@ -255,9 +269,15 @@ export default function WagerRewardsPage() {
                 </p>
               </div>
               <div>
+                <h4 className="font-semibold mb-2">Claiming Your Reward</h4>
+                <p className="text-muted-foreground">
+                  Rewards must be claimed via Discord ticket in our support server. Submit your claim with proof of your wager milestone, and our team will process it within 24-48 hours.
+                </p>
+              </div>
+              <div>
                 <h4 className="font-semibold mb-2">Reward Withdrawal</h4>
                 <p className="text-muted-foreground">
-                  Wager Rewards are credited as cash and can be withdrawn immediately without any additional requirements.
+                  Once approved, rewards are credited to your account as cash and can be withdrawn immediately without any additional requirements.
                 </p>
               </div>
               <div>
@@ -278,7 +298,7 @@ export default function WagerRewardsPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="https://packdraw.gg" target="_blank" rel="noopener noreferrer">
+              <Link href="https://packdraw.com?ref=R2K2" target="_blank" rel="noopener noreferrer">
                 <Button size="lg" className="gap-2 w-full sm:w-auto">
                   <TrendingUp className="h-5 w-5" />
                   Start Playing Now

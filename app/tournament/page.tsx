@@ -9,10 +9,66 @@ import { RefreshCw, Trophy } from "lucide-react";
 import { GiveawayCounter } from "@/components/giveaway-counter";
 import { useBracket } from "@/lib/bracket-context";
 import { Header } from "@/components/header";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function TournamentPage() {
   const { matches } = useBracket();
-  const hasBracket = matches.length > 0;
+  const [tournamentStatus, setTournamentStatus] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Check tournament status on mount
+  useEffect(() => {
+    const checkTournamentStatus = async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("tournaments")
+          .select("status")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        console.log("[v0] Tournament query - data:", data, "error:", error);
+        const status = data?.status || null;
+        console.log("[v0] Set tournament status to:", status);
+        setTournamentStatus(status);
+      } catch (error) {
+        console.error("[v0] Error fetching tournament status:", error);
+        setTournamentStatus(null);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    checkTournamentStatus();
+
+    // Subscribe to tournament status changes
+    const supabase = createClient();
+    const channel = supabase
+      .channel("tournaments-status")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tournaments" },
+        (payload) => {
+          console.log("[v0] Tournament realtime update:", payload.new?.status);
+          if (payload.new?.status) {
+            setTournamentStatus(payload.new.status);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Show bracket if tournament is LIVE status AND matches exist
+  // Don't require isLoaded since we show "No Active Tournament" if truly no tournament
+  const isLive = tournamentStatus === "LIVE" || (tournamentStatus === null && matches.length > 0);
+  console.log("[v0] Tournament page DEBUG - matches.length:", matches.length, "tournamentStatus:", tournamentStatus, "isLoaded:", isLoaded, "isLive:", isLive);
+  const hasBracket = matches.length > 0 && isLive;
 
   return (
     <div className="min-h-screen bg-background">

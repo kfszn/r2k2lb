@@ -28,7 +28,7 @@ export default function LossBackPage() {
             <CardHeader>
               <CardTitle className="text-2xl">Recover Your Losses</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <h3 className="font-semibold text-lg">Loss-back Bonus</h3>
@@ -212,7 +212,7 @@ export default function LossBackPage() {
           {/* CTA */}
           <div className="text-center space-y-4">
             <p className="text-lg text-muted-foreground">Start earning loss-back today!</p>
-            <a href="https://www.acebet.com?code=R2K2" target="_blank" rel="noopener noreferrer">
+            <a href="https://packdraw.gg?code=R2K2" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">
                 <TrendingDown className="h-5 w-5" />
                 Sign Up with Code R2K2

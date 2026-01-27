@@ -9,7 +9,7 @@ export async function GET() {
   const { data: tournament } = await supabase
     .from("tournaments")
     .select("*, tournament_players(id)")
-    .in("status", ["pending", "registration", "in_progress"])
+    .in("status", ["pending", "registration", "live"])
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();

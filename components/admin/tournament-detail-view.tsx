@@ -178,7 +178,7 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-bold">{tournament.name}</h1>
-              <Badge className="text-base">{status === 'registration' ? 'Registering' : status === 'active' ? 'Live' : 'Closed'}</Badge>
+                  <Badge className="text-base">{status === 'registration' ? 'REGISTERING' : status === 'live' ? 'LIVE' : 'CLOSED'}</Badge>
             </div>
             <div className="flex gap-3 items-end">
               <div className="w-48">
@@ -188,9 +188,9 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="registration">Registering</SelectItem>
-                    <SelectItem value="active">Live</SelectItem>
-                    <SelectItem value="completed">Closed</SelectItem>
+                    <SelectItem value="registration">REGISTERING</SelectItem>
+                    <SelectItem value="live">LIVE</SelectItem>
+                    <SelectItem value="completed">CLOSED</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

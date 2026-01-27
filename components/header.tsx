@@ -47,14 +47,17 @@ function Header() {
   return (
     <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-bold text-white">
+        <Link href="/" className="flex items-center gap-2 md:gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-bold text-white text-sm">
             R
           </div>
-          <span className="font-bold text-lg hidden sm:inline">R2K2</span>
+          <span className="font-bold text-base md:text-lg">R2K2</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-8">
-          <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
+        <nav className="hidden md:flex items-center gap-6">
+          <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
+            Home
+          </Link>
+          
           <div className="relative group">
             <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
               Leaderboards
@@ -75,37 +78,76 @@ function Header() {
               </Link>
             </div>
           </div>
-          <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">Raffle</Link>
-          <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors">Tournament</Link>
+
           <div className="relative group">
             <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
               Code Perks
               <ChevronDown className="h-4 w-4" />
             </button>
-            <div className="absolute left-0 mt-0 hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[200px] z-50">
+            <div className="absolute left-0 mt-0 hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[240px] z-50">
+              {/* Acebet Section */}
+              <div className="px-4 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider border-b border-border/20">
+                Acebet
+              </div>
               <Link 
-                href="/perks/wager-rewards" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors first:rounded-t-lg"
+                href="/perks/acebet/wager-rewards" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Wager Rewards
               </Link>
               <Link 
-                href="/perks/first-deposit" 
+                href="/perks/acebet/first-deposit" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 First Time Deposit Bonus
               </Link>
               <Link 
-                href="/perks/loss-back" 
+                href="/perks/acebet/loss-back" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Loss-back
               </Link>
+              {/* PackDraw Section */}
+              <div className="px-4 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider border-t border-b border-border/20 mt-2">
+                PackDraw
+              </div>
+              <Link 
+                href="/perks/packdraw/wager-rewards" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Wager Rewards
+              </Link>
+              <Link 
+                href="/perks/packdraw/loss-back" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Loss-back
+              </Link>
+              <Link 
+                href="/perks/packdraw/first-time-deposit-bonus" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors last:rounded-b-lg"
+              >
+                First Time Deposit Bonus
+              </Link>
             </div>
           </div>
-          <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary transition-colors">Discord</a>
+
+          <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">
+            Raffle
+          </Link>
+          
+          <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors">
+            Tournament
+          </Link>
+          
+          <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary transition-colors">
+            Discord
+          </a>
+
           {isAdmin && (
-            <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">Admin</Link>
+            <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors text-yellow-600">
+              Admin
+            </Link>
           )}
         </nav>
         <div className="flex items-center gap-3">
@@ -162,6 +204,7 @@ function Header() {
                 >
                   Home
                 </Link>
+
                 <div className="space-y-2">
                   <button 
                     onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -195,20 +238,7 @@ function Header() {
                     </div>
                   )}
                 </div>
-                <Link 
-                  href="/raffle" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                  onClick={() => setOpen(false)}
-                >
-                  Raffle
-                </Link>
-                <Link 
-                  href="/tournament" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                  onClick={() => setOpen(false)}
-                >
-                  Tournament
-                </Link>
+
                 <div className="space-y-2">
                   <button 
                     onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -218,40 +248,97 @@ function Header() {
                     <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {dropdownOpen && (
-                    <div className="flex flex-col gap-2">
-                      <Link 
-                        href="/perks/wager-rewards"
-                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                        onClick={() => {
-                          setOpen(false)
-                          setDropdownOpen(false)
-                        }}
-                      >
-                        Wager Rewards
-                      </Link>
-                      <Link 
-                        href="/perks/first-deposit"
-                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                        onClick={() => {
-                          setOpen(false)
-                          setDropdownOpen(false)
-                        }}
-                      >
-                        First Time Deposit Bonus
-                      </Link>
-                      <Link 
-                        href="/perks/loss-back"
-                        className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                        onClick={() => {
-                          setOpen(false)
-                          setDropdownOpen(false)
-                        }}
-                      >
-                        Loss-back
-                      </Link>
+                    <div className="flex flex-col gap-3 bg-secondary/30 rounded-lg p-3">
+                      <div>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Acebet</p>
+                        <div className="flex flex-col gap-2">
+                          <Link 
+                            href="/perks/acebet/wager-rewards"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            Wager Rewards
+                          </Link>
+                          <Link 
+                            href="/perks/acebet/first-deposit"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            First Time Deposit Bonus
+                          </Link>
+                          <Link 
+                            href="/perks/acebet/loss-back"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            Loss-back
+                          </Link>
+                        </div>
+                      </div>
+                      <div className="border-t border-border/20 pt-3">
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">PackDraw</p>
+                        <div className="flex flex-col gap-2">
+                          <Link 
+                            href="/perks/packdraw/wager-rewards"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            Wager Rewards
+                          </Link>
+                          <Link 
+                            href="/perks/packdraw/loss-back"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            Loss-back
+                          </Link>
+                          <Link 
+                            href="/perks/packdraw/first-time-deposit-bonus"
+                            className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                            onClick={() => {
+                              setOpen(false)
+                              setDropdownOpen(false)
+                            }}
+                          >
+                            First Time Deposit Bonus
+                          </Link>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
+
+                <Link 
+                  href="/raffle" 
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                  onClick={() => setOpen(false)}
+                >
+                  Raffle
+                </Link>
+
+                <Link 
+                  href="/tournament" 
+                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                  onClick={() => setOpen(false)}
+                >
+                  Tournament
+                </Link>
+
                 <a 
                   href="https://discord.gg/r2k2" 
                   target="_blank" 
@@ -260,15 +347,17 @@ function Header() {
                 >
                   Discord
                 </a>
+
                 {isAdmin && (
                   <Link 
                     href="/admin" 
-                    className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
+                    className="text-base font-medium hover:text-primary transition-colors py-2 text-center text-yellow-600"
                     onClick={() => setOpen(false)}
                   >
                     Admin
                   </Link>
                 )}
+
                 {user && (
                   <div className="pt-4 border-t border-border">
                     <Button onClick={handleSignOut} className="w-full">

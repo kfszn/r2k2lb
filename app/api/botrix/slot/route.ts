@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const { data: tournament } = await supabase
       .from("tournaments")
       .select("id")
-      .eq("status", "in_progress")
+      .eq("status", "live")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();

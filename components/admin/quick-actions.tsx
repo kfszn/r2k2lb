@@ -30,6 +30,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { useBracket } from "@/lib/bracket-context";
 
 interface QuickActionsProps {
   tournament: TournamentWithDetails;
@@ -41,16 +42,49 @@ interface QuickActionsProps {
 export function QuickActions({ tournament, onUpdate, onViewEntrants, onCreateNew }: QuickActionsProps) {
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<string | null>(null);
+  const { matches, getPlayerName } = useBracket();
+
+  // Get the finals match winner from the bracket
+  const getFinalsWinner = () => {
+    if (matches.length === 0) return null;
+    const finalsMatch = matches.find(m => m.nextMatchId === null);
+    if (!finalsMatch || !finalsMatch.winnerId) return null;
+    
+    // Get winner info from entrants stored in localStorage
+    const entrantsJson = localStorage.getItem('bracket-entrants');
+    if (!entrantsJson) return null;
+    
+    try {
+      const entrants = JSON.parse(entrantsJson);
+      return entrants[finalsMatch.winnerId] || null;
+    } catch {
+      return null;
+    }
+  };
 
   const handleStatusChange = async (newStatus: string) => {
     setIsLoading(newStatus);
     try {
+      // If completing tournament, get winner info to record
+      let winnerData = null;
+      if (newStatus === "completed") {
+        const winner = getFinalsWinner();
+        if (winner) {
+          winnerData = {
+            acebet_username: winner.acebet_username,
+            kick_username: winner.kick_username,
+            prize_amount: tournament.prize_pool || 0,
+          };
+        }
+      }
+
       const response = await fetch("/api/admin/tournament/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tournamentId: tournament.id,
           status: newStatus,
+          winner: winnerData,
         }),
       });
 
@@ -74,17 +108,17 @@ export function QuickActions({ tournament, onUpdate, onViewEntrants, onCreateNew
       icon: Pause,
     },
     registration: { 
-      label: "REGISTRATION OPEN", 
+      label: "REGISTERING", 
       color: "bg-primary/20 text-primary border-primary",
       icon: Unlock,
     },
-    in_progress: { 
+    live: { 
       label: "LIVE", 
       color: "bg-red-500/20 text-red-400 border-red-500 animate-pulse",
       icon: Radio,
     },
     completed: { 
-      label: "COMPLETED", 
+      label: "CLOSED", 
       color: "bg-winner/20 text-winner border-winner",
       icon: Trophy,
     },
@@ -187,7 +221,7 @@ export function QuickActions({ tournament, onUpdate, onViewEntrants, onCreateNew
               </>
             )}
 
-            {tournament.status === "in_progress" && (
+            {tournament.status === "live" && (
               <Button 
                 variant="destructive"
                 onClick={() => setConfirmAction("complete")}

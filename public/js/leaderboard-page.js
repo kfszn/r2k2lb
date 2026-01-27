@@ -5,11 +5,11 @@
 const CURRENT_API_URL  = "/api/leaderboard";        // current rolling 30d @ 8PM ET
 const PREVIOUS_API_URL = "/api/leaderboard?prev=1"; // previous rolling 30d
 
-const ANCHOR_DATE = "2025-10-18"; // first 8PM ET reset
+const ANCHOR_DATE = "2026-01-26"; // first 8PM ET reset
 const WINDOW_DAYS = 30;
 
 const logoSrc   = "/assets/rainbetlogo.png";
-const rewards   = [800, 500, 375, 300, 250, 175, 100, 75, 50, 25, 25, 25, 25, 25, 25]; // 1st → 15th
+const rewards   = [1000, 600, 400, 300, 250, 150, 120, 90, 60, 30]; // 1st → 10th
 const top3Glows = ["0 0 40px #FFD700", "0 0 40px #C0C0C0", "0 0 40px #CD7F32"]; // Gold, Silver, Bronze
 
 /* ===== Countdown (rolling 30d from 8PM ET ANCHOR_DATE) ===== */
