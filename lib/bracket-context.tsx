@@ -100,19 +100,15 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     // For 6 players: R2 has 2 matches
     // Match 0: Seed 1 (bye) vs winner of R1 match 0
     // Match 1: Winner of R1 match 1 vs Seed 2 (bye)
+    // But we need to distribute bye players correctly across R2 matches
     const r2MatchCount = nextPowerOfTwo / 4;
     for (let i = 0; i < r2MatchCount; i++) {
-      // Determine which bye player goes where
-      // First bye player (seed 1) goes to player1 of first R2 match
-      // Second bye player (seed 2) goes to player2 of last R2 match
       let player1 = null;
       let player2 = null;
       
-      if (i === 0 && byePlayers.length > 0) {
-        player1 = byePlayers[0]; // Seed 1 in first R2 match
-      }
-      if (i === r2MatchCount - 1 && byePlayers.length > 1) {
-        player2 = byePlayers[1]; // Seed 2 in last R2 match
+      // Distribute bye players: byePlayers[i] goes to R2 match i as player1
+      if (i < byePlayers.length) {
+        player1 = byePlayers[i];
       }
       
       newMatches.push({
