@@ -52,31 +52,32 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   const generateBracket = useCallback((players: BracketPlayer[]) => {
     if (players.length < 2) return;
 
-    // Shuffle players for random seeding
-    const shuffled = [...players].sort(() => Math.random() - 0.5);
+    try {
+      // Shuffle players for random seeding
+      const shuffled = [...players].sort(() => Math.random() - 0.5);
 
-    const newMatches: BracketMatch[] = [];
-    
-    // Find the next power of 2
-    const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(shuffled.length)));
-    const byeCount = nextPowerOfTwo - shuffled.length;
-    const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
-    
-    // For a proper bracket with byes:
-    // - Random players get byes and appear directly in R2
-    // - Remaining players play in R1
-    // 
-    // For 6 players (8 slots, 2 byes):
-    // R1: 2 matches with 4 players
-    // R2: 2 matches with bye players pre-seeded
-    // Finals: winner R2-0 vs winner R2-1
-    
-    // Players who play in R1 (no byes)
-    const r1PlayerCount = (nextPowerOfTwo / 2 - byeCount) * 2;
-    const r1Players = shuffled.slice(byeCount); // Players without byes
-    
-    // Players who get byes - go directly to R2
-    const byePlayers = shuffled.slice(0, byeCount);
+      const newMatches: BracketMatch[] = [];
+      
+      // Find the next power of 2
+      const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(shuffled.length)));
+      const byeCount = nextPowerOfTwo - shuffled.length;
+      const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
+      
+      // For a proper bracket with byes:
+      // - Random players get byes and appear directly in R2
+      // - Remaining players play in R1
+      // 
+      // For 6 players (8 slots, 2 byes):
+      // R1: 2 matches with 4 players
+      // R2: 2 matches with bye players pre-seeded
+      // Finals: winner R2-0 vs winner R2-1
+      
+      // Players who play in R1 (no byes)
+      const r1PlayerCount = (nextPowerOfTwo / 2 - byeCount) * 2;
+      const r1Players = shuffled.slice(byeCount); // Players without byes
+      
+      // Players who get byes - go directly to R2
+      const byePlayers = shuffled.slice(0, byeCount);
     
     let matchNumber = 0;
     
@@ -144,6 +145,9 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
 
     setMatches(newMatches);
     localStorage.setItem('bracket-matches', JSON.stringify(newMatches));
+    } catch (e) {
+      console.error('[v0] Error generating bracket:', e);
+    }
   }, []);
 
   const updateMatchScore = useCallback((matchId: string, player1Score: number, player2Score: number) => {
@@ -159,48 +163,52 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setMatchWinner = useCallback((matchId: string, winnerId: string) => {
-    setMatches(prev => {
-      let updated = [...prev];
-      
-      // 1. Mark the match as completed with winner
-      updated = updated.map(match =>
-        match.id === matchId
-          ? { ...match, winnerId, status: 'completed' }
-          : match
-      );
+    try {
+      setMatches(prev => {
+        let updated = [...prev];
+        
+        // 1. Mark the match as completed with winner
+        updated = updated.map(match =>
+          match.id === matchId
+            ? { ...match, winnerId, status: 'completed' }
+            : match
+        );
 
-      // 2. Advance the winner to next round
-      const completedMatch = updated.find(m => m.id === matchId);
-      if (completedMatch) {
-        const winnerPlayer = completedMatch.player1?.id === winnerId 
-          ? completedMatch.player1 
-          : completedMatch.player2;
-        
-        // Find next round match and slot
-        const nextRound = completedMatch.round + 1;
-        const nextMatchIndex = Math.floor(completedMatch.matchNumber / 2);
-        // isPlayer1Slot should be based on position within the pair (matchNumber % 2)
-        // matchNumber % 2 === 0 means this is the "first" match in the pair (player1 slot)
-        // matchNumber % 2 === 1 means this is the "second" match in the pair (player2 slot)
-        const isPlayer1Slot = completedMatch.matchNumber % 2 === 0;
-        
-        updated = updated.map(m => {
-          if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
-            if (isPlayer1Slot) {
-              // This is the first match in the pair, place in player1 slot
-              return { ...m, player1: winnerPlayer };
-            } else {
-              // This is the second match in the pair, place in player2 slot
-              return { ...m, player2: winnerPlayer };
+        // 2. Advance the winner to next round
+        const completedMatch = updated.find(m => m.id === matchId);
+        if (completedMatch) {
+          const winnerPlayer = completedMatch.player1?.id === winnerId 
+            ? completedMatch.player1 
+            : completedMatch.player2;
+          
+          // Find next round match and slot
+          const nextRound = completedMatch.round + 1;
+          const nextMatchIndex = Math.floor(completedMatch.matchNumber / 2);
+          // isPlayer1Slot should be based on position within the pair (matchNumber % 2)
+          // matchNumber % 2 === 0 means this is the "first" match in the pair (player1 slot)
+          // matchNumber % 2 === 1 means this is the "second" match in the pair (player2 slot)
+          const isPlayer1Slot = completedMatch.matchNumber % 2 === 0;
+          
+          updated = updated.map(m => {
+            if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
+              if (isPlayer1Slot) {
+                // This is the first match in the pair, place in player1 slot
+                return { ...m, player1: winnerPlayer };
+              } else {
+                // This is the second match in the pair, place in player2 slot
+                return { ...m, player2: winnerPlayer };
+              }
             }
-          }
-          return m;
-        });
-      }
+            return m;
+          });
+        }
 
-      localStorage.setItem('bracket-matches', JSON.stringify(updated));
-      return updated;
-    });
+        localStorage.setItem('bracket-matches', JSON.stringify(updated));
+        return updated;
+      });
+    } catch (e) {
+      console.error('[v0] Error setting match winner:', e);
+    }
   }, []);
 
   const clearBracket = useCallback(() => {
