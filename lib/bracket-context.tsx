@@ -183,23 +183,19 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
         // Find next round match and slot
         const nextRound = completedMatch.round + 1;
         const nextMatchIndex = Math.floor(completedMatch.matchNumber / 2);
+        // isPlayer1Slot should be based on position within the pair (matchNumber % 2)
+        // matchNumber % 2 === 0 means this is the "first" match in the pair (player1 slot)
+        // matchNumber % 2 === 1 means this is the "second" match in the pair (player2 slot)
         const isPlayer1Slot = completedMatch.matchNumber % 2 === 0;
         
         updated = updated.map(m => {
           if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
-            // Try to place in the designated slot first
-            if (isPlayer1Slot && !m.player1) {
+            if (isPlayer1Slot) {
+              // This is the first match in the pair, place in player1 slot
               return { ...m, player1: winnerPlayer };
-            }
-            if (!isPlayer1Slot && !m.player2) {
+            } else {
+              // This is the second match in the pair, place in player2 slot
               return { ...m, player2: winnerPlayer };
-            }
-            // If designated slot is taken, use the other slot
-            if (isPlayer1Slot && m.player1 && !m.player2) {
-              return { ...m, player2: winnerPlayer };
-            }
-            if (!isPlayer1Slot && m.player2 && !m.player1) {
-              return { ...m, player1: winnerPlayer };
             }
           }
           return m;
