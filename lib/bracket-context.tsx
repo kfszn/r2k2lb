@@ -59,40 +59,57 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(players.length)));
     const byeCount = nextPowerOfTwo - players.length;
     
-    // Round 1 with byes: players get byes first, then regular matches
-    let playerIndex = 0;
+    // Proper seeding: Top seeds get byes, lower seeds play first round
+    // For 6 players in 8 slots: seeds 1,2 get byes, then 5v4, 3v6, 2 has bye
+    
     let matchNumber = 0;
     
-    // Create bye matches (player vs null automatically advances)
-    for (let i = 0; i < byeCount; i++) {
-      newMatches.push({
-        id: `match-1-${matchNumber}`,
-        round: 1,
-        matchNumber: matchNumber,
-        player1: players[playerIndex] || null,
-        player2: null, // Bye - no second player
-        player1Score: 0,
-        player2Score: 0,
-        status: 'pending',
-      });
-      playerIndex++;
-      matchNumber++;
-    }
+    // Create R1 matches with proper seeding:
+    // Top seeds get byes, remaining seeds are paired: (last, second-to-last), etc.
     
-    // Create regular matches with remaining players
-    const remainingPlayers = players.length - byeCount;
-    for (let i = 0; i < remainingPlayers / 2; i++) {
-      newMatches.push({
-        id: `match-1-${matchNumber}`,
-        round: 1,
-        matchNumber: matchNumber,
-        player1: players[playerIndex] || null,
-        player2: players[playerIndex + 1] || null,
-        player1Score: 0,
-        player2Score: 0,
-        status: 'pending',
-      });
-      playerIndex += 2;
+    // Seeds that get byes (top seeds)
+    const byeSeeds = Array.from({ length: byeCount }, (_, i) => i);
+    
+    // Seeds that play in R1 (remaining seeds in reverse order for pairing)
+    const playingSeeds = Array.from(
+      { length: players.length - byeCount }, 
+      (_, i) => byeCount + i
+    );
+    
+    // Pair lower seeds: (last with second-to-last), etc.
+    let playerIdx = byeCount;
+    
+    // Interleave byes and regular matches to fill R1 bracket properly
+    // For 6 players: match 0 = bye, match 1 = (5,4), match 2 = (3,6), match 3 = bye
+    for (let i = 0; i < nextPowerOfTwo / 2; i++) {
+      if (i < byeCount) {
+        // First byeCount matches are byes for top seeds
+        newMatches.push({
+          id: `match-1-${matchNumber}`,
+          round: 1,
+          matchNumber: matchNumber,
+          player1: players[i] || null,
+          player2: null, // Bye
+          player1Score: 0,
+          player2Score: 0,
+          status: 'pending',
+        });
+      } else {
+        // Remaining matches pair lower seeds
+        const idx = (i - byeCount) * 2;
+        if (idx + 1 < playingSeeds.length) {
+          newMatches.push({
+            id: `match-1-${matchNumber}`,
+            round: 1,
+            matchNumber: matchNumber,
+            player1: players[playingSeeds[idx]] || null,
+            player2: players[playingSeeds[idx + 1]] || null,
+            player1Score: 0,
+            player2Score: 0,
+            status: 'pending',
+          });
+        }
+      }
       matchNumber++;
     }
 
