@@ -93,41 +93,54 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
       }
 
       const newMatches: BracketMatch[] = [];
-      let matchId = 0;
 
-      // Generate all rounds
-      for (let round = 0; round < numRounds; round++) {
-        const matchesInRound = Math.pow(2, numRounds - round - 1);
-        const startPos = round === 0 ? 0 : -1; // Position tracking (not needed after R0)
+      // R0: Create matches only for non-bye pairs
+      const r0Matches: BracketMatch[] = [];
+      let r0MatchIdx = 0;
+      for (let pos = 0; pos < S; pos += 2) {
+        const slotA = entrantsByPosition[pos];
+        const slotB = entrantsByPosition[pos + 1];
+        
+        // Only create match if at least one slot has a real entrant
+        if (slotA !== null || slotB !== null) {
+          // Calculate next match index (which match in R1 does this lead to)
+          const nextMatchIndex = Math.floor(r0MatchIdx / 2);
+          const nextSlot = r0MatchIdx % 2 === 0 ? 'A' : 'B';
+          
+          const match: BracketMatch = {
+            id: `match-0-${r0MatchIdx}`,
+            roundIndex: 0,
+            matchIndex: r0MatchIdx,
+            slotAId: slotA,
+            slotBId: slotB,
+            winnerId: null,
+            nextMatchId: `match-1-${nextMatchIndex}`,
+            nextSlot,
+            player1Score: 0,
+            player2Score: 0,
+            status: 'pending',
+          };
+          r0Matches.push(match);
+          r0MatchIdx++;
+        }
+      }
+      newMatches.push(...r0Matches);
 
+      // R1+: Calculate dynamically based on R0 matches
+      const r0MatchCount = r0Matches.length;
+      const r1MatchCount = Math.ceil(r0MatchCount / 2);
+      
+      for (let round = 1; round < numRounds; round++) {
+        const matchesInRound = round === 1 ? r1MatchCount : Math.pow(2, numRounds - round - 1);
+        
         for (let i = 0; i < matchesInRound; i++) {
-          let slotA: string | null = null;
-          let slotB: string | null = null;
-
-          if (round === 0) {
-            // R0: pair up entrants from positions
-            const posA = i * 2;
-            const posB = i * 2 + 1;
-            slotA = entrantsByPosition[posA];
-            slotB = entrantsByPosition[posB];
-          }
-          // Other rounds start with null, filled by advancing winners
-
-          // Calculate next match
           let nextMatchId = null;
           let nextSlot: 'A' | 'B' = 'A';
           
           if (round < numRounds - 1) {
             const nextRound = round + 1;
-            const nextRoundMatchCount = Math.pow(2, numRounds - nextRound - 1);
             const nextMatchIndex = Math.floor(i / 2);
             nextSlot = i % 2 === 0 ? 'A' : 'B';
-            
-            // Calculate the actual next match ID (number assigned so far in bracket)
-            let idOffset = 0;
-            for (let r = 0; r < nextRound; r++) {
-              idOffset += Math.pow(2, numRounds - r - 1);
-            }
             nextMatchId = `match-${nextRound}-${nextMatchIndex}`;
           }
 
@@ -135,8 +148,8 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             id: `match-${round}-${i}`,
             roundIndex: round,
             matchIndex: i,
-            slotAId: slotA,
-            slotBId: slotB,
+            slotAId: null,
+            slotBId: null,
             winnerId: null,
             nextMatchId,
             nextSlot,
@@ -144,7 +157,6 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             player2Score: 0,
             status: 'pending',
           };
-
           newMatches.push(match);
         }
       }
