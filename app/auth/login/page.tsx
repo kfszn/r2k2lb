@@ -32,25 +32,19 @@ export default function LoginPage() {
     setError('')
 
     try {
-      console.log("[v0] Attempting login with email:", email)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      console.log("[v0] Login response - error:", error, "data:", data)
-
       if (error) {
-        console.log("[v0] Login error occurred:", error.message)
         setError(error.message)
         setLoading(false)
       } else if (data?.user) {
-        console.log("[v0] Login successful for user:", data.user.email)
         // Do a hard redirect to force page reload and session detection
         window.location.href = '/'
       }
     } catch (err: any) {
-      console.log("[v0] Login exception:", err)
       setError(err?.message || 'Login failed. Please try again.')
       setLoading(false)
     }

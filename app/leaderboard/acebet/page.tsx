@@ -73,7 +73,6 @@ export default function AcebetLeaderboard() {
   }, [leaderboard])
 
   const loadLeaderboard = async (previous: boolean) => {
-    console.log('[v0] Loading Acebet leaderboard, previous:', previous)
     setLoading(true)
     setError(null)
     try {
@@ -81,7 +80,6 @@ export default function AcebetLeaderboard() {
       const url = previous ? '/api/leaderboard?prev=1' : '/api/leaderboard'
       const res = await fetch(url)
       const data = await res.json()
-      console.log('[v0] Acebet leaderboard loaded in', Date.now() - startTime, 'ms')
       
       if (data.ok) {
         setLeaderboard(data)

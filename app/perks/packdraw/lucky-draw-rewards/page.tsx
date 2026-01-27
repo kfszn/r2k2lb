@@ -212,7 +212,7 @@ export default function LossBackPage() {
           {/* CTA */}
           <div className="text-center space-y-4">
             <p className="text-lg text-muted-foreground">Start earning loss-back today!</p>
-            <a href="https://www.acebet.com?code=R2K2" target="_blank" rel="noopener noreferrer">
+            <a href="https://packdraw.gg?code=R2K2" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">
                 <TrendingDown className="h-5 w-5" />
                 Sign Up with Code R2K2

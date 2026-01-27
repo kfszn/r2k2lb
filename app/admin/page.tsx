@@ -18,6 +18,8 @@ import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, Lock, S
 import { Input } from "@/components/ui/input";
 import { ClaimsManager } from "@/components/admin/claims-manager";
 import { EmailVerificationTool } from "@/components/admin/email-verification-tool";
+import { WagerVerification } from "@/components/admin/wager-verification";
+import { LossbackManagement } from "@/components/admin/lossback-management";
 import { AllTournamentsManager } from "@/components/admin/all-tournaments-manager";
 import { TournamentSelector } from "@/components/admin/tournament-selector";
 import { TournamentDetailView } from "@/components/admin/tournament-detail-view";
@@ -209,17 +211,44 @@ export default function AdminPage() {
             <h1 className="text-3xl font-bold">Website Management</h1>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldAlert className="h-5 w-5 text-primary" />
+          <Tabs defaultValue="email" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="email" className="gap-2">
+                <UserCheck className="h-4 w-4" />
                 Email Verification
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EmailVerificationTool />
-            </CardContent>
-          </Card>
+              </TabsTrigger>
+              <TabsTrigger value="wager" className="gap-2">
+                <Zap className="h-4 w-4" />
+                Wager Verification
+              </TabsTrigger>
+              <TabsTrigger value="lossback" className="gap-2">
+                <Settings className="h-4 w-4" />
+                Loss-back Claims
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="email" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserCheck className="h-5 w-5 text-primary" />
+                    Email Verification
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EmailVerificationTool />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="wager" className="mt-6">
+              <WagerVerification />
+            </TabsContent>
+
+            <TabsContent value="lossback" className="mt-6">
+              <LossbackManagement />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     );
