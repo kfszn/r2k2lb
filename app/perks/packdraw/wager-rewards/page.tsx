@@ -64,9 +64,16 @@ export default function WagerRewardsPage() {
             <p className="text-lg text-muted-foreground">
               Climb the tiers and unlock exclusive monthly rewards based on your wager volume
             </p>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full">
-              <Zap className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-primary">Monthly Reset • Real-Time Tracking</span>
+            <div className="inline-flex flex-col gap-3">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full">
+                <Zap className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">Monthly Reset • Real-Time Tracking</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/50 border border-border/50 rounded-full">
+                <span className="text-sm font-semibold text-foreground">
+                  ⭐ Rewards are stackable with all previous tiers you've reached
+                </span>
+              </div>
             </div>
           </div>
 
