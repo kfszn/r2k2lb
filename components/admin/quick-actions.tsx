@@ -78,7 +78,7 @@ export function QuickActions({ tournament, onUpdate, onViewEntrants, onCreateNew
       color: "bg-primary/20 text-primary border-primary",
       icon: Unlock,
     },
-    in_progress: { 
+    live: { 
       label: "LIVE", 
       color: "bg-red-500/20 text-red-400 border-red-500 animate-pulse",
       icon: Radio,
@@ -187,7 +187,7 @@ export function QuickActions({ tournament, onUpdate, onViewEntrants, onCreateNew
               </>
             )}
 
-            {tournament.status === "in_progress" && (
+            {tournament.status === "live" && (
               <Button 
                 variant="destructive"
                 onClick={() => setConfirmAction("complete")}
