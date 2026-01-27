@@ -130,7 +130,17 @@ export default function WagerRewardsPage() {
                       </div>
 
                       <div className="pt-2 text-xs text-muted-foreground">
-                        ✓ Automatic payout • ✓ No rollover • ✓ Reset monthly
+                        ✓ No rollover • ✓ Monthly reset • ✓ Claim via Discord
+                      </div>
+
+                      {/* Discord Link & Claim Button */}
+                      <div className="pt-4 space-y-2 border-t border-border/30">
+                        <Link href="https://discord.gg/packdraw" target="_blank" rel="noopener noreferrer">
+                          <Button className="w-full gap-2 bg-primary hover:bg-primary/90">
+                            <span>💬</span>
+                            Claim Now
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -168,9 +178,12 @@ export default function WagerRewardsPage() {
                     </div>
 
                     <div className="pt-2">
-                      <Button size="sm" className="w-full" variant="outline">
-                        Contact VIP Team
-                      </Button>
+                      <Link href="https://discord.gg/packdraw" target="_blank" rel="noopener noreferrer">
+                        <Button size="sm" className="w-full gap-2">
+                          <span>💬</span>
+                          Claim Rewards
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -214,10 +227,10 @@ export default function WagerRewardsPage() {
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary text-sm font-bold">
                       3
                     </span>
-                    Monthly Payout
+                    Claim Your Reward
                   </h3>
                   <p className="text-sm text-muted-foreground ml-8">
-                    Once you reach a tier threshold, your reward is credited automatically. No rollover required—use it immediately.
+                    Once you reach a tier threshold, submit a ticket in our Discord server to claim your reward. Our team will verify and process your claim.
                   </p>
                 </div>
 
@@ -255,9 +268,15 @@ export default function WagerRewardsPage() {
                 </p>
               </div>
               <div>
+                <h4 className="font-semibold mb-2">Claiming Your Reward</h4>
+                <p className="text-muted-foreground">
+                  Rewards must be claimed via Discord ticket in our support server. Submit your claim with proof of your wager milestone, and our team will process it within 24-48 hours.
+                </p>
+              </div>
+              <div>
                 <h4 className="font-semibold mb-2">Reward Withdrawal</h4>
                 <p className="text-muted-foreground">
-                  Wager Rewards are credited as cash and can be withdrawn immediately without any additional requirements.
+                  Once approved, rewards are credited to your account as cash and can be withdrawn immediately without any additional requirements.
                 </p>
               </div>
               <div>
