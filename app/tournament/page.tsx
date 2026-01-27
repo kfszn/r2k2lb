@@ -60,8 +60,8 @@ export default function TournamentPage() {
     };
   }, []);
 
-  // Show bracket only if tournament is live (in_progress status) AND matches exist
-  const isLive = tournamentStatus === "in_progress";
+  // Show bracket only if tournament is LIVE status AND matches exist
+  const isLive = tournamentStatus === "LIVE";
   const hasBracket = matches.length > 0 && isLive && isLoaded;
 
   return (
