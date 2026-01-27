@@ -12,18 +12,21 @@ export interface BracketPlayer {
 
 export interface BracketMatch {
   id: string;
-  round: number;
-  matchNumber: number;
-  player1?: BracketPlayer | null;
-  player2?: BracketPlayer | null;
+  roundIndex: number;
+  matchIndex: number;
+  slotAId: string | null; // entrant id or null (bye)
+  slotBId: string | null; // entrant id or null (bye)
+  winnerId: string | null;
+  nextMatchId: string | null;
+  nextSlot: 'A' | 'B';
   player1Score: number;
   player2Score: number;
-  winnerId?: string | null;
   status: 'pending' | 'live' | 'completed';
 }
 
 interface BracketContextType {
   matches: BracketMatch[];
+  getPlayerName: (id: string | null) => string;
   generateBracket: (players: BracketPlayer[]) => void;
   updateMatchScore: (matchId: string, player1Score: number, player2Score: number) => void;
   setMatchWinner: (matchId: string, winnerId: string) => void;
@@ -31,6 +34,9 @@ interface BracketContextType {
 }
 
 const BracketContext = createContext<BracketContextType | undefined>(undefined);
+
+// Store entrant data for name lookup
+let entrantMap: Record<string, BracketPlayer> = {};
 
 export function BracketProvider({ children }: { children: React.ReactNode }) {
   const [matches, setMatches] = useState<BracketMatch[]>([]);
@@ -49,76 +55,102 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     setIsHydrated(true);
   }, []);
 
+  // Generate canonical seed order for bracket size S
+  const generateSeedOrder = (size: number): number[] => {
+    if (size === 2) return [1, 2];
+    const half = size / 2;
+    const smaller = generateSeedOrder(half);
+    const result = [];
+    for (const seed of smaller) {
+      result.push(seed);
+      result.push(size + 1 - seed);
+    }
+    return result;
+  };
+
   const generateBracket = useCallback((players: BracketPlayer[]) => {
-    if (players.length < 2) return;
+    if (players.length < 2 || players.length > 20) return;
 
     try {
-      // Shuffle players for random seeding
+      // Shuffle for random seeding
       const shuffled = [...players].sort(() => Math.random() - 0.5);
+      entrantMap = Object.fromEntries(shuffled.map(p => [p.id, p]));
+
+      const N = shuffled.length;
+      const S = Math.pow(2, Math.ceil(Math.log2(N))); // Next power of 2
+      const numRounds = Math.ceil(Math.log2(S));
+      
+      // Generate seed order and place entrants
+      const seedOrder = generateSeedOrder(S);
+      const entrantsByPosition: (string | null)[] = new Array(S).fill(null);
+      
+      for (let pos = 0; pos < S; pos++) {
+        const seedNum = seedOrder[pos];
+        if (seedNum <= N) {
+          entrantsByPosition[pos] = shuffled[seedNum - 1].id;
+        }
+        // else: position remains null (bye)
+      }
 
       const newMatches: BracketMatch[] = [];
-      
-      // Find the next power of 2
-      const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(shuffled.length)));
-      const byeCount = nextPowerOfTwo - shuffled.length;
-      const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
-      
-      // In a proper bracket with byes:
-      // - R1 has nextPowerOfTwo/2 total slots
-      // - byeCount of those are empty (byes)
-      // - The remaining nextPowerOfTwo/2 - byeCount slots have matches
-      // - So R1 has (nextPowerOfTwo/2 - byeCount) actual matches
-      // - Bye matches (empty slots) are distributed throughout R1
-      //
-      // For 10 players (16 slots, 6 byes):
-      // R1: 8 slots total, 6 are empty (byes), so 2 actual matches
-      // But that's wrong! We should have 5 matches in R1 for 10 players
-      // 
-      // The correct interpretation: 
-      // - All 10 players play in R1 = 5 matches
-      // - R2 has 5 slots to fill, but only 5 winners come from R1, so 0 byes in R2
-      // - Then R2 to R3: 5 matches needs 8 slots in R3, so 3 byes in R3
-      
-      const r1MatchCount = shuffled.length / 2;
-      
-      let matchNumber = 0;
-      
-      // R1: All players play (no byes in R1, all real matches)
-      for (let i = 0; i < r1MatchCount; i++) {
-        newMatches.push({
-          id: `match-1-${matchNumber}`,
-          round: 1,
-          matchNumber: i,
-          player1: shuffled[i * 2] || null,
-          player2: shuffled[i * 2 + 1] || null,
-          player1Score: 0,
-          player2Score: 0,
-          status: 'pending',
-        });
-        matchNumber++;
-      }
-      
-      // Generate all subsequent rounds
-      for (let round = 2; round <= numRounds; round++) {
-        const prevRoundMatches = Math.pow(2, numRounds - round + 1) / 2;
-        const matchesInRound = prevRoundMatches / 2;
+      let matchId = 0;
+
+      // Generate all rounds
+      for (let round = 0; round < numRounds; round++) {
+        const matchesInRound = Math.pow(2, numRounds - round - 1);
+        const startPos = round === 0 ? 0 : -1; // Position tracking (not needed after R0)
+
         for (let i = 0; i < matchesInRound; i++) {
-          newMatches.push({
-            id: `match-${round}-${matchNumber}`,
-            round,
-            matchNumber: i,
-            player1: null,
-            player2: null,
+          let slotA: string | null = null;
+          let slotB: string | null = null;
+
+          if (round === 0) {
+            // R0: pair up entrants from positions
+            const posA = i * 2;
+            const posB = i * 2 + 1;
+            slotA = entrantsByPosition[posA];
+            slotB = entrantsByPosition[posB];
+          }
+          // Other rounds start with null, filled by advancing winners
+
+          // Calculate next match
+          let nextMatchId = null;
+          let nextSlot: 'A' | 'B' = 'A';
+          
+          if (round < numRounds - 1) {
+            const nextRound = round + 1;
+            const nextRoundMatchCount = Math.pow(2, numRounds - nextRound - 1);
+            const nextMatchIndex = Math.floor(i / 2);
+            nextSlot = i % 2 === 0 ? 'A' : 'B';
+            
+            // Calculate the actual next match ID (number assigned so far in bracket)
+            let idOffset = 0;
+            for (let r = 0; r < nextRound; r++) {
+              idOffset += Math.pow(2, numRounds - r - 1);
+            }
+            nextMatchId = `match-${nextRound}-${nextMatchIndex}`;
+          }
+
+          const match: BracketMatch = {
+            id: `match-${round}-${i}`,
+            roundIndex: round,
+            matchIndex: i,
+            slotAId: slotA,
+            slotBId: slotB,
+            winnerId: null,
+            nextMatchId,
+            nextSlot,
             player1Score: 0,
             player2Score: 0,
             status: 'pending',
-          });
-          matchNumber++;
+          };
+
+          newMatches.push(match);
         }
       }
 
-    setMatches(newMatches);
-    localStorage.setItem('bracket-matches', JSON.stringify(newMatches));
+      setMatches(newMatches);
+      localStorage.setItem('bracket-matches', JSON.stringify(newMatches));
     } catch (e) {
       console.error('[v0] Error generating bracket:', e);
     }
@@ -136,76 +168,60 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const propagateWinner = (matches: BracketMatch[], winningId: string | null, fromMatchId: string): BracketMatch[] => {
+    let updated = [...matches];
+    const fromMatch = updated.find(m => m.id === fromMatchId);
+    
+    if (!fromMatch || !winningId || !fromMatch.nextMatchId) return updated;
+
+    const nextMatch = updated.find(m => m.id === fromMatch.nextMatchId);
+    if (!nextMatch) return updated;
+
+    // Place winner in the correct slot
+    const player = entrantMap[winningId];
+    if (fromMatch.nextSlot === 'A') {
+      updated = updated.map(m =>
+        m.id === fromMatch.nextMatchId ? { ...m, slotAId: winningId } : m
+      );
+    } else {
+      updated = updated.map(m =>
+        m.id === fromMatch.nextMatchId ? { ...m, slotBId: winningId } : m
+      );
+    }
+
+    // Check if next match can auto-resolve (one real entrant, one bye)
+    const updatedNextMatch = updated.find(m => m.id === fromMatch.nextMatchId);
+    if (updatedNextMatch) {
+      const hasSlotA = updatedNextMatch.slotAId !== null;
+      const hasSlotB = updatedNextMatch.slotBId !== null;
+      const bothFilled = hasSlotA && hasSlotB;
+      const oneFilled = hasSlotA !== hasSlotB;
+
+      if (oneFilled && !updatedNextMatch.winnerId) {
+        // Auto-resolve
+        const autoWinner = hasSlotA ? updatedNextMatch.slotAId : updatedNextMatch.slotBId;
+        updated = updated.map(m =>
+          m.id === fromMatch.nextMatchId ? { ...m, winnerId: autoWinner, status: 'completed' } : m
+        );
+        // Propagate the auto-winner
+        updated = propagateWinner(updated, autoWinner, fromMatch.nextMatchId);
+      }
+    }
+
+    return updated;
+  };
+
   const setMatchWinner = useCallback((matchId: string, winnerId: string) => {
     try {
       setMatches(prev => {
-        let updated = [...prev];
-        
-        // 1. Mark the match as completed with winner
-        updated = updated.map(match =>
+        let updated = prev.map(match =>
           match.id === matchId
             ? { ...match, winnerId, status: 'completed' }
             : match
         );
 
-        // 2. Advance the winner to next round
-        const completedMatch = updated.find(m => m.id === matchId);
-        if (completedMatch) {
-          const winnerPlayer = completedMatch.player1?.id === winnerId 
-            ? completedMatch.player1 
-            : completedMatch.player2;
-          
-          const nextRound = completedMatch.round + 1;
-          
-          // Get match counts for current and next round
-          const currentRoundMatches = updated.filter(m => m.round === completedMatch.round);
-          const nextRoundMatches = updated.filter(m => m.round === nextRound);
-          
-          if (nextRoundMatches.length === 0) {
-            // No next round, this is the finals winner
-            localStorage.setItem('bracket-matches', JSON.stringify(updated));
-            return updated;
-          }
-          
-          // Calculate advancement mapping based on ratio of matches
-          // If current round has N matches and next round has M matches:
-          // - If N == M: 1:1 mapping (match i → match i, player2 slot)
-          // - If N == 2*M: 2:1 mapping (matches 0,1 → match 0; matches 2,3 → match 1)
-          const ratio = currentRoundMatches.length / nextRoundMatches.length;
-          
-          let nextMatchIndex: number;
-          let slotIsPlayer2: boolean;
-          
-          if (ratio === 1) {
-            // 1:1 mapping - each match advances to same-numbered match
-            nextMatchIndex = completedMatch.matchNumber;
-            slotIsPlayer2 = true; // Winner goes to player2 since bye is in player1
-          } else {
-            // 2:1 or standard bracket mapping
-            nextMatchIndex = Math.floor(completedMatch.matchNumber / 2);
-            slotIsPlayer2 = completedMatch.matchNumber % 2 === 1;
-          }
-          
-          updated = updated.map(m => {
-            if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
-              // Try to place in the appropriate slot, fallback to empty slot
-              if (slotIsPlayer2) {
-                if (!m.player2) {
-                  return { ...m, player2: winnerPlayer };
-                } else if (!m.player1) {
-                  return { ...m, player1: winnerPlayer };
-                }
-              } else {
-                if (!m.player1) {
-                  return { ...m, player1: winnerPlayer };
-                } else if (!m.player2) {
-                  return { ...m, player2: winnerPlayer };
-                }
-              }
-            }
-            return m;
-          });
-        }
+        // Propagate winner to next match
+        updated = propagateWinner(updated, winnerId, matchId);
 
         localStorage.setItem('bracket-matches', JSON.stringify(updated));
         return updated;
@@ -218,10 +234,17 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   const clearBracket = useCallback(() => {
     setMatches([]);
     localStorage.removeItem('bracket-matches');
+    entrantMap = {};
+  }, []);
+
+  const getPlayerName = useCallback((id: string | null): string => {
+    if (!id) return '';
+    const player = entrantMap[id];
+    return player?.kick_username || player?.acebet_username || '';
   }, []);
 
   return (
-    <BracketContext.Provider value={{ matches, generateBracket, updateMatchScore, setMatchWinner, clearBracket }}>
+    <BracketContext.Provider value={{ matches, generateBracket, updateMatchScore, setMatchWinner, clearBracket, getPlayerName }}>
       {children}
     </BracketContext.Provider>
   );
