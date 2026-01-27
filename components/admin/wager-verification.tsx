@@ -40,15 +40,21 @@ export function WagerVerification() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `/api/leaderboard?start_at=${startDate}&end_at=${endDate}`
-      );
+      // Ensure dates are in YYYY-MM-DD format
+      const start = new Date(startDate).toISOString().split('T')[0];
+      const end = new Date(endDate).toISOString().split('T')[0];
+      
+      const url = `/api/leaderboard?start_at=${start}&end_at=${end}`;
+      console.log("[v0] Fetching wager data:", url);
+      
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error("Failed to fetch leaderboard data");
       }
 
       const data = await response.json();
+      console.log("[v0] API response:", data);
 
       if (!data.ok || !data.data) {
         throw new Error("Invalid response from leaderboard API");
@@ -61,7 +67,7 @@ export function WagerVerification() {
 
       if (!user) {
         setError(
-          `No data found for username "${username}" in the selected date range`
+          `No data found for username "${username}" in the selected date range (${start} to ${end})`
         );
         setWagerData(null);
       } else {
@@ -72,6 +78,7 @@ export function WagerVerification() {
           deposited: user.deposited / 100,
           earned: user.earned / 100,
         };
+        console.log("[v0] Converted user data:", convertedUser);
         setWagerData(convertedUser);
       }
     } catch (err) {
@@ -194,7 +201,7 @@ export function WagerVerification() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-primary/10">
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Total Wagered
+                  Wagered ({startDate} to {endDate})
                 </p>
                 <p className="text-2xl font-bold text-primary">
                   ${wagerData.wagered.toFixed(2)}
