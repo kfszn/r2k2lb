@@ -74,7 +74,7 @@ export function QuickActions({ tournament, onUpdate, onViewEntrants, onCreateNew
       icon: Pause,
     },
     registration: { 
-      label: "REGISTRATION OPEN", 
+      label: "REGISTERING", 
       color: "bg-primary/20 text-primary border-primary",
       icon: Unlock,
     },
@@ -84,7 +84,7 @@ export function QuickActions({ tournament, onUpdate, onViewEntrants, onCreateNew
       icon: Radio,
     },
     completed: { 
-      label: "COMPLETED", 
+      label: "CLOSED", 
       color: "bg-winner/20 text-winner border-winner",
       icon: Trophy,
     },
