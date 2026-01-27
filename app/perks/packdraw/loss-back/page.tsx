@@ -263,3 +263,8 @@ export default function LossBackPage() {
               </Button>
             </a>
           </div>
+        </div>
+      </main>
+    </div>
+  )
+}
