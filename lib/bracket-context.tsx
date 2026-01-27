@@ -180,25 +180,21 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
           ? completedMatch.player1 
           : completedMatch.player2;
         
-        // Find next round match
+        // Find next round match and slot
         const nextRound = completedMatch.round + 1;
         const nextMatchIndex = Math.floor(completedMatch.matchNumber / 2);
         const isPlayer1Slot = completedMatch.matchNumber % 2 === 0;
         
         updated = updated.map(m => {
           if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
-            // Place winner in the empty slot (player1 if even match, player2 if odd)
-            // But check if slot is already taken by a bye player
-            if (isPlayer1Slot) {
-              if (!m.player1) {
-                return { ...m, player1: winnerPlayer };
-              }
-            } else {
-              if (!m.player2) {
-                return { ...m, player2: winnerPlayer };
-              }
+            // Try to place in the designated slot first
+            if (isPlayer1Slot && !m.player1) {
+              return { ...m, player1: winnerPlayer };
             }
-            // If designated slot is taken, try the other slot
+            if (!isPlayer1Slot && !m.player2) {
+              return { ...m, player2: winnerPlayer };
+            }
+            // If designated slot is taken, use the other slot
             if (isPlayer1Slot && m.player1 && !m.player2) {
               return { ...m, player2: winnerPlayer };
             }
