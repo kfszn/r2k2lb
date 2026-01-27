@@ -154,52 +154,26 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
 
   const setMatchWinner = useCallback((matchId: string, winnerId: string) => {
     setMatches(prev => {
-      let updated = prev.map(match =>
+      let updated = [...prev];
+      
+      // 1. Mark the match as completed with winner
+      updated = updated.map(match =>
         match.id === matchId
           ? { ...match, winnerId, status: 'completed' }
           : match
       );
 
-      // Advance winner to next round
-      const match = updated.find(m => m.id === matchId);
-      if (match) {
-        const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(updated.filter(m => m.round === 1).length * 2)));
-        const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
-        
-        if (match.round < numRounds) {
-          const nextRound = match.round + 1;
-          const nextMatchIndex = Math.floor(match.matchNumber / 2);
-          const isPlayer1Slot = match.matchNumber % 2 === 0;
-
-          updated = updated.map(m => {
-            if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
-              const winnerPlayer = match.player1?.id === winnerId ? match.player1 : match.player2;
-              if (isPlayer1Slot) {
-                return { ...m, player1: winnerPlayer };
-              } else {
-                return { ...m, player2: winnerPlayer };
-              }
-            }
-            return m;
-          });
-        }
-      }
-
-      // Auto-advance bye winners (matches with null player2)
+      // 2. Auto-complete all bye matches (player2 is null)
       updated = updated.map(match => {
-        if (match.status !== 'completed' && match.player2 === null && match.player1) {
-          return {
-            ...match,
-            winnerId: match.player1.id,
-            status: 'completed',
-          };
+        if (match.player2 === null && match.player1 && match.status !== 'completed') {
+          return { ...match, winnerId: match.player1.id, status: 'completed' };
         }
         return match;
       });
 
-      // Advance auto-completed byes to next round
+      // 3. Advance all completed match winners to next round
       updated.forEach(match => {
-        if (match.status === 'completed' && match.winnerId && match.player2 === null) {
+        if (match.status === 'completed' && match.winnerId) {
           const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(updated.filter(m => m.round === 1).length * 2)));
           const numRounds = Math.ceil(Math.log2(nextPowerOfTwo));
           
@@ -207,18 +181,17 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             const nextRound = match.round + 1;
             const nextMatchIndex = Math.floor(match.matchNumber / 2);
             const isPlayer1Slot = match.matchNumber % 2 === 0;
+            
+            // Get the winner player object
+            const winnerPlayer = match.player1?.id === match.winnerId ? match.player1 : match.player2;
 
+            // Place winner in the correct slot of next round match
             updated = updated.map(m => {
               if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
-                const winnerPlayer = match.player1?.id === match.winnerId ? match.player1 : match.player2;
                 if (isPlayer1Slot) {
-                  if (!m.player1) {
-                    return { ...m, player1: winnerPlayer };
-                  }
+                  return { ...m, player1: winnerPlayer };
                 } else {
-                  if (!m.player2) {
-                    return { ...m, player2: winnerPlayer };
-                  }
+                  return { ...m, player2: winnerPlayer };
                 }
               }
               return m;
