@@ -25,7 +25,7 @@ interface LeaderboardData {
   data: LeaderboardEntry[]
 }
 
-const REWARDS = [800, 500, 375, 300, 250, 125, 75, 40, 20, 15]
+const REWARDS = [1000, 600, 400, 300, 250, 150, 120, 90, 60, 30]
 
 export default function AcebetLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
@@ -120,7 +120,7 @@ export default function AcebetLeaderboard() {
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40">
               <Trophy className="h-6 w-6 text-primary" />
-              <span className="text-3xl font-bold text-primary">$2,500</span>
+              <span className="text-3xl font-bold text-primary">$3,000</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight">
               Monthly Code <span className="text-primary">R2K2</span> Leaderboard
