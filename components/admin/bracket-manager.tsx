@@ -121,8 +121,8 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                           )}
 
                           <div className="p-2 space-y-1.5">
-                            {/* Bye Match */}
-                            {match.player2 === null ? (
+                            {/* Bye Match (only in R1, when player2 is null) */}
+                            {match.round === 1 && match.player2 === null ? (
                               <div className="p-2 rounded bg-primary/10 border border-primary/30">
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex-1 min-w-0">
