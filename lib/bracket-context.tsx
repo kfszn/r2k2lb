@@ -181,22 +181,36 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             ? completedMatch.player1 
             : completedMatch.player2;
           
-          // Find next round match and slot
           const nextRound = completedMatch.round + 1;
+          
+          // Get the R1 match count to determine advancement logic
+          const r1Matches = updated.filter(m => m.round === 1);
+          const r1MatchCount = r1Matches.length;
+          
+          // For each pair of R1 matches, they advance to one R2 match
+          // R1 matches 0,1 → R2 match 0
+          // R1 matches 2,3 → R2 match 1
           const nextMatchIndex = Math.floor(completedMatch.matchNumber / 2);
-          // isPlayer1Slot should be based on position within the pair (matchNumber % 2)
-          // matchNumber % 2 === 0 means this is the "first" match in the pair (player1 slot)
-          // matchNumber % 2 === 1 means this is the "second" match in the pair (player2 slot)
           const isPlayer1Slot = completedMatch.matchNumber % 2 === 0;
           
           updated = updated.map(m => {
             if (m.round === nextRound && m.matchNumber === nextMatchIndex) {
               if (isPlayer1Slot) {
-                // This is the first match in the pair, place in player1 slot
-                return { ...m, player1: winnerPlayer };
+                // Check if player1 slot is empty (it might have a bye player)
+                if (!m.player1) {
+                  return { ...m, player1: winnerPlayer };
+                } else if (!m.player2) {
+                  // If player1 is taken by bye, place in player2
+                  return { ...m, player2: winnerPlayer };
+                }
               } else {
-                // This is the second match in the pair, place in player2 slot
-                return { ...m, player2: winnerPlayer };
+                // Check if player2 slot is empty
+                if (!m.player2) {
+                  return { ...m, player2: winnerPlayer };
+                } else if (!m.player1) {
+                  // If player2 is taken, place in player1
+                  return { ...m, player1: winnerPlayer };
+                }
               }
             }
             return m;
