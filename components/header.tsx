@@ -47,11 +47,11 @@ function Header() {
   return (
     <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-bold text-white">
+        <Link href="/" className="flex items-center gap-2 md:gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-bold text-white text-sm">
             R
           </div>
-          <span className="font-bold text-lg hidden sm:inline">R2K2</span>
+          <span className="font-bold text-base md:text-lg">R2K2</span>
         </Link>
         <nav className="hidden md:flex items-center gap-8">
           <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
