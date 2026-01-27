@@ -3,6 +3,7 @@
 import React from "react"
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 export interface BracketPlayer {
   id: string;
@@ -29,7 +30,7 @@ interface BracketContextType {
   getPlayerName: (id: string | null) => string;
   generateBracket: (players: BracketPlayer[]) => void;
   updateMatchScore: (matchId: string, player1Score: number, player2Score: number) => void;
-  setMatchWinner: (matchId: string, winnerId: string) => void;
+  setMatchWinner: (matchId: string, winnerId: string, tournamentInfo?: { id?: string; name?: string; prize?: number }) => void;
   clearBracket: () => void;
 }
 
@@ -286,7 +287,31 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const setMatchWinner = useCallback((matchId: string, winnerId: string) => {
+  // Record tournament winner in Supabase
+  const recordTournamentWinner = async (winnerId: string, tournamentId?: string, tournamentName?: string, prizeAmount?: number) => {
+    try {
+      const winner = entrantMap[winnerId];
+      if (!winner) return;
+
+      const supabase = createClient();
+      
+      const { error } = await supabase.from('tournament_winners').insert({
+        acebet_username: winner.acebet_username,
+        kick_username: winner.kick_username,
+        tournament_id: tournamentId || null,
+        tournament_name: tournamentName || 'Tournament',
+        prize_amount: prizeAmount || 0,
+      });
+
+      if (error) {
+        console.error('[v0] Error recording tournament winner:', error);
+      }
+    } catch (e) {
+      console.error('[v0] Error recording tournament winner:', e);
+    }
+  };
+
+  const setMatchWinner = useCallback((matchId: string, winnerId: string, tournamentInfo?: { id?: string; name?: string; prize?: number }) => {
     try {
       setMatches(prev => {
         let updated = prev.map(match =>
@@ -297,6 +322,18 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
 
         // Propagate winner to next match using aliveMap (handles BYE vs TBD correctly)
         updated = propagateWinnerStatic(updated, winnerId, matchId, currentAliveMap);
+
+        // Check if this completes the bracket (finals match has a winner)
+        const finalsMatch = updated.find(m => m.nextMatchId === null);
+        if (finalsMatch && finalsMatch.winnerId) {
+          // Record the tournament winner in Supabase
+          recordTournamentWinner(
+            finalsMatch.winnerId,
+            tournamentInfo?.id,
+            tournamentInfo?.name,
+            tournamentInfo?.prize
+          );
+        }
 
         localStorage.setItem('bracket-matches', JSON.stringify(updated));
         return updated;

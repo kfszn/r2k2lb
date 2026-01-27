@@ -98,10 +98,7 @@ export function WinnersCircle() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Trophy className="h-4 w-4 text-primary" />
-                    <span className="font-bold text-primary">{winner.win_count}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {winner.win_count === 1 ? "win" : "wins"}
-                    </span>
+                    <span className="font-bold text-primary">${winner.prize_amount || 0}</span>
                   </div>
                 </div>
               ))}

@@ -12,6 +12,7 @@ interface Tournament {
   id: string;
   name: string;
   status: string;
+  prize_pool?: number;
 }
 
 interface ScoreEditState {
@@ -38,10 +39,13 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
     .map(Number)
     .sort((a, b) => a - b);
 
-  const totalRounds = rounds.length;
-
   const handleSetWinner = (matchId: string, winnerId: string) => {
-    setMatchWinner(matchId, winnerId);
+    // Pass tournament info so winner can be recorded when bracket completes
+    setMatchWinner(matchId, winnerId, {
+      id: tournament.id,
+      name: tournament.name,
+      prize: tournament.prize_pool || 0,
+    });
   };
 
   const handleSaveScore = (matchId: string) => {
@@ -61,7 +65,12 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
     if (match && score1 !== score2) {
       const winnerId = score1 > score2 ? match.slotAId : match.slotBId;
       if (winnerId) {
-        setMatchWinner(matchId, winnerId);
+        // Pass tournament info so winner can be recorded when bracket completes
+        setMatchWinner(matchId, winnerId, {
+          id: tournament.id,
+          name: tournament.name,
+          prize: tournament.prize_pool || 0,
+        });
       }
     }
 
