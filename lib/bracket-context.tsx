@@ -89,52 +89,30 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
         if (seedNum <= N) {
           entrantsByPosition[pos] = shuffled[seedNum - 1].id;
         }
-        // else: position remains null (bye)
       }
 
       const newMatches: BracketMatch[] = [];
 
-      // R0: Create matches only for non-bye pairs
-      const r0Matches: BracketMatch[] = [];
-      let r0MatchIdx = 0;
-      for (let pos = 0; pos < S; pos += 2) {
-        const slotA = entrantsByPosition[pos];
-        const slotB = entrantsByPosition[pos + 1];
-        
-        // Only create match if at least one slot has a real entrant
-        if (slotA !== null || slotB !== null) {
-          // Calculate next match index (which match in R1 does this lead to)
-          const nextMatchIndex = Math.floor(r0MatchIdx / 2);
-          const nextSlot = r0MatchIdx % 2 === 0 ? 'A' : 'B';
-          
-          const match: BracketMatch = {
-            id: `match-0-${r0MatchIdx}`,
-            roundIndex: 0,
-            matchIndex: r0MatchIdx,
-            slotAId: slotA,
-            slotBId: slotB,
-            winnerId: null,
-            nextMatchId: `match-1-${nextMatchIndex}`,
-            nextSlot,
-            player1Score: 0,
-            player2Score: 0,
-            status: 'pending',
-          };
-          r0Matches.push(match);
-          r0MatchIdx++;
-        }
-      }
-      newMatches.push(...r0Matches);
-
-      // R1+: Calculate dynamically based on R0 matches
-      const r0MatchCount = r0Matches.length;
-      const r1MatchCount = Math.ceil(r0MatchCount / 2);
-      
-      for (let round = 1; round < numRounds; round++) {
-        const matchesInRound = round === 1 ? r1MatchCount : Math.pow(2, numRounds - round - 1);
+      // Create ALL matches for ALL rounds (never skip)
+      // This is critical: R0 always has S/2 matches, R1 has S/4, etc
+      for (let round = 0; round < numRounds; round++) {
+        const matchesInRound = S / Math.pow(2, round + 1);
         
         for (let i = 0; i < matchesInRound; i++) {
-          let nextMatchId = null;
+          let slotAId: string | null = null;
+          let slotBId: string | null = null;
+
+          // R0: pair up from positions array
+          if (round === 0) {
+            const posA = i * 2;
+            const posB = i * 2 + 1;
+            slotAId = entrantsByPosition[posA];
+            slotBId = entrantsByPosition[posB];
+          }
+          // Other rounds start empty, filled by advancing winners
+
+          // Deterministic next match mapping (ALWAYS use this formula)
+          let nextMatchId: string | null = null;
           let nextSlot: 'A' | 'B' = 'A';
           
           if (round < numRounds - 1) {
@@ -148,8 +126,8 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             id: `match-${round}-${i}`,
             roundIndex: round,
             matchIndex: i,
-            slotAId: null,
-            slotBId: null,
+            slotAId,
+            slotBId,
             winnerId: null,
             nextMatchId,
             nextSlot,
@@ -157,6 +135,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             player2Score: 0,
             status: 'pending',
           };
+
           newMatches.push(match);
         }
       }
@@ -186,38 +165,36 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     
     if (!fromMatch || !winningId || !fromMatch.nextMatchId) return updated;
 
-    const nextMatch = updated.find(m => m.id === fromMatch.nextMatchId);
-    if (!nextMatch) return updated;
-
-    // Place winner in the correct slot
-    const player = entrantMap[winningId];
-    if (fromMatch.nextSlot === 'A') {
-      updated = updated.map(m =>
-        m.id === fromMatch.nextMatchId ? { ...m, slotAId: winningId } : m
-      );
-    } else {
-      updated = updated.map(m =>
-        m.id === fromMatch.nextMatchId ? { ...m, slotBId: winningId } : m
-      );
-    }
-
-    // Check if next match can auto-resolve (one real entrant, one bye)
-    const updatedNextMatch = updated.find(m => m.id === fromMatch.nextMatchId);
-    if (updatedNextMatch) {
-      const hasSlotA = updatedNextMatch.slotAId !== null;
-      const hasSlotB = updatedNextMatch.slotBId !== null;
-      const bothFilled = hasSlotA && hasSlotB;
-      const oneFilled = hasSlotA !== hasSlotB;
-
-      if (oneFilled && !updatedNextMatch.winnerId) {
-        // Auto-resolve
-        const autoWinner = hasSlotA ? updatedNextMatch.slotAId : updatedNextMatch.slotBId;
-        updated = updated.map(m =>
-          m.id === fromMatch.nextMatchId ? { ...m, winnerId: autoWinner, status: 'completed' } : m
-        );
-        // Propagate the auto-winner
-        updated = propagateWinner(updated, autoWinner, fromMatch.nextMatchId);
+    // Place winner in next match's designated slot
+    updated = updated.map(m => {
+      if (m.id === fromMatch.nextMatchId) {
+        if (fromMatch.nextSlot === 'A') {
+          return { ...m, slotAId: winningId };
+        } else {
+          return { ...m, slotBId: winningId };
+        }
       }
+      return m;
+    });
+
+    // Now check if the next match can auto-resolve
+    const updatedNextMatch = updated.find(m => m.id === fromMatch.nextMatchId);
+    if (!updatedNextMatch) return updated;
+
+    const hasSlotA = updatedNextMatch.slotAId !== null;
+    const hasSlotB = updatedNextMatch.slotBId !== null;
+    const onlyOneSlotFilled = hasSlotA !== hasSlotB;
+
+    // Auto-win: exactly one slot has an entrant
+    if (onlyOneSlotFilled && !updatedNextMatch.winnerId) {
+      const autoWinner = hasSlotA ? updatedNextMatch.slotAId : updatedNextMatch.slotBId;
+      
+      updated = updated.map(m =>
+        m.id === fromMatch.nextMatchId ? { ...m, winnerId: autoWinner, status: 'completed' } : m
+      );
+
+      // Recursively propagate the auto-winner to the next round
+      updated = propagateWinner(updated, autoWinner, fromMatch.nextMatchId);
     }
 
     return updated;
@@ -232,7 +209,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             : match
         );
 
-        // Propagate winner to next match
+        // Propagate winner to next match (and cascade through byes)
         updated = propagateWinner(updated, winnerId, matchId);
 
         localStorage.setItem('bracket-matches', JSON.stringify(updated));
