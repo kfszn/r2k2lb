@@ -116,7 +116,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                           {match.status === 'live' && (
                             <div className="h-0.5 bg-red-500 animate-pulse" />
                           )}
-                          {match.status === 'pending' && match.player2 !== null && (
+                          {match.status === 'pending' && match.slotBId !== null && (
                             <div className="h-0.5 bg-muted" />
                           )}
 
