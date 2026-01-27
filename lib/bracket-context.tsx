@@ -42,12 +42,20 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   const [matches, setMatches] = useState<BracketMatch[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load bracket from localStorage on mount
+  // Load bracket and aliveMap from localStorage on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem('bracket-matches');
       if (saved) {
         setMatches(JSON.parse(saved));
+      }
+      const savedAliveMap = localStorage.getItem('bracket-alive-map');
+      if (savedAliveMap) {
+        currentAliveMap = JSON.parse(savedAliveMap);
+      }
+      const savedEntrants = localStorage.getItem('bracket-entrants');
+      if (savedEntrants) {
+        entrantMap = JSON.parse(savedEntrants);
       }
     } catch (e) {
       console.error('[v0] Error loading bracket from localStorage:', e);
@@ -68,8 +76,49 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     return result;
   };
 
-  // Static version of propagateWinner for use during bracket generation
-  const propagateWinnerStatic = (matches: BracketMatch[], winningId: string | null, fromMatchId: string): BracketMatch[] => {
+  // CRITICAL: Compute "alive" map - does each side of a match have ANY real entrant in its subtree?
+  // This distinguishes BYE (dead subtree) from TBD (opponent not decided yet)
+  type AliveMap = Record<string, { aAlive: boolean; bAlive: boolean }>;
+  
+  const computeAliveMap = (all: BracketMatch[], S: number, numRounds: number): AliveMap => {
+    const map: AliveMap = {};
+
+    // Initialize R0: alive = slot has a real entrant
+    for (const m of all.filter(x => x.roundIndex === 0)) {
+      map[m.id] = { aAlive: m.slotAId !== null, bAlive: m.slotBId !== null };
+    }
+
+    // Build upward: each side is alive if its child subtree contains ANY entrant
+    for (let r = 1; r < numRounds; r++) {
+      const matchesInRound = S / Math.pow(2, r + 1);
+      for (let i = 0; i < matchesInRound; i++) {
+        const id = `match-${r}-${i}`;
+        const leftChildId = `match-${r - 1}-${2 * i}`;
+        const rightChildId = `match-${r - 1}-${2 * i + 1}`;
+
+        const left = map[leftChildId] ?? { aAlive: false, bAlive: false };
+        const right = map[rightChildId] ?? { aAlive: false, bAlive: false };
+
+        map[id] = {
+          aAlive: left.aAlive || left.bAlive,   // Left child feeds slot A
+          bAlive: right.aAlive || right.bAlive, // Right child feeds slot B
+        };
+      }
+    }
+
+    return map;
+  };
+
+  // Store aliveMap for runtime use
+  let currentAliveMap: AliveMap = {};
+
+  // Static version of propagateWinner that uses aliveMap to distinguish BYE vs TBD
+  const propagateWinnerStatic = (
+    matches: BracketMatch[], 
+    winningId: string | null, 
+    fromMatchId: string,
+    aliveMap: AliveMap
+  ): BracketMatch[] => {
     let updated = [...matches];
     const fromMatch = updated.find(m => m.id === fromMatchId);
     
@@ -89,22 +138,29 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
 
     // Check if the next match can auto-resolve
     const updatedNextMatch = updated.find(m => m.id === fromMatch.nextMatchId);
-    if (!updatedNextMatch) return updated;
+    if (!updatedNextMatch || updatedNextMatch.winnerId) return updated;
 
-    const hasSlotA = updatedNextMatch.slotAId !== null;
-    const hasSlotB = updatedNextMatch.slotBId !== null;
-    const onlyOneSlotFilled = hasSlotA !== hasSlotB;
+    const nextAlive = aliveMap[updatedNextMatch.id] ?? { aAlive: false, bAlive: false };
+    const hasA = updatedNextMatch.slotAId !== null;
+    const hasB = updatedNextMatch.slotBId !== null;
 
-    // Auto-win: exactly one slot has an entrant (the other is a bye)
-    if (onlyOneSlotFilled && !updatedNextMatch.winnerId) {
-      const autoWinner = hasSlotA ? updatedNextMatch.slotAId : updatedNextMatch.slotBId;
-      
-      updated = updated.map(m =>
-        m.id === fromMatch.nextMatchId ? { ...m, winnerId: autoWinner, status: 'completed' } : m
+    // CRITICAL: Only auto-win if the OTHER side is truly DEAD (not just TBD)
+    // Slot A filled, slot B empty - only auto-win if B side has NO entrants anywhere
+    if (hasA && !hasB && !nextAlive.bAlive) {
+      const autoWinner = updatedNextMatch.slotAId!;
+      updated = updated.map(m => 
+        m.id === updatedNextMatch.id ? { ...m, winnerId: autoWinner, status: 'completed' } : m
       );
+      updated = propagateWinnerStatic(updated, autoWinner, updatedNextMatch.id, aliveMap);
+    }
 
-      // Recursively propagate the auto-winner to the next round (bye chains)
-      updated = propagateWinnerStatic(updated, autoWinner, fromMatch.nextMatchId);
+    // Slot B filled, slot A empty - only auto-win if A side has NO entrants anywhere
+    if (hasB && !hasA && !nextAlive.aAlive) {
+      const autoWinner = updatedNextMatch.slotBId!;
+      updated = updated.map(m => 
+        m.id === updatedNextMatch.id ? { ...m, winnerId: autoWinner, status: 'completed' } : m
+      );
+      updated = propagateWinnerStatic(updated, autoWinner, updatedNextMatch.id, aliveMap);
     }
 
     return updated;
@@ -181,15 +237,19 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
+      // Compute aliveMap ONCE after creating all matches
+      // This tells us which sides have real entrants vs dead subtrees
+      const aliveMap = computeAliveMap(newMatches, S, numRounds);
+      currentAliveMap = aliveMap; // Store for runtime use
+
       // NOW process R0 matches for auto-wins (byes) and cascade forward
-      // This is the key step that was missing!
       const r0Matches = newMatches.filter(m => m.roundIndex === 0);
       
       for (const match of r0Matches) {
         const hasA = match.slotAId !== null;
         const hasB = match.slotBId !== null;
         
-        // Auto-win: exactly one slot filled
+        // R0 auto-win: exactly one slot filled (the other is a true BYE in R0)
         if (hasA !== hasB) {
           const autoWinner = hasA ? match.slotAId : match.slotBId;
           
@@ -198,8 +258,8 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             m.id === match.id ? { ...m, winnerId: autoWinner, status: 'completed' } : m
           );
           
-          // Propagate winner forward (this will recursively handle bye chains)
-          newMatches = propagateWinnerStatic(newMatches, autoWinner, match.id);
+          // Propagate winner forward using aliveMap (handles multi-round bye chains correctly)
+          newMatches = propagateWinnerStatic(newMatches, autoWinner, match.id, aliveMap);
         }
         // Empty match (both null): leave as pending, no winner, no propagation
         // Playable match (both filled): leave as pending, wait for play
@@ -207,6 +267,8 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
 
       setMatches(newMatches);
       localStorage.setItem('bracket-matches', JSON.stringify(newMatches));
+      localStorage.setItem('bracket-alive-map', JSON.stringify(aliveMap));
+      localStorage.setItem('bracket-entrants', JSON.stringify(entrantMap));
     } catch (e) {
       console.error('[v0] Error generating bracket:', e);
     }
@@ -224,9 +286,6 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Use the static function for runtime propagation too
-  const propagateWinner = propagateWinnerStatic;
-
   const setMatchWinner = useCallback((matchId: string, winnerId: string) => {
     try {
       setMatches(prev => {
@@ -236,8 +295,8 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
             : match
         );
 
-        // Propagate winner to next match (and cascade through byes)
-        updated = propagateWinner(updated, winnerId, matchId);
+        // Propagate winner to next match using aliveMap (handles BYE vs TBD correctly)
+        updated = propagateWinnerStatic(updated, winnerId, matchId, currentAliveMap);
 
         localStorage.setItem('bracket-matches', JSON.stringify(updated));
         return updated;
@@ -250,7 +309,10 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   const clearBracket = useCallback(() => {
     setMatches([]);
     localStorage.removeItem('bracket-matches');
+    localStorage.removeItem('bracket-alive-map');
+    localStorage.removeItem('bracket-entrants');
     entrantMap = {};
+    currentAliveMap = {};
   }, []);
 
   const getPlayerName = useCallback((id: string | null): string => {
