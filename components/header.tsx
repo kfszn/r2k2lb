@@ -110,10 +110,10 @@ function Header() {
                 PackDraw
               </div>
               <Link 
-                href="/perks/packdraw/welcome-bonus" 
+                href="/perks/packdraw/wager-rewards" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
-                Welcome Bonus
+                Wager Rewards
               </Link>
               <Link 
                 href="/perks/packdraw/lucky-draw-rewards" 
@@ -284,14 +284,14 @@ function Header() {
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">PackDraw</p>
                         <div className="flex flex-col gap-2">
                           <Link 
-                            href="/perks/packdraw/welcome-bonus"
+                            href="/perks/packdraw/wager-rewards"
                             className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
                             onClick={() => {
                               setOpen(false)
                               setDropdownOpen(false)
                             }}
                           >
-                            Welcome Bonus
+                            Wager Rewards
                           </Link>
                           <Link 
                             href="/perks/packdraw/lucky-draw-rewards"
