@@ -31,23 +31,23 @@ export default function LossBackPage() {
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-lg">Loss-back Bonus</h3>
-                  <p className="text-3xl font-bold text-primary">Up to 20%</p>
+                  <h3 className="font-semibold text-lg">Loss-back Recovery</h3>
+                  <p className="text-3xl font-bold text-primary">Up to 15%</p>
                   <p className="text-sm text-muted-foreground">
-                    Get a percentage of your losses back in bonus funds every week
+                    Get a percentage of your losses back based on your wager tier
                   </p>
                   <div className="pt-4 space-y-2 text-sm">
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      Weekly loss-back credits
+                      Tiered rewards: 5% - 15%
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      No rollover required
+                      Claim via Discord ticket
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      Automatic qualification
+                      24-48 hour processing
                     </p>
                   </div>
                 </div>
@@ -55,20 +55,20 @@ export default function LossBackPage() {
                   <h3 className="font-semibold">Program Details</h3>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <span className="font-medium">Calculation:</span>
-                      <span className="text-muted-foreground ml-2">Net losses weekly</span>
+                      <span className="font-medium">Tier 1:</span>
+                      <span className="text-muted-foreground ml-2">$0-$15K = 5%</span>
                     </li>
                     <li>
-                      <span className="font-medium">Frequency:</span>
-                      <span className="text-muted-foreground ml-2">Weekly payouts</span>
+                      <span className="font-medium">Tier 2:</span>
+                      <span className="text-muted-foreground ml-2">$15K-$50K = 10%</span>
                     </li>
                     <li>
-                      <span className="font-medium">Minimum Loss:</span>
-                      <span className="text-muted-foreground ml-2">Varies by tier</span>
+                      <span className="font-medium">Tier 3:</span>
+                      <span className="text-muted-foreground ml-2">$50K+ = 15%</span>
                     </li>
                     <li>
-                      <span className="font-medium">Code Required:</span>
-                      <span className="text-primary font-bold ml-2">R2K2</span>
+                      <span className="font-medium">Claim Method:</span>
+                      <span className="text-primary font-bold ml-2">Discord Ticket</span>
                     </li>
                   </ul>
                 </div>
@@ -79,30 +79,28 @@ export default function LossBackPage() {
           {/* Tier Benefits */}
           <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle>Loss-back by Player Tier</CardTitle>
+              <CardTitle>Loss-back by Wager Amount</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-3 gap-4">
                   <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Standard Players</p>
+                    <p className="font-semibold mb-2">Tier 1</p>
+                    <p className="text-2xl font-bold text-primary mb-2">5%</p>
+                    <p className="text-sm text-muted-foreground mb-3">Loss-back rate</p>
+                    <p className="text-xs text-muted-foreground">$0 - $15,000 wager</p>
+                  </div>
+                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
+                    <p className="font-semibold mb-2">Tier 2</p>
                     <p className="text-2xl font-bold text-primary mb-2">10%</p>
-                    <p className="text-sm text-muted-foreground">Loss-back on weekly net losses</p>
+                    <p className="text-sm text-muted-foreground mb-3">Loss-back rate</p>
+                    <p className="text-xs text-muted-foreground">$15,001 - $50,000 wager</p>
                   </div>
                   <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Active Players</p>
+                    <p className="font-semibold mb-2">Tier 3</p>
                     <p className="text-2xl font-bold text-primary mb-2">15%</p>
-                    <p className="text-sm text-muted-foreground">Higher wager volume bonus</p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">VIP Players</p>
-                    <p className="text-2xl font-bold text-primary mb-2">20%</p>
-                    <p className="text-sm text-muted-foreground">Premium loss-back rate</p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Elite Players</p>
-                    <p className="text-2xl font-bold text-primary mb-2">25%</p>
-                    <p className="text-sm text-muted-foreground">Maximum loss recovery</p>
+                    <p className="text-sm text-muted-foreground mb-3">Loss-back rate</p>
+                    <p className="text-xs text-muted-foreground">$50,001+ wager</p>
                   </div>
                 </div>
               </div>
@@ -112,7 +110,7 @@ export default function LossBackPage() {
           {/* How It Works */}
           <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle>How Loss-back Works</CardTitle>
+              <CardTitle>How to Claim Your Loss-back</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4">
@@ -123,8 +121,8 @@ export default function LossBackPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium">Weekly Calculation</p>
-                    <p className="text-sm text-muted-foreground">Your net losses are calculated every week from Monday to Sunday</p>
+                    <p className="font-medium">Calculate Your Loss</p>
+                    <p className="text-sm text-muted-foreground">Reach your wager tier threshold and track your net losses</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -134,8 +132,8 @@ export default function LossBackPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium">Automatic Qualification</p>
-                    <p className="text-sm text-muted-foreground">If you have net losses that week, you automatically qualify</p>
+                    <p className="font-medium">Submit Support Ticket</p>
+                    <p className="text-sm text-muted-foreground">Join our Discord and create a ticket with your account details and loss-back request</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -145,8 +143,8 @@ export default function LossBackPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium">Credit Processing</p>
-                    <p className="text-sm text-muted-foreground">Loss-back bonus is credited to your account by Tuesday</p>
+                    <p className="font-medium">Verification</p>
+                    <p className="text-sm text-muted-foreground">Our team verifies your wager tier and loss amount (24-48 hours)</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -156,8 +154,8 @@ export default function LossBackPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium">Use Your Bonus</p>
-                    <p className="text-sm text-muted-foreground">Play with your loss-back funds immediately with minimal requirements</p>
+                    <p className="font-medium">Receive Your Loss-back</p>
+                    <p className="text-sm text-muted-foreground">Once approved, your loss-back percentage is credited to your account</p>
                   </div>
                 </div>
               </div>
@@ -211,13 +209,14 @@ export default function LossBackPage() {
 
           {/* CTA */}
           <div className="text-center space-y-4">
-            <p className="text-lg text-muted-foreground">Start earning loss-back today!</p>
-            <a href="https://packdraw.gg?code=R2K2" target="_blank" rel="noopener noreferrer">
+            <p className="text-lg text-muted-foreground">Ready to claim your loss-back?</p>
+            <Link href="https://discord.gg/packdraw" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">
-                <TrendingDown className="h-5 w-5" />
-                Sign Up with Code R2K2
+                <span>💬</span>
+                Claim Now on Discord
               </Button>
-            </a>
+            </Link>
+            <p className="text-sm text-muted-foreground">Submit a support ticket with your account details and loss amount</p>
           </div>
 
           {/* Back Link */}
