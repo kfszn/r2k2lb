@@ -262,6 +262,25 @@ export default function FirstTimeDepositBonusPage() {
             </CardContent>
           </Card>
 
+          {/* Claim CTA */}
+          <div className="text-center space-y-4 bg-primary/5 border border-primary/20 rounded-lg p-8">
+            <h3 className="text-2xl font-semibold">Ready to Claim Your Bonus?</h3>
+            <p className="text-muted-foreground">
+              Once you complete all playthrough requirements, submit your claim on Discord
+            </p>
+            <Link href="https://discord.gg/packdraw" target="_blank" rel="noopener noreferrer">
+              <Button size="lg" className="gap-2">
+                <span>💬</span>
+                Claim Now on Discord
+              </Button>
+            </Link>
+            <div className="pt-4 border-t border-primary/10">
+              <p className="text-sm text-muted-foreground">
+                Your bonus will be paid once all requirements have been verified and confirmed
+              </p>
+            </div>
+          </div>
+
           {/* CTA */}
           <div className="text-center space-y-4">
             <p className="text-lg text-muted-foreground">Get your first deposit bonus today!</p>
