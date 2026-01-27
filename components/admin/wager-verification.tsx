@@ -45,7 +45,6 @@ export function WagerVerification() {
       const end = new Date(endDate).toISOString().split('T')[0];
       
       const url = `/api/leaderboard?start_at=${start}&end_at=${end}`;
-      console.log("[v0] Fetching wager data:", url);
       
       const response = await fetch(url);
 
@@ -54,7 +53,6 @@ export function WagerVerification() {
       }
 
       const data = await response.json();
-      console.log("[v0] API response:", data);
 
       if (!data.ok || !data.data) {
         throw new Error("Invalid response from leaderboard API");
@@ -78,7 +76,6 @@ export function WagerVerification() {
           deposited: user.deposited / 100,
           earned: user.earned / 100,
         };
-        console.log("[v0] Converted user data:", convertedUser);
         setWagerData(convertedUser);
       }
     } catch (err) {
