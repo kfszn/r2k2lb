@@ -29,7 +29,6 @@ export default function TournamentPage() {
           .limit(1)
           .single();
 
-        console.log("[v0] Tournament status:", data?.status);
         setTournamentStatus(data?.status || null);
       } catch (error) {
         console.error("[v0] Error fetching tournament status:", error);
@@ -49,8 +48,9 @@ export default function TournamentPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "tournaments" },
         (payload) => {
-          console.log("[v0] Tournament update:", payload.new?.status);
-          setTournamentStatus(payload.new?.status || null);
+          if (payload.new?.status) {
+            setTournamentStatus(payload.new.status);
+          }
         }
       )
       .subscribe();
@@ -60,8 +60,8 @@ export default function TournamentPage() {
     };
   }, []);
 
-  // Show bracket only if tournament is live (active/in_progress) AND matches exist
-  const isLive = tournamentStatus === "active" || tournamentStatus === "in_progress";
+  // Show bracket only if tournament is live (in_progress status) AND matches exist
+  const isLive = tournamentStatus === "in_progress";
   const hasBracket = matches.length > 0 && isLive && isLoaded;
 
   return (
