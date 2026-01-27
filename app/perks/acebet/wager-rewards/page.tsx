@@ -226,7 +226,7 @@ export default function WagerRewardsPage() {
           {/* CTA */}
           <div className="text-center space-y-4 py-6">
             <p className="text-lg text-muted-foreground">Ready to start earning wager rewards?</p>
-            <a href="https://www.acebet.com?code=R2K2" target="_blank" rel="noopener noreferrer">
+            <a href="https://acebet.com/welcome/r/r2k2" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">
                 <Trophy className="h-5 w-5" />
                 Visit Acebet with Code R2K2
