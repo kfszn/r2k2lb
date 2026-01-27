@@ -9,10 +9,60 @@ import { RefreshCw, Trophy } from "lucide-react";
 import { GiveawayCounter } from "@/components/giveaway-counter";
 import { useBracket } from "@/lib/bracket-context";
 import { Header } from "@/components/header";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function TournamentPage() {
   const { matches } = useBracket();
-  const hasBracket = matches.length > 0;
+  const [tournamentStatus, setTournamentStatus] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Check tournament status on mount
+  useEffect(() => {
+    const checkTournamentStatus = async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("tournaments")
+          .select("status")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        console.log("[v0] Tournament status:", data?.status);
+        setTournamentStatus(data?.status || null);
+      } catch (error) {
+        console.error("[v0] Error fetching tournament status:", error);
+        setTournamentStatus(null);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    checkTournamentStatus();
+
+    // Subscribe to tournament status changes
+    const supabase = createClient();
+    const channel = supabase
+      .channel("tournaments-status")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tournaments" },
+        (payload) => {
+          console.log("[v0] Tournament update:", payload.new?.status);
+          setTournamentStatus(payload.new?.status || null);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Show bracket only if tournament is live (active/in_progress) AND matches exist
+  const isLive = tournamentStatus === "active" || tournamentStatus === "in_progress";
+  const hasBracket = matches.length > 0 && isLive && isLoaded;
 
   return (
     <div className="min-h-screen bg-background">
