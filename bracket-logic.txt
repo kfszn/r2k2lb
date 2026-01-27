@@ -1,129 +1,392 @@
-BRACKET TOURNAMENT LOGIC
-========================
+================================================================================
+BRACKET-CONTEXT.TSX - FULL CODE
+================================================================================
 
-DATA STRUCTURES:
-================
+'use client';
 
-BracketPlayer:
-- id: unique identifier
-- acebet_username: player username
-- kick_username: player username
+import React from "react"
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
-BracketMatch:
-- id: unique match identifier (format: "match-{roundIndex}-{matchIndex}")
-- roundIndex: 0 for first round, 1 for next, etc.
-- matchIndex: position within that round
-- slotAId: entrant ID in slot A (or null for bye/empty)
-- slotBId: entrant ID in slot B (or null for bye/empty)
-- winnerId: ID of winning entrant (null if not completed)
-- nextMatchId: which match this winner advances to
-- nextSlot: 'A' or 'B' - which slot in the next match
-- player1Score / player2Score: current scores
-- status: 'pending' | 'live' | 'completed'
+export interface BracketPlayer {
+  id: string;
+  acebet_username: string;
+  kick_username: string;
+}
+
+export interface BracketMatch {
+  id: string;
+  roundIndex: number;
+  matchIndex: number;
+  slotAId: string | null; // entrant id or null (bye)
+  slotBId: string | null; // entrant id or null (bye)
+  winnerId: string | null;
+  nextMatchId: string | null;
+  nextSlot: 'A' | 'B';
+  player1Score: number;
+  player2Score: number;
+  status: 'pending' | 'live' | 'completed';
+}
+
+interface BracketContextType {
+  matches: BracketMatch[];
+  getPlayerName: (id: string | null) => string;
+  generateBracket: (players: BracketPlayer[]) => void;
+  updateMatchScore: (matchId: string, player1Score: number, player2Score: number) => void;
+  setMatchWinner: (matchId: string, winnerId: string) => void;
+  clearBracket: () => void;
+}
+
+const BracketContext = createContext<BracketContextType | undefined>(undefined);
+
+// Store entrant data for name lookup
+let entrantMap: Record<string, BracketPlayer> = {};
+
+export function BracketProvider({ children }: { children: React.ReactNode }) {
+  const [matches, setMatches] = useState<BracketMatch[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Load bracket from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('bracket-matches');
+      if (saved) {
+        setMatches(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error('[v0] Error loading bracket from localStorage:', e);
+    }
+    setIsHydrated(true);
+  }, []);
+
+  // Generate canonical seed order for bracket size S
+  const generateSeedOrder = (size: number): number[] => {
+    if (size === 2) return [1, 2];
+    const half = size / 2;
+    const smaller = generateSeedOrder(half);
+    const result = [];
+    for (const seed of smaller) {
+      result.push(seed);
+      result.push(size + 1 - seed);
+    }
+    return result;
+  };
+
+  // Static version of propagateWinner for use during bracket generation
+  const propagateWinnerStatic = (matches: BracketMatch[], winningId: string | null, fromMatchId: string): BracketMatch[] => {
+    let updated = [...matches];
+    const fromMatch = updated.find(m => m.id === fromMatchId);
+    
+    if (!fromMatch || !winningId || !fromMatch.nextMatchId) return updated;
+
+    // Place winner in next match's designated slot
+    updated = updated.map(m => {
+      if (m.id === fromMatch.nextMatchId) {
+        if (fromMatch.nextSlot === 'A') {
+          return { ...m, slotAId: winningId };
+        } else {
+          return { ...m, slotBId: winningId };
+        }
+      }
+      return m;
+    });
+
+    // Check if the next match can auto-resolve
+    const updatedNextMatch = updated.find(m => m.id === fromMatch.nextMatchId);
+    if (!updatedNextMatch) return updated;
+
+    const hasSlotA = updatedNextMatch.slotAId !== null;
+    const hasSlotB = updatedNextMatch.slotBId !== null;
+    const onlyOneSlotFilled = hasSlotA !== hasSlotB;
+
+    // Auto-win: exactly one slot has an entrant (the other is a bye)
+    if (onlyOneSlotFilled && !updatedNextMatch.winnerId) {
+      const autoWinner = hasSlotA ? updatedNextMatch.slotAId : updatedNextMatch.slotBId;
+      
+      updated = updated.map(m =>
+        m.id === fromMatch.nextMatchId ? { ...m, winnerId: autoWinner, status: 'completed' } : m
+      );
+
+      // Recursively propagate the auto-winner to the next round (bye chains)
+      updated = propagateWinnerStatic(updated, autoWinner, fromMatch.nextMatchId);
+    }
+
+    return updated;
+  };
+
+  const generateBracket = useCallback((players: BracketPlayer[]) => {
+    if (players.length < 2 || players.length > 20) return;
+
+    try {
+      // Shuffle for random seeding
+      const shuffled = [...players].sort(() => Math.random() - 0.5);
+      entrantMap = Object.fromEntries(shuffled.map(p => [p.id, p]));
+
+      const N = shuffled.length;
+      const S = Math.pow(2, Math.ceil(Math.log2(N))); // Next power of 2
+      const numRounds = Math.ceil(Math.log2(S));
+      
+      // Generate seed order and place entrants
+      const seedOrder = generateSeedOrder(S);
+      const entrantsByPosition: (string | null)[] = new Array(S).fill(null);
+      
+      for (let pos = 0; pos < S; pos++) {
+        const seedNum = seedOrder[pos];
+        if (seedNum <= N) {
+          entrantsByPosition[pos] = shuffled[seedNum - 1].id;
+        }
+      }
+
+      let newMatches: BracketMatch[] = [];
+
+      // Create ALL matches for ALL rounds (never skip)
+      // Critical: R0 always has S/2 matches, R1 has S/4, etc
+      for (let round = 0; round < numRounds; round++) {
+        const matchesInRound = S / Math.pow(2, round + 1);
+        
+        for (let i = 0; i < matchesInRound; i++) {
+          let slotAId: string | null = null;
+          let slotBId: string | null = null;
+
+          // R0: pair up from positions array
+          if (round === 0) {
+            const posA = i * 2;
+            const posB = i * 2 + 1;
+            slotAId = entrantsByPosition[posA];
+            slotBId = entrantsByPosition[posB];
+          }
+
+          // Deterministic next match mapping
+          let nextMatchId: string | null = null;
+          let nextSlot: 'A' | 'B' = 'A';
+          
+          if (round < numRounds - 1) {
+            const nextRound = round + 1;
+            const nextMatchIndex = Math.floor(i / 2);
+            nextSlot = i % 2 === 0 ? 'A' : 'B';
+            nextMatchId = `match-${nextRound}-${nextMatchIndex}`;
+          }
+
+          const match: BracketMatch = {
+            id: `match-${round}-${i}`,
+            roundIndex: round,
+            matchIndex: i,
+            slotAId,
+            slotBId,
+            winnerId: null,
+            nextMatchId,
+            nextSlot,
+            player1Score: 0,
+            player2Score: 0,
+            status: 'pending',
+          };
+
+          newMatches.push(match);
+        }
+      }
+
+      // NOW process R0 matches for auto-wins (byes) and cascade forward
+      // This is the key step that was missing!
+      const r0Matches = newMatches.filter(m => m.roundIndex === 0);
+      
+      for (const match of r0Matches) {
+        const hasA = match.slotAId !== null;
+        const hasB = match.slotBId !== null;
+        
+        // Auto-win: exactly one slot filled
+        if (hasA !== hasB) {
+          const autoWinner = hasA ? match.slotAId : match.slotBId;
+          
+          // Mark this match as completed with winner
+          newMatches = newMatches.map(m =>
+            m.id === match.id ? { ...m, winnerId: autoWinner, status: 'completed' } : m
+          );
+          
+          // Propagate winner forward (this will recursively handle bye chains)
+          newMatches = propagateWinnerStatic(newMatches, autoWinner, match.id);
+        }
+        // Empty match (both null): leave as pending, no winner, no propagation
+        // Playable match (both filled): leave as pending, wait for play
+      }
+
+      setMatches(newMatches);
+      localStorage.setItem('bracket-matches', JSON.stringify(newMatches));
+    } catch (e) {
+      console.error('[v0] Error generating bracket:', e);
+    }
+  }, []);
+
+  const updateMatchScore = useCallback((matchId: string, player1Score: number, player2Score: number) => {
+    setMatches(prev => {
+      const updated = prev.map(match =>
+        match.id === matchId
+          ? { ...match, player1Score, player2Score, status: 'live' }
+          : match
+      );
+      localStorage.setItem('bracket-matches', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  // Use the static function for runtime propagation too
+  const propagateWinner = propagateWinnerStatic;
+
+  const setMatchWinner = useCallback((matchId: string, winnerId: string) => {
+    try {
+      setMatches(prev => {
+        let updated = prev.map(match =>
+          match.id === matchId
+            ? { ...match, winnerId, status: 'completed' }
+            : match
+        );
+
+        // Propagate winner to next match (and cascade through byes)
+        updated = propagateWinner(updated, winnerId, matchId);
+
+        localStorage.setItem('bracket-matches', JSON.stringify(updated));
+        return updated;
+      });
+    } catch (e) {
+      console.error('[v0] Error setting match winner:', e);
+    }
+  }, []);
+
+  const clearBracket = useCallback(() => {
+    setMatches([]);
+    localStorage.removeItem('bracket-matches');
+    entrantMap = {};
+  }, []);
+
+  const getPlayerName = useCallback((id: string | null): string => {
+    if (!id) return '';
+    const player = entrantMap[id];
+    return player?.kick_username || player?.acebet_username || '';
+  }, []);
+
+  return (
+    <BracketContext.Provider value={{ matches, generateBracket, updateMatchScore, setMatchWinner, clearBracket, getPlayerName }}>
+      {children}
+    </BracketContext.Provider>
+  );
+}
+
+export function useBracket() {
+  const context = useContext(BracketContext);
+  if (!context) {
+    throw new Error('useBracket must be used within BracketProvider');
+  }
+  return context;
+}
 
 
-BRACKET GENERATION ALGORITHM:
-=============================
+================================================================================
+BRACKET-MANAGER.TSX - FULL UI CODE
+================================================================================
 
-1. INPUT: Array of N players (2-20 entrants)
+'use client';
 
-2. SHUFFLE: Randomly shuffle players for fair seeding
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, X, Check } from 'lucide-react';
+import { useBracket } from '@/lib/bracket-context';
 
-3. CALCULATE BRACKET SIZE:
-   - S = nextPowerOf2(N)
-   - numRounds = log2(S)
-   - Example: 10 players → S=16, numRounds=4
+interface Tournament {
+  id: string;
+  name: string;
+  status: string;
+}
 
-4. GENERATE CANONICAL SEED ORDER:
-   Uses recursive algorithm for deterministic seeding:
-   - For size 2: [1, 2]
-   - For size 4: [1, 4, 2, 3]
-   - For size 8: [1, 8, 4, 5, 2, 7, 3, 6]
-   - For size 16: [1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11]
-   
-   This ensures top seeds get byes and favorable matchups.
+interface ScoreEditState {
+  matchId: string;
+  score1: string;
+  score2: string;
+}
 
-5. PLACE ENTRANTS:
-   - Create array of S positions
-   - For each position (0 to S-1):
-     - Get seed number from seedOrder[position]
-     - If seed <= N: place shuffled[seed-1].id at position
-     - Else: leave position null (bye/empty slot)
-   
-   Example (10 players, S=16):
-   - Position 0: seed 1 → shuffled[0]
-   - Position 1: seed 16 → null (bye)
-   - Position 2: seed 8 → shuffled[7]
-   - Position 3: seed 9 → shuffled[8]
-   - etc...
+export function BracketManager({ tournament }: { tournament: Tournament }) {
+  const { matches, updateMatchScore, setMatchWinner, getPlayerName } = useBracket();
+  const [editingScore, setEditingScore] = useState<ScoreEditState | null>(null);
 
-6. CREATE R0 (FIRST ROUND) MATCHES:
-   - Iterate through positions in pairs: (0,1), (2,3), (4,5), etc.
-   - For each pair (posA, posB):
-     - If EITHER position has an entrant (not both null):
-       - Create match with slotA=posA, slotB=posB
-       - nextMatchId = "match-1-{floor(matchIdx/2)}"
-       - nextSlot = (matchIdx % 2 === 0) ? 'A' : 'B'
-   
-   Result: Only non-empty pairs create matches
-   Example: 10 players with S=16 creates exactly 5 R0 matches
-            (pairs with both null are skipped)
+  // Group matches by round index
+  const matchesByRound = matches.reduce(
+    (acc, match) => {
+      if (!acc[match.roundIndex]) acc[match.roundIndex] = [];
+      acc[match.roundIndex].push(match);
+      return acc;
+    },
+    {} as Record<number, typeof matches>
+  );
 
-7. CREATE SUBSEQUENT ROUNDS (R1, R2, ...):
-   - R1 match count = ceil(R0 matches / 2)
-   - Each round: matches advance to next round following pattern:
-     - Match 0 → next match 0, slot A
-     - Match 1 → next match 0, slot B
-     - Match 2 → next match 1, slot A
-     - Match 3 → next match 1, slot B
-     - etc.
+  const rounds = Object.keys(matchesByRound)
+    .map(Number)
+    .sort((a, b) => a - b);
 
-8. STORE MATCHES:
-   - Save all matches to state and localStorage
-   - All matches start with empty slots (null) except R0
-   - R0 winners fill R1 slots as they complete
+  // Renders each match with:
+  // - getPlayerName(match.slotAId) for slot A player name
+  // - getPlayerName(match.slotBId) for slot B player name
+  // - match.winnerId === match.slotAId to check if A won
+  // - match.winnerId === match.slotBId to check if B won
+  // - BYE display when slotBId === null && slotAId !== null
+}
 
 
-WINNER ADVANCEMENT:
-===================
+================================================================================
+EXPECTED BEHAVIOR FOR 10 PLAYERS (S=16, 6 byes)
+================================================================================
 
-1. WHEN MATCH WINNER SET:
-   - Mark match as 'completed', set winnerId
+Seed order for S=16: [1, 16, 9, 8, 5, 12, 13, 4, 3, 14, 11, 6, 7, 10, 15, 2]
 
-2. PROPAGATE WINNER:
-   - Find nextMatchId and nextSlot from current match
-   - Place winnerId in next match's designated slot
-   - Check if next match can auto-resolve
+With 10 players (seeds 1-10 exist, seeds 11-16 are null/byes):
 
-3. AUTO-RESOLVE:
-   - If next match has one filled slot and one null:
-     - Auto-advance the filled entrant (they beat a bye)
-     - Mark match completed, set as winner
-     - Recursively propagate auto-winner to next round
+Positions filled:
+- pos[0]: seed 1 = player
+- pos[1]: seed 16 = null (bye)
+- pos[2]: seed 9 = player
+- pos[3]: seed 8 = player
+- pos[4]: seed 5 = player
+- pos[5]: seed 12 = null (bye)
+- pos[6]: seed 13 = null (bye)
+- pos[7]: seed 4 = player
+- pos[8]: seed 3 = player
+- pos[9]: seed 14 = null (bye)
+- pos[10]: seed 11 = null (bye)
+- pos[11]: seed 6 = player
+- pos[12]: seed 7 = player
+- pos[13]: seed 10 = player
+- pos[14]: seed 15 = null (bye)
+- pos[15]: seed 2 = player
 
-4. STOP CONDITION:
-   - Reach finals (no nextMatchId) = bracket winner
+R0 Matches (8 total, S/2=8):
+- match-0-0: pos[0] vs pos[1] = seed1 vs null   -> AUTO-WIN seed1, advance to R1-0 slot A
+- match-0-1: pos[2] vs pos[3] = seed9 vs seed8  -> PLAY, winner to R1-0 slot B
+- match-0-2: pos[4] vs pos[5] = seed5 vs null   -> AUTO-WIN seed5, advance to R1-1 slot A
+- match-0-3: pos[6] vs pos[7] = null vs seed4   -> AUTO-WIN seed4, advance to R1-1 slot B
+- match-0-4: pos[8] vs pos[9] = seed3 vs null   -> AUTO-WIN seed3, advance to R1-2 slot A
+- match-0-5: pos[10] vs pos[11] = null vs seed6 -> AUTO-WIN seed6, advance to R1-2 slot B
+- match-0-6: pos[12] vs pos[13] = seed7 vs seed10 -> PLAY, winner to R1-3 slot A
+- match-0-7: pos[14] vs pos[15] = null vs seed2 -> AUTO-WIN seed2, advance to R1-3 slot B
+
+R1 Matches (4 total, S/4=4):
+- match-1-0: seed1 (from 0-0) vs TBD (from 0-1) -> winner to R2-0 slot A
+- match-1-1: seed5 (from 0-2) vs seed4 (from 0-3) -> winner to R2-0 slot B
+- match-1-2: seed3 (from 0-4) vs seed6 (from 0-5) -> winner to R2-1 slot A
+- match-1-3: TBD (from 0-6) vs seed2 (from 0-7) -> winner to R2-1 slot B
+
+R2 Matches (2 total - Semifinals):
+- match-2-0: winner of 1-0 vs winner of 1-1 -> winner to R3-0 slot A
+- match-2-1: winner of 1-2 vs winner of 1-3 -> winner to R3-0 slot B
+
+R3 Match (1 total - Finals):
+- match-3-0: winner of 2-0 vs winner of 2-1 -> CHAMPION
 
 
-KEY FEATURES:
-=============
+================================================================================
+KEY RULES
+================================================================================
 
-✓ Handles 2-20 entrants
-✓ Deterministic seed ordering (top seeds get byes)
-✓ Random player shuffling (fair seeding)
-✓ Auto-propagation through bracket
-✓ Auto-resolution for bye matches
-✓ Proper advancing to correct slots (no collisions)
-✓ Works for non-power-of-2 player counts
-✓ Cascade auto-wins (bye chain auto-advances)
-
-
-TESTING SCENARIOS:
-==================
-
-2 players (S=2):   1 match in R0, 1 match in R1 (finals)
-3 players (S=4):   2 matches in R0 (1 real, 1 bye), 2 matches in R1, 1 in R2
-4 players (S=4):   2 matches in R0, 2 matches in R1, 1 in R2
-6 players (S=8):   3 matches in R0, 4 matches in R1, 2 in R2, 1 in R3
-10 players (S=16): 5 matches in R0, 8 matches in R1, 4 in R2, 2 in R3, 1 in R4
-16 players (S=16): 8 matches in R0, 4 in R1, 2 in R2, 1 in R3
+1. ALWAYS CREATE S/2 MATCHES IN R0 (even if both slots are null)
+2. DETERMINISTIC NEXT MAPPING: nextMatchIndex = floor(i / 2), nextSlot = (i % 2 === 0) ? 'A' : 'B'
+3. AUTO-RESOLVE ON GENERATION: After creating all matches, process R0 byes immediately
+4. RECURSIVE PROPAGATION: Auto-wins cascade through bye chains until they hit a real match
+5. NEVER SKIP EMPTY MATCHES: Matches with both slots null still exist (just stay pending)
