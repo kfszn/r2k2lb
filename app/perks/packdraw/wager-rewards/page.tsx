@@ -298,7 +298,7 @@ export default function WagerRewardsPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="https://packdraw.gg" target="_blank" rel="noopener noreferrer">
+              <Link href="https://packdraw.com?ref=R2K2" target="_blank" rel="noopener noreferrer">
                 <Button size="lg" className="gap-2 w-full sm:w-auto">
                   <TrendingUp className="h-5 w-5" />
                   Start Playing Now

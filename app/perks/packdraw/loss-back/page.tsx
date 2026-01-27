@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
-import { Shield, TrendingDown } from 'lucide-react'
+import { Shield, TrendingDown, TrendingUp } from 'lucide-react'
 
 export default function LossBackPage() {
   return (
@@ -252,3 +252,14 @@ export default function LossBackPage() {
               </p>
             </CardContent>
           </Card>
+
+          {/* CTA */}
+          <div className="text-center space-y-4">
+            <p className="text-lg text-muted-foreground">Ready to start earning loss-back today?</p>
+            <a href="https://packdraw.com?ref=R2K2" target="_blank" rel="noopener noreferrer">
+              <Button size="lg" className="gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Sign Up with Code R2K2
+              </Button>
+            </a>
+          </div>
