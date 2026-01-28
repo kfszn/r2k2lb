@@ -340,4 +340,4 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName }: {
   )
 }
 
-const REWARDS = [800, 550, 250, 150, 100, 75, 50, 30, 20, 20]
+const REWARDS = [1000, 550, 250, 150, 50, 0, 0, 0, 0, 0]
