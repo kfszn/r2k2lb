@@ -19,7 +19,7 @@ export default function FirstTimeDepositBonusPage() {
               <h1 className="text-4xl font-bold">First Time Deposit Bonus</h1>
             </div>
             <p className="text-lg text-muted-foreground">
-              100% match bonus + automatic 5% bonus on every deposit with code R2K2
+              100% match bonus + automatic 5% bonus on every deposit with code R2K2 (Battles Only)
             </p>
           </div>
 
@@ -39,19 +39,15 @@ export default function FirstTimeDepositBonusPage() {
                   <div className="pt-4 space-y-2 text-sm">
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      100% deposit match
+                      10x playthrough on initial deposit required
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      5x playthrough required
+                      6x playthrough on 100% bonus
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      No deals/draw mode battles
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <span className="text-primary">✓</span>
-                      Code R2K2 required
+                      Battles only
                     </p>
                   </div>
                 </div>
@@ -67,12 +63,16 @@ export default function FirstTimeDepositBonusPage() {
                       <span className="text-primary font-bold ml-2">$200</span>
                     </li>
                     <li>
-                      <span className="font-medium">Playthrough:</span>
-                      <span className="text-muted-foreground ml-2">5x bonus amount</span>
+                      <span className="font-medium">Playthrough (Initial Deposit):</span>
+                      <span className="text-muted-foreground ml-2">10x deposit amount</span>
+                    </li>
+                    <li>
+                      <span className="font-medium">Playthrough (100% Bonus):</span>
+                      <span className="text-muted-foreground ml-2">6x bonus amount</span>
                     </li>
                     <li>
                       <span className="font-medium">Game Modes:</span>
-                      <span className="text-muted-foreground ml-2">Regular play only</span>
+                      <span className="text-muted-foreground ml-2">Battles only</span>
                     </li>
                   </ul>
                 </div>
@@ -121,21 +121,26 @@ export default function FirstTimeDepositBonusPage() {
             <CardContent className="space-y-4">
               <div className="space-y-4">
                 <div className="border border-border/50 rounded-lg p-4 space-y-2">
-                  <p className="font-semibold text-sm">5x Playthrough Calculation</p>
-                  <p className="text-sm text-muted-foreground">Playthrough = Bonus Amount × 5</p>
+                  <p className="font-semibold text-sm">10x Initial Deposit Playthrough</p>
+                  <p className="text-sm text-muted-foreground">Playthrough = Deposit Amount × 10</p>
                   <p className="text-sm font-bold text-primary">
-                    Example: $200 bonus × 5 = $1,000 required playthrough
+                    Example: $150 deposit × 10 = $1,500 required playthrough
+                  </p>
+                </div>
+
+                <div className="border border-border/50 rounded-lg p-4 space-y-2">
+                  <p className="font-semibold text-sm">6x 100% Bonus Playthrough</p>
+                  <p className="text-sm text-muted-foreground">Playthrough = Bonus Amount × 6</p>
+                  <p className="text-sm font-bold text-primary">
+                    Example: $150 bonus × 6 = $900 required playthrough
                   </p>
                 </div>
 
                 <div className="border border-border/50 rounded-lg p-4 space-y-2">
                   <p className="font-semibold text-sm">Allowed Game Modes</p>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>✓ Regular head-to-head matches</li>
-                    <li>✓ Standard tournaments</li>
-                    <li>✓ All normal game types</li>
-                    <li>✗ Deals (not eligible)</li>
-                    <li>✗ Draw Mode Battles (not eligible)</li>
+                    <li>✓ Battles only</li>
+                    <li>✗ All other game modes</li>
                   </ul>
                 </div>
 
@@ -197,7 +202,7 @@ export default function FirstTimeDepositBonusPage() {
                   </div>
                   <div>
                     <p className="font-medium">Play & Complete Playthrough</p>
-                    <p className="text-sm text-muted-foreground">Wager the bonus amount 5x (excluding deals and draw mode battles)</p>
+                    <p className="text-sm text-muted-foreground">Complete 10x deposit playthrough + 6x bonus playthrough on battles only</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -228,7 +233,8 @@ export default function FirstTimeDepositBonusPage() {
                   <p><span className="font-medium">100% Match Bonus:</span> $150</p>
                   <p><span className="font-medium">Automatic 5% Bonus:</span> $7.50</p>
                   <p className="font-bold text-primary">Total Balance: $307.50</p>
-                  <p className="text-xs text-muted-foreground">Playthrough needed: $150 × 5 = $750 (on 100% bonus)</p>
+                  <p className="text-xs text-muted-foreground">Initial Deposit Playthrough: $150 × 10 = $1,500 (battles only)</p>
+                  <p className="text-xs text-muted-foreground">100% Bonus Playthrough: $150 × 6 = $900 (battles only)</p>
                 </div>
               </div>
 
@@ -239,7 +245,8 @@ export default function FirstTimeDepositBonusPage() {
                   <p><span className="font-medium">100% Match Bonus (capped):</span> $200</p>
                   <p><span className="font-medium">Automatic 5% Bonus:</span> $15</p>
                   <p className="font-bold text-primary">Total Balance: $515+</p>
-                  <p className="text-xs text-muted-foreground">Playthrough needed: $200 × 5 = $1,000 (on 100% bonus)</p>
+                  <p className="text-xs text-muted-foreground">Initial Deposit Playthrough: $300+ × 10 = $3,000+ (battles only)</p>
+                  <p className="text-xs text-muted-foreground">100% Bonus Playthrough: $200 × 6 = $1,200 (battles only)</p>
                 </div>
               </div>
             </CardContent>
@@ -261,10 +268,13 @@ export default function FirstTimeDepositBonusPage() {
                 • Automatic 5% deposit bonus applies to all deposits made with code R2K2
               </p>
               <p className="text-muted-foreground">
-                • 5x playthrough is required on the 100% match bonus before withdrawal
+                • 10x playthrough is required on your initial deposit before withdrawal
               </p>
               <p className="text-muted-foreground">
-                • Playthrough applies only to regular play modes - Deals and Draw Mode Battles do not count
+                • 6x playthrough is required on the 100% match bonus before withdrawal
+              </p>
+              <p className="text-muted-foreground">
+                • Playthrough applies only to battles only - all other game modes do not count
               </p>
               <p className="text-muted-foreground">
                 • Maximum 100% bonus is $200

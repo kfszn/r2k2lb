@@ -56,7 +56,7 @@ export default function LossBackPage() {
                   <ul className="space-y-2 text-sm">
                     <li>
                       <span className="font-medium">Calculation:</span>
-                      <span className="text-muted-foreground ml-2">Monthly net loss (PnL verified)</span>
+                      <span className="text-muted-foreground ml-2">30 Day PnL + Rewards (Excluding Leaderboards) = True PnL (Will be verified by staff on discord)</span>
                     </li>
                     <li>
                       <span className="font-medium">Frequency:</span>
@@ -133,7 +133,7 @@ export default function LossBackPage() {
                   </div>
                   <div>
                     <p className="font-medium">Check Your Net Loss</p>
-                    <p className="text-sm text-muted-foreground">Verify your net loss is at least $300 to qualify for Loss-back</p>
+                    <p className="text-sm text-muted-foreground">Your true PnL = 30 Day PnL + Rewards (Excluding Leaderboards). This will be verified by staff on discord. Verify your true PnL loss is at least $300 to qualify for Loss-back</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
