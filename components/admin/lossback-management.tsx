@@ -62,7 +62,7 @@ export function LossbackManagement() {
         const { data: lbData, error: lbError } = await supabase
           .from('lossback_claims')
           .select('*')
-          .order('claim_date', { ascending: false })
+          .order('created_at', { ascending: false })
 
         if (lbError) throw lbError
         
@@ -81,6 +81,7 @@ export function LossbackManagement() {
         }))
         
         setClaims(loadedClaims)
+        console.log("[v0] Loaded loss-back claims:", loadedClaims)
 
         // Load wager bonus claims
         const { data: wbData, error: wbError } = await supabase
@@ -108,7 +109,7 @@ export function LossbackManagement() {
     }
 
     loadClaims()
-  }, [supabase])
+  }, [])
 
   // Verify and create loss-back claim
   const handleVerifyAndCreate = async () => {
@@ -240,14 +241,14 @@ export function LossbackManagement() {
           paid_at: status === 'paid' ? new Date().toISOString() : null,
           updated_at: new Date().toISOString(),
         })
-        .eq('acebet_username', claim.username)
+        .eq('id', claim.id)
 
       if (error) throw error
 
       const updated = [...claims]
       updated[index].status = status
       setClaims(updated)
-      console.log(`[v0] Updated claim for ${claim.username} to ${status}`)
+      console.log(`[v0] Updated claim ID ${claim.id} for ${claim.username} to ${status}`)
     } catch (error) {
       console.error('Failed to update claim:', error)
       alert('Failed to update claim status.')
