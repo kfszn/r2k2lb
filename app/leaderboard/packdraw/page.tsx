@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Trophy, TrendingUp } from 'lucide-react'
 
 interface LeaderboardEntry {
   username: string;
@@ -131,7 +131,7 @@ export default function PackdrawLeaderboard() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <GiveawayCounter />
-      <SiteHeader />
+      <Header />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-16 bg-gradient-to-b from-primary/10 to-background">
