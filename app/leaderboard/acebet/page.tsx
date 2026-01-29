@@ -114,12 +114,7 @@ export default function AcebetLeaderboard() {
       return '/placeholder-user.jpg'
     }
     
-    // If it's already a full URL from img.acebet.com, use our proxy
-    if (avatar.startsWith('https://img.acebet.com/')) {
-      return `/api/avatar-proxy?url=${encodeURIComponent(avatar.split('#')[0])}`
-    }
-    
-    // If it's already a full URL
+    // If it's already a full URL, use it directly and let the browser handle CORS
     if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
       // Strip the hash fragment which can cause issues
       const url = avatar.split('#')[0]
