@@ -11,8 +11,10 @@ import Image from 'next/image'
 
 interface LeaderboardEntry {
   username: string;
-  wagered: number;
+  wagerAmount: number;
+  image?: string;
   avatar?: string;
+  userId?: string;
 }
 
 export default function PackdrawLeaderboard() {
@@ -39,7 +41,14 @@ export default function PackdrawLeaderboard() {
       if (Array.isArray(data)) {
         leaderboardData = data
       } else if (data.leaderboard && Array.isArray(data.leaderboard)) {
-        leaderboardData = data.leaderboard
+        // Map the API response to our interface format
+        leaderboardData = data.leaderboard.map((item: any) => ({
+          username: item.username,
+          wagerAmount: item.wagerAmount,
+          image: item.image,
+          avatar: item.image,
+          userId: item.userId,
+        }))
       } else if (data.entries && Array.isArray(data.entries)) {
         leaderboardData = data.entries
       } else if (data.data && Array.isArray(data.data)) {
@@ -68,14 +77,24 @@ export default function PackdrawLeaderboard() {
     return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
   }
 
-  const getAvatarUrl = (avatar: string | null | undefined) => {
-    if (!avatar) return '/placeholder.svg'
+  const getAvatarUrl = (avatar: string | null | undefined, userId?: string) => {
+    if (!avatar && !userId) return '/placeholder.svg'
     // If it's already a full URL, return as is
-    if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+    if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
       return avatar
     }
+    // If we have a userId and image ID, construct the Packdraw avatar URL
+    if (userId && avatar) {
+      return `https://packdraw.com/api/v1/avatar/${avatar}`
+    }
     // If it's a relative path, construct the full Packdraw URL
-    return `https://packdraw.com${avatar.startsWith('/') ? avatar : '/' + avatar}`
+    if (avatar && !avatar.includes('/')) {
+      return `https://packdraw.com/api/v1/avatar/${avatar}`
+    }
+    if (avatar) {
+      return `https://packdraw.com${avatar.startsWith('/') ? avatar : '/' + avatar}`
+    }
+    return '/placeholder.svg'
   }
 
   const totalWagered = entries.reduce((sum, entry: any) => sum + (entry.wagerAmount || 0), 0)
@@ -203,11 +222,12 @@ export default function PackdrawLeaderboard() {
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-silver mb-4 shadow-lg hover:scale-110 transition-transform">
                           <Image
-                            src={getAvatarUrl(entries[1].avatar)}
+                            src={getAvatarUrl(entries[1].avatar, entries[1].userId)}
                             alt={entries[1].username}
                             fill
                             className="object-cover"
                             crossOrigin="anonymous"
+                            onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-slate-400">
@@ -226,11 +246,12 @@ export default function PackdrawLeaderboard() {
                       <div className="flex flex-col items-center -mb-4">
                         <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-yellow-400 mb-4 shadow-2xl hover:scale-110 transition-transform" style={{ boxShadow: '0 0 30px rgba(250, 204, 21, 0.6)' }}>
                           <Image
-                            src={getAvatarUrl(entries[0].avatar)}
+                            src={getAvatarUrl(entries[0].avatar, entries[0].userId)}
                             alt={entries[0].username}
                             fill
                             className="object-cover"
                             crossOrigin="anonymous"
+                            onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-2xl px-6 py-8 text-center w-40 md:w-48 shadow-2xl border-4 border-yellow-400" style={{ boxShadow: '0 10px 40px rgba(250, 204, 21, 0.4)' }}>
@@ -249,11 +270,12 @@ export default function PackdrawLeaderboard() {
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-amber-700 mb-4 shadow-lg hover:scale-110 transition-transform">
                           <Image
-                            src={getAvatarUrl(entries[2].avatar)}
+                            src={getAvatarUrl(entries[2].avatar, entries[2].userId)}
                             alt={entries[2].username}
                             fill
                             className="object-cover"
                             crossOrigin="anonymous"
+                            onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-amber-600">
@@ -346,7 +368,7 @@ function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
   reward: number
   formatMoney: (n: number) => string
   maskName: (s: string) => string
-  getAvatarUrl: (a: string | null | undefined) => string
+  getAvatarUrl: (a: string | null | undefined, u?: string) => string
 }) {
   const colors = ['#FFD700', '#C0C0C0', '#CD7F32']
   const color = colors[rank - 1]
@@ -360,11 +382,12 @@ function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
         
         <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4" style={{ borderColor: color }}>
           <Image
-            src={getAvatarUrl(entry.avatar)}
+            src={getAvatarUrl(entry.avatar, entry.userId)}
             alt={entry.username}
             fill
             className="object-cover"
             crossOrigin="anonymous"
+            onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
           />
         </div>
         
@@ -393,7 +416,7 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
   reward: number
   formatMoney: (n: number) => string
   maskName: (s: string) => string
-  getAvatarUrl: (a: string | null | undefined) => string
+  getAvatarUrl: (a: string | null | undefined, u?: string) => string
 }) {
   return (
     <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:shadow-xl hover:shadow-primary/10 transition-all">
@@ -403,11 +426,12 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
           
           <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
             <Image
-              src={getAvatarUrl(entry.avatar)}
+              src={getAvatarUrl(entry.avatar, entry.userId)}
               alt={entry.username}
               fill
               className="object-cover"
               crossOrigin="anonymous"
+              onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
             />
           </div>
           
