@@ -188,7 +188,7 @@ export function LossbackManagement() {
           date_claimed: wagerDateClaimed,
           amount_paid: parseFloat(wagerAmountPaid),
           status: 'pending',
-          claim_date: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         })
 
       if (error) throw error
