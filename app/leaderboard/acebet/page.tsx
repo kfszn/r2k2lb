@@ -31,26 +31,6 @@ export default function AcebetLeaderboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showPrevious, setShowPrevious] = useState(false)
-  const [timeRemaining, setTimeRemaining] = useState('')
-
-  useEffect(() => {
-    loadLeaderboard(false)
-  }, [])
-
-  useEffect(() => {
-    if (!leaderboard) return
-    
-    const endDate = new Date(`${leaderboard.range.end_at}T23:59:59-05:00`)
-    
-    const interval = setInterval(() => {
-      const now = new Date()
-      const diff = endDate.getTime() - now.getTime()
-      
-      if (diff <= 0) {
-        setTimeRemaining('Ended')
-        clearInterval(interval)
-        return
-      }
       
       const days = Math.floor(diff / 86400000)
       const hours = Math.floor((diff % 86400000) / 3600000)
@@ -246,11 +226,13 @@ export default function AcebetLeaderboard() {
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-silver mb-4 shadow-lg hover:scale-110 transition-transform">
                           <img
-                            src={imageErrors[leaderboard.data[1].userId] ? '/placeholder-user.jpg' : getAvatarUrl(leaderboard.data[1].avatar)}
+                            src={getAvatarUrl(leaderboard.data[1].avatar)}
                             alt={leaderboard.data[1].name}
                             className="absolute inset-0 w-full h-full object-cover"
-                            referrerPolicy="no-referrer"
-                            onError={() => handleImageError(leaderboard.data[1].userId, getAvatarUrl(leaderboard.data[1].avatar))}
+                            onError={(e) => {
+                              const img = e.target as HTMLImageElement
+                              img.src = '/placeholder-user.jpg'
+                            }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-slate-400">
@@ -269,11 +251,13 @@ export default function AcebetLeaderboard() {
                       <div className="flex flex-col items-center -mb-4">
                         <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-yellow-400 mb-4 shadow-2xl hover:scale-110 transition-transform" style={{ boxShadow: '0 0 30px rgba(250, 204, 21, 0.6)' }}>
                           <img
-                            src={imageErrors[leaderboard.data[0].userId] ? '/placeholder-user.jpg' : getAvatarUrl(leaderboard.data[0].avatar)}
+                            src={getAvatarUrl(leaderboard.data[0].avatar)}
                             alt={leaderboard.data[0].name}
                             className="absolute inset-0 w-full h-full object-cover"
-                            referrerPolicy="no-referrer"
-                            onError={() => handleImageError(leaderboard.data[0].userId, getAvatarUrl(leaderboard.data[0].avatar))}
+                            onError={(e) => {
+                              const img = e.target as HTMLImageElement
+                              img.src = '/placeholder-user.jpg'
+                            }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-2xl px-6 py-8 text-center w-40 md:w-48 shadow-2xl border-4 border-yellow-400" style={{ boxShadow: '0 10px 40px rgba(250, 204, 21, 0.4)' }}>
@@ -292,11 +276,13 @@ export default function AcebetLeaderboard() {
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-amber-700 mb-4 shadow-lg hover:scale-110 transition-transform">
                           <img
-                            src={imageErrors[leaderboard.data[2].userId] ? '/placeholder-user.jpg' : getAvatarUrl(leaderboard.data[2].avatar)}
+                            src={getAvatarUrl(leaderboard.data[2].avatar)}
                             alt={leaderboard.data[2].name}
                             className="absolute inset-0 w-full h-full object-cover"
-                            referrerPolicy="no-referrer"
-                            onError={() => handleImageError(leaderboard.data[2].userId, getAvatarUrl(leaderboard.data[2].avatar))}
+                            onError={(e) => {
+                              const img = e.target as HTMLImageElement
+                              img.src = '/placeholder-user.jpg'
+                            }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-amber-600">
