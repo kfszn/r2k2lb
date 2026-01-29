@@ -238,14 +238,16 @@ export function LossbackManagement() {
           status: status,
           approved_at: status === 'approved' ? new Date().toISOString() : null,
           paid_at: status === 'paid' ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', claim.id)
+        .eq('acebet_username', claim.username)
 
       if (error) throw error
 
       const updated = [...claims]
       updated[index].status = status
       setClaims(updated)
+      console.log(`[v0] Updated claim for ${claim.username} to ${status}`)
     } catch (error) {
       console.error('Failed to update claim:', error)
       alert('Failed to update claim status.')
@@ -378,7 +380,7 @@ export function LossbackManagement() {
 
                       <div>
                         <p className="text-xs text-muted-foreground font-semibold uppercase">Tier</p>
-                        <p className="text-primary font-bold text-lg">{claim.tier}%</p>
+                        <p className="text-primary font-bold text-lg">{claim.tier * 5}%</p>
                         <p className="text-xs text-muted-foreground">Tier {claim.tier} ({claim.monthlyWagers.toLocaleString()}&minus;$500k)</p>
                       </div>
 
