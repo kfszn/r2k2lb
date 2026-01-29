@@ -692,27 +692,6 @@ export function LossbackManagement() {
                             Paid
                           </Button>
                         </div>
-                      )}
-                      {claim.status === 'approved' && (
-                        <Button
-                          size="sm"
-                          onClick={() => updateWagerClaimStatus(claim.id, 'paid')}
-                          className="w-full mt-2 bg-green-600 hover:bg-green-700 text-xs h-8"
-                        >
-                          Mark Paid
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">No wager bonus claims yet</p>
-              </CardContent>
-            </Card>
           )}
                       {claim.status === 'approved' && (
                         <Button
