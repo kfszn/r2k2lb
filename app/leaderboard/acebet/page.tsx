@@ -127,7 +127,8 @@ export default function AcebetLeaderboard() {
 
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
 
-  const handleImageError = (userId: number) => {
+  const handleImageError = (userId: number, avatarUrl: string) => {
+    console.log("[v0] Image error for userId:", userId, "URL:", avatarUrl)
     setImageErrors(prev => ({ ...prev, [userId]: true }))
   }
 
@@ -249,7 +250,8 @@ export default function AcebetLeaderboard() {
                             src={imageErrors[leaderboard.data[1].userId] ? '/placeholder-user.jpg' : getAvatarUrl(leaderboard.data[1].avatar)}
                             alt={leaderboard.data[1].name}
                             className="absolute inset-0 w-full h-full object-cover"
-                            onError={() => handleImageError(leaderboard.data[1].userId)}
+                            referrerPolicy="no-referrer"
+                            onError={() => handleImageError(leaderboard.data[1].userId, getAvatarUrl(leaderboard.data[1].avatar))}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-slate-400">
@@ -271,7 +273,8 @@ export default function AcebetLeaderboard() {
                             src={imageErrors[leaderboard.data[0].userId] ? '/placeholder-user.jpg' : getAvatarUrl(leaderboard.data[0].avatar)}
                             alt={leaderboard.data[0].name}
                             className="absolute inset-0 w-full h-full object-cover"
-                            onError={() => handleImageError(leaderboard.data[0].userId)}
+                            referrerPolicy="no-referrer"
+                            onError={() => handleImageError(leaderboard.data[0].userId, getAvatarUrl(leaderboard.data[0].avatar))}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-2xl px-6 py-8 text-center w-40 md:w-48 shadow-2xl border-4 border-yellow-400" style={{ boxShadow: '0 10px 40px rgba(250, 204, 21, 0.4)' }}>
@@ -293,7 +296,8 @@ export default function AcebetLeaderboard() {
                             src={imageErrors[leaderboard.data[2].userId] ? '/placeholder-user.jpg' : getAvatarUrl(leaderboard.data[2].avatar)}
                             alt={leaderboard.data[2].name}
                             className="absolute inset-0 w-full h-full object-cover"
-                            onError={() => handleImageError(leaderboard.data[2].userId)}
+                            referrerPolicy="no-referrer"
+                            onError={() => handleImageError(leaderboard.data[2].userId, getAvatarUrl(leaderboard.data[2].avatar))}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-amber-600">
