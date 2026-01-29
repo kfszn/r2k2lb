@@ -26,13 +26,9 @@ interface LossbackClaim {
 interface WagerBonusClaim {
   id?: string
   username: string
-  platform: string
-  tierName: string
-  wagerAmount: number
-  rewardAmount: number
-  periodStart: string
-  periodEnd: string
-  claimDate: string
+  claimAmount: number
+  dateClaimed: string
+  amountPaid: number
   status: 'pending' | 'approved' | 'paid'
 }
 
@@ -49,12 +45,9 @@ export function LossbackManagement() {
   
   // Wager bonus manual entry state
   const [wagerUsername, setWagerUsername] = useState('')
-  const [wagerPlatform, setWagerPlatform] = useState('packdraw')
-  const [wagerTier, setWagerTier] = useState('')
-  const [wagerAmount, setWagerAmount] = useState('')
-  const [rewardAmount, setRewardAmount] = useState('')
-  const [periodStart, setPeriodStart] = useState('')
-  const [periodEnd, setPeriodEnd] = useState('')
+  const [wagerClaimAmount, setWagerClaimAmount] = useState('')
+  const [wagerDateClaimed, setWagerDateClaimed] = useState('')
+  const [wagerAmountPaid, setWagerAmountPaid] = useState('')
   
   const supabase = createClient()
 
@@ -97,13 +90,9 @@ export function LossbackManagement() {
         const loadedWagerClaims: WagerBonusClaim[] = wbData.map((item: any) => ({
           id: item.id,
           username: item.username,
-          platform: item.platform,
-          tierName: item.tier_name,
-          wagerAmount: item.wager_amount,
-          rewardAmount: item.reward_amount,
-          periodStart: new Date(item.period_start).toLocaleDateString(),
-          periodEnd: new Date(item.period_end).toLocaleDateString(),
-          claimDate: new Date(item.claim_date).toLocaleDateString(),
+          claimAmount: item.claim_amount,
+          dateClaimed: new Date(item.date_claimed).toLocaleDateString(),
+          amountPaid: item.amount_paid,
           status: item.status,
         }))
 
@@ -149,14 +138,11 @@ export function LossbackManagement() {
         .from('wager_bonus_claims')
         .insert({
           username: claim.username,
-          platform: claim.platform,
-          tier_name: claim.tierName,
-          wager_amount: claim.wagerAmount,
-          reward_amount: claim.rewardAmount,
-          period_start: claim.periodStart,
-          period_end: claim.periodEnd,
+          claim_amount: claim.claimAmount,
+          date_claimed: claim.dateClaimed,
+          amount_paid: claim.amountPaid,
           status: claim.status,
-          claim_date: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         })
 
       if (error) throw error
@@ -164,6 +150,37 @@ export function LossbackManagement() {
     } catch (error) {
       console.error('Failed to save wager bonus claim:', error)
       return false
+    }
+  }
+
+  // Create wager bonus claim from manual entry
+  const handleCreateWagerClaim = async () => {
+    if (!wagerUsername || !wagerClaimAmount || !wagerDateClaimed || wagerAmountPaid === '') {
+      alert('Please fill in all fields')
+      return
+    }
+
+    const newClaim: WagerBonusClaim = {
+      username: wagerUsername,
+      claimAmount: parseFloat(wagerClaimAmount),
+      dateClaimed: wagerDateClaimed,
+      amountPaid: parseFloat(wagerAmountPaid),
+      status: 'pending',
+    }
+
+    setSaving(true)
+    const saved = await saveWagerBonusClaim(newClaim)
+    setSaving(false)
+
+    if (saved) {
+      setWagerClaims([newClaim, ...wagerClaims])
+      // Reset form
+      setWagerUsername('')
+      setWagerClaimAmount('')
+      setWagerDateClaimed('')
+      setWagerAmountPaid('')
+    } else {
+      alert('Failed to save claim. Please try again.')
     }
   }
 
@@ -591,42 +608,68 @@ export function LossbackManagement() {
 
         {/* Wager Bonus Claims Tab */}
         <TabsContent value="wager" className="space-y-6">
-          {/* Import Section */}
+          {/* Manual Entry Section */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5 text-primary" />
-                Import Wager Bonus Claims
+                <DollarSign className="h-5 w-5 text-primary" />
+                Create Wager Bonus Claim
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 text-sm">
-                <p className="text-muted-foreground mb-2">
-                  <strong>CSV Format:</strong> username, platform, tier, wager_amount, reward_amount, period_start, period_end
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Example: john_doe, packdraw, Gold, 20000, 100, 2024-01-01, 2024-01-31
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="csv-import">Upload CSV File</Label>
-                <div className="flex gap-2">
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="wager-username">Acebet Username</Label>
                   <Input
-                    id="csv-import"
-                    type="file"
-                    accept=".csv"
-                    onChange={handleImportWagerClaims}
-                    disabled={importing}
+                    id="wager-username"
+                    placeholder="e.g., player123"
+                    value={wagerUsername}
+                    onChange={(e) => setWagerUsername(e.target.value)}
                   />
-                  {importing && (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm">Importing...</span>
-                    </div>
-                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="wager-claim-amount">Wager Claim Amount ($)</Label>
+                  <Input
+                    id="wager-claim-amount"
+                    type="number"
+                    placeholder="e.g., 500"
+                    value={wagerClaimAmount}
+                    onChange={(e) => setWagerClaimAmount(e.target.value)}
+                  />
                 </div>
               </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date-claimed">Date Claimed</Label>
+                  <Input
+                    id="date-claimed"
+                    type="date"
+                    value={wagerDateClaimed}
+                    onChange={(e) => setWagerDateClaimed(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="amount-paid">Amount Paid ($)</Label>
+                  <Input
+                    id="amount-paid"
+                    type="number"
+                    placeholder="e.g., 0"
+                    value={wagerAmountPaid}
+                    onChange={(e) => setWagerAmountPaid(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleCreateWagerClaim} 
+                size="lg" 
+                className="w-full"
+                disabled={saving}
+              >
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Verify & Create Claim
+              </Button>
             </CardContent>
           </Card>
 
@@ -650,23 +693,22 @@ export function LossbackManagement() {
                   {wagerClaims.map((claim, idx) => (
                     <div key={idx} className="border border-border/50 rounded-lg p-4 bg-card/50 space-y-4">
                       <div>
-                        <p className="text-xs text-muted-foreground font-semibold uppercase">Tier</p>
-                        <p className="text-primary font-bold text-lg">{claim.tierName}</p>
-                        <p className="text-xs text-muted-foreground">{claim.platform}</p>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase">Username</p>
+                        <p className="text-primary font-bold text-lg">{claim.username}</p>
                       </div>
 
                       <div>
-                        <p className="text-xs text-muted-foreground font-semibold uppercase">Wager Amount</p>
-                        <p className="font-semibold">${claim.wagerAmount.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase">Claim Amount</p>
+                        <p className="font-semibold">${claim.claimAmount.toLocaleString()}</p>
                       </div>
 
                       <div>
-                        <p className="text-xs text-muted-foreground font-semibold uppercase">Reward</p>
-                        <p className="text-green-600 font-bold text-lg">${claim.rewardAmount.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase">Amount Paid</p>
+                        <p className="text-green-600 font-bold text-lg">${claim.amountPaid.toFixed(2)}</p>
                       </div>
 
                       <div className="pt-2 border-t border-border/30">
-                        <p className="text-xs text-muted-foreground mb-2">{claim.claimDate}</p>
+                        <p className="text-xs text-muted-foreground mb-2">{claim.dateClaimed}</p>
                         <div className="flex items-center justify-between">
                           <Badge className={getStatusColor(claim.status)} variant="secondary">
                             {claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
@@ -692,12 +734,12 @@ export function LossbackManagement() {
                             Paid
                           </Button>
                         </div>
-          )}
+                      )}
                       {claim.status === 'approved' && (
                         <Button
                           size="sm"
                           onClick={() => updateWagerClaimStatus(claim.id, 'paid')}
-                          className="w-full bg-green-600 hover:bg-green-700"
+                          className="w-full mt-2 bg-green-600 hover:bg-green-700 text-xs h-8"
                         >
                           Mark Paid
                         </Button>
@@ -710,7 +752,7 @@ export function LossbackManagement() {
           ) : (
             <Card>
               <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">No wager bonus claims imported yet</p>
+                <p className="text-center text-muted-foreground">No wager bonus claims yet</p>
               </CardContent>
             </Card>
           )}
