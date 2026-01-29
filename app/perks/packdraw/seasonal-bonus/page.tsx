@@ -1,9 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Zap, Award } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Packdraw Seasonal Bonus | R2K2',
+  description: 'Claim seasonal bonuses on Packdraw with code R2K2. Limited-time reward opportunities.',
+  openGraph: {
+    title: 'Packdraw Seasonal Bonus | R2K2',
+    description: 'Get seasonal bonuses on Packdraw',
+  },
+}
 
 export default function WagerRewardsPage() {
   return (

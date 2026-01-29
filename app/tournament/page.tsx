@@ -1,5 +1,6 @@
 "use client";
 
+import type { Metadata } from "next";
 import { BracketDisplay } from "@/components/tournament/bracket-display";
 import { HowToEnter } from "@/components/tournament/how-to-enter";
 import { WinnersCircle } from "@/components/tournament/winners-circle";
@@ -11,6 +12,15 @@ import { useBracket } from "@/lib/bracket-context";
 import { Header } from "@/components/header";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+
+export const metadata: Metadata = {
+  title: "Tournament | R2K2",
+  description: "Join the R2K2 tournament bracket and compete for exclusive prizes.",
+  openGraph: {
+    title: "Tournament | R2K2",
+    description: "Compete in the R2K2 tournament for exclusive rewards",
+  },
+}
 
 export default function TournamentPage() {
   const { matches } = useBracket();

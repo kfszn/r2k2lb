@@ -1,11 +1,21 @@
 'use client'
 
+import type { Metadata } from 'next'
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
+
+export const metadata: Metadata = {
+  title: 'Account | R2K2',
+  description: 'Manage your R2K2 account and view your profile information.',
+  openGraph: {
+    title: 'Account | R2K2',
+    description: 'Access your R2K2 account',
+  },
+}
 
 export default function AccountPage() {
   const [loading] = useState(false)

@@ -1,5 +1,6 @@
 'use client'
 
+import type { Metadata } from 'next'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -8,6 +9,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Clock, DollarSign, TrendingUp } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
+
+export const metadata: Metadata = {
+  title: 'Acebet Leaderboard | R2K2',
+  description: 'View the Acebet leaderboard with top performers and their monthly wager stats. Win up to $1,000+ in rewards with code R2K2.',
+  openGraph: {
+    title: 'Acebet Leaderboard | R2K2',
+    description: 'Compete on the Acebet leaderboard and win exclusive rewards',
+  },
+}
 
 interface LeaderboardEntry {
   userId: number
@@ -105,6 +115,16 @@ export default function AcebetLeaderboard() {
   const maskName = (name: string) => {
     if (!name || name.length <= 3) return name
     return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
+  }
+
+  const getAvatarUrl = (avatar: string | null) => {
+    if (!avatar) return '/placeholder.svg'
+    // If it's already a full URL, return as is
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+      return avatar
+    }
+    // If it's a relative path, construct the full Acebet URL
+    return `https://acebet.com${avatar.startsWith('/') ? avatar : '/' + avatar}`
   }
 
   const totalWagered = leaderboard?.data.reduce((sum, entry) => sum + entry.wagered, 0) || 0
@@ -213,18 +233,96 @@ export default function AcebetLeaderboard() {
 
             {!loading && !error && leaderboard && (
               <>
+                {/* Podium Top 3 */}
+                <div className="mb-16">
+                  <h2 className="text-2xl font-bold text-center mb-12">Top Performers</h2>
+                  <div className="flex items-end justify-center gap-4 md:gap-6">
+                    {/* 2nd Place */}
+                    {leaderboard.data[1] && (
+                      <div className="flex flex-col items-center">
+                        <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-silver mb-4 shadow-lg hover:scale-110 transition-transform">
+                          <Image
+                            src={getAvatarUrl(leaderboard.data[1].avatar)}
+                            alt={leaderboard.data[1].name}
+                            fill
+                            className="object-cover"
+                            crossOrigin="anonymous"
+                          />
+                        </div>
+                        <div className="bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-slate-400">
+                          <div className="text-3xl md:text-4xl font-bold text-white mb-2">🥈</div>
+                          <p className="font-bold text-white truncate">{maskName(leaderboard.data[1].name)}</p>
+                          <p className="text-xs md:text-sm text-slate-100 mb-2">{formatMoney(leaderboard.data[1].wagered)}</p>
+                          <div className="bg-black/30 rounded px-2 py-1">
+                            <p className="text-lg md:text-xl font-bold text-green-400">${REWARDS[1]}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 1st Place */}
+                    {leaderboard.data[0] && (
+                      <div className="flex flex-col items-center -mb-4">
+                        <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-yellow-400 mb-4 shadow-2xl hover:scale-110 transition-transform" style={{ boxShadow: '0 0 30px rgba(250, 204, 21, 0.6)' }}>
+                          <Image
+                            src={getAvatarUrl(leaderboard.data[0].avatar)}
+                            alt={leaderboard.data[0].name}
+                            fill
+                            className="object-cover"
+                            crossOrigin="anonymous"
+                          />
+                        </div>
+                        <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-2xl px-6 py-8 text-center w-40 md:w-48 shadow-2xl border-4 border-yellow-400" style={{ boxShadow: '0 10px 40px rgba(250, 204, 21, 0.4)' }}>
+                          <div className="text-4xl md:text-5xl font-bold mb-2">👑</div>
+                          <p className="font-bold text-gray-900 truncate text-lg">{maskName(leaderboard.data[0].name)}</p>
+                          <p className="text-xs md:text-sm text-gray-800 mb-2">{formatMoney(leaderboard.data[0].wagered)}</p>
+                          <div className="bg-black/20 rounded px-2 py-1">
+                            <p className="text-2xl md:text-3xl font-bold text-green-600">${REWARDS[0]}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3rd Place */}
+                    {leaderboard.data[2] && (
+                      <div className="flex flex-col items-center">
+                        <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-amber-700 mb-4 shadow-lg hover:scale-110 transition-transform">
+                          <Image
+                            src={getAvatarUrl(leaderboard.data[2].avatar)}
+                            alt={leaderboard.data[2].name}
+                            fill
+                            className="object-cover"
+                            crossOrigin="anonymous"
+                          />
+                        </div>
+                        <div className="bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-amber-600">
+                          <div className="text-3xl md:text-4xl font-bold text-white mb-2">🥉</div>
+                          <p className="font-bold text-white truncate">{maskName(leaderboard.data[2].name)}</p>
+                          <p className="text-xs md:text-sm text-amber-100 mb-2">{formatMoney(leaderboard.data[2].wagered)}</p>
+                          <div className="bg-black/30 rounded px-2 py-1">
+                            <p className="text-lg md:text-xl font-bold text-green-400">${REWARDS[2]}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Top 3 */}
-                <div className="grid md:grid-cols-3 gap-6 mb-12">
-                  {leaderboard.data.slice(0, 3).map((entry, idx) => (
-                    <TopCard
-                      key={entry.userId}
-                      rank={idx + 1}
-                      entry={entry}
-                      reward={REWARDS[idx]}
-                      formatMoney={formatMoney}
-                      maskName={maskName}
-                    />
-                  ))}
+                <div className="hidden">
+                  <div className="grid md:grid-cols-3 gap-6 mb-12">
+                    {leaderboard.data.slice(0, 3).map((entry, idx) => (
+                      <TopCard
+                        key={entry.userId}
+                        rank={idx + 1}
+                        entry={entry}
+                        reward={REWARDS[idx]}
+                        formatMoney={formatMoney}
+                        maskName={maskName}
+                        getAvatarUrl={getAvatarUrl}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 {/* Rest */}
@@ -237,6 +335,7 @@ export default function AcebetLeaderboard() {
                       reward={REWARDS[idx + 3]}
                       formatMoney={formatMoney}
                       maskName={maskName}
+                      getAvatarUrl={getAvatarUrl}
                     />
                   ))}
                 </div>
@@ -274,12 +373,13 @@ export default function AcebetLeaderboard() {
   )
 }
 
-function TopCard({ rank, entry, reward, formatMoney, maskName }: {
+function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
   rank: number
   entry: LeaderboardEntry
   reward: number
   formatMoney: (n: number) => string
   maskName: (s: string) => string
+  getAvatarUrl: (a: string | null) => string
 }) {
   const colors = ['#FFD700', '#C0C0C0', '#CD7F32']
   const color = colors[rank - 1]
@@ -291,21 +391,15 @@ function TopCard({ rank, entry, reward, formatMoney, maskName }: {
           #{rank}
         </div>
         
-        {entry.avatar ? (
-          <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4" style={{ borderColor: color }}>
-            <Image
-              src={entry.avatar || "/placeholder.svg"}
-              alt={entry.name}
-              fill
-              className="object-cover"
-              crossOrigin="anonymous"
-            />
-          </div>
-        ) : (
-          <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl font-bold border-4 bg-black" style={{ borderColor: color, color: '#fff' }}>
-            {entry.name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4" style={{ borderColor: color }}>
+          <Image
+            src={getAvatarUrl(entry.avatar)}
+            alt={entry.name}
+            fill
+            className="object-cover"
+            crossOrigin="anonymous"
+          />
+        </div>
         
         <div>
           <p className="text-lg font-bold">{maskName(entry.name)}</p>
@@ -326,12 +420,13 @@ function TopCard({ rank, entry, reward, formatMoney, maskName }: {
   )
 }
 
-function LeaderboardRow({ rank, entry, reward, formatMoney, maskName }: {
+function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
   rank: number
   entry: LeaderboardEntry
   reward: number
   formatMoney: (n: number) => string
   maskName: (s: string) => string
+  getAvatarUrl: (a: string | null) => string
 }) {
   return (
     <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:shadow-xl hover:shadow-primary/10 transition-all">
@@ -339,21 +434,15 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName }: {
         <div className="flex items-center gap-4">
           <div className="text-2xl font-bold text-muted-foreground w-12">#{rank}</div>
           
-          {entry.avatar ? (
-            <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
-              <Image
-                src={entry.avatar || "/placeholder.svg"}
-                alt={entry.name}
-                fill
-                className="object-cover"
-                crossOrigin="anonymous"
-              />
-            </div>
-          ) : (
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold border-2 border-primary bg-black text-white">
-              {entry.name.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
+            <Image
+              src={getAvatarUrl(entry.avatar)}
+              alt={entry.name}
+              fill
+              className="object-cover"
+              crossOrigin="anonymous"
+            />
+          </div>
           
           <div className="flex-1">
             <p className="font-bold">{maskName(entry.name)}</p>

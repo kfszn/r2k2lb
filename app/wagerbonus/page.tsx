@@ -1,5 +1,6 @@
 'use client';
 
+import type { Metadata } from 'next'
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,15 @@ import { Header } from '@/components/header';
 import { GiveawayCounter } from '@/components/giveaway-counter';
 import { Crown, TrendingUp, Zap } from 'lucide-react';
 import { useRef } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Wager Bonus | R2K2',
+  description: 'Earn tier-based wager bonuses with code R2K2. Get rewarded for your monthly wagers across all platforms.',
+  openGraph: {
+    title: 'Wager Bonus | R2K2',
+    description: 'Earn wager bonuses with code R2K2',
+  },
+}
 
 const wagerTiers = [
   { id: 1, name: 'Bronze', wager: 5000, reward: 25, color: 'from-amber-700 to-amber-600', textColor: 'text-amber-500', borderColor: 'border-amber-500/30', badgeColor: 'bg-gradient-to-br from-amber-600 to-amber-700' },

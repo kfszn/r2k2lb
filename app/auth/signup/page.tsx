@@ -1,5 +1,6 @@
 'use client'
 
+import type { Metadata } from 'next'
 import React from "react"
 
 import { useState } from 'react'
@@ -12,6 +13,15 @@ import { Label } from '@/components/ui/label'
 import { createBrowserClient } from '@supabase/ssr'
 import Image from 'next/image'
 import { Eye, EyeOff } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Sign Up | R2K2',
+  description: 'Create your R2K2 account to start competing for exclusive rewards and leaderboard prizes.',
+  openGraph: {
+    title: 'Sign Up | R2K2',
+    description: 'Join R2K2 and start competing',
+  },
+}
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
