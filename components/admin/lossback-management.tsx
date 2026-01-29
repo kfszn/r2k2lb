@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, CheckCircle, Clock, DollarSign } from 'lucide-react'
+import { AlertCircle, CheckCircle, Clock, DollarSign, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 interface LossbackClaim {
   username: string
@@ -27,8 +28,91 @@ export function LossbackManagement() {
   const [netLoss, setNetLoss] = useState('')
   const [claims, setClaims] = useState<LossbackClaim[]>([])
   const [selectedClaim, setSelectedClaim] = useState<LossbackClaim | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const supabase = createClient()
 
-  // Calculate tier based on monthly wagers
+  // Load existing claims from database on mount
+  useEffect(() => {
+    const loadClaims = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('lossback_claims')
+          .select('*')
+          .order('claim_date', { ascending: false })
+
+        if (error) throw error
+        
+        const loadedClaims: LossbackClaim[] = data.map((item: any) => ({
+          username: item.acebet_username,
+          monthlyWagers: item.monthly_wagers,
+          netLoss: item.net_loss,
+          tier: item.tier,
+          percentage: item.percentage,
+          claimAmount: item.claim_amount,
+          claimDate: new Date(item.claim_date).toLocaleDateString(),
+          status: item.status,
+          previousClaimAmount: 0,
+          requiredMinimumLoss: Math.abs(item.net_loss),
+          id: item.id,
+        }))
+        
+        setClaims(loadedClaims)
+      } catch (error) {
+        console.error('Failed to load lossback claims:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadClaims()
+  }, [supabase])
+
+  // Save claim to database
+  const saveClaim = async (claim: LossbackClaim) => {
+    try {
+      const { error } = await supabase
+        .from('lossback_claims')
+        .insert({
+          acebet_username: claim.username,
+          monthly_wagers: claim.monthlyWagers,
+          net_loss: claim.netLoss,
+          tier: claim.tier,
+          percentage: claim.percentage,
+          claim_amount: claim.claimAmount,
+          status: claim.status,
+          claim_date: new Date().toISOString(),
+        })
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Failed to save claim:', error)
+      return false
+    }
+  }
+
+  // Update claim status in database
+  const updateClaimStatusDb = async (username: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('lossback_claims')
+        .update({ 
+          status: newStatus,
+          approved_at: newStatus === 'approved' ? new Date().toISOString() : null,
+          paid_at: newStatus === 'paid' ? new Date().toISOString() : null,
+        })
+        .eq('acebet_username', username)
+        .order('claim_date', { ascending: false })
+        .limit(1)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Failed to update claim:', error)
+      return false
+    }
+  }
   const calculateTier = (wagers: number): { tier: number; percentage: number } => {
     if (wagers <= 100000) return { tier: 1, percentage: 5 }
     if (wagers <= 499999) return { tier: 2, percentage: 10 }
@@ -46,7 +130,7 @@ export function LossbackManagement() {
     return previousClaim.requiredMinimumLoss + 300
   }
 
-  const handleVerifyAndCreate = () => {
+  const handleVerifyAndCreate = async () => {
     if (!username || !monthlyWagers || !netLoss) {
       alert('Please fill in all fields')
       return
@@ -92,17 +176,33 @@ export function LossbackManagement() {
       requiredMinimumLoss: Math.abs(loss),
     }
 
-    setClaims([...claims, newClaim])
-    setSelectedClaim(newClaim)
-    setUsername('')
-    setMonthlyWagers('')
-    setNetLoss('')
+    // Save to database
+    setSaving(true)
+    const saved = await saveClaim(newClaim)
+    setSaving(false)
+
+    if (saved) {
+      setClaims([newClaim, ...claims])
+      setSelectedClaim(newClaim)
+      setUsername('')
+      setMonthlyWagers('')
+      setNetLoss('')
+    } else {
+      alert('Failed to save claim. Please try again.')
+    }
   }
 
-  const updateClaimStatus = (index: number, status: 'approved' | 'paid') => {
-    const updated = [...claims]
-    updated[index].status = status
-    setClaims(updated)
+  const updateClaimStatus = async (index: number, status: 'approved' | 'paid') => {
+    const claim = claims[index]
+    const success = await updateClaimStatusDb(claim.username, status)
+    
+    if (success) {
+      const updated = [...claims]
+      updated[index].status = status
+      setClaims(updated)
+    } else {
+      alert('Failed to update claim status.')
+    }
   }
 
   const getTierLabel = (tier: number): string => {
@@ -166,7 +266,13 @@ export function LossbackManagement() {
             </div>
           </div>
 
-          <Button onClick={handleVerifyAndCreate} size="lg" className="w-full">
+          <Button 
+            onClick={handleVerifyAndCreate} 
+            size="lg" 
+            className="w-full"
+            disabled={saving}
+          >
+            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Verify & Create Claim
           </Button>
         </CardContent>
@@ -209,10 +315,19 @@ export function LossbackManagement() {
       )}
 
       {/* Claims History */}
-      {claims.length > 0 && (
+      {loading ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <p className="text-muted-foreground">Loading claims...</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : claims.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Loss-back Claims History</CardTitle>
+            <CardTitle>Loss-back Claims History ({claims.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -293,6 +408,12 @@ export function LossbackManagement() {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">No loss-back claims yet</p>
           </CardContent>
         </Card>
       )}
