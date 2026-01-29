@@ -180,41 +180,46 @@ export function LossbackManagement() {
 
     setSaving(true)
     try {
-      const { error } = await supabase
+      const newClaim: WagerBonusClaim = {
+        username: wagerUsername,
+        claimAmount: parseFloat(wagerClaimAmount),
+        dateClaimed: wagerDateClaimed,
+        amountPaid: parseFloat(wagerAmountPaid),
+        status: 'pending',
+      }
+
+      const { data, error } = await supabase
         .from('wager_bonus_claims')
         .insert({
-          username: wagerUsername,
-          claim_amount: parseFloat(wagerClaimAmount),
-          date_claimed: wagerDateClaimed,
-          amount_paid: parseFloat(wagerAmountPaid),
-          status: 'pending',
+          username: newClaim.username,
+          claim_amount: newClaim.claimAmount,
+          date_claimed: newClaim.dateClaimed,
+          amount_paid: newClaim.amountPaid,
+          status: newClaim.status,
           created_at: new Date().toISOString(),
         })
+        .select()
 
       if (error) throw error
 
+      // Add the new claim to the top of the list immediately
+      if (data && data.length > 0) {
+        const savedClaim: WagerBonusClaim = {
+          id: data[0].id,
+          username: data[0].username,
+          claimAmount: data[0].claim_amount,
+          dateClaimed: new Date(data[0].date_claimed).toLocaleDateString(),
+          amountPaid: data[0].amount_paid,
+          status: data[0].status,
+        }
+        setWagerClaims([savedClaim, ...wagerClaims])
+      }
+
+      // Reset form
       setWagerUsername('')
       setWagerClaimAmount('')
       setWagerDateClaimed('')
       setWagerAmountPaid('')
-      
-      // Reload wager claims
-      const { data } = await supabase
-        .from('wager_bonus_claims')
-        .select('*')
-        .order('claim_date', { ascending: false })
-
-      if (data) {
-        const loadedWagerClaims: WagerBonusClaim[] = data.map((item: any) => ({
-          id: item.id,
-          username: item.username,
-          claimAmount: item.claim_amount,
-          dateClaimed: new Date(item.date_claimed).toLocaleDateString(),
-          amountPaid: item.amount_paid,
-          status: item.status,
-        }))
-        setWagerClaims(loadedWagerClaims)
-      }
     } catch (error) {
       console.error('Failed to save wager claim:', error)
       alert('Failed to save wager claim. Please try again.')
