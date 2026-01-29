@@ -5,6 +5,16 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'acebet.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'packdraw.com',
+      },
+    ],
   },
 }
 
