@@ -1,5 +1,3 @@
-'use client'
-
 import type { Metadata } from 'next'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'

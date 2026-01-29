@@ -1,5 +1,3 @@
-'use client'
-
 import type { Metadata } from 'next'
 import React, { useState } from 'react'
 import Link from 'next/link'
