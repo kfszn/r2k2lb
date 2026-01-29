@@ -114,6 +114,11 @@ export default function AcebetLeaderboard() {
       return '/placeholder-user.jpg'
     }
     
+    // If it's already a full URL from img.acebet.com, use our proxy
+    if (avatar.startsWith('https://img.acebet.com/')) {
+      return `/api/avatar-proxy?url=${encodeURIComponent(avatar.split('#')[0])}`
+    }
+    
     // If it's already a full URL
     if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
       // Strip the hash fragment which can cause issues
@@ -128,7 +133,6 @@ export default function AcebetLeaderboard() {
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
 
   const handleImageError = (userId: number, avatarUrl: string) => {
-    console.log("[v0] Image error for userId:", userId, "URL:", avatarUrl)
     setImageErrors(prev => ({ ...prev, [userId]: true }))
   }
 
