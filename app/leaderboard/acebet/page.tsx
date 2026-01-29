@@ -81,8 +81,6 @@ export default function AcebetLeaderboard() {
       const data = await res.json()
       
       if (data.ok) {
-        // Debug: Log the raw top 5 entries to see all fields
-        console.log("[v0] Raw top 5 leaderboard entries:", JSON.stringify(data.data.slice(0, 5), null, 2))
         setLeaderboard(data)
         setShowPrevious(previous)
       } else {
@@ -110,10 +108,19 @@ export default function AcebetLeaderboard() {
 
   const getAvatarUrl = (avatar: string | null) => {
     if (!avatar) return '/placeholder-user.jpg'
-    // If it's already a full URL, return as is
-    if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-      return avatar
+    
+    // Check if it's the anonymous/default avatar path
+    if (avatar.includes('avatar-anonymous') || avatar === '/assets/common/avatar-anonymous.png') {
+      return '/placeholder-user.jpg'
     }
+    
+    // If it's already a full URL
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+      // Strip the hash fragment which can cause issues
+      const url = avatar.split('#')[0]
+      return url
+    }
+    
     // If it's a relative path, construct the full Acebet URL
     return `https://acebet.com${avatar.startsWith('/') ? avatar : '/' + avatar}`
   }
