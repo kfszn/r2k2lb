@@ -1,4 +1,5 @@
-import type { Metadata } from 'next'
+'use client'
+
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -7,16 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
-import { Loader2 } from 'lucide-react'
-
-export const metadata: Metadata = {
-  title: 'Packdraw Leaderboard | R2K2',
-  description: 'View the Packdraw leaderboard with top performers and their monthly wager stats. Win up to $1,000+ in rewards with code R2K2.',
-  openGraph: {
-    title: 'Packdraw Leaderboard | R2K2',
-    description: 'Compete on the Packdraw leaderboard and win exclusive rewards',
-  },
-}
+import { Loader2, Trophy, TrendingUp } from 'lucide-react'
 
 interface LeaderboardEntry {
   username: string;
@@ -139,7 +131,7 @@ export default function PackdrawLeaderboard() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <GiveawayCounter />
-      <SiteHeader />
+      <Header />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-16 bg-gradient-to-b from-primary/10 to-background">
