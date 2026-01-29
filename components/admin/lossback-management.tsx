@@ -646,65 +646,74 @@ export function LossbackManagement() {
                 <CardTitle>Wager Bonus Claims History ({wagerClaims.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {wagerClaims.map((claim, idx) => (
-                    <div key={idx} className="border border-border/50 rounded-lg p-4 hover:bg-secondary/20 transition-colors">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <p className="font-semibold">{claim.username}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Period: {claim.periodStart} - {claim.periodEnd}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Badge className={getStatusColor(claim.status)}>
+                    <div key={idx} className="border border-border/50 rounded-lg p-4 bg-card/50 space-y-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase">Tier</p>
+                        <p className="text-primary font-bold text-lg">{claim.tierName}</p>
+                        <p className="text-xs text-muted-foreground">{claim.platform}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase">Wager Amount</p>
+                        <p className="font-semibold">${claim.wagerAmount.toLocaleString()}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase">Reward</p>
+                        <p className="text-green-600 font-bold text-lg">${claim.rewardAmount.toFixed(2)}</p>
+                      </div>
+
+                      <div className="pt-2 border-t border-border/30">
+                        <p className="text-xs text-muted-foreground mb-2">{claim.claimDate}</p>
+                        <div className="flex items-center justify-between">
+                          <Badge className={getStatusColor(claim.status)} variant="secondary">
                             {claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
                           </Badge>
                         </div>
                       </div>
 
-                      <div className="grid md:grid-cols-5 gap-4 mb-3">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Platform</p>
-                          <p className="font-semibold capitalize">{claim.platform}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Tier</p>
-                          <p className="font-semibold">{claim.tierName}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Wager Amount</p>
-                          <p className="font-semibold">${claim.wagerAmount.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Reward</p>
-                          <p className="font-semibold text-green-600">${claim.rewardAmount.toFixed(2)}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Imported</p>
-                          <p className="font-semibold text-xs">{claim.claimDate}</p>
-                        </div>
-                      </div>
-
                       {claim.status === 'pending' && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 pt-2">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => updateWagerClaimStatus(claim.id, 'approved')}
-                            className="flex-1"
+                            className="flex-1 text-xs h-8"
                           >
                             Approve
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => updateWagerClaimStatus(claim.id, 'paid')}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-xs h-8"
                           >
-                            Mark Paid
+                            Paid
                           </Button>
                         </div>
                       )}
+                      {claim.status === 'approved' && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateWagerClaimStatus(claim.id, 'paid')}
+                          className="w-full mt-2 bg-green-600 hover:bg-green-700 text-xs h-8"
+                        >
+                          Mark Paid
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">No wager bonus claims yet</p>
+              </CardContent>
+            </Card>
+          )}
                       {claim.status === 'approved' && (
                         <Button
                           size="sm"

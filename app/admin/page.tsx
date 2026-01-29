@@ -223,7 +223,7 @@ export default function AdminPage() {
               </TabsTrigger>
               <TabsTrigger value="lossback" className="gap-2">
                 <Settings className="h-4 w-4" />
-                Loss-back Claims
+                Reward Management
               </TabsTrigger>
             </TabsList>
 
