@@ -1,9 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Shield, TrendingDown } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Acebet Loss-back | R2K2',
+  description: 'Get up to 15% of your monthly losses back on Acebet with code R2K2. Manual claim via ticket with verified PnL.',
+  openGraph: {
+    title: 'Acebet Loss-back | R2K2',
+    description: 'Earn loss-back rewards on Acebet with code R2K2',
+  },
+}
 
 export default function LossBackPage() {
   return (

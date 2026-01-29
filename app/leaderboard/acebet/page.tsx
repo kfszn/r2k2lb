@@ -1,5 +1,6 @@
 'use client'
 
+import type { Metadata } from 'next'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -8,6 +9,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Clock, DollarSign, TrendingUp } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
+
+export const metadata: Metadata = {
+  title: 'Acebet Leaderboard | R2K2',
+  description: 'View the Acebet leaderboard with top performers and their monthly wager stats. Win up to $1,000+ in rewards with code R2K2.',
+  openGraph: {
+    title: 'Acebet Leaderboard | R2K2',
+    description: 'Compete on the Acebet leaderboard and win exclusive rewards',
+  },
+}
 
 interface LeaderboardEntry {
   userId: number

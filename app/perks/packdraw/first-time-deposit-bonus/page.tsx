@@ -1,9 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Gift, TrendingUp } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Packdraw First Time Deposit Bonus | R2K2',
+  description: 'Get your first time deposit bonus on Packdraw with code R2K2. New player exclusive offer.',
+  openGraph: {
+    title: 'Packdraw First Time Deposit Bonus | R2K2',
+    description: 'Earn your first time deposit bonus on Packdraw',
+  },
+}
 
 export default function FirstTimeDepositBonusPage() {
   return (

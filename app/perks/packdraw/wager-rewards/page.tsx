@@ -1,5 +1,6 @@
 'use client';
 
+import type { Metadata } from 'next'
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,15 @@ import { Header } from '@/components/header';
 import { GiveawayCounter } from '@/components/giveaway-counter';
 import { Crown, TrendingUp, Zap } from 'lucide-react';
 import { useRef } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Packdraw Wager Rewards | R2K2',
+  description: 'Earn tier-based wager rewards on Packdraw with code R2K2. Get rewarded for your monthly wagers.',
+  openGraph: {
+    title: 'Packdraw Wager Rewards | R2K2',
+    description: 'Get tier-based rewards for your wagers on Packdraw',
+  },
+}
 
 const wagerTiers = [
   { id: 1, name: 'Bronze', wager: 5000, reward: 25, nameColor: 'text-amber-600', starBg: 'bg-amber-600', borderColor: 'border-amber-600/20' },

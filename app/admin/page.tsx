@@ -1,5 +1,6 @@
 "use client";
 
+import type { Metadata } from "next";
 import React from "react";
 import { useState } from "react";
 import { useActiveTournament } from "@/hooks/use-tournament-realtime";
@@ -13,6 +14,15 @@ import { CreateTournamentDialog } from "@/components/admin/create-tournament-dia
 import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+export const metadata: Metadata = {
+  title: 'Admin Panel | R2K2',
+  description: 'Manage R2K2 tournaments, players, and rewards from the admin dashboard.',
+  openGraph: {
+    title: 'Admin Panel | R2K2',
+    description: 'R2K2 Administration Dashboard',
+  },
+}
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, Lock, ShieldAlert, ArrowLeft, LayoutList } from "lucide-react";
 import { Input } from "@/components/ui/input";

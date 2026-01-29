@@ -1,9 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Shield, TrendingDown } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Packdraw Lucky Draw Rewards | R2K2',
+  description: 'Enter the Packdraw lucky draw rewards with code R2K2. Earn bonus rewards monthly.',
+  openGraph: {
+    title: 'Packdraw Lucky Draw Rewards | R2K2',
+    description: 'Enter the lucky draw rewards on Packdraw',
+  },
+}
 
 export default function LossBackPage() {
   return (

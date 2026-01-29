@@ -1,13 +1,24 @@
 'use client'
 
+import type { Metadata } from 'next'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Trophy, Sparkles, TrendingUp } from 'lucide-react'
-import SiteHeader from '@/components/header' // Correctly imported SiteHeader
-import { GiveawayCounter } from '@/components/giveaway-counter'
 import Image from 'next/image'
+import Link from 'next/link'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { GiveawayCounter } from '@/components/giveaway-counter'
+import { Header } from '@/components/header'
+import { Loader2 } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Packdraw Leaderboard | R2K2',
+  description: 'View the Packdraw leaderboard with top performers and their monthly wager stats. Win up to $1,000+ in rewards with code R2K2.',
+  openGraph: {
+    title: 'Packdraw Leaderboard | R2K2',
+    description: 'Compete on the Packdraw leaderboard and win exclusive rewards',
+  },
+}
 
 interface LeaderboardEntry {
   username: string;

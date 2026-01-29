@@ -1,5 +1,6 @@
 'use client'
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,15 @@ import { Trophy } from 'lucide-react'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { ArrowLeft } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Clash.gg Leaderboard | R2K2',
+  description: 'View the Clash.gg leaderboard with top performers. Win exclusive rewards with code R2K2.',
+  openGraph: {
+    title: 'Clash.gg Leaderboard | R2K2',
+    description: 'Compete on the Clash.gg leaderboard and win exclusive rewards',
+  },
+}
 
 export default function ClashLeaderboardPage() {
   return (
