@@ -46,6 +46,16 @@ export function LossbackManagement() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [importing, setImporting] = useState(false)
+  
+  // Wager bonus manual entry state
+  const [wagerUsername, setWagerUsername] = useState('')
+  const [wagerPlatform, setWagerPlatform] = useState('packdraw')
+  const [wagerTier, setWagerTier] = useState('')
+  const [wagerAmount, setWagerAmount] = useState('')
+  const [rewardAmount, setRewardAmount] = useState('')
+  const [periodStart, setPeriodStart] = useState('')
+  const [periodEnd, setPeriodEnd] = useState('')
+  
   const supabase = createClient()
 
   // Load existing claims from database on mount
@@ -132,8 +142,43 @@ export function LossbackManagement() {
     }
   }
 
-  // Save wager bonus claim to database
-  const saveWagerBonusClaim = async (claim: WagerBonusClaim) => {
+  // Create wager bonus claim from manual entry
+  const handleCreateWagerClaim = async () => {
+    if (!wagerUsername || !wagerTier || !wagerAmount || !rewardAmount || !periodStart || !periodEnd) {
+      alert('Please fill in all fields')
+      return
+    }
+
+    const newClaim: WagerBonusClaim = {
+      username: wagerUsername,
+      platform: wagerPlatform,
+      tierName: wagerTier,
+      wagerAmount: parseFloat(wagerAmount),
+      rewardAmount: parseFloat(rewardAmount),
+      periodStart,
+      periodEnd,
+      claimDate: new Date().toLocaleDateString(),
+      status: 'pending',
+    }
+
+    setSaving(true)
+    const saved = await saveWagerBonusClaim(newClaim)
+    setSaving(false)
+
+    if (saved) {
+      setWagerClaims([newClaim, ...wagerClaims])
+      // Reset form
+      setWagerUsername('')
+      setWagerPlatform('packdraw')
+      setWagerTier('')
+      setWagerAmount('')
+      setRewardAmount('')
+      setPeriodStart('')
+      setPeriodEnd('')
+    } else {
+      alert('Failed to save claim. Please try again.')
+    }
+  }
     try {
       const { error } = await supabase
         .from('wager_bonus_claims')
@@ -733,6 +778,236 @@ export function LossbackManagement() {
               </div>
             </CardContent>
           </Card>
+        {/* Wager Bonus Claims Tab */}
+        <TabsContent value="wager" className="space-y-6">
+          {/* Manual Entry Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-primary" />
+                Create Wager Bonus Claim
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="wager-username">Username</Label>
+                  <Input
+                    id="wager-username"
+                    placeholder="e.g., player123"
+                    value={wagerUsername}
+                    onChange={(e) => setWagerUsername(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="wager-platform">Platform</Label>
+                  <select
+                    id="wager-platform"
+                    value={wagerPlatform}
+                    onChange={(e) => setWagerPlatform(e.target.value)}
+                    className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                  >
+                    <option value="packdraw">Packdraw</option>
+                    <option value="acebet">Acebet</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="wager-tier">Tier Name</Label>
+                  <Input
+                    id="wager-tier"
+                    placeholder="e.g., Gold, Silver"
+                    value={wagerTier}
+                    onChange={(e) => setWagerTier(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="wager-amount">Wager Amount ($)</Label>
+                  <Input
+                    id="wager-amount"
+                    type="number"
+                    placeholder="e.g., 20000"
+                    value={wagerAmount}
+                    onChange={(e) => setWagerAmount(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reward-amount">Reward Amount ($)</Label>
+                  <Input
+                    id="reward-amount"
+                    type="number"
+                    placeholder="e.g., 100"
+                    value={rewardAmount}
+                    onChange={(e) => setRewardAmount(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="period-start">Period Start Date</Label>
+                  <Input
+                    id="period-start"
+                    type="date"
+                    value={periodStart}
+                    onChange={(e) => setPeriodStart(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="period-end">Period End Date</Label>
+                  <Input
+                    id="period-end"
+                    type="date"
+                    value={periodEnd}
+                    onChange={(e) => setPeriodEnd(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleCreateWagerClaim} 
+                size="lg" 
+                className="w-full"
+                disabled={saving}
+              >
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Claim
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* CSV Import Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5 text-primary" />
+                Import Wager Bonus Claims
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-semibold">CSV Format:</span> username, platform, tier, wager_amount, reward_amount, period_start, period_end
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Example: john_doe, packdraw, Gold, 20000, 100, 2024-01-01, 2024-01-31
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="csv-upload">Upload CSV File</Label>
+                <input
+                  id="csv-upload"
+                  type="file"
+                  accept=".csv"
+                  onChange={handleImportWagerClaims}
+                  disabled={importing}
+                  className="block w-full"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Wager Claims History */}
+          {loading ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <p className="text-muted-foreground">Loading claims...</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : wagerClaims.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Wager Bonus Claims History ({wagerClaims.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {wagerClaims.map((claim, idx) => (
+                    <div key={idx} className="border border-border/50 rounded-lg p-4 hover:bg-secondary/20 transition-colors">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="font-semibold">{claim.username}</p>
+                          <p className="text-xs text-muted-foreground">Claimed: {claim.claimDate}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Badge className={getStatusColor(claim.status)}>
+                            {claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-5 gap-4 mb-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Platform</p>
+                          <p className="font-semibold capitalize">{claim.platform}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Tier</p>
+                          <p className="font-semibold">{claim.tierName}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Wager Amount</p>
+                          <p className="font-semibold">${claim.wagerAmount.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Period</p>
+                          <p className="font-semibold text-xs">{claim.periodStart} to {claim.periodEnd}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Reward</p>
+                          <p className="font-semibold text-green-600">${claim.rewardAmount.toFixed(2)}</p>
+                        </div>
+                      </div>
+
+                      {claim.status === 'pending' && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateWagerClaimStatus(claim.id, 'approved')}
+                            className="flex-1"
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => updateWagerClaimStatus(claim.id, 'paid')}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                          >
+                            Mark Paid
+                          </Button>
+                        </div>
+                      )}
+                      {claim.status === 'approved' && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateWagerClaimStatus(claim.id, 'paid')}
+                          className="w-full bg-green-600 hover:bg-green-700"
+                        >
+                          Mark Paid
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">No wager bonus claims yet</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
