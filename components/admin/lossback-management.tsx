@@ -372,6 +372,11 @@ export function LossbackManagement() {
                   {claims.map((claim, idx) => (
                     <div key={idx} className="border border-border/50 rounded-lg p-4 bg-card/50 space-y-3">
                       <div>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase">Player</p>
+                        <p className="font-bold text-lg text-primary truncate">{claim.username}</p>
+                      </div>
+
+                      <div>
                         <p className="text-xs text-muted-foreground font-semibold uppercase">Tier</p>
                         <p className="text-primary font-bold text-lg">{claim.tier}%</p>
                         <p className="text-xs text-muted-foreground">Tier {claim.tier} ({claim.monthlyWagers.toLocaleString()}&minus;$500k)</p>
