@@ -86,7 +86,7 @@ export function LossbackManagement() {
         const { data: wbData, error: wbError } = await supabase
           .from('wager_bonus_claims')
           .select('*')
-          .order('claim_date', { ascending: false })
+          .order('created_at', { ascending: false })
 
         if (wbError) throw wbError
 
