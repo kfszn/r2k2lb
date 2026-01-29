@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Clock, DollarSign, TrendingUp } from 'lucide-react'
@@ -108,13 +107,19 @@ export default function AcebetLeaderboard() {
   }
 
   const getAvatarUrl = (avatar: string | null) => {
-    if (!avatar) return '/placeholder.svg'
+    if (!avatar) return '/placeholder-user.jpg'
     // If it's already a full URL, return as is
     if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
       return avatar
     }
     // If it's a relative path, construct the full Acebet URL
     return `https://acebet.com${avatar.startsWith('/') ? avatar : '/' + avatar}`
+  }
+
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
+
+  const handleImageError = (userId: number) => {
+    setImageErrors(prev => ({ ...prev, [userId]: true }))
   }
 
   const totalWagered = leaderboard?.data.reduce((sum, entry) => sum + entry.wagered, 0) || 0
@@ -231,12 +236,11 @@ export default function AcebetLeaderboard() {
                     {leaderboard.data[1] && (
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-silver mb-4 shadow-lg hover:scale-110 transition-transform">
-                          <Image
-                            src={getAvatarUrl(leaderboard.data[1].avatar)}
+                          <img
+                            src={imageErrors[leaderboard.data[1].userId] ? '/placeholder-user.jpg' : getAvatarUrl(leaderboard.data[1].avatar)}
                             alt={leaderboard.data[1].name}
-                            fill
-                            className="object-cover"
-                            crossOrigin="anonymous"
+                            className="absolute inset-0 w-full h-full object-cover"
+                            onError={() => handleImageError(leaderboard.data[1].userId)}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-slate-400">
@@ -254,12 +258,11 @@ export default function AcebetLeaderboard() {
                     {leaderboard.data[0] && (
                       <div className="flex flex-col items-center -mb-4">
                         <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-yellow-400 mb-4 shadow-2xl hover:scale-110 transition-transform" style={{ boxShadow: '0 0 30px rgba(250, 204, 21, 0.6)' }}>
-                          <Image
-                            src={getAvatarUrl(leaderboard.data[0].avatar)}
+                          <img
+                            src={imageErrors[leaderboard.data[0].userId] ? '/placeholder-user.jpg' : getAvatarUrl(leaderboard.data[0].avatar)}
                             alt={leaderboard.data[0].name}
-                            fill
-                            className="object-cover"
-                            crossOrigin="anonymous"
+                            className="absolute inset-0 w-full h-full object-cover"
+                            onError={() => handleImageError(leaderboard.data[0].userId)}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-2xl px-6 py-8 text-center w-40 md:w-48 shadow-2xl border-4 border-yellow-400" style={{ boxShadow: '0 10px 40px rgba(250, 204, 21, 0.4)' }}>
@@ -277,12 +280,11 @@ export default function AcebetLeaderboard() {
                     {leaderboard.data[2] && (
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-amber-700 mb-4 shadow-lg hover:scale-110 transition-transform">
-                          <Image
-                            src={getAvatarUrl(leaderboard.data[2].avatar)}
+                          <img
+                            src={imageErrors[leaderboard.data[2].userId] ? '/placeholder-user.jpg' : getAvatarUrl(leaderboard.data[2].avatar)}
                             alt={leaderboard.data[2].name}
-                            fill
-                            className="object-cover"
-                            crossOrigin="anonymous"
+                            className="absolute inset-0 w-full h-full object-cover"
+                            onError={() => handleImageError(leaderboard.data[2].userId)}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-amber-600">
@@ -373,6 +375,7 @@ function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
 }) {
   const colors = ['#FFD700', '#C0C0C0', '#CD7F32']
   const color = colors[rank - 1]
+  const [imgError, setImgError] = useState(false)
   
   return (
     <Card className="relative overflow-hidden group hover:scale-105 transition-transform" style={{ boxShadow: `0 0 40px ${color}` }}>
@@ -382,12 +385,11 @@ function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
         </div>
         
         <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4" style={{ borderColor: color }}>
-          <Image
-            src={getAvatarUrl(entry.avatar)}
+          <img
+            src={imgError ? '/placeholder-user.jpg' : getAvatarUrl(entry.avatar)}
             alt={entry.name}
-            fill
-            className="object-cover"
-            crossOrigin="anonymous"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={() => setImgError(true)}
           />
         </div>
         
@@ -418,6 +420,8 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
   maskName: (s: string) => string
   getAvatarUrl: (a: string | null) => string
 }) {
+  const [imgError, setImgError] = useState(false)
+  
   return (
     <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:shadow-xl hover:shadow-primary/10 transition-all">
       <CardContent className="p-4">
@@ -425,12 +429,11 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
           <div className="text-2xl font-bold text-muted-foreground w-12">#{rank}</div>
           
           <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
-            <Image
-              src={getAvatarUrl(entry.avatar)}
+            <img
+              src={imgError ? '/placeholder-user.jpg' : getAvatarUrl(entry.avatar)}
               alt={entry.name}
-              fill
-              className="object-cover"
-              crossOrigin="anonymous"
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={() => setImgError(true)}
             />
           </div>
           
