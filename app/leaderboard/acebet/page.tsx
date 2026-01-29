@@ -81,6 +81,8 @@ export default function AcebetLeaderboard() {
       const data = await res.json()
       
       if (data.ok) {
+        // Debug: Log the raw top 5 entries to see all fields
+        console.log("[v0] Raw top 5 leaderboard entries:", JSON.stringify(data.data.slice(0, 5), null, 2))
         setLeaderboard(data)
         setShowPrevious(previous)
       } else {
