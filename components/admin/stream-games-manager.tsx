@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GuessTheBalance } from '@/components/admin/guess-the-balance';
+import { ControlTheBalance } from '@/components/admin/control-the-balance';
 import { Gamepad2 } from 'lucide-react';
 
 export function StreamGamesManager() {
@@ -18,11 +18,11 @@ export function StreamGamesManager() {
       <CardContent>
         <Tabs defaultValue="guess-balance" className="w-full">
           <TabsList className="grid w-full grid-cols-1">
-            <TabsTrigger value="guess-balance">Guess The Balance</TabsTrigger>
+            <TabsTrigger value="control-balance">Control The Balance</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="guess-balance" className="mt-6">
-            <GuessTheBalance />
+          <TabsContent value="control-balance" className="mt-6">
+            <ControlTheBalance />
           </TabsContent>
         </Tabs>
       </CardContent>

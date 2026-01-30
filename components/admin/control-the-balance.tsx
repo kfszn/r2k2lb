@@ -14,7 +14,7 @@ interface BalanceEntry {
   endingBalance: number;
 }
 
-export function GuessTheBalance() {
+export function ControlTheBalance() {
   const [gameTitle, setGameTitle] = useState('');
   const [entries, setEntries] = useState<BalanceEntry[]>([]);
   const [loading, setLoading] = useState(false);

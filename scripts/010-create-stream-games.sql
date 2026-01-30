@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS stream_games (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
-  game_type TEXT NOT NULL, -- 'guess_the_balance', 'flip_the_coin', etc.
+  game_type TEXT NOT NULL, -- 'control_the_balance', 'flip_the_coin', etc.
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_by UUID REFERENCES auth.users(id)
 );
