@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Clock, DollarSign, TrendingUp } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
+import { GoalTracker } from '@/components/goal-tracker'
 
 interface LeaderboardEntry {
   userId: number
@@ -31,25 +32,7 @@ export default function AcebetLeaderboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showPrevious, setShowPrevious] = useState(false)
-      
-      const days = Math.floor(diff / 86400000)
-      const hours = Math.floor((diff % 86400000) / 3600000)
-      const minutes = Math.floor((diff % 3600000) / 60000)
-      const seconds = Math.floor((diff % 60000) / 1000)
-      
-      if (days > 0) {
-        setTimeRemaining(`${days}d ${hours}h ${minutes}m`)
-      } else if (hours > 0) {
-        setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`)
-      } else if (minutes > 0) {
-        setTimeRemaining(`${minutes}m ${seconds}s`)
-      } else {
-        setTimeRemaining(`${seconds}s`)
-      }
-    }, 1000)
-    
-    return () => clearInterval(interval)
-  }, [leaderboard])
+  const [timeRemaining, setTimeRemaining] = useState<string>('Loading...')
 
   const loadLeaderboard = async (previous: boolean) => {
     setLoading(true)
@@ -72,6 +55,42 @@ export default function AcebetLeaderboard() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadLeaderboard(false)
+  }, [])
+
+  useEffect(() => {
+    if (!leaderboard) return
+
+    const interval = setInterval(() => {
+      const endDate = new Date(leaderboard.range.end_at).getTime()
+      const now = Date.now()
+      const diff = endDate - now
+
+      if (diff <= 0) {
+        setTimeRemaining('Ended')
+        return
+      }
+
+      const days = Math.floor(diff / 86400000)
+      const hours = Math.floor((diff % 86400000) / 3600000)
+      const minutes = Math.floor((diff % 3600000) / 60000)
+      const seconds = Math.floor((diff % 60000) / 1000)
+      
+      if (days > 0) {
+        setTimeRemaining(`${days}d ${hours}h ${minutes}m`)
+      } else if (hours > 0) {
+        setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`)
+      } else if (minutes > 0) {
+        setTimeRemaining(`${minutes}m ${seconds}s`)
+      } else {
+        setTimeRemaining(`${seconds}s`)
+      }
+    }, 1000)
+    
+    return () => clearInterval(interval)
+  }, [leaderboard])
 
   const formatMoney = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -103,12 +122,6 @@ export default function AcebetLeaderboard() {
     
     // If it's a relative path, construct the full Acebet URL
     return `https://acebet.com${avatar.startsWith('/') ? avatar : '/' + avatar}`
-  }
-
-  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
-
-  const handleImageError = (userId: number, avatarUrl: string) => {
-    setImageErrors(prev => ({ ...prev, [userId]: true }))
   }
 
   const totalWagered = leaderboard?.data.reduce((sum, entry) => sum + entry.wagered, 0) || 0
@@ -144,7 +157,7 @@ export default function AcebetLeaderboard() {
       {/* Stats Cards */}
       {leaderboard && (
         <section className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
             <Card className="bg-card/50 backdrop-blur border-primary/20">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -156,6 +169,13 @@ export default function AcebetLeaderboard() {
                 </div>
               </CardContent>
             </Card>
+            
+            <GoalTracker
+              current={totalWagered}
+              goal={120000000}
+              formatMoney={formatMoney}
+              label="Goal Progress"
+            />
             
             {!showPrevious && (
               <Card className="bg-card/50 backdrop-blur border-destructive/20">

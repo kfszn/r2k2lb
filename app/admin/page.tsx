@@ -14,7 +14,7 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, Lock, ShieldAlert, ArrowLeft, LayoutList } from "lucide-react";
+import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, Lock, ShieldAlert, ArrowLeft, LayoutList, Gamepad2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ClaimsManager } from "@/components/admin/claims-manager";
 import { EmailVerificationTool } from "@/components/admin/email-verification-tool";
@@ -23,10 +23,11 @@ import { LossbackManagement } from "@/components/admin/lossback-management";
 import { AllTournamentsManager } from "@/components/admin/all-tournaments-manager";
 import { TournamentSelector } from "@/components/admin/tournament-selector";
 import { TournamentDetailView } from "@/components/admin/tournament-detail-view";
+import { StreamGamesManager } from "@/components/admin/stream-games-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -114,7 +115,7 @@ export default function AdminPage() {
         <Header />
         <div className="container mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("tournament")}>
               <CardHeader>
                 <div className="flex items-center gap-3">
@@ -124,6 +125,18 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">Create tournaments, manage matches, verify entries, and handle claims</p>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("stream-games")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Gamepad2 className="h-8 w-8 text-primary" />
+                  <CardTitle>Stream Games</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Manage stream games and interactive content for viewers</p>
               </CardContent>
             </Card>
 
@@ -191,6 +204,27 @@ export default function AdminPage() {
               setCurrentView("tournament");
             }}
           />
+        </div>
+      </main>
+    );
+  }
+
+  // Stream Games View
+  if (currentView === "stream-games") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Stream Games</h1>
+          </div>
+
+          <StreamGamesManager />
         </div>
       </main>
     );
