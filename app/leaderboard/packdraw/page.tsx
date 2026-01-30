@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
+import { GoalTracker } from '@/components/goal-tracker'
 import { Loader2, Trophy, TrendingUp } from 'lucide-react'
 
 interface LeaderboardEntry {
@@ -158,7 +159,7 @@ export default function PackdrawLeaderboard() {
 
       {/* Stats Cards */}
       <section className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
           <Card className="bg-card/50 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -170,6 +171,13 @@ export default function PackdrawLeaderboard() {
               </div>
             </CardContent>
           </Card>
+          
+          <GoalTracker
+            current={totalWagered}
+            goal={67000}
+            formatMoney={formatMoney}
+            label="Goal Progress"
+          />
           
           <Card className="bg-card/50 backdrop-blur border-destructive/20">
             <CardContent className="p-6">
