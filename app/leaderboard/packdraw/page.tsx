@@ -36,8 +36,6 @@ export default function PackdrawLeaderboard() {
       const data = await res.json()
       
       console.log('[v0] Packdraw API response:', data)
-      console.log('[v0] Sample entry:', data.leaderboard?.[0] || data[0])
-      
       // Handle different possible response formats
       let leaderboardData: LeaderboardEntry[] = []
       
@@ -59,8 +57,6 @@ export default function PackdrawLeaderboard() {
       }
       
       setEntries(leaderboardData.slice(0, 10))
-      // Log sample entries with avatar data
-      console.log('[v0] Packdraw entries loaded:', leaderboardData.slice(0, 3).map(e => ({ username: e.username, avatar: e.avatar, image: e.image })))
     } catch (e) {
       console.error('[v0] Failed to fetch Packdraw leaderboard:', e)
       setError('Failed to fetch leaderboard')
@@ -233,13 +229,12 @@ export default function PackdrawLeaderboard() {
                     {entries[1] && (
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-silver mb-4 shadow-lg hover:scale-110 transition-transform">
-                          <Image
+                          <img
                             src={getAvatarUrl(entries[1].avatar, entries[1].userId)}
                             alt={entries[1].username}
-                            fill
-                            className="object-cover"
+                            className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
-                            onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-slate-400">
@@ -257,13 +252,12 @@ export default function PackdrawLeaderboard() {
                     {entries[0] && (
                       <div className="flex flex-col items-center -mb-4">
                         <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-yellow-400 mb-4 shadow-2xl hover:scale-110 transition-transform" style={{ boxShadow: '0 0 30px rgba(250, 204, 21, 0.6)' }}>
-                          <Image
+                          <img
                             src={getAvatarUrl(entries[0].avatar, entries[0].userId)}
                             alt={entries[0].username}
-                            fill
-                            className="object-cover"
+                            className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
-                            onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-2xl px-6 py-8 text-center w-40 md:w-48 shadow-2xl border-4 border-yellow-400" style={{ boxShadow: '0 10px 40px rgba(250, 204, 21, 0.4)' }}>
@@ -281,13 +275,12 @@ export default function PackdrawLeaderboard() {
                     {entries[2] && (
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-amber-700 mb-4 shadow-lg hover:scale-110 transition-transform">
-                          <Image
+                          <img
                             src={getAvatarUrl(entries[2].avatar, entries[2].userId)}
                             alt={entries[2].username}
-                            fill
-                            className="object-cover"
+                            className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
-                            onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-amber-600">
@@ -393,13 +386,12 @@ function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
         </div>
         
         <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4" style={{ borderColor: color }}>
-          <Image
+          <img
             src={getAvatarUrl(entry.avatar, entry.userId)}
             alt={entry.username}
-            fill
-            className="object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
             crossOrigin="anonymous"
-            onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
+            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
           />
         </div>
         
@@ -437,13 +429,12 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
           <div className="text-2xl font-bold text-muted-foreground w-12">#{rank}</div>
           
           <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
-            <Image
+            <img
               src={getAvatarUrl(entry.avatar, entry.userId)}
               alt={entry.username}
-              fill
-              className="object-cover"
+              className="absolute inset-0 w-full h-full object-cover"
               crossOrigin="anonymous"
-              onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
+              onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
             />
           </div>
           
