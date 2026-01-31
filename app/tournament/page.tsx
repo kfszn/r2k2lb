@@ -64,9 +64,9 @@ export default function TournamentPage() {
     };
   }, []);
 
-  // Show bracket if tournament is LIVE status AND matches exist
+  // Show bracket if tournament is LIVE or REGISTERING status AND matches exist
   // Don't require isLoaded since we show "No Active Tournament" if truly no tournament
-  const isLive = tournamentStatus === "LIVE" || (tournamentStatus === null && matches.length > 0);
+  const isLive = (tournamentStatus === "LIVE" || tournamentStatus?.includes("LIVE") || tournamentStatus?.includes("REGISTERING")) && isLoaded;
   console.log("[v0] Tournament page DEBUG - matches.length:", matches.length, "tournamentStatus:", tournamentStatus, "isLoaded:", isLoaded, "isLive:", isLive);
   const hasBracket = matches.length > 0 && isLive;
 
