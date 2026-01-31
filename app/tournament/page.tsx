@@ -31,15 +31,12 @@ export default function TournamentPage() {
 
         // Handle both error and no data cases
         if (error) {
-          console.log("[v0] Tournament status query error (expected if no tournament):", error.message);
           setTournamentStatus(null);
         } else {
           const status = data?.status || null;
-          console.log("[v0] Tournament status fetched:", status);
           setTournamentStatus(status);
         }
       } catch (error) {
-        console.log("[v0] Caught tournament error:", error instanceof Error ? error.message : error);
         setTournamentStatus(null);
       } finally {
         setIsLoaded(true);
@@ -68,9 +65,8 @@ export default function TournamentPage() {
     };
   }, []);
 
-  // Show bracket if matches exist - prioritize showing data over waiting for status
-  const isLive = matches.length > 0;
-  console.log("[v0] Tournament page render - matches.length:", matches.length, "tournamentStatus:", tournamentStatus, "isLoaded:", isLoaded, "isLive:", isLive);
+  // Show bracket only if tournament is LIVE or REGISTERING (not CLOSED or completed)
+  const isLive = (tournamentStatus === "LIVE" || tournamentStatus === "REGISTERING") && isLoaded && matches.length > 0;
   const hasBracket = isLive;
 
   return (
