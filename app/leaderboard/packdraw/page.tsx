@@ -78,24 +78,17 @@ export default function PackdrawLeaderboard() {
     return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
   }
 
-  const getAvatarUrl = (avatar: string | null | undefined, userId?: string) => {
-    if (!avatar && !userId) return '/placeholder-user.jpg'
+  const getAvatarUrl = (imageId: string | null | undefined) => {
+    if (!imageId) return '/placeholder-user.jpg'
+    
     // If it's already a full URL, return as is
-    if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
-      return avatar
+    if (imageId.startsWith('http://') || imageId.startsWith('https://')) {
+      return imageId
     }
-    // If we have a userId and image ID, construct the Packdraw avatar URL
-    if (userId && avatar) {
-      return `https://packdraw.com/api/v1/avatar/${avatar}`
-    }
-    // If it's a relative path, construct the full Packdraw URL
-    if (avatar && !avatar.includes('/')) {
-      return `https://packdraw.com/api/v1/avatar/${avatar}`
-    }
-    if (avatar) {
-      return `https://packdraw.com${avatar.startsWith('/') ? avatar : '/' + avatar}`
-    }
-    return '/placeholder-user.jpg'
+    
+    // Packdraw image IDs need to be converted to URLs
+    // Try the direct image API endpoint
+    return `https://cdn.packdraw.com/image/${imageId}`
   }
 
   const totalWagered = entries.reduce((sum, entry: any) => sum + (entry.wagerAmount || 0), 0)
@@ -230,7 +223,7 @@ export default function PackdrawLeaderboard() {
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-silver mb-4 shadow-lg hover:scale-110 transition-transform">
                           <img
-                            src={getAvatarUrl(entries[1].avatar, entries[1].userId)}
+                            src={getAvatarUrl(entries[1].image)}
                             alt={entries[1].username}
                             className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
@@ -253,7 +246,7 @@ export default function PackdrawLeaderboard() {
                       <div className="flex flex-col items-center -mb-4">
                         <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-yellow-400 mb-4 shadow-2xl hover:scale-110 transition-transform" style={{ boxShadow: '0 0 30px rgba(250, 204, 21, 0.6)' }}>
                           <img
-                            src={getAvatarUrl(entries[0].avatar, entries[0].userId)}
+                            src={getAvatarUrl(entries[0].image)}
                             alt={entries[0].username}
                             className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
@@ -276,7 +269,7 @@ export default function PackdrawLeaderboard() {
                       <div className="flex flex-col items-center">
                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-amber-700 mb-4 shadow-lg hover:scale-110 transition-transform">
                           <img
-                            src={getAvatarUrl(entries[2].avatar, entries[2].userId)}
+                            src={getAvatarUrl(entries[2].image)}
                             alt={entries[2].username}
                             className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
@@ -387,7 +380,7 @@ function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
         
         <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4" style={{ borderColor: color }}>
           <img
-            src={getAvatarUrl(entry.avatar, entry.userId)}
+            src={getAvatarUrl(entry.image)}
             alt={entry.username}
             className="absolute inset-0 w-full h-full object-cover"
             crossOrigin="anonymous"
@@ -430,7 +423,7 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
           
           <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
             <img
-              src={getAvatarUrl(entry.avatar, entry.userId)}
+              src={getAvatarUrl(entry.image)}
               alt={entry.username}
               className="absolute inset-0 w-full h-full object-cover"
               crossOrigin="anonymous"
