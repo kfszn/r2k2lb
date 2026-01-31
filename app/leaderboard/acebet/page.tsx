@@ -249,6 +249,7 @@ export default function AcebetLeaderboard() {
                             src={getAvatarUrl(leaderboard.data[1].avatar)}
                             alt={leaderboard.data[1].name}
                             className="absolute inset-0 w-full h-full object-cover"
+                            crossOrigin="anonymous"
                             onError={(e) => {
                               const img = e.target as HTMLImageElement
                               img.src = '/placeholder-user.jpg'
@@ -274,6 +275,7 @@ export default function AcebetLeaderboard() {
                             src={getAvatarUrl(leaderboard.data[0].avatar)}
                             alt={leaderboard.data[0].name}
                             className="absolute inset-0 w-full h-full object-cover"
+                            crossOrigin="anonymous"
                             onError={(e) => {
                               const img = e.target as HTMLImageElement
                               img.src = '/placeholder-user.jpg'
@@ -299,6 +301,7 @@ export default function AcebetLeaderboard() {
                             src={getAvatarUrl(leaderboard.data[2].avatar)}
                             alt={leaderboard.data[2].name}
                             className="absolute inset-0 w-full h-full object-cover"
+                            crossOrigin="anonymous"
                             onError={(e) => {
                               const img = e.target as HTMLImageElement
                               img.src = '/placeholder-user.jpg'
@@ -407,6 +410,7 @@ function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
             src={imgError ? '/placeholder-user.jpg' : getAvatarUrl(entry.avatar)}
             alt={entry.name}
             className="absolute inset-0 w-full h-full object-cover"
+            crossOrigin="anonymous"
             onError={() => setImgError(true)}
           />
         </div>
@@ -451,6 +455,7 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
               src={imgError ? '/placeholder-user.jpg' : getAvatarUrl(entry.avatar)}
               alt={entry.name}
               className="absolute inset-0 w-full h-full object-cover"
+              crossOrigin="anonymous"
               onError={() => setImgError(true)}
             />
           </div>
