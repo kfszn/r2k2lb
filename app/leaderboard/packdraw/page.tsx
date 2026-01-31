@@ -80,20 +80,17 @@ export default function PackdrawLeaderboard() {
 
   const getAvatarUrl = (imageId: string | null | undefined) => {
     if (!imageId) {
-      console.log('[v0] No image ID provided')
       return '/placeholder-user.jpg'
     }
     
-    // If it's already a full URL, return as is
+    // If it's already a full URL (like ImageKit URLs), return as is
     if (imageId.startsWith('http://') || imageId.startsWith('https://')) {
-      console.log('[v0] Full URL provided:', imageId)
       return imageId
     }
     
-    // Try the direct image endpoint format
-    const url = `https://cdn.packdraw.com/image/${imageId}`
-    console.log('[v0] Constructed image URL for ID:', imageId, '-> URL:', url)
-    return url
+    // For ID-based images, try the ImageKit endpoint that worked for Kung
+    // The pattern appears to be profile_pictures/{userId}/{imageId}
+    return `https://ik.imagekit.io/hr727kunx/profile_pictures/${imageId}/${imageId}.png`
   }
 
   const totalWagered = entries.reduce((sum, entry: any) => sum + (entry.wagerAmount || 0), 0)
@@ -232,9 +229,7 @@ export default function PackdrawLeaderboard() {
                             alt={entries[1].username}
                             className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
-                            onLoad={() => console.log('[v0] Image loaded for', entries[1].username)}
                             onError={(e) => { 
-                              console.log('[v0] Image failed to load for', entries[1].username, 'URL:', (e.target as HTMLImageElement).src)
                               (e.target as HTMLImageElement).src = '/placeholder-user.jpg' 
                             }}
                           />
@@ -259,9 +254,7 @@ export default function PackdrawLeaderboard() {
                             alt={entries[0].username}
                             className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
-                            onLoad={() => console.log('[v0] Image loaded for', entries[0].username)}
                             onError={(e) => { 
-                              console.log('[v0] Image failed to load for', entries[0].username, 'URL:', (e.target as HTMLImageElement).src)
                               (e.target as HTMLImageElement).src = '/placeholder-user.jpg' 
                             }}
                           />
@@ -286,9 +279,7 @@ export default function PackdrawLeaderboard() {
                             alt={entries[2].username}
                             className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
-                            onLoad={() => console.log('[v0] Image loaded for', entries[2].username)}
                             onError={(e) => { 
-                              console.log('[v0] Image failed to load for', entries[2].username, 'URL:', (e.target as HTMLImageElement).src)
                               (e.target as HTMLImageElement).src = '/placeholder-user.jpg' 
                             }}
                           />
@@ -383,7 +374,7 @@ function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
   reward: number
   formatMoney: (n: number) => string
   maskName: (s: string) => string
-  getAvatarUrl: (a: string | null | undefined, u?: string) => string
+  getAvatarUrl: (a: string | null | undefined) => string
 }) {
   const colors = ['#FFD700', '#C0C0C0', '#CD7F32']
   const color = colors[rank - 1]
@@ -430,7 +421,7 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
   reward: number
   formatMoney: (n: number) => string
   maskName: (s: string) => string
-  getAvatarUrl: (a: string | null | undefined, u?: string) => string
+  getAvatarUrl: (a: string | null | undefined) => string
 }) {
   return (
     <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:shadow-xl hover:shadow-primary/10 transition-all">
