@@ -29,9 +29,7 @@ export default function TournamentPage() {
           .limit(1)
           .single();
 
-        console.log("[v0] Tournament query - data:", data, "error:", error);
         const status = data?.status || null;
-        console.log("[v0] Set tournament status to:", status);
         setTournamentStatus(status);
       } catch (error) {
         console.error("[v0] Error fetching tournament status:", error);
@@ -51,7 +49,6 @@ export default function TournamentPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "tournaments" },
         (payload) => {
-          console.log("[v0] Tournament realtime update:", payload.new?.status);
           if (payload.new?.status) {
             setTournamentStatus(payload.new.status);
           }
@@ -65,9 +62,7 @@ export default function TournamentPage() {
   }, []);
 
   // Show bracket if tournament is LIVE or REGISTERING status AND matches exist
-  // Don't require isLoaded since we show "No Active Tournament" if truly no tournament
-  const isLive = (tournamentStatus === "LIVE" || tournamentStatus?.includes("LIVE") || tournamentStatus?.includes("REGISTERING")) && isLoaded;
-  console.log("[v0] Tournament page DEBUG - matches.length:", matches.length, "tournamentStatus:", tournamentStatus, "isLoaded:", isLoaded, "isLive:", isLive);
+  const isLive = (tournamentStatus === "LIVE" || tournamentStatus === "REGISTERING") && isLoaded;
   const hasBracket = matches.length > 0 && isLive;
 
   return (
