@@ -79,16 +79,21 @@ export default function PackdrawLeaderboard() {
   }
 
   const getAvatarUrl = (imageId: string | null | undefined) => {
-    if (!imageId) return '/placeholder-user.jpg'
+    if (!imageId) {
+      console.log('[v0] No image ID provided')
+      return '/placeholder-user.jpg'
+    }
     
     // If it's already a full URL, return as is
     if (imageId.startsWith('http://') || imageId.startsWith('https://')) {
+      console.log('[v0] Full URL provided:', imageId)
       return imageId
     }
     
-    // Packdraw image IDs need to be converted to URLs
-    // Try the direct image API endpoint
-    return `https://cdn.packdraw.com/image/${imageId}`
+    // Try the direct image endpoint format
+    const url = `https://cdn.packdraw.com/image/${imageId}`
+    console.log('[v0] Constructed image URL for ID:', imageId, '-> URL:', url)
+    return url
   }
 
   const totalWagered = entries.reduce((sum, entry: any) => sum + (entry.wagerAmount || 0), 0)
@@ -227,7 +232,11 @@ export default function PackdrawLeaderboard() {
                             alt={entries[1].username}
                             className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
-                            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
+                            onLoad={() => console.log('[v0] Image loaded for', entries[1].username)}
+                            onError={(e) => { 
+                              console.log('[v0] Image failed to load for', entries[1].username, 'URL:', (e.target as HTMLImageElement).src)
+                              (e.target as HTMLImageElement).src = '/placeholder-user.jpg' 
+                            }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-slate-400">
@@ -250,7 +259,11 @@ export default function PackdrawLeaderboard() {
                             alt={entries[0].username}
                             className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
-                            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
+                            onLoad={() => console.log('[v0] Image loaded for', entries[0].username)}
+                            onError={(e) => { 
+                              console.log('[v0] Image failed to load for', entries[0].username, 'URL:', (e.target as HTMLImageElement).src)
+                              (e.target as HTMLImageElement).src = '/placeholder-user.jpg' 
+                            }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-2xl px-6 py-8 text-center w-40 md:w-48 shadow-2xl border-4 border-yellow-400" style={{ boxShadow: '0 10px 40px rgba(250, 204, 21, 0.4)' }}>
@@ -273,7 +286,11 @@ export default function PackdrawLeaderboard() {
                             alt={entries[2].username}
                             className="absolute inset-0 w-full h-full object-cover"
                             crossOrigin="anonymous"
-                            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
+                            onLoad={() => console.log('[v0] Image loaded for', entries[2].username)}
+                            onError={(e) => { 
+                              console.log('[v0] Image failed to load for', entries[2].username, 'URL:', (e.target as HTMLImageElement).src)
+                              (e.target as HTMLImageElement).src = '/placeholder-user.jpg' 
+                            }}
                           />
                         </div>
                         <div className="bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-amber-600">
