@@ -61,9 +61,11 @@ export default function TournamentPage() {
     };
   }, []);
 
-  // Show bracket if tournament is LIVE or REGISTERING status AND matches exist
-  const isLive = (tournamentStatus === "LIVE" || tournamentStatus === "REGISTERING") && isLoaded;
-  const hasBracket = matches.length > 0 && isLive;
+  // Show bracket if matches exist - the status check is secondary
+  // If we have matches and we've finished loading the status, show the bracket regardless
+  const isLive = matches.length > 0 && isLoaded;
+  console.log("[v0] Tournament Status Debug - tournamentStatus:", tournamentStatus, "isLoaded:", isLoaded, "matches.length:", matches.length, "isLive:", isLive);
+  const hasBracket = isLive;
 
   return (
     <div className="min-h-screen bg-background">
