@@ -36,6 +36,7 @@ export default function PackdrawLeaderboard() {
       const data = await res.json()
       
       console.log('[v0] Packdraw API response:', data)
+      console.log('[v0] Sample entry:', data.leaderboard?.[0] || data[0])
       
       // Handle different possible response formats
       let leaderboardData: LeaderboardEntry[] = []
@@ -58,6 +59,8 @@ export default function PackdrawLeaderboard() {
       }
       
       setEntries(leaderboardData.slice(0, 10))
+      // Log sample entries with avatar data
+      console.log('[v0] Packdraw entries loaded:', leaderboardData.slice(0, 3).map(e => ({ username: e.username, avatar: e.avatar, image: e.image })))
     } catch (e) {
       console.error('[v0] Failed to fetch Packdraw leaderboard:', e)
       setError('Failed to fetch leaderboard')
@@ -80,7 +83,7 @@ export default function PackdrawLeaderboard() {
   }
 
   const getAvatarUrl = (avatar: string | null | undefined, userId?: string) => {
-    if (!avatar && !userId) return '/placeholder.svg'
+    if (!avatar && !userId) return '/placeholder-user.jpg'
     // If it's already a full URL, return as is
     if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
       return avatar
@@ -96,7 +99,7 @@ export default function PackdrawLeaderboard() {
     if (avatar) {
       return `https://packdraw.com${avatar.startsWith('/') ? avatar : '/' + avatar}`
     }
-    return '/placeholder.svg'
+    return '/placeholder-user.jpg'
   }
 
   const totalWagered = entries.reduce((sum, entry: any) => sum + (entry.wagerAmount || 0), 0)
