@@ -345,7 +345,7 @@ export function WagerRaceManagement() {
                   <Label htmlFor="start">Start Date</Label>
                   <Input
                     id="start"
-                    type="datetime-local"
+                    type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                   />
@@ -354,7 +354,7 @@ export function WagerRaceManagement() {
                   <Label htmlFor="end">End Date</Label>
                   <Input
                     id="end"
-                    type="datetime-local"
+                    type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                   />
