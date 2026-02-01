@@ -124,6 +124,15 @@ export function WagerRaceManagement() {
     }
   }
 
+  const handleUpdateWager = async (raceId: string, newAmount: number) => {
+    try {
+      // This function just updates the UI, actual wager tracking happens elsewhere
+      console.log('[v0] Wager updated for race:', raceId, newAmount)
+    } catch (error) {
+      console.error('[v0] Failed to update wager:', error)
+    }
+  }
+
   const handleCreateRace = async () => {
     if (!platform || !period || !startDate || !endDate) {
       alert('Please fill in all required fields')
@@ -136,6 +145,8 @@ export function WagerRaceManagement() {
     }
 
     try {
+      console.log('[v0] Creating race with:', { platform, period, startDate, endDate, raceStatus, initialMilestoneAmount, initialMilestoneReward })
+      
       // Create the race first
       const { data: raceData, error: raceError } = await supabase
         .from('wager_races')
@@ -149,7 +160,12 @@ export function WagerRaceManagement() {
         .select()
         .single()
 
-      if (raceError) throw raceError
+      if (raceError) {
+        console.error('[v0] Race creation error:', raceError.message)
+        throw raceError
+      }
+
+      console.log('[v0] Race created successfully:', raceData.id)
 
       // Create the initial milestone
       const { error: milestoneError } = await supabase
@@ -161,7 +177,12 @@ export function WagerRaceManagement() {
           reward_type: 'cash',
         })
 
-      if (milestoneError) throw milestoneError
+      if (milestoneError) {
+        console.error('[v0] Milestone creation error:', milestoneError.message)
+        throw milestoneError
+      }
+
+      console.log('[v0] Milestone created successfully')
 
       setRaceName('')
       setPlatform('packdraw')
@@ -173,9 +194,11 @@ export function WagerRaceManagement() {
       setInitialMilestoneReward('10')
       setIsCreateDialogOpen(false)
       fetchRaces()
+      alert('Race created successfully!')
     } catch (error) {
-      alert('Failed to create race')
-      console.error(error)
+      const errorMsg = error instanceof Error ? error.message : JSON.stringify(error)
+      console.error('[v0] Failed to create race:', errorMsg)
+      alert('Failed to create race: ' + errorMsg)
     }
   }
 
