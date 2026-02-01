@@ -243,6 +243,27 @@ export default function AdminPage() {
     );
   }
 
+  // Wager Races View
+  if (currentView === "wager-races") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Wager Races Management</h1>
+          </div>
+
+          <WagerRaceManagement />
+        </div>
+      </main>
+    );
+  }
+
   // Website Management View
   if (currentView === "website") {
     return (
@@ -296,27 +317,6 @@ export default function AdminPage() {
               <LossbackManagement />
             </TabsContent>
           </Tabs>
-        </div>
-      </main>
-    );
-  }
-
-  // Wager Races View
-  if (currentView === "wager-races") {
-    return (
-      <main className="min-h-screen bg-background">
-        <GiveawayCounter />
-        <Header />
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Wager Races Management</h1>
-          </div>
-
-          <WagerRaceManagement />
         </div>
       </main>
     );
