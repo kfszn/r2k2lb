@@ -26,8 +26,8 @@ interface Milestone {
   id: string
   race_id: string
   wager_amount: number
-  reward: number
-  reward_type: string
+  reward_amount: number
+  milestone_order: number
 }
 
 interface Winner {
@@ -173,8 +173,8 @@ export function WagerRaceManagement() {
         .insert({
           race_id: raceData.id,
           wager_amount: parseInt(initialMilestoneAmount),
-          reward: parseInt(initialMilestoneReward),
-          reward_type: 'cash',
+          reward_amount: parseInt(initialMilestoneReward),
+          milestone_order: 1,
         })
 
       if (milestoneError) {
@@ -206,14 +206,26 @@ export function WagerRaceManagement() {
     if (!selectedRace || !milestoneAmount || !milestoneReward) return
 
     try {
+      // Get the current count of milestones to determine order
+      const { data: existingMilestones } = await supabase
+        .from('wager_race_milestones')
+        .select('milestone_order')
+        .eq('race_id', selectedRace)
+        .order('milestone_order', { ascending: false })
+        .limit(1)
+
+      const nextOrder = existingMilestones && existingMilestones.length > 0 
+        ? existingMilestones[0].milestone_order + 1 
+        : 1
+
       const { error } = await supabase
         .from('wager_race_milestones')
         .insert([
           {
             race_id: selectedRace,
             wager_amount: Number(milestoneAmount),
-            reward: Number(milestoneReward),
-            reward_type: milestoneRewardType,
+            reward_amount: Number(milestoneReward),
+            milestone_order: nextOrder,
           },
         ])
 
@@ -604,7 +616,7 @@ export function WagerRaceManagement() {
                     <div key={milestone.id} className="bg-secondary p-2 rounded-lg flex justify-between items-center">
                       <div className="text-sm flex-1">
                         <p className="font-medium">${milestone.wager_amount.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">Reward: ${milestone.reward} {milestone.reward_type}</p>
+                        <p className="text-xs text-muted-foreground">Reward: ${milestone.reward_amount}</p>
                       </div>
                       <div className="flex gap-1">
                         <Dialog open={isWinnerDialogOpen && selectedMilestoneForWinner === milestone.id} onOpenChange={(open) => {
