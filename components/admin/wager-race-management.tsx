@@ -56,7 +56,11 @@ export function WagerRaceManagement() {
   const [period, setPeriod] = useState<'weekly' | 'monthly'>('weekly')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [raceStatus, setRaceStatus] = useState<'upcoming' | 'active' | 'completed'>('upcoming')
+  const [raceStatus, setRaceStatus] = useState<'upcoming' | 'active' | 'completed'>('active')
+
+  // Initial milestone fields for race creation
+  const [initialMilestoneAmount, setInitialMilestoneAmount] = useState('20000')
+  const [initialMilestoneReward, setInitialMilestoneReward] = useState('10')
 
   const [milestoneAmount, setMilestoneAmount] = useState('')
   const [milestoneReward, setMilestoneReward] = useState('')
@@ -126,8 +130,14 @@ export function WagerRaceManagement() {
       return
     }
 
+    if (!initialMilestoneAmount || !initialMilestoneReward) {
+      alert('Please set an initial milestone amount and reward')
+      return
+    }
+
     try {
-      const { error } = await supabase
+      // Create the race first
+      const { data: raceData, error: raceError } = await supabase
         .from('wager_races')
         .insert({
           platform,
@@ -136,15 +146,31 @@ export function WagerRaceManagement() {
           end_date: new Date(endDate).toISOString(),
           is_active: raceStatus === 'active',
         })
+        .select()
+        .single()
 
-      if (error) throw error
+      if (raceError) throw raceError
+
+      // Create the initial milestone
+      const { error: milestoneError } = await supabase
+        .from('wager_race_milestones')
+        .insert({
+          race_id: raceData.id,
+          wager_amount: parseInt(initialMilestoneAmount),
+          reward: parseInt(initialMilestoneReward),
+          reward_type: 'cash',
+        })
+
+      if (milestoneError) throw milestoneError
 
       setRaceName('')
       setPlatform('packdraw')
       setPeriod('weekly')
       setStartDate('')
       setEndDate('')
-      setRaceStatus('upcoming')
+      setRaceStatus('active')
+      setInitialMilestoneAmount('20000')
+      setInitialMilestoneReward('10')
       setIsCreateDialogOpen(false)
       fetchRaces()
     } catch (error) {
@@ -347,6 +373,35 @@ export function WagerRaceManagement() {
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <p className="text-sm font-medium mb-3">Initial Milestone</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="milestoneAmount">Wager Amount ($)</Label>
+                    <Input
+                      id="milestoneAmount"
+                      type="number"
+                      value={initialMilestoneAmount}
+                      onChange={(e) => setInitialMilestoneAmount(e.target.value)}
+                      placeholder="20000"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="milestoneReward">Reward ($)</Label>
+                    <Input
+                      id="milestoneReward"
+                      type="number"
+                      value={initialMilestoneReward}
+                      onChange={(e) => setInitialMilestoneReward(e.target.value)}
+                      placeholder="10"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Set the first milestone. You can add more milestones after creating the race.
+                </p>
               </div>
 
               <Button onClick={handleCreateRace} className="w-full">
