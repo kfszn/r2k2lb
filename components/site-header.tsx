@@ -20,6 +20,7 @@ export default function SiteHeader() {
         <nav className="hidden md:flex items-center gap-8">
           <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
           <Link href="/#platforms" className="text-sm font-medium hover:text-primary transition-colors">Leaderboards</Link>
+          <Link href="/wager-races" className="text-sm font-medium hover:text-primary transition-colors">Wager Races</Link>
           <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">Raffle</Link>
         </nav>
         <div className="flex items-center gap-3">
@@ -50,6 +51,13 @@ export default function SiteHeader() {
                   onClick={() => setOpen(false)}
                 >
                   Leaderboards
+                </Link>
+                <Link 
+                  href="/wager-races" 
+                  className="text-base font-medium hover:text-primary transition-colors py-2"
+                  onClick={() => setOpen(false)}
+                >
+                  Wager Races
                 </Link>
                 <Link 
                   href="/raffle" 
