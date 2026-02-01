@@ -152,7 +152,6 @@ export function WagerRaceManagement() {
       console.error(error)
     }
   }
-  }
 
   const handleCreateMilestone = async () => {
     if (!selectedRace || !milestoneAmount || !milestoneReward) return
