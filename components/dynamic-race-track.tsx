@@ -20,6 +20,8 @@ interface DynamicRaceTrackProps {
   showTop?: number
   autoRefresh?: number
   showPrevious?: boolean
+  startDate?: string // ISO date string for race start (used for Packdraw timeframe)
+  endDate?: string // ISO date string for race end (optional, for display)
 }
 
 export function DynamicRaceTrack({
@@ -28,6 +30,8 @@ export function DynamicRaceTrack({
   showTop = 10,
   autoRefresh = 5000,
   showPrevious = false,
+  startDate,
+  endDate,
 }: DynamicRaceTrackProps) {
   const [players, setPlayers] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,8 +49,14 @@ export function DynamicRaceTrack({
       let transformedPlayers: LeaderboardEntry[] = []
 
       if (platform === 'packdraw') {
-        // Fetch from Packdraw API
-        url = '/api/packdraw'
+        // Fetch from Packdraw API with race timeframe
+        // Convert ISO date to M-D-YYYY format for Packdraw API
+        let afterDate = '1-1-2026' // Default
+        if (startDate) {
+          const date = new Date(startDate)
+          afterDate = `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`
+        }
+        url = `/api/packdraw?after=${encodeURIComponent(afterDate)}`
         const res = await fetch(url)
         const data = await res.json()
 
@@ -98,7 +108,7 @@ export function DynamicRaceTrack({
 
   useEffect(() => {
     fetchLeaderboard()
-  }, [showPrevious, showTop, platform])
+  }, [showPrevious, showTop, platform, startDate])
 
   useEffect(() => {
     if (autoRefresh <= 0) return

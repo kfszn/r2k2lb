@@ -304,6 +304,8 @@ export default function RaceDetailPage() {
               targetWager={milestones[0]?.wager_amount || 1000}
               showTop={15}
               autoRefresh={5000}
+              startDate={race.start_date}
+              endDate={race.end_date}
             />
           </div>
 
