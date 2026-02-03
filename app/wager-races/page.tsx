@@ -10,22 +10,21 @@ import { format, parseISO } from 'date-fns'
 
 interface Race {
   id: string
-  name: string
-  description: string
-  status: 'upcoming' | 'active' | 'completed'
-  target_wager: number
-  current_wager: number
+  platform: 'acebet' | 'packdraw'
+  period: 'weekly' | 'monthly'
   start_date: string
   end_date: string
+  is_active: boolean
   created_at: string
+  updated_at: string
 }
 
 interface Milestone {
   id: string
   race_id: string
   wager_amount: number
-  reward: number
-  completed: boolean
+  reward_amount: number
+  milestone_order: number
 }
 
 export default function WagerRacesPage() {
@@ -80,17 +79,8 @@ export default function WagerRacesPage() {
     }
   }, [supabase])
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
-      case 'upcoming':
-        return 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20'
-      case 'completed':
-        return 'bg-gray-500/10 text-gray-500 hover:bg-gray-500/20'
-      default:
-        return ''
-    }
+  const getStatusColor = (isActive: boolean) => {
+    return isActive ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20' : 'bg-gray-500/10 text-gray-500 hover:bg-gray-500/20'
   }
 
   const formatCurrency = (amount: number) => {
@@ -101,8 +91,8 @@ export default function WagerRacesPage() {
     }).format(amount)
   }
 
-  const getProgressPercentage = (current: number, target: number) => {
-    return Math.min((current / target) * 100, 100)
+  const getProgressPercentage = () => {
+    return 50 // Placeholder for now
   }
 
   if (loading) {
@@ -140,7 +130,7 @@ export default function WagerRacesPage() {
         ) : (
           <div className="grid gap-6">
             {races.map((race) => {
-              const progress = getProgressPercentage(race.current_wager, race.target_wager)
+              const progress = getProgressPercentage()
 
               return (
                 <Card key={race.id} className="hover:shadow-lg transition-shadow">
@@ -148,12 +138,14 @@ export default function WagerRacesPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <CardTitle>{race.name}</CardTitle>
-                          <Badge className={getStatusColor(race.status)}>
-                            {race.status.charAt(0).toUpperCase() + race.status.slice(1)}
+                          <CardTitle className="capitalize">{race.platform} - {race.period}</CardTitle>
+                          <Badge className={getStatusColor(race.is_active)}>
+                            {race.is_active ? 'Active' : 'Inactive'}
                           </Badge>
                         </div>
-                        <CardDescription>{race.description}</CardDescription>
+                        <CardDescription>
+                          {race.period.charAt(0).toUpperCase() + race.period.slice(1)} wager race on {race.platform}
+                        </CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -162,9 +154,7 @@ export default function WagerRacesPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Progress</span>
-                        <span className="font-semibold">
-                          {formatCurrency(race.current_wager)} / {formatCurrency(race.target_wager)}
-                        </span>
+                        <span className="font-semibold">{Math.round(progress)}%</span>
                       </div>
                       <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
                         <div
@@ -172,9 +162,6 @@ export default function WagerRacesPage() {
                           style={{ width: `${progress}%` }}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground text-right">
-                        {Math.round(progress)}% complete
-                      </p>
                     </div>
 
                     {/* Race Dates */}
@@ -195,7 +182,7 @@ export default function WagerRacesPage() {
 
                     {/* View Details Button */}
                     <Link href={`/wager-races/${race.id}`} className="block">
-                      <Button className="w-full" variant={race.status === 'active' ? 'default' : 'outline'}>
+                      <Button className="w-full" variant={race.is_active ? 'default' : 'outline'}>
                         View Details & Milestones
                       </Button>
                     </Link>
