@@ -168,8 +168,6 @@ export default function RaceDetailPage() {
     )
   }
 
-  const progress = getProgressPercentage(race.current_wager, race.target_wager)
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/50 pt-20">
       <div className="container mx-auto px-4 py-12">
