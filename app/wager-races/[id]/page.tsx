@@ -134,11 +134,30 @@ export default function RaceDetailPage() {
     }
   }, [raceId, supabase])
 
-  const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'
-  }
+  const calculateWagerStats = () => {
+    if (milestones.length === 0) {
+      return {
+        totalMilestones: 0,
+        highestMilestone: 0,
+        totalRewardPool: 0,
+        uniqueWinners: 0,
+        completedMilestones: 0,
+      }
+    }
 
-  const getMilestoneWinners = (milestoneId: string) => {
+    const uniqueWinnerSet = new Set(winners.map(w => w.username))
+    const completedMilestonesCount = milestones.filter(m => 
+      winners.some(w => w.milestone_id === m.id)
+    ).length
+
+    return {
+      totalMilestones: milestones.length,
+      highestMilestone: Math.max(...milestones.map(m => m.wager_amount)),
+      totalRewardPool: milestones.reduce((sum, m) => sum + m.reward_amount, 0),
+      uniqueWinners: uniqueWinnerSet.size,
+      completedMilestones: completedMilestonesCount,
+    }
+  }
     return winners.filter(w => w.milestone_id === milestoneId).sort((a, b) => 
       new Date(a.won_at).getTime() - new Date(b.won_at).getTime()
     )
@@ -211,9 +230,66 @@ export default function RaceDetailPage() {
           </Card>
         </div>
 
-        {/* Overall Progress Bar - Removed since we don't have current_wager tracking */}
+        {/* Wager Statistics */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Race Statistics</h2>
+          {(() => {
+            const stats = calculateWagerStats()
+            return (
+              <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardDescription className="text-xs">Total Milestones</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold">{stats.totalMilestones}</p>
+                  </CardContent>
+                </Card>
 
-        {/* Milestones */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardDescription className="text-xs">Highest Wager Target</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold">${(stats.highestMilestone / 1000).toFixed(0)}k</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardDescription className="text-xs">Total Reward Pool</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold">${stats.totalRewardPool}</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardDescription className="text-xs">Unique Winners</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold">{stats.uniqueWinners}</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardDescription className="text-xs">Completed Milestones</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold">{stats.completedMilestones}/{stats.totalMilestones}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {stats.totalMilestones > 0 ? Math.round((stats.completedMilestones / stats.totalMilestones) * 100) : 0}% progress
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )
+          })()}
+        </div>
+
+        {/* Race Timeline */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Milestones</h2>
           <div className="space-y-4">
@@ -310,6 +386,36 @@ export default function RaceDetailPage() {
           </div>
         </div>
 
+        {/* Wager Breakdown by Milestone */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Milestone Wager Breakdown</h2>
+          <Card>
+            <CardContent className="pt-6">
+              {milestones.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No milestones to display</p>
+              ) : (
+                <div className="space-y-4">
+                  {milestones.map((milestone, index) => {
+                    const milestonesWinners = winners.filter(w => w.milestone_id === milestone.id)
+                    return (
+                      <div key={milestone.id} className="flex items-center justify-between py-4 border-b border-secondary last:border-b-0">
+                        <div className="flex-1">
+                          <p className="font-semibold">Milestone {index + 1}</p>
+                          <p className="text-sm text-muted-foreground">Target: ${milestone.wager_amount.toLocaleString()}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-primary">${milestone.reward_amount}</p>
+                          <p className="text-xs text-muted-foreground">{milestonesWinners.length} {milestonesWinners.length === 1 ? 'winner' : 'winners'}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Race Timeline */}
         <Card>
           <CardHeader>
@@ -321,12 +427,14 @@ export default function RaceDetailPage() {
               <p className="text-lg font-semibold">
                 {format(parseISO(race.start_date), 'MMMM d, yyyy')}
               </p>
+              <p className="text-xs text-muted-foreground mt-1">{format(parseISO(race.start_date), 'EEEE')}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-2">End Date</p>
               <p className="text-lg font-semibold">
                 {format(parseISO(race.end_date), 'MMMM d, yyyy')}
               </p>
+              <p className="text-xs text-muted-foreground mt-1">{format(parseISO(race.end_date), 'EEEE')}</p>
             </div>
           </CardContent>
         </Card>
