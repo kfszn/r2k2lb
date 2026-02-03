@@ -417,27 +417,30 @@ export default function RaceDetailPage() {
         </div>
 
         {/* Race Timeline */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Race Timeline</CardTitle>
-          </CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Start Date</p>
-              <p className="text-lg font-semibold">
-                {format(parseISO(race.start_date), 'MMMM d, yyyy')}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">{format(parseISO(race.start_date), 'EEEE')}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">End Date</p>
-              <p className="text-lg font-semibold">
-                {format(parseISO(race.end_date), 'MMMM d, yyyy')}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">{format(parseISO(race.end_date), 'EEEE')}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Race Timeline</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>Schedule</CardTitle>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-6">
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Start Date</p>
+                <p className="text-lg font-semibold">
+                  {format(parseISO(race.start_date), 'MMMM d, yyyy')}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">{format(parseISO(race.start_date), 'EEEE')}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">End Date</p>
+                <p className="text-lg font-semibold">
+                  {format(parseISO(race.end_date), 'MMMM d, yyyy')}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">{format(parseISO(race.end_date), 'EEEE')}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
