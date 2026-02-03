@@ -238,11 +238,7 @@ export function DynamicRaceTrack({
                             <Trophy className="h-4 w-4 text-yellow-500 flex-shrink-0 animate-bounce" />
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span className="capitalize">{platform}</span>
-                          <span>•</span>
-                          <span>Earned: {formatDollars(player.earned)}</span>
-                        </div>
+                        <p className="text-xs text-muted-foreground capitalize">{platform}</p>
                       </div>
                     </div>
 
