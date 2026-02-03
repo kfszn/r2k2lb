@@ -12,31 +12,32 @@ import { CheckCircle2, Circle } from 'lucide-react'
 
 interface Race {
   id: string
-  name: string
-  description: string
-  status: 'upcoming' | 'active' | 'completed'
-  target_wager: number
-  current_wager: number
+  platform: 'acebet' | 'packdraw'
+  period: 'weekly' | 'monthly'
   start_date: string
   end_date: string
+  is_active: boolean
   created_at: string
+  updated_at: string
 }
 
 interface Milestone {
   id: string
   race_id: string
   wager_amount: number
-  reward: number
-  reward_type: string
-  completed: boolean
+  reward_amount: number
+  milestone_order: number
+  created_at: string
 }
 
 interface Winner {
   id: string
   race_id: string
   milestone_id: string
-  player_name: string
-  claimed_at: string
+  username: string
+  platform: string
+  won_at: string
+  created_at: string
 }
 
 export default function RaceDetailPage() {
@@ -133,33 +134,19 @@ export default function RaceDetailPage() {
     }
   }, [raceId, supabase])
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500/10 text-green-500'
-      case 'upcoming':
-        return 'bg-blue-500/10 text-blue-500'
-      case 'completed':
-        return 'bg-gray-500/10 text-gray-500'
-      default:
-        return ''
-    }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(amount)
+  const getStatusColor = (isActive: boolean) => {
+    return isActive ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'
   }
 
   const getMilestoneWinners = (milestoneId: string) => {
-    return winners.filter(w => w.milestone_id === milestoneId)
+    return winners.filter(w => w.milestone_id === milestoneId).sort((a, b) => 
+      new Date(a.won_at).getTime() - new Date(b.won_at).getTime()
+    )
   }
 
-  const getProgressPercentage = (current: number, target: number) => {
-    return Math.min((current / target) * 100, 100)
+  const getFirstWinner = (milestoneId: string) => {
+    const milestoneWinners = getMilestoneWinners(milestoneId)
+    return milestoneWinners.length > 0 ? milestoneWinners[0] : null
   }
 
   if (loading) {
@@ -192,62 +179,41 @@ export default function RaceDetailPage() {
             ← Back to Races
           </Link>
           <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className="text-4xl md:text-5xl font-bold">{race.name}</h1>
-            <Badge className={`${getStatusColor(race.status)} text-lg px-4 py-2`}>
-              {race.status.charAt(0).toUpperCase() + race.status.slice(1)}
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold capitalize">{race.platform} - {race.period}</h1>
+              <p className="text-lg text-muted-foreground mt-2">{race.period.charAt(0).toUpperCase() + race.period.slice(1)} wager race on {race.platform}</p>
+            </div>
+            <Badge className={race.is_active ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'}>
+              {race.is_active ? 'Active' : 'Inactive'}
             </Badge>
           </div>
-          <p className="text-lg text-muted-foreground">{race.description}</p>
         </div>
 
         {/* Race Info Cards */}
-        <div className="grid md:grid-cols-3 gap-4 mb-12">
+        <div className="grid md:grid-cols-2 gap-4 mb-12">
           <Card>
             <CardHeader className="pb-3">
-              <CardDescription>Overall Target</CardDescription>
+              <CardDescription>Race Period</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{formatCurrency(race.target_wager)}</p>
+              <p className="text-3xl font-bold capitalize">{race.period}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {format(parseISO(race.start_date), 'MMM d')} - {format(parseISO(race.end_date), 'MMM d, yyyy')}
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardDescription>Current Progress</CardDescription>
+              <CardDescription>Platform</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{formatCurrency(race.current_wager)}</p>
-              <p className="text-sm text-muted-foreground mt-1">{Math.round(progress)}% complete</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Remaining</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{formatCurrency(Math.max(0, race.target_wager - race.current_wager))}</p>
+              <p className="text-3xl font-bold capitalize">{race.platform}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Overall Progress Bar */}
-        <Card className="mb-12">
-          <CardHeader>
-            <CardTitle>Overall Race Progress</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-primary to-primary/70 h-full transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="text-sm text-muted-foreground text-center">
-              {Math.round(progress)}% of {formatCurrency(race.target_wager)} target reached
-            </p>
-          </CardContent>
-        </Card>
+        {/* Overall Progress Bar - Removed since we don't have current_wager tracking */}
 
         {/* Milestones */}
         <div className="mb-12">
@@ -261,16 +227,16 @@ export default function RaceDetailPage() {
               </Card>
             ) : (
               milestones.map((milestone, index) => {
-                const milestoneWinners = getMilestoneWinners(milestone.id)
-                const isCompleted = race.current_wager >= milestone.wager_amount
+                const firstWinner = getFirstWinner(milestone.id)
+                const hasWinner = !!firstWinner
 
                 return (
-                  <Card key={milestone.id} className={isCompleted ? 'bg-primary/5' : ''}>
+                  <Card key={milestone.id} className={hasWinner ? 'border-green-500/50 bg-green-500/5' : ''}>
                     <CardHeader className="pb-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-4 flex-1">
                           <div className="mt-1">
-                            {isCompleted ? (
+                            {hasWinner ? (
                               <CheckCircle2 className="h-6 w-6 text-green-500" />
                             ) : (
                               <Circle className="h-6 w-6 text-muted-foreground" />
@@ -279,38 +245,63 @@ export default function RaceDetailPage() {
                           <div className="flex-1">
                             <CardTitle className="text-lg">Milestone {index + 1}</CardTitle>
                             <CardDescription>
-                              Reach {formatCurrency(milestone.wager_amount)} in wagers
+                              Reach ${milestone.wager_amount.toLocaleString()} in wagers
                             </CardDescription>
                           </div>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-secondary rounded-lg p-4">
-                          <p className="text-sm text-muted-foreground mb-1">Required Wager</p>
-                          <p className="text-2xl font-bold">{formatCurrency(milestone.wager_amount)}</p>
-                        </div>
-                        <div className="bg-secondary rounded-lg p-4">
-                          <p className="text-sm text-muted-foreground mb-1">Reward</p>
-                          <p className="text-2xl font-bold">{formatCurrency(milestone.reward)}</p>
-                        </div>
+                      <div className="bg-secondary rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground mb-1">Reward Amount</p>
+                        <p className="text-2xl font-bold">${milestone.reward_amount.toLocaleString()}</p>
                       </div>
 
-                      {/* Winners for this milestone */}
-                      {milestoneWinners.length > 0 && (
-                        <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
-                          <p className="text-sm font-semibold mb-2">Winners</p>
+                      {/* First Achiever - Prominently Displayed */}
+                      {firstWinner && (
+                        <div className="bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg p-5 border-2 border-primary/50">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/30 flex items-center justify-center">
+                              <CheckCircle2 className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-muted-foreground">FIRST ACHIEVER</p>
+                              <p className="text-lg font-bold">{firstWinner.username}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Platform: <span className="font-medium capitalize">{firstWinner.platform}</span></span>
+                            <span className="text-muted-foreground">
+                              {format(parseISO(firstWinner.won_at), 'MMM d, yyyy HH:mm')}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Other Winners */}
+                      {getMilestoneWinners(milestone.id).length > 1 && (
+                        <div className="bg-secondary/50 rounded-lg p-4 border border-secondary">
+                          <p className="text-sm font-semibold mb-3">Other Achievers</p>
                           <div className="space-y-2">
-                            {milestoneWinners.map((winner) => (
-                              <div key={winner.id} className="flex justify-between text-sm">
-                                <span className="font-medium">{winner.player_name}</span>
-                                <span className="text-muted-foreground">
-                                  {format(parseISO(winner.claimed_at), 'MMM d, yyyy')}
+                            {getMilestoneWinners(milestone.id).slice(1).map((winner) => (
+                              <div key={winner.id} className="flex justify-between items-center text-sm py-2 border-t border-secondary">
+                                <div>
+                                  <span className="font-medium">{winner.username}</span>
+                                  <span className="text-muted-foreground text-xs ml-2">({winner.platform})</span>
+                                </div>
+                                <span className="text-muted-foreground text-xs">
+                                  {format(parseISO(winner.won_at), 'MMM d HH:mm')}
                                 </span>
                               </div>
                             ))}
                           </div>
+                        </div>
+                      )}
+
+                      {/* No Winner Yet */}
+                      {!hasWinner && (
+                        <div className="bg-secondary/50 rounded-lg p-4 border border-dashed border-secondary text-center">
+                          <p className="text-sm text-muted-foreground">Waiting for first achiever...</p>
                         </div>
                       )}
                     </CardContent>
