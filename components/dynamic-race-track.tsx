@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { RefreshCw, Trophy, Zap, Coins } from 'lucide-react'
+import { RefreshCw, Trophy, Zap, DollarSign } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -9,27 +9,25 @@ interface LeaderboardEntry {
   userId: number
   name: string
   avatar: string
-  wagered: number
+  wagered: number // API returns values in pennies/cents
   deposited: number
   earned: number
 }
 
 interface DynamicRaceTrackProps {
   platform?: 'acebet' | 'packdraw'
-  targetWager?: number
+  targetWager?: number // Target in dollars
   showTop?: number
   autoRefresh?: number
   showPrevious?: boolean
-  displayInPennies?: boolean
 }
 
 export function DynamicRaceTrack({
   platform = 'acebet',
-  targetWager = 1000,
+  targetWager = 1000, // Target in dollars
   showTop = 10,
   autoRefresh = 5000,
   showPrevious = false,
-  displayInPennies = true,
 }: DynamicRaceTrackProps) {
   const [players, setPlayers] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -37,6 +35,7 @@ export function DynamicRaceTrack({
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
+  // Target in pennies for comparison (API returns pennies)
   const targetInPennies = targetWager * 100
 
   const fetchLeaderboard = async () => {
@@ -47,7 +46,6 @@ export function DynamicRaceTrack({
       const data = await res.json()
 
       if (data.ok && Array.isArray(data.data)) {
-        console.log('[v0] Fetched leaderboard data:', data.data.length, 'players')
         setPlayers(data.data.slice(0, showTop))
         setLastUpdated(new Date())
         setError(null)
@@ -56,7 +54,6 @@ export function DynamicRaceTrack({
       }
     } catch (e) {
       setError('Failed to fetch leaderboard data')
-      console.error('[v0] Leaderboard fetch error:', e)
     } finally {
       setLoading(false)
       setIsRefreshing(false)
@@ -92,11 +89,10 @@ export function DynamicRaceTrack({
     { bg: 'bg-cyan-500', text: 'text-cyan-500', light: 'bg-cyan-500/20' },
   ]
 
-  const formatValue = (value: number, isPennies: boolean = displayInPennies) => {
-    if (isPennies) {
-      return `¢${Math.round(value * 100).toLocaleString()}`
-    }
-    return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  // Format pennies to dollars with 2 decimal places
+  const formatDollars = (pennies: number): string => {
+    const dollars = pennies / 100
+    return `$${dollars.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
   if (loading) {
@@ -132,13 +128,13 @@ export function DynamicRaceTrack({
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <Coins className="h-6 w-6 text-yellow-500" />
+              <DollarSign className="h-6 w-6 text-green-500" />
               <h3 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Penny Race Track
+                Wager Race Track
               </h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              Target: {formatValue(targetWager)} • Platform: {platform}
+              Target: ${targetWager.toLocaleString()}.00 • Platform: {platform.charAt(0).toUpperCase() + platform.slice(1)}
             </p>
           </div>
           <div className="text-right">
@@ -168,8 +164,9 @@ export function DynamicRaceTrack({
         ) : (
           <div className="space-y-5">
             {sortedPlayers.map((player, index) => {
-              const playerWageredInPennies = (player.wagered || 0) * 100
-              const progressPercent = Math.min((playerWageredInPennies / targetInPennies) * 100, 100)
+              // API returns values in pennies, calculate progress against target (also in pennies)
+              const playerWageredPennies = player.wagered || 0
+              const progressPercent = Math.min((playerWageredPennies / targetInPennies) * 100, 100)
               const color = colors[index % colors.length]
               const isFirstPlace = index === 0
               const isFinished = progressPercent >= 100
@@ -198,14 +195,14 @@ export function DynamicRaceTrack({
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span className="capitalize">{platform}</span>
                           <span>•</span>
-                          <span>Earned: {formatValue(player.earned)}</span>
+                          <span>Earned: {formatDollars(player.earned)}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex-shrink-0 text-right ml-4">
                       <p className={`text-lg font-bold ${color.text}`}>
-                        {formatValue(player.wagered)}
+                        {formatDollars(playerWageredPennies)}
                       </p>
                       <p className="text-xs text-muted-foreground">{Math.round(progressPercent)}%</p>
                     </div>
@@ -264,8 +261,8 @@ export function DynamicRaceTrack({
                   </div>
 
                   <div className={`mt-2 px-3 py-1.5 rounded-lg ${color.light} border border-secondary flex items-center gap-2`}>
-                    <Coins className={`h-3 w-3 ${color.text}`} />
-                    <span className="text-xs font-semibold">{formatValue(playerWageredInPennies / 100)} in pennies</span>
+                    <DollarSign className={`h-3 w-3 ${color.text}`} />
+                    <span className="text-xs font-semibold">Wagered: {formatDollars(playerWageredPennies)}</span>
                   </div>
                 </div>
               )
@@ -281,8 +278,8 @@ export function DynamicRaceTrack({
               <span className="text-muted-foreground">Finish Line</span>
             </div>
             <div className="flex items-start gap-2">
-              <Coins className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-              <span className="text-muted-foreground">Pennies</span>
+              <DollarSign className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <span className="text-muted-foreground">USD Amounts</span>
             </div>
             <div className="flex items-start gap-2">
               <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
