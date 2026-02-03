@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO } from 'date-fns'
 import { CheckCircle2, Circle } from 'lucide-react'
+import { RaceVisualization } from '@/components/race-visualization'
 
 interface Race {
   id: string
@@ -294,6 +295,27 @@ export default function RaceDetailPage() {
         {/* Race Timeline */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Milestones</h2>
+          
+          {/* Race Visualization Track */}
+          {milestones.length > 0 && (
+            <div className="mb-8">
+              <RaceVisualization
+                players={
+                  winners.map((winner) => ({
+                    username: winner.username,
+                    platform: winner.platform,
+                    progress: milestones.find(m => m.id === winner.milestone_id)?.wager_amount || 0,
+                    isWinner: true,
+                    rewardAmount: milestones.find(m => m.id === winner.milestone_id)?.reward_amount,
+                    achievedAt: format(parseISO(winner.won_at), 'MMM d, HH:mm'),
+                  }))
+                }
+                milestones={milestones}
+                currentMilestoneIndex={0}
+              />
+            </div>
+          )}
+
           <div className="space-y-4">
             {milestones.length === 0 ? (
               <Card className="border-dashed">
