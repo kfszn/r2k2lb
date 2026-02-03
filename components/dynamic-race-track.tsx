@@ -250,61 +250,12 @@ export function DynamicRaceTrack({
                     </div>
                   </div>
 
-                  <div className="relative h-16 bg-gradient-to-r from-secondary via-secondary/50 to-secondary rounded-lg overflow-hidden border border-secondary-foreground/20">
-                    <div className="absolute inset-0 opacity-20">
-                      {[...Array(20)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute top-0 bottom-0 border-l border-foreground/10"
-                          style={{ left: `${i * 5}%` }}
-                        />
-                      ))}
-                    </div>
-
-                    {[25, 50, 75].map((checkpoint) => (
-                      <div
-                        key={checkpoint}
-                        className="absolute top-0 bottom-0 border-l border-dashed border-foreground/20 z-0"
-                        style={{ left: `${checkpoint}%` }}
-                      />
-                    ))}
-
-                    <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-green-400 via-green-500 to-green-600 shadow-lg shadow-green-500/50 z-20" />
-                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-green-500/40 to-transparent z-10" />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 z-30">
-                      <div className="text-xs font-bold text-green-400 uppercase tracking-wider drop-shadow-lg">
-                        FINISH
-                      </div>
-                    </div>
-
+                  {/* Progress Bar */}
+                  <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
                     <div
-                      className={`absolute left-0 top-0 bottom-0 ${color.bg} transition-all duration-500 ease-out group-hover:brightness-110`}
-                      style={{
-                        width: `${progressPercent}%`,
-                        minWidth: progressPercent > 0 ? '60px' : '0px',
-                      }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                      <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
-                        <div className={`h-12 w-12 rounded-full ${color.bg} border-3 border-white shadow-lg flex items-center justify-center`}>
-                          <span className="text-xs font-bold text-white">
-                            {player.name.substring(0, 2).toUpperCase()}
-                          </span>
-                        </div>
-
-                        {isFinished && (
-                          <div className="absolute -right-2 -top-2 bg-yellow-500 rounded-full p-1.5 border-2 border-white shadow-lg animate-pulse">
-                            <Trophy className="h-5 w-5 text-white" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={`mt-2 px-3 py-1.5 rounded-lg ${color.light} border border-secondary flex items-center gap-2`}>
-                    <DollarSign className={`h-3 w-3 ${color.text}`} />
-                    <span className="text-xs font-semibold">Wagered: {formatDollars(playerWageredPennies)}</span>
+                      className="bg-gradient-to-r from-primary to-primary/70 h-full transition-all duration-500"
+                      style={{ width: `${progressPercent}%` }}
+                    />
                   </div>
                 </div>
               )
