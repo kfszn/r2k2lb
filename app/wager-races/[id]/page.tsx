@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { format, parseISO } from 'date-fns'
 import { CheckCircle2, Circle } from 'lucide-react'
 import { RaceVisualization } from '@/components/race-visualization'
+import { DynamicRaceTrack } from '@/components/dynamic-race-track'
 
 interface Race {
   id: string
@@ -296,9 +297,23 @@ export default function RaceDetailPage() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Milestones</h2>
           
-          {/* Race Visualization Track */}
-          {milestones.length > 0 && (
+          {/* Live Leaderboard Race Track */}
+          <div className="mb-8">
+            <DynamicRaceTrack
+              platform={race.platform}
+              targetWager={milestones[0]?.wager_amount || 1000}
+              showTop={15}
+              autoRefresh={5000}
+            />
+          </div>
+
+          {/* Race Visualization Track - Milestone Winners */}
+          {milestones.length > 0 && winners.length > 0 && (
             <div className="mb-8">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold">Milestone Leaderboard</h3>
+                <p className="text-sm text-muted-foreground">Winners from this wager race</p>
+              </div>
               <RaceVisualization
                 players={
                   winners.map((winner) => ({
