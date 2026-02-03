@@ -41,16 +41,52 @@ export function DynamicRaceTrack({
   const fetchLeaderboard = async () => {
     setIsRefreshing(true)
     try {
-      const url = showPrevious ? '/api/leaderboard?prev=1' : '/api/leaderboard'
-      const res = await fetch(url)
-      const data = await res.json()
+      let url: string
+      let transformedPlayers: LeaderboardEntry[] = []
 
-      if (data.ok && Array.isArray(data.data)) {
-        setPlayers(data.data.slice(0, showTop))
+      if (platform === 'packdraw') {
+        // Fetch from Packdraw API
+        url = '/api/packdraw'
+        const res = await fetch(url)
+        const data = await res.json()
+
+        // Transform Packdraw response format to our interface
+        // Packdraw returns: { leaderboard: [{ username, wagerAmount, image, userId }] }
+        let leaderboardData: any[] = []
+        if (Array.isArray(data)) {
+          leaderboardData = data
+        } else if (data.leaderboard && Array.isArray(data.leaderboard)) {
+          leaderboardData = data.leaderboard
+        } else if (data.data && Array.isArray(data.data)) {
+          leaderboardData = data.data
+        }
+
+        // Transform to our interface - Packdraw wagerAmount is already in dollars
+        transformedPlayers = leaderboardData.map((item: any) => ({
+          userId: item.userId || 0,
+          name: item.username || item.name || 'Unknown',
+          avatar: item.image || item.avatar || '',
+          wagered: (item.wagerAmount || 0) * 100, // Convert dollars to pennies for consistent handling
+          deposited: 0,
+          earned: 0,
+        }))
+
+        setPlayers(transformedPlayers.slice(0, showTop))
         setLastUpdated(new Date())
         setError(null)
       } else {
-        setError(data.error || 'Failed to load leaderboard')
+        // Fetch from Acebet API (default)
+        url = showPrevious ? '/api/leaderboard?prev=1' : '/api/leaderboard'
+        const res = await fetch(url)
+        const data = await res.json()
+
+        if (data.ok && Array.isArray(data.data)) {
+          setPlayers(data.data.slice(0, showTop))
+          setLastUpdated(new Date())
+          setError(null)
+        } else {
+          setError(data.error || 'Failed to load leaderboard')
+        }
       }
     } catch (e) {
       setError('Failed to fetch leaderboard data')
@@ -62,7 +98,7 @@ export function DynamicRaceTrack({
 
   useEffect(() => {
     fetchLeaderboard()
-  }, [showPrevious, showTop])
+  }, [showPrevious, showTop, platform])
 
   useEffect(() => {
     if (autoRefresh <= 0) return
