@@ -158,6 +158,8 @@ export default function RaceDetailPage() {
       completedMilestones: completedMilestonesCount,
     }
   }
+
+  const getMilestoneWinners = (milestoneId: string) => {
     return winners.filter(w => w.milestone_id === milestoneId).sort((a, b) => 
       new Date(a.won_at).getTime() - new Date(b.won_at).getTime()
     )
