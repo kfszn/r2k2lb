@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Header } from '@/components/header'
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO } from 'date-fns'
 
@@ -95,6 +96,11 @@ export default function WagerRacesPage() {
     return 50 // Placeholder for now
   }
 
+  const maskName = (name: string) => {
+    if (!name || name.length <= 3) return name
+    return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-background/50 flex items-center justify-center">
@@ -104,8 +110,9 @@ export default function WagerRacesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/50 pt-20">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/50">
+      <Header />
+      <div className="container mx-auto px-4 py-12 pt-20">
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Wager Races</h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
