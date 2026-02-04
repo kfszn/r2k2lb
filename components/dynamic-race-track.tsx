@@ -58,6 +58,17 @@ export function DynamicRaceTrack({
         }
         url = `/api/packdraw?after=${encodeURIComponent(afterDate)}`
         const res = await fetch(url)
+        
+        if (!res.ok) {
+          // Handle rate limiting gracefully - keep showing existing data
+          if (res.status === 429) {
+            setError('Temporarily paused updates (rate limited)')
+            setIsRefreshing(false)
+            return
+          }
+          throw new Error(`API error: ${res.status}`)
+        }
+        
         const data = await res.json()
 
         // Transform Packdraw response format to our interface
@@ -100,6 +111,7 @@ export function DynamicRaceTrack({
       }
     } catch (e) {
       setError('Failed to fetch leaderboard data')
+      console.error('Leaderboard error:', e)
     } finally {
       setLoading(false)
       setIsRefreshing(false)
@@ -111,14 +123,15 @@ export function DynamicRaceTrack({
   }, [showPrevious, showTop, platform, startDate])
 
   useEffect(() => {
-    if (autoRefresh <= 0) return
+    // Packdraw has strict rate limits - disable auto-refresh to prevent 429 errors
+    if (platform === 'packdraw' || autoRefresh <= 0) return
 
     const interval = setInterval(() => {
       fetchLeaderboard()
     }, autoRefresh)
 
     return () => clearInterval(interval)
-  }, [autoRefresh])
+  }, [autoRefresh, platform, fetchLeaderboard])
 
   const sortedPlayers = useMemo(() => {
     return [...players].sort((a, b) => (b.wagered || 0) - (a.wagered || 0))
@@ -139,6 +152,12 @@ export function DynamicRaceTrack({
   const formatDollars = (pennies: number): string => {
     const dollars = pennies / 100
     return `$${dollars.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
+
+  // Mask player names for privacy (show first 2 chars + asterisks + last char)
+  const maskName = (name: string): string => {
+    if (!name || name.length <= 3) return name
+    return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
   }
 
   if (loading) {
@@ -233,7 +252,7 @@ export function DynamicRaceTrack({
                               className="h-6 w-6 rounded-full object-cover"
                             />
                           )}
-                          <p className="text-sm font-bold truncate">{player.name}</p>
+                          <p className="text-sm font-bold truncate">{maskName(player.name)}</p>
                           {isFinished && (
                             <Trophy className="h-4 w-4 text-yellow-500 flex-shrink-0 animate-bounce" />
                           )}
