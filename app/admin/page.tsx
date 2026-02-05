@@ -25,6 +25,7 @@ import { TournamentSelector } from "@/components/admin/tournament-selector";
 import { TournamentDetailView } from "@/components/admin/tournament-detail-view";
 import { StreamGamesManager } from "@/components/admin/stream-games-manager";
 import { WagerRaceManagement } from "@/components/admin/wager-race-management";
+import { TotalWagerStats } from "@/components/admin/total-wager-stats";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
@@ -280,7 +281,7 @@ export default function AdminPage() {
           </div>
 
           <Tabs defaultValue="email" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="email" className="gap-2">
                 <UserCheck className="h-4 w-4" />
                 Email Verification
@@ -292,6 +293,10 @@ export default function AdminPage() {
               <TabsTrigger value="lossback" className="gap-2">
                 <Settings className="h-4 w-4" />
                 Reward Management
+              </TabsTrigger>
+              <TabsTrigger value="total-wager" className="gap-2">
+                <Trophy className="h-4 w-4" />
+                Total Wager
               </TabsTrigger>
             </TabsList>
 
@@ -315,6 +320,20 @@ export default function AdminPage() {
 
             <TabsContent value="lossback" className="mt-6">
               <LossbackManagement />
+            </TabsContent>
+
+            <TabsContent value="total-wager" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-primary" />
+                    Acebet Wager Statistics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TotalWagerStats />
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
