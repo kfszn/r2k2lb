@@ -81,7 +81,6 @@ export default function RaceDetailPage() {
           .eq('race_id', raceId)
 
         if (winnersError) throw winnersError
-        console.log('[v0] Winners fetched:', winnersData)
         setWinners(winnersData || [])
       } catch (error) {
         console.error('Failed to fetch race data:', error)
@@ -161,10 +160,6 @@ export default function RaceDetailPage() {
       completedMilestones: completedMilestonesCount,
     }
   }, [winners, milestones])
-
-  useEffect(() => {
-    console.log('[v0] Winners state updated:', winners.length, 'winners')
-  }, [winners])
 
   const getMilestoneWinners = (milestoneId: string) => {
     return winners.filter(w => w.milestone_id === milestoneId).sort((a, b) => 
