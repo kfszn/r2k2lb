@@ -5,14 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Gift, Zap } from 'lucide-react'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 
-export const metadata: Metadata = {
-  title: 'Acebet First Time Deposit Bonus | R2K2',
-  description: 'Get your first time deposit bonus on Acebet with code R2K2. New player exclusive offer.',
-  openGraph: {
-    title: 'Acebet First Time Deposit Bonus | R2K2',
-    description: 'Earn your first time deposit bonus on Acebet',
-  },
+export const metadata: Metadata = generatePageMetadata('perksAcebetFirstDeposit')
 }
 
 export default function FirstDepositBonusPage() {

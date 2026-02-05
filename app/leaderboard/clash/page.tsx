@@ -7,12 +7,9 @@ import { Trophy } from 'lucide-react'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { ArrowLeft } from 'lucide-react'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 
-export const metadata: Metadata = {
-  title: 'Clash.gg Leaderboard | R2K2',
-  description: 'View the Clash.gg leaderboard with top performers. Win exclusive rewards with code R2K2.',
-  openGraph: {
-    title: 'Clash.gg Leaderboard | R2K2',
+export const metadata: Metadata = generatePageMetadata('clash')
     description: 'Compete on the Clash.gg leaderboard and win exclusive rewards',
   },
 }

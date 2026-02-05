@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Shield, TrendingDown } from 'lucide-react'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 
-export const metadata: Metadata = {
-  title: 'Acebet Loss-back | R2K2',
+export const metadata: Metadata = generatePageMetadata('perksAcebetLossBack')
   description: 'Get up to 15% of your monthly losses back on Acebet with code R2K2. Manual claim via ticket with verified PnL.',
   openGraph: {
     title: 'Acebet Loss-back | R2K2',

@@ -1,5 +1,6 @@
 "use client";
 
+import type { Metadata } from 'next'
 import { BracketDisplay } from "@/components/tournament/bracket-display";
 import { HowToEnter } from "@/components/tournament/how-to-enter";
 import { WinnersCircle } from "@/components/tournament/winners-circle";

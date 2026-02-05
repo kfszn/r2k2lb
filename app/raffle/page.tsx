@@ -5,14 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 
-export const metadata: Metadata = {
-  title: 'Raffle | R2K2',
-  description: 'Enter the R2K2 raffle for a chance to win exclusive rewards and prizes.',
-  openGraph: {
-    title: 'Raffle | R2K2',
-    description: 'Enter to win exclusive prizes in the R2K2 raffle',
-  },
+export const metadata: Metadata = generatePageMetadata('raffle')
 }
 
 export default function RafflePage() {

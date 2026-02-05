@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Shield, TrendingDown, TrendingUp } from 'lucide-react'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 
-export const metadata: Metadata = {
-  title: 'Packdraw Loss-back | R2K2',
+export const metadata: Metadata = generatePageMetadata('perksPackdrawLossBack')
   description: 'Get loss-back rewards on Packdraw with code R2K2. Earn credits based on your monthly losses.',
   openGraph: {
     title: 'Packdraw Loss-back | R2K2',

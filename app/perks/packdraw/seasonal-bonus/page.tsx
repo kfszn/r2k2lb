@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Zap, Award } from 'lucide-react'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 
-export const metadata: Metadata = {
-  title: 'Packdraw Seasonal Bonus | R2K2',
+export const metadata: Metadata = generatePageMetadata('perksPackdrawSeasonalBonus')
   description: 'Claim seasonal bonuses on Packdraw with code R2K2. Limited-time reward opportunities.',
   openGraph: {
     title: 'Packdraw Seasonal Bonus | R2K2',

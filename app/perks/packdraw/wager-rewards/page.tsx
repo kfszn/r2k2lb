@@ -1,12 +1,16 @@
 'use client'
 
 import Link from 'next/link';
+import type { Metadata } from 'next'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/header';
 import { GiveawayCounter } from '@/components/giveaway-counter';
 import { Crown, TrendingUp, Zap } from 'lucide-react';
 import { useRef } from 'react';
+import { generatePageMetadata } from '@/lib/seo-metadata'
+
+export const metadata: Metadata = generatePageMetadata('perksPackdrawWagerRewards')
 
 const wagerTiers = [
   { id: 1, name: 'Bronze', wager: 5000, reward: 25, nameColor: 'text-amber-600', starBg: 'bg-amber-600', borderColor: 'border-amber-600/20' },

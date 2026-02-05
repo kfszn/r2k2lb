@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,6 +11,9 @@ import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 import { GoalTracker } from '@/components/goal-tracker'
 import { Loader2, Trophy, TrendingUp } from 'lucide-react'
+import { generatePageMetadata } from '@/lib/seo-metadata'
+
+export const metadata: Metadata = generatePageMetadata('packdraw')
 
 interface LeaderboardEntry {
   username: string;
