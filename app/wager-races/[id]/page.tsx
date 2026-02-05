@@ -403,26 +403,6 @@ export default function RaceDetailPage() {
                         </div>
                       )}
 
-                      {/* Other Winners */}
-                      {getMilestoneWinners(milestone.id).length > 1 && (
-                        <div className="bg-secondary/50 rounded-lg p-4 border border-secondary">
-                          <p className="text-sm font-semibold mb-3">Other Achievers</p>
-                          <div className="space-y-2">
-                            {getMilestoneWinners(milestone.id).slice(1).map((winner) => (
-                              <div key={winner.id} className="flex justify-between items-center text-sm py-2 border-t border-secondary">
-                                <div>
-                                  <span className="font-medium">{maskName(winner.username)}</span>
-                                  <span className="text-muted-foreground text-xs ml-2">({winner.platform})</span>
-                                </div>
-                                <span className="text-muted-foreground text-xs">
-                                  {format(parseISO(winner.won_at), 'MMM d HH:mm')}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
                       {/* No Winner Yet */}
                       {!hasWinner && (
                         <div className="bg-secondary/50 rounded-lg p-4 border border-dashed border-secondary text-center">
