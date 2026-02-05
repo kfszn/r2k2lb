@@ -296,7 +296,6 @@ export default function RaceDetailPage() {
                   </CardContent>
                 </Card>
               </div>
-            </div>
         </div>
 
         {/* Race Timeline */}
