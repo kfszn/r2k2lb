@@ -81,6 +81,7 @@ export default function RaceDetailPage() {
           .eq('race_id', raceId)
 
         if (winnersError) throw winnersError
+        console.log('[v0] Winners fetched:', winnersData)
         setWinners(winnersData || [])
       } catch (error) {
         console.error('Failed to fetch race data:', error)
@@ -147,10 +148,12 @@ export default function RaceDetailPage() {
       }
     }
 
+    console.log('[v0] Stats useMemo fired - winners:', winners, 'length:', winners.length)
     const uniqueWinnerSet = new Set(winners.map(w => w.username))
     const completedMilestonesCount = milestones.filter(m => 
       winners.some(w => w.milestone_id === m.id)
     ).length
+    console.log('[v0] Calculated - uniqueWinners:', uniqueWinnerSet.size, 'completedMilestones:', completedMilestonesCount)
 
     return {
       totalMilestones: milestones.length,
