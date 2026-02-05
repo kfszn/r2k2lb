@@ -172,6 +172,11 @@ export default function RaceDetailPage() {
     return milestoneWinners.length > 0 ? milestoneWinners[0] : null
   }
 
+  const maskName = (name: string): string => {
+    if (!name || name.length <= 3) return name
+    return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-background/50 flex items-center justify-center">
@@ -324,7 +329,7 @@ export default function RaceDetailPage() {
               <RaceVisualization
                 players={
                   winners.map((winner) => ({
-                    username: winner.username,
+                    username: maskName(winner.username),
                     platform: winner.platform,
                     progress: milestones.find(m => m.id === winner.milestone_id)?.wager_amount || 0,
                     isWinner: true,
@@ -386,7 +391,7 @@ export default function RaceDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-muted-foreground">FIRST ACHIEVER</p>
-                              <p className="text-lg font-bold">{firstWinner.username}</p>
+                              <p className="text-lg font-bold">{maskName(firstWinner.username)}</p>
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-sm">
@@ -406,7 +411,7 @@ export default function RaceDetailPage() {
                             {getMilestoneWinners(milestone.id).slice(1).map((winner) => (
                               <div key={winner.id} className="flex justify-between items-center text-sm py-2 border-t border-secondary">
                                 <div>
-                                  <span className="font-medium">{winner.username}</span>
+                                  <span className="font-medium">{maskName(winner.username)}</span>
                                   <span className="text-muted-foreground text-xs ml-2">({winner.platform})</span>
                                 </div>
                                 <span className="text-muted-foreground text-xs">
