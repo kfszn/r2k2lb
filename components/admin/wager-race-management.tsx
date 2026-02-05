@@ -148,13 +148,17 @@ export function WagerRaceManagement() {
       console.log('[v0] Creating race with:', { platform, period, startDate, endDate, raceStatus, initialMilestoneAmount, initialMilestoneReward })
       
       // Create the race first
+      // Append time to prevent timezone shift (use noon to be safe)
+      const startDateWithTime = `${startDate}T12:00:00`
+      const endDateWithTime = `${endDate}T23:59:59`
+      
       const { data: raceData, error: raceError } = await supabase
         .from('wager_races')
         .insert({
           platform,
           period,
-          start_date: new Date(startDate).toISOString(),
-          end_date: new Date(endDate).toISOString(),
+          start_date: new Date(startDateWithTime).toISOString(),
+          end_date: new Date(endDateWithTime).toISOString(),
           is_active: raceStatus === 'active',
         })
         .select()
