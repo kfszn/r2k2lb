@@ -42,12 +42,18 @@ interface Winner {
   created_at: string
 }
 
+interface LeaderboardPlayer {
+  name: string
+  wagered: number // in pennies
+}
+
 export default function RaceDetailPage() {
   const params = useParams()
   const raceId = params.id as string
   const [race, setRace] = useState<Race | null>(null)
   const [milestones, setMilestones] = useState<Milestone[]>([])
   const [winners, setWinners] = useState<Winner[]>([])
+  const [leaderboardPlayers, setLeaderboardPlayers] = useState<LeaderboardPlayer[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -144,22 +150,47 @@ export default function RaceDetailPage() {
         totalRewardPool: 0,
         uniqueWinners: 0,
         completedMilestones: 0,
+        liveWinners: [] as { name: string; milestone: Milestone }[],
       }
     }
 
-    const uniqueWinnerSet = new Set(winners.map(w => w.username))
-    const completedMilestonesCount = milestones.filter(m => 
+    // First check database winners
+    const dbUniqueWinnerSet = new Set(winners.map(w => w.username))
+    const dbCompletedMilestonesCount = milestones.filter(m => 
       winners.some(w => w.milestone_id === m.id)
     ).length
+
+    // Also check live leaderboard data for players who've reached milestones
+    // Convert to dollars for comparison (leaderboard wagered is in pennies)
+    const liveWinners: { name: string; milestone: Milestone }[] = []
+    const sortedMilestones = [...milestones].sort((a, b) => b.wager_amount - a.wager_amount)
+    
+    leaderboardPlayers.forEach(player => {
+      const wageredDollars = player.wagered / 100
+      // Find the highest milestone they've reached
+      const reachedMilestone = sortedMilestones.find(m => wageredDollars >= m.wager_amount)
+      if (reachedMilestone) {
+        liveWinners.push({ name: player.name, milestone: reachedMilestone })
+      }
+    })
+
+    // Count unique winners and completed milestones from live data
+    const liveUniqueWinnerSet = new Set(liveWinners.map(w => w.name))
+    const liveCompletedMilestoneIds = new Set(liveWinners.map(w => w.milestone.id))
+
+    // Combine database winners with live winners (prefer live data if available)
+    const totalUniqueWinners = liveWinners.length > 0 ? liveUniqueWinnerSet.size : dbUniqueWinnerSet.size
+    const totalCompletedMilestones = liveWinners.length > 0 ? liveCompletedMilestoneIds.size : dbCompletedMilestonesCount
 
     return {
       totalMilestones: milestones.length,
       highestMilestone: Math.max(...milestones.map(m => m.wager_amount)),
       totalRewardPool: milestones.reduce((sum, m) => sum + m.reward_amount, 0),
-      uniqueWinners: uniqueWinnerSet.size,
-      completedMilestones: completedMilestonesCount,
+      uniqueWinners: totalUniqueWinners,
+      completedMilestones: totalCompletedMilestones,
+      liveWinners,
     }
-  }, [winners, milestones])
+  }, [winners, milestones, leaderboardPlayers])
 
   const getMilestoneWinners = (milestoneId: string) => {
     return winners.filter(w => w.milestone_id === milestoneId).sort((a, b) => 
@@ -311,6 +342,7 @@ export default function RaceDetailPage() {
               autoRefresh={5000}
               startDate={race.start_date}
               endDate={race.end_date}
+              onPlayersUpdate={setLeaderboardPlayers}
             />
           </div>
 
@@ -348,7 +380,10 @@ export default function RaceDetailPage() {
             ) : (
               milestones.map((milestone, index) => {
                 const firstWinner = getFirstWinner(milestone.id)
-                const hasWinner = !!firstWinner
+                // Also check live data for winners of this milestone
+                const liveWinnersForMilestone = stats.liveWinners.filter(w => w.milestone.id === milestone.id)
+                const hasWinner = !!firstWinner || liveWinnersForMilestone.length > 0
+                const liveFirstWinner = liveWinnersForMilestone.length > 0 ? liveWinnersForMilestone[0] : null
 
                 return (
                   <Card key={milestone.id} className={hasWinner ? 'border-green-500/50 bg-green-500/5' : ''}>
@@ -378,7 +413,7 @@ export default function RaceDetailPage() {
                       </div>
 
                       {/* First Achiever - Prominently Displayed */}
-                      {firstWinner && (
+                      {(firstWinner || liveFirstWinner) && (
                         <div className="bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg p-5 border-2 border-primary/50">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="h-10 w-10 rounded-full bg-primary/30 flex items-center justify-center">
@@ -386,14 +421,23 @@ export default function RaceDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-muted-foreground">FIRST ACHIEVER</p>
-                              <p className="text-lg font-bold">{maskName(firstWinner.username)}</p>
+                              <p className="text-lg font-bold">
+                                {firstWinner ? maskName(firstWinner.username) : liveFirstWinner ? maskName(liveFirstWinner.name) : ''}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Platform: <span className="font-medium capitalize">{firstWinner.platform}</span></span>
                             <span className="text-muted-foreground">
-                              {format(parseISO(firstWinner.won_at), 'MMM d, yyyy HH:mm')}
+                              Platform: <span className="font-medium capitalize">{firstWinner?.platform || race?.platform}</span>
                             </span>
+                            {firstWinner && (
+                              <span className="text-muted-foreground">
+                                {format(parseISO(firstWinner.won_at), 'MMM d, yyyy HH:mm')}
+                              </span>
+                            )}
+                            {!firstWinner && liveFirstWinner && (
+                              <span className="text-green-500 font-medium">1/1 Complete</span>
+                            )}
                           </div>
                         </div>
                       )}

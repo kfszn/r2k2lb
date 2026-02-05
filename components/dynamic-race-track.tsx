@@ -22,6 +22,7 @@ interface DynamicRaceTrackProps {
   showPrevious?: boolean
   startDate?: string // ISO date string for race start (used for Packdraw timeframe)
   endDate?: string // ISO date string for race end (optional, for display)
+  onPlayersUpdate?: (players: { name: string; wagered: number }[]) => void // Callback to report players to parent
 }
 
 export function DynamicRaceTrack({
@@ -32,6 +33,7 @@ export function DynamicRaceTrack({
   showPrevious = false,
   startDate,
   endDate,
+  onPlayersUpdate,
 }: DynamicRaceTrackProps) {
   const [players, setPlayers] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -92,9 +94,15 @@ export function DynamicRaceTrack({
           earned: 0,
         }))
 
-        setPlayers(transformedPlayers.slice(0, showTop))
+        const slicedPlayers = transformedPlayers.slice(0, showTop)
+        setPlayers(slicedPlayers)
         setLastUpdated(new Date())
         setError(null)
+        
+        // Report players to parent for stats calculation
+        if (onPlayersUpdate) {
+          onPlayersUpdate(slicedPlayers.map(p => ({ name: p.name, wagered: p.wagered })))
+        }
       } else {
         // Fetch from Acebet API (default)
         url = showPrevious ? '/api/leaderboard?prev=1' : '/api/leaderboard'
@@ -102,9 +110,15 @@ export function DynamicRaceTrack({
         const data = await res.json()
 
         if (data.ok && Array.isArray(data.data)) {
-          setPlayers(data.data.slice(0, showTop))
+          const slicedPlayers = data.data.slice(0, showTop)
+          setPlayers(slicedPlayers)
           setLastUpdated(new Date())
           setError(null)
+          
+          // Report players to parent for stats calculation
+          if (onPlayersUpdate) {
+            onPlayersUpdate(slicedPlayers.map((p: LeaderboardEntry) => ({ name: p.name, wagered: p.wagered })))
+          }
         } else {
           setError(data.error || 'Failed to load leaderboard')
         }
