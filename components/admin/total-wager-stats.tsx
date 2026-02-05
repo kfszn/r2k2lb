@@ -138,7 +138,7 @@ export function TotalWagerStats() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Wagered</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">${(stats.totalWagered / 100).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${(stats.totalWagered / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
 
@@ -147,7 +147,7 @@ export function TotalWagerStats() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Deposits</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">${(stats.totalDeposits / 100).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${(stats.totalDeposits / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
 
@@ -156,7 +156,7 @@ export function TotalWagerStats() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Earnings</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">${(stats.totalEarnings / 100).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${(stats.totalEarnings / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
 
@@ -165,7 +165,7 @@ export function TotalWagerStats() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Active Members</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{stats.activeMembers}</p>
+              <p className="text-2xl font-bold">{stats.activeMembers.toLocaleString('en-US')}</p>
             </CardContent>
           </Card>
         </div>
