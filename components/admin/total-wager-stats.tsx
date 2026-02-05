@@ -38,26 +38,39 @@ export function TotalWagerStats() {
     setError('')
 
     try {
-      // Fetch acebet leaderboard data (this includes all wagered amounts)
-      const response = await fetch('/api/acebet')
+      // Fetch acebet leaderboard data from the correct endpoint
+      const response = await fetch('/api/leaderboard')
       if (!response.ok) throw new Error('Failed to fetch leaderboard data')
       
-      const leaderboardData = await response.json()
+      const data = await response.json()
       
-      // Filter by date range (comparing the timestamps of when wagers were created)
-      const startTime = new Date(startDate).getTime()
-      const endTime = new Date(endDate).getTime()
+      // Extract leaderboard array from response (handle multiple response formats)
+      let leaderboardData = []
+      if (Array.isArray(data)) {
+        leaderboardData = data
+      } else if (data.leaderboard && Array.isArray(data.leaderboard)) {
+        leaderboardData = data.leaderboard
+      } else if (data.data && Array.isArray(data.data)) {
+        leaderboardData = data.data
+      } else {
+        throw new Error('Unexpected response format from leaderboard API')
+      }
       
-      // Since the leaderboard API returns current data, we'll calculate from all available players
-      // In a real implementation, you'd need to track historical wager data
-      // For now, we'll use the current snapshot
-      const players = leaderboardData.data || []
+      // Calculate statistics from leaderboard data
+      const totalWagered = leaderboardData.reduce((sum: number, p: any) => {
+        const wagered = (p.wagerAmount || p.wagered || 0)
+        return sum + wagered * 100 // Convert to pennies
+      }, 0)
       
-      // Calculate statistics
-      const totalWagered = players.reduce((sum: number, p: LeaderboardEntry) => sum + (p.wagered || 0), 0)
-      const totalDeposits = players.reduce((sum: number, p: LeaderboardEntry) => sum + (p.deposits || 0), 0)
-      const totalEarnings = players.reduce((sum: number, p: LeaderboardEntry) => sum + (p.earnings || 0), 0)
-      const activeMembers = players.length
+      const totalDeposits = leaderboardData.reduce((sum: number, p: any) => {
+        return sum + ((p.deposits || p.depositAmount || 0) * 100)
+      }, 0)
+      
+      const totalEarnings = leaderboardData.reduce((sum: number, p: any) => {
+        return sum + ((p.earnings || p.earnedAmount || 0) * 100)
+      }, 0)
+      
+      const activeMembers = leaderboardData.length
 
       setStats({
         totalWagered,
@@ -67,7 +80,7 @@ export function TotalWagerStats() {
       })
     } catch (err) {
       console.error('[v0] Error fetching wager stats:', err)
-      setError('Failed to fetch wager statistics')
+      setError('Failed to fetch wager statistics. Please try again.')
     } finally {
       setLoading(false)
     }
