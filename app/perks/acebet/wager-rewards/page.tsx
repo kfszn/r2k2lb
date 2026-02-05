@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Trophy, TrendingUp, Zap, Crown, AlertCircle } from 'lucide-react'
-}
 
 export default function WagerRewardsPage() {
   return (
