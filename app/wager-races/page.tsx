@@ -2,16 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import type { Metadata } from 'next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Header } from '@/components/header'
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO } from 'date-fns'
-import { generatePageMetadata } from '@/lib/seo-metadata'
-
-export const metadata: Metadata = generatePageMetadata('wagerRaces')
 
 interface Race {
   id: string

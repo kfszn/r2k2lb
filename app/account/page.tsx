@@ -2,14 +2,10 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import type { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
-import { generatePageMetadata } from '@/lib/seo-metadata'
-
-export const metadata: Metadata = generatePageMetadata('account')
 
 export default function AccountPage() {
   const [loading] = useState(false)

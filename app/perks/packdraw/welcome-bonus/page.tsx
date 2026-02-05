@@ -1,18 +1,9 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Gift, Zap } from 'lucide-react'
-import { generatePageMetadata } from '@/lib/seo-metadata'
-
-export const metadata: Metadata = generatePageMetadata('perksPackdrawWelcomeBonus')
-  description: 'Get your Packdraw welcome bonus with code R2K2. New player exclusive rewards.',
-  openGraph: {
-    title: 'Packdraw Welcome Bonus | R2K2',
-    description: 'Claim your welcome bonus on Packdraw',
-  },
 }
 
 export default function FirstDepositBonusPage() {

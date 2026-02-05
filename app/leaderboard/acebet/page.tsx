@@ -2,16 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import type { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Clock, DollarSign, TrendingUp } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 import { GoalTracker } from '@/components/goal-tracker'
-import { generatePageMetadata } from '@/lib/seo-metadata'
-
-export const metadata: Metadata = generatePageMetadata('acebet')
 
 interface LeaderboardEntry {
   userId: number

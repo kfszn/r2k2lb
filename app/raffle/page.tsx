@@ -1,14 +1,9 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
-import { generatePageMetadata } from '@/lib/seo-metadata'
-
-export const metadata: Metadata = generatePageMetadata('raffle')
-}
 
 export default function RafflePage() {
   return (

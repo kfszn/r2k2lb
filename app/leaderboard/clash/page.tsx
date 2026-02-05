@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -7,12 +6,6 @@ import { Trophy } from 'lucide-react'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { ArrowLeft } from 'lucide-react'
-import { generatePageMetadata } from '@/lib/seo-metadata'
-
-export const metadata: Metadata = generatePageMetadata('clash')
-    description: 'Compete on the Clash.gg leaderboard and win exclusive rewards',
-  },
-}
 
 export default function ClashLeaderboardPage() {
   return (

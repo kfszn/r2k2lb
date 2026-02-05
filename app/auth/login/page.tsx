@@ -2,7 +2,6 @@
 
 import React from "react"
 import { useState } from 'react'
-import type { Metadata } from 'next'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -12,9 +11,6 @@ import { Label } from '@/components/ui/label'
 import { createBrowserClient } from '@supabase/ssr'
 import Image from 'next/image'
 import { Eye, EyeOff } from 'lucide-react'
-import { generatePageMetadata } from '@/lib/seo-metadata'
-
-export const metadata: Metadata = generatePageMetadata('login')
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
