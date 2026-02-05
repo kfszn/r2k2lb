@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://r2k2.io'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://r2k2.gg'
 
   const routes = [
     {
