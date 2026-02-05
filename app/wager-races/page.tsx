@@ -92,8 +92,18 @@ export default function WagerRacesPage() {
     }).format(amount)
   }
 
-  const getProgressPercentage = () => {
-    return 50 // Placeholder for now
+  const getProgressPercentage = (startDate: string, endDate: string) => {
+    const now = new Date()
+    const start = parseISO(startDate)
+    const end = parseISO(endDate)
+    
+    if (now < start) return 0
+    if (now > end) return 100
+    
+    const totalDuration = end.getTime() - start.getTime()
+    const elapsed = now.getTime() - start.getTime()
+    
+    return Math.min(100, Math.max(0, (elapsed / totalDuration) * 100))
   }
 
   const maskName = (name: string) => {
@@ -137,7 +147,7 @@ export default function WagerRacesPage() {
         ) : (
           <div className="grid gap-6">
             {races.map((race) => {
-              const progress = getProgressPercentage()
+              const progress = getProgressPercentage(race.start_date, race.end_date)
 
               return (
                 <Card key={race.id} className="hover:shadow-lg transition-shadow">

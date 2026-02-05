@@ -255,7 +255,12 @@ export default function RaceDetailPage() {
                     <CardDescription className="text-xs">Highest Wager Target</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold">${(stats.highestMilestone / 1000).toFixed(0)}k</p>
+                    <p className="text-3xl font-bold">
+                      {stats.highestMilestone >= 1000 
+                        ? `$${(stats.highestMilestone / 1000).toFixed(0)}k`
+                        : `$${stats.highestMilestone}`
+                      }
+                    </p>
                   </CardContent>
                 </Card>
 
