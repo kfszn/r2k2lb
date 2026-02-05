@@ -92,10 +92,6 @@ export default function WagerRacesPage() {
     }).format(amount)
   }
 
-  const getProgressPercentage = () => {
-    return 50 // Placeholder for now
-  }
-
   const maskName = (name: string) => {
     if (!name || name.length <= 3) return name
     return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
@@ -137,8 +133,6 @@ export default function WagerRacesPage() {
         ) : (
           <div className="grid gap-6">
             {races.map((race) => {
-              const progress = getProgressPercentage()
-
               return (
                 <Card key={race.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
@@ -157,20 +151,6 @@ export default function WagerRacesPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {/* Progress Bar */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="font-semibold">{Math.round(progress)}%</span>
-                      </div>
-                      <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-primary to-primary/70 h-full transition-all duration-500"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                    </div>
-
                     {/* Race Dates */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
