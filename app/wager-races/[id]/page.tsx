@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -136,7 +136,7 @@ export default function RaceDetailPage() {
     }
   }, [raceId, supabase])
 
-  const calculateWagerStats = () => {
+  const stats = useMemo(() => {
     if (milestones.length === 0) {
       return {
         totalMilestones: 0,
@@ -159,7 +159,7 @@ export default function RaceDetailPage() {
       uniqueWinners: uniqueWinnerSet.size,
       completedMilestones: completedMilestonesCount,
     }
-  }
+  }, [winners, milestones])
 
   const getMilestoneWinners = (milestoneId: string) => {
     return winners.filter(w => w.milestone_id === milestoneId).sort((a, b) => 
@@ -242,10 +242,7 @@ export default function RaceDetailPage() {
         {/* Wager Statistics */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Race Statistics</h2>
-          {(() => {
-            const stats = calculateWagerStats()
-            return (
-              <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <Card>
                   <CardHeader className="pb-3">
                     <CardDescription className="text-xs">Total Milestones</CardDescription>
@@ -299,8 +296,7 @@ export default function RaceDetailPage() {
                   </CardContent>
                 </Card>
               </div>
-            )
-          })()}
+            </div>
         </div>
 
         {/* Race Timeline */}
