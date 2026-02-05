@@ -148,12 +148,10 @@ export default function RaceDetailPage() {
       }
     }
 
-    console.log('[v0] Stats useMemo fired - winners:', winners, 'length:', winners.length)
     const uniqueWinnerSet = new Set(winners.map(w => w.username))
     const completedMilestonesCount = milestones.filter(m => 
       winners.some(w => w.milestone_id === m.id)
     ).length
-    console.log('[v0] Calculated - uniqueWinners:', uniqueWinnerSet.size, 'completedMilestones:', completedMilestonesCount)
 
     return {
       totalMilestones: milestones.length,
@@ -163,6 +161,10 @@ export default function RaceDetailPage() {
       completedMilestones: completedMilestonesCount,
     }
   }, [winners, milestones])
+
+  useEffect(() => {
+    console.log('[v0] Winners state updated:', winners.length, 'winners')
+  }, [winners])
 
   const getMilestoneWinners = (milestoneId: string) => {
     return winners.filter(w => w.milestone_id === milestoneId).sort((a, b) => 
