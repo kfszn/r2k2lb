@@ -38,36 +38,36 @@ export function TotalWagerStats() {
     setError('')
 
     try {
-      // Fetch acebet leaderboard data from the correct endpoint
-      const response = await fetch('/api/leaderboard')
+      // Format dates for API (YYYY-MM-DD)
+      const start = new Date(startDate).toISOString().split('T')[0]
+      const end = new Date(endDate).toISOString().split('T')[0]
+      
+      // Fetch acebet leaderboard data with date range (same as wager verification)
+      const url = `/api/leaderboard?start_at=${start}&end_at=${end}`
+      const response = await fetch(url)
+      
       if (!response.ok) throw new Error('Failed to fetch leaderboard data')
       
       const data = await response.json()
       
-      // Extract leaderboard array from response (handle multiple response formats)
-      let leaderboardData = []
-      if (Array.isArray(data)) {
-        leaderboardData = data
-      } else if (data.leaderboard && Array.isArray(data.leaderboard)) {
-        leaderboardData = data.leaderboard
-      } else if (data.data && Array.isArray(data.data)) {
-        leaderboardData = data.data
-      } else {
-        throw new Error('Unexpected response format from leaderboard API')
+      if (!data.ok || !data.data) {
+        throw new Error('Invalid response from leaderboard API')
       }
       
+      const leaderboardData = data.data
+      
       // Calculate statistics from leaderboard data
+      // Values are already in cents from the API
       const totalWagered = leaderboardData.reduce((sum: number, p: any) => {
-        const wagered = (p.wagerAmount || p.wagered || 0)
-        return sum + wagered * 100 // Convert to pennies
+        return sum + (p.wagered || 0)
       }, 0)
       
       const totalDeposits = leaderboardData.reduce((sum: number, p: any) => {
-        return sum + ((p.deposits || p.depositAmount || 0) * 100)
+        return sum + (p.deposited || 0)
       }, 0)
       
       const totalEarnings = leaderboardData.reduce((sum: number, p: any) => {
-        return sum + ((p.earnings || p.earnedAmount || 0) * 100)
+        return sum + (p.earned || 0)
       }, 0)
       
       const activeMembers = leaderboardData.length
