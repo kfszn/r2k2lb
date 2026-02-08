@@ -6,15 +6,9 @@ import { Trophy, TrendingUp, Sparkles } from 'lucide-react'
 import { KickMiniPlayer } from '@/components/kick-mini-player'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 
-export const metadata: Metadata = {
-  title: 'R2K2 - Exclusive Rewards & Leaderboards',
-  description: '$5,000+ in monthly leaderboards plus exclusive rewards. Use code R2K2 on Acebet, Packdraw, and Clash.gg for bonuses, wager rewards, and more!',
-  openGraph: {
-    title: 'R2K2 - Exclusive Rewards & Leaderboards',
-    description: '$5,000+ in monthly leaderboards plus exclusive rewards with code R2K2',
-  },
-}
+export const metadata: Metadata = generatePageMetadata('home')
 
 export default function HomePage() {
   return (

@@ -1,19 +1,9 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Trophy, TrendingUp, Zap, Crown, AlertCircle } from 'lucide-react'
-
-export const metadata: Metadata = {
-  title: 'Acebet Wager Rewards | R2K2',
-  description: 'Earn wager rewards on Acebet with code R2K2. Tier-based rewards for your monthly wagers.',
-  openGraph: {
-    title: 'Acebet Wager Rewards | R2K2',
-    description: 'Get rewarded for your wagers on Acebet',
-  },
-}
 
 export default function WagerRewardsPage() {
   return (

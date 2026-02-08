@@ -1,19 +1,9 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Gift, Zap } from 'lucide-react'
-
-export const metadata: Metadata = {
-  title: 'Acebet First Time Deposit Bonus | R2K2',
-  description: 'Get your first time deposit bonus on Acebet with code R2K2. New player exclusive offer.',
-  openGraph: {
-    title: 'Acebet First Time Deposit Bonus | R2K2',
-    description: 'Earn your first time deposit bonus on Acebet',
-  },
-}
 
 export default function FirstDepositBonusPage() {
   return (
