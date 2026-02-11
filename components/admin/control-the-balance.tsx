@@ -68,8 +68,9 @@ export function ControlTheBalance() {
   };
 
   const calculateAmountEarned = (playerFinishBalance: number, streamBalance: number) => {
+    // Entrants keep 10% of their profit
     const difference = playerFinishBalance - streamBalance;
-    return (difference * 0.05).toFixed(2);
+    return (difference * 0.10).toFixed(2);
   };
 
   const addEntry = () => {

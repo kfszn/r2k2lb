@@ -48,7 +48,7 @@ export default function HomePage() {
             <p className="text-base text-muted-foreground">Click a logo to view the leaderboard</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             <PlatformCard
               name="Acebet"
               logo="/assets/rainbet.png"
@@ -76,16 +76,6 @@ export default function HomePage() {
                 "First Time Deposit Bonus",
                 "Lossback",
                 "VIP Rewards"
-              ]}
-            />
-            <PlatformCard
-              name="Clash.gg"
-              logo="/assets/clash.png"
-              href="/leaderboard/clash"
-              signupUrl="https://clash.gg/r/R2K2"
-              rewards={[
-                "Coming Soon",
-                "Stay tuned for updates"
               ]}
             />
           </div>
