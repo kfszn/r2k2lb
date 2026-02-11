@@ -11,13 +11,12 @@ export const defaultMetadata: Metadata = {
     template: `%s | ${brandName}`,
   },
   description:
-    '$5,000+ in monthly leaderboards plus exclusive rewards. Use code R2K2 on Acebet, Packdraw, and Clash.gg for bonuses, wager rewards, and more!',
+    '$5,000+ in monthly leaderboards plus exclusive rewards. Use code R2K2 on Acebet and Packdraw for bonuses, wager rewards, and more!',
   keywords: [
     'leaderboards',
     'rewards',
     'Acebet',
     'Packdraw',
-    'Clash.gg',
     'wager rewards',
     'tournaments',
     'gambling',
@@ -58,13 +57,12 @@ export const pageMetadata = {
   home: {
     title: 'Compete on R2K2 Leaderboards - $5,000+ Monthly Prizes',
     description:
-      'Join exclusive leaderboard competitions with $5,000+ monthly prizes across Acebet, Packdraw, and Clash.gg. Use code R2K2 for bonuses and rewards.',
+      'Join exclusive leaderboard competitions with $5,000+ monthly prizes across Acebet and Packdraw. Use code R2K2 for bonuses and rewards.',
     keywords: [
       'leaderboard',
       'competition',
       'Acebet',
       'Packdraw',
-      'Clash.gg',
       'wager rewards',
       'exclusive code',
       'monthly prizes',
@@ -92,18 +90,6 @@ export const pageMetadata = {
       'wager competition',
       'rank up rewards',
       'loss back',
-      'R2K2 code',
-    ],
-  },
-  clash: {
-    title: 'R2K2 Clash.gg Leaderboard - Coming Soon',
-    description:
-      'R2K2 is bringing exclusive rewards to Clash.gg. Leaderboard competitions coming soon. Use code R2K2 for access to rewards and tournaments.',
-    keywords: [
-      'Clash.gg',
-      'leaderboard',
-      'coming soon',
-      'tournaments',
       'R2K2 code',
     ],
   },
