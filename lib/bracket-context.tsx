@@ -73,7 +73,6 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   // Load bracket matches from Supabase for a specific tournament
   const loadBracketForTournament = useCallback(async (tournamentId: string) => {
     try {
-      console.log('[v0] loadBracketForTournament called with tournamentId:', tournamentId);
       const supabase = createClient();
       const { data, error } = await supabase
         .from('bracket_matches')
@@ -82,8 +81,6 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
         .order('round', { ascending: true })
         .order('match_number', { ascending: true });
 
-      console.log('[v0] Query result - data length:', data?.length, 'error:', error);
-
       if (error) {
         console.error('[v0] Error loading bracket:', error);
         setMatches([]);
@@ -91,7 +88,6 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data && data.length > 0) {
-        console.log('[v0] Loaded', data.length, 'matches from DB for tournament:', tournamentId);
         // Map DB columns to our BracketMatch interface
         const mapped: BracketMatch[] = data.map(row => ({
           id: row.id,

@@ -24,9 +24,7 @@ export function BracketGenerator({ tournament }: { tournament: Tournament }) {
 
   // Load bracket for this tournament on mount
   useEffect(() => {
-    console.log('[v0] BracketGenerator - tournament.id:', tournament.id, 'activeTournamentId:', activeTournamentId);
     if (tournament.id) {
-      console.log('[v0] BracketGenerator - Loading bracket for tournament:', tournament.id);
       loadBracketForTournament(tournament.id);
     }
   }, [tournament.id, loadBracketForTournament]);

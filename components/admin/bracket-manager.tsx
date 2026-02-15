@@ -27,9 +27,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
 
   // Load bracket from DB when this tournament is opened
   useEffect(() => {
-    console.log('[v0] BracketManager - tournament.id:', tournament.id, 'activeTournamentId:', activeTournamentId, 'matches.length:', matches.length);
     if (tournament.id) {
-      console.log('[v0] BracketManager - Loading bracket for tournament:', tournament.id);
       loadBracketForTournament(tournament.id);
     }
   }, [tournament.id, loadBracketForTournament]);
