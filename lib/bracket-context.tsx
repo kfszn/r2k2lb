@@ -357,6 +357,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
         id: m.id,
         tournament_id: tournamentId,
         round: m.roundIndex,
+        round_number: m.roundIndex,
         match_number: m.matchIndex,
         player1_id: m.slotAId,
         player2_id: m.slotBId,
