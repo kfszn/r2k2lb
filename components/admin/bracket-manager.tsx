@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,8 +22,15 @@ interface ScoreEditState {
 }
 
 export function BracketManager({ tournament }: { tournament: Tournament }) {
-  const { matches, updateMatchScore, setMatchWinner, getPlayerName } = useBracket();
+  const { matches, updateMatchScore, setMatchWinner, getPlayerName, loadBracketForTournament, activeTournamentId } = useBracket();
   const [editingScore, setEditingScore] = useState<ScoreEditState | null>(null);
+
+  // Load bracket from DB when this tournament is opened
+  useEffect(() => {
+    if (tournament.id && tournament.id !== activeTournamentId) {
+      loadBracketForTournament(tournament.id);
+    }
+  }, [tournament.id, activeTournamentId, loadBracketForTournament]);
 
   // Group matches by round index
   const matchesByRound = matches.reduce(

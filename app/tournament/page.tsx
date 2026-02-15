@@ -1,6 +1,5 @@
 "use client";
 
-import type { Metadata } from 'next'
 import { BracketDisplay } from "@/components/tournament/bracket-display";
 import { HowToEnter } from "@/components/tournament/how-to-enter";
 import { WinnersCircle } from "@/components/tournament/winners-circle";
@@ -14,7 +13,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function TournamentPage() {
-  const { matches, setMatches } = useBracket();
+  const { matches, loadBracketForTournament } = useBracket();
   const [tournamentStatus, setTournamentStatus] = useState<string | null>(null);
   const [currentTournamentId, setCurrentTournamentId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -34,16 +33,13 @@ export default function TournamentPage() {
           .single();
 
         if (error || !data) {
-          console.log("[v0] No OPEN tournament marked as current. Error:", error?.message);
           setTournamentStatus(null);
           setCurrentTournamentId(null);
         } else {
-          console.log("[v0] Found OPEN tournament - id:", data.id, "status:", data.status);
           setTournamentStatus(data.status);
           setCurrentTournamentId(data.id);
         }
       } catch (error) {
-        console.log("[v0] Error checking tournament status:", error);
         setTournamentStatus(null);
         setCurrentTournamentId(null);
       } finally {
@@ -63,11 +59,9 @@ export default function TournamentPage() {
         (payload) => {
           // Only update if tournament is marked as current AND is in open status
           if (payload.new?.is_current === true && ["registration", "live"].includes(payload.new?.status)) {
-            console.log("[v0] Tournament marked as current and OPEN - id:", payload.new.id, "status:", payload.new.status);
             setTournamentStatus(payload.new.status);
             setCurrentTournamentId(payload.new.id);
           } else if (payload.new?.is_current === false || !["registration", "live"].includes(payload.new?.status)) {
-            console.log("[v0] Current tournament is no longer open, clearing...");
             setTournamentStatus(null);
             setCurrentTournamentId(null);
           }
@@ -80,38 +74,11 @@ export default function TournamentPage() {
     };
   }, []);
 
-  // Fetch bracket matches for the current tournament
+  // Load bracket from DB for the current tournament
   useEffect(() => {
     if (!currentTournamentId) return;
-
-    const fetchBracketMatches = async () => {
-      try {
-        const supabase = createClient();
-        console.log("[v0] Fetching bracket for tournament:", currentTournamentId);
-        
-        const { data: matches, error } = await supabase
-          .from("bracket_matches")
-          .select("*")
-          .eq("tournament_id", currentTournamentId)
-          .order("round", { ascending: true })
-          .order("match_number", { ascending: true });
-
-        if (error) {
-          console.log("[v0] Error fetching bracket matches:", error);
-          return;
-        }
-
-        console.log("[v0] Fetched", matches?.length || 0, "matches from database for tournament:", currentTournamentId);
-        if (matches && matches.length > 0) {
-          setMatches(matches);
-        }
-      } catch (error) {
-        console.log("[v0] Error in fetchBracketMatches:", error);
-      }
-    };
-
-    fetchBracketMatches();
-  }, [currentTournamentId, setMatches]);
+    loadBracketForTournament(currentTournamentId);
+  }, [currentTournamentId, loadBracketForTournament]);
 
   // Show bracket only if tournament is live or registration (not completed/closed)
   const isLive = (tournamentStatus === "live" || tournamentStatus === "registration") && isLoaded && matches.length > 0;
