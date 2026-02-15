@@ -11,6 +11,7 @@ import { Plus, Check, Trash2 } from 'lucide-react';
 interface SlotCall {
   id: string;
   username: string;
+  slot: string;
   buy_amount: number;
   buy_result: number | null;
   status: 'pending' | 'completed';
@@ -24,10 +25,11 @@ export function SlotCalls() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
+    slot: '',
     buy_amount: '',
   });
-  const [completingId, setCompletingId] = useState<string | null>(null);
-  const [resultValue, setResultValue] = useState('');
+  const [editingResultId, setEditingResultId] = useState<string | null>(null);
+  const [resultValues, setResultValues] = useState<Record<string, string>>({});
 
   const supabase = createClient();
 
@@ -56,7 +58,7 @@ export function SlotCalls() {
   };
 
   const addNewSlotCall = async () => {
-    if (!formData.username || !formData.buy_amount) {
+    if (!formData.username || !formData.slot || !formData.buy_amount) {
       alert('Please fill in all fields');
       return;
     }
@@ -64,6 +66,7 @@ export function SlotCalls() {
     try {
       const { error } = await supabase.from('slot_calls').insert({
         username: formData.username,
+        slot: formData.slot,
         buy_amount: parseFloat(formData.buy_amount),
         buy_result: 0,
         status: 'pending',
@@ -71,7 +74,7 @@ export function SlotCalls() {
 
       if (error) throw error;
 
-      setFormData({ username: '', buy_amount: '' });
+      setFormData({ username: '', slot: '', buy_amount: '' });
       setShowNewForm(false);
       fetchSlotCalls();
     } catch (error) {
@@ -80,7 +83,7 @@ export function SlotCalls() {
     }
   };
 
-  const completeSlotCall = async (id: string) => {
+  const updateSlotResult = async (id: string, resultValue: string) => {
     if (!resultValue) {
       alert('Please enter a result');
       return;
@@ -97,11 +100,12 @@ export function SlotCalls() {
 
       if (error) throw error;
 
-      setCompletingId(null);
-      setResultValue('');
+      setEditingResultId(null);
+      setResultValues({});
       fetchSlotCalls();
     } catch (error) {
-      console.error('Error completing slot call:', error);
+      console.error('Error updating slot result:', error);
+      alert('Error updating result: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -115,11 +119,6 @@ export function SlotCalls() {
     } catch (error) {
       console.error('Error deleting slot call:', error);
     }
-  };
-
-  const calculateMultiplier = (buyAmount: number, result: number | null) => {
-    if (result === null || buyAmount === 0) return '-';
-    return `${(result / buyAmount).toFixed(2)}x`;
   };
 
   return (
@@ -148,6 +147,17 @@ export function SlotCalls() {
                     value={formData.username}
                     onChange={(e) =>
                       setFormData({ ...formData, username: e.target.value })
+                    }
+                    className="h-8"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Slot</label>
+                  <Input
+                    placeholder="Slot"
+                    value={formData.slot}
+                    onChange={(e) =>
+                      setFormData({ ...formData, slot: e.target.value })
                     }
                     className="h-8"
                   />
@@ -185,8 +195,9 @@ export function SlotCalls() {
           ) : (
             <div className="space-y-2">
               {/* Header Row */}
-              <div className="grid grid-cols-6 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
+              <div className="grid grid-cols-7 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
                 <div>Username</div>
+                <div>Slot</div>
                 <div>Buy Amount</div>
                 <div>Result</div>
                 <div>Multiplier</div>
@@ -195,58 +206,76 @@ export function SlotCalls() {
               </div>
 
               {/* Data Rows */}
-              {pendingCalls.map((call) => (
-                <div
-                  key={call.id}
-                  className="grid grid-cols-6 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
-                >
-                  <div className="font-medium">{call.username}</div>
-                  <div>${call.buy_amount.toFixed(2)}</div>
-
-                  {completingId === call.id ? (
-                    <Input
-                      type="number"
-                      placeholder="Enter result"
-                      value={resultValue}
-                      onChange={(e) => setResultValue(e.target.value)}
-                      className="h-8"
-                    />
-                  ) : (
-                    <div className="text-muted-foreground">-</div>
-                  )}
-
-                  <div className="text-muted-foreground">-</div>
-
-                  {completingId === call.id ? (
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={() => completeSlotCall(call.id)}
-                      className="h-8"
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setCompletingId(call.id)}
-                      className="h-8"
-                    >
-                      Complete
-                    </Button>
-                  )}
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => deleteSlotCall(call.id)}
-                    className="h-8 text-destructive hover:text-destructive"
+              {pendingCalls.map((call) => {
+                const currentResult = resultValues[call.id] !== undefined ? resultValues[call.id] : (call.buy_result || 0).toString();
+                const resultNum = parseFloat(currentResult) || 0;
+                const multiplier = call.buy_amount > 0 ? (resultNum / call.buy_amount).toFixed(2) : '0';
+                
+                return (
+                  <div
+                    key={call.id}
+                    className="grid grid-cols-7 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                    <div className="font-medium">{call.username}</div>
+                    <div className="text-sm">{call.slot}</div>
+                    <div>${call.buy_amount.toFixed(2)}</div>
+
+                    {editingResultId === call.id ? (
+                      <Input
+                        type="number"
+                        placeholder="Enter result"
+                        value={currentResult}
+                        onChange={(e) => setResultValues({ ...resultValues, [call.id]: e.target.value })}
+                        className="h-8"
+                      />
+                    ) : (
+                      <div 
+                        className="text-muted-foreground cursor-pointer hover:text-primary"
+                        onClick={() => {
+                          setEditingResultId(call.id);
+                          setResultValues({ ...resultValues, [call.id]: (call.buy_result || 0).toString() });
+                        }}
+                      >
+                        {call.buy_result !== null && call.buy_result !== 0 ? `$${call.buy_result.toFixed(2)}` : '-'}
+                      </div>
+                    )}
+
+                    <div className="font-semibold">{multiplier}x</div>
+
+                    {editingResultId === call.id ? (
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => updateSlotResult(call.id, currentResult)}
+                        className="h-8"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingResultId(call.id);
+                          setResultValues({ ...resultValues, [call.id]: (call.buy_result || 0).toString() });
+                        }}
+                        className="h-8"
+                      >
+                        Edit
+                      </Button>
+                    )}
+
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => deleteSlotCall(call.id)}
+                      className="h-8 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -265,8 +294,9 @@ export function SlotCalls() {
           ) : (
             <div className="space-y-2">
               {/* Header Row */}
-              <div className="grid grid-cols-5 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
+              <div className="grid grid-cols-6 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
                 <div>Username</div>
+                <div>Slot</div>
                 <div>Buy Amount</div>
                 <div>Result</div>
                 <div>Multiplier</div>
@@ -274,29 +304,33 @@ export function SlotCalls() {
               </div>
 
               {/* Data Rows */}
-              {completedCalls.map((call) => (
-                <div
-                  key={call.id}
-                  className="grid grid-cols-5 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
-                >
-                  <div className="font-medium">{call.username}</div>
-                  <div>${call.buy_amount.toFixed(2)}</div>
-                  <div className="text-green-500 font-medium">
-                    ${call.buy_result?.toFixed(2) || '-'}
-                  </div>
-                  <div className="font-semibold">
-                    {calculateMultiplier(call.buy_amount, call.buy_result)}
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => deleteSlotCall(call.id)}
-                    className="h-8 text-destructive hover:text-destructive"
+              {completedCalls.map((call) => {
+                const multiplier = call.buy_amount > 0 && call.buy_result ? (call.buy_result / call.buy_amount).toFixed(2) : '0';
+                return (
+                  <div
+                    key={call.id}
+                    className="grid grid-cols-6 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                    <div className="font-medium">{call.username}</div>
+                    <div className="text-sm">{call.slot}</div>
+                    <div>${call.buy_amount.toFixed(2)}</div>
+                    <div className="text-green-500 font-medium">
+                      ${call.buy_result?.toFixed(2) || '-'}
+                    </div>
+                    <div className="font-semibold">
+                      {multiplier}x
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => deleteSlotCall(call.id)}
+                      className="h-8 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
