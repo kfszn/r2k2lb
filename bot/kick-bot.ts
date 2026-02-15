@@ -175,29 +175,28 @@ class KickTournamentBot {
   }
 
   private async handleSlot(kickUsername: string, slotName?: string, slotType?: string) {
-    if (!slotName || !slotType) {
+    if (!slotName) {
       console.log(`[Bot] ${kickUsername} tried to submit slot without proper format`);
-      this.sendChatMessage(`@${kickUsername} Usage: !slot <slot name> <super/regular> (e.g., !slot Gates of Olympus super)`);
+      this.sendChatMessage(`@${kickUsername} Usage: !slot <slot name> (e.g., !slot Gates of Olympus)`);
       return;
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bot/slot`, {
+      const response = await fetch(`${API_BASE_URL}/api/bot/slot-calls`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           kickUsername,
           slotName,
-          slotType,
           botSecret: BOT_SECRET,
         }),
       });
 
       const data = await response.json();
-      console.log(`[Bot] Slot response: ${data.message}`);
+      console.log(`[Bot] Slot call response: ${data.message}`);
       this.sendChatMessage(data.message);
     } catch (error) {
-      console.error("[Bot] Error handling slot:", error);
+      console.error("[Bot] Error handling slot call:", error);
       this.sendChatMessage(`@${kickUsername} Error submitting slot call. Please try again.`);
     }
   }
@@ -225,7 +224,7 @@ class KickTournamentBot {
   }
 
   private handleHelp() {
-    const helpMessage = `Tournament Commands: !enter <name> - Register | !slot <slot> <super/regular> - Submit slot call | !status - Info | !bracket - View players`;
+    const helpMessage = `Tournament Commands: !enter <name> - Register | !slot <slot> - Submit slot call | !status - Info | !bracket - View players`;
     console.log(`[Bot] Help: ${helpMessage}`);
     this.sendChatMessage(helpMessage);
   }
