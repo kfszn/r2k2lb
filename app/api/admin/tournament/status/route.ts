@@ -13,18 +13,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validStatuses = ["REGISTERING", "LIVE", "CLOSED"];
+    const validStatuses = ["registration", "live", "completed", "pending", "cancelled"];
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
-        { error: "Invalid status" },
+        { error: "Invalid status: " + status },
         { status: 400 }
       );
     }
 
     const supabase = await createClient();
 
-    // If marking as LIVE or REGISTERING, set is_current to true and clear other tournaments
-    if (["LIVE", "REGISTERING"].includes(status)) {
+    // If marking as live or registration, set is_current to true and clear other tournaments
+    if (["live", "registration"].includes(status)) {
       // Clear is_current from all other tournaments
       await supabase
         .from("tournaments")

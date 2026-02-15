@@ -27,6 +27,7 @@ export interface BracketMatch {
 
 interface BracketContextType {
   matches: BracketMatch[];
+  setMatches: React.Dispatch<React.SetStateAction<BracketMatch[]>>;
   getPlayerName: (id: string | null) => string;
   generateBracket: (players: BracketPlayer[]) => void;
   updateMatchScore: (matchId: string, player1Score: number, player2Score: number) => void;
@@ -362,7 +363,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <BracketContext.Provider value={{ matches, generateBracket, updateMatchScore, setMatchWinner, clearBracket, getPlayerName }}>
+    <BracketContext.Provider value={{ matches, setMatches, generateBracket, updateMatchScore, setMatchWinner, clearBracket, getPlayerName }}>
       {children}
     </BracketContext.Provider>
   );

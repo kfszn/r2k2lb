@@ -144,13 +144,19 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
   const handleStatusChange = async (newStatus: string) => {
     setStatusLoading(true);
     try {
-      const { error } = await supabase
-        .from('tournaments')
-        .update({ status: newStatus })
-        .eq('id', tournament.id);
+      // Use the API endpoint so is_current gets set properly
+      const response = await fetch('/api/admin/tournament/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tournamentId: tournament.id,
+          status: newStatus,
+        }),
+      });
 
-      if (error) {
-        console.error('[v0] Error updating tournament status:', error);
+      if (!response.ok) {
+        const result = await response.json();
+        console.error('[v0] Error updating tournament status:', result.error);
         setStatus(tournament.status);
       } else {
         setStatus(newStatus);
