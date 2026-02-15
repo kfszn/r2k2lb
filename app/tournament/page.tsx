@@ -25,35 +25,20 @@ export default function TournamentPage() {
       try {
         const supabase = createClient();
         
-        // First, try to find a tournament marked as current
-        let { data, error } = await supabase
+        // STRICTLY require is_current = true AND status must be open (registration or live)
+        const { data, error } = await supabase
           .from("tournaments")
           .select("id, status")
           .eq("is_current", true)
+          .in("status", ["registration", "live"])
           .single();
 
-        // If no current tournament, fall back to most recent live/registration tournament
         if (error || !data) {
-          console.log("[v0] No is_current tournament, falling back to recent live tournament");
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from("tournaments")
-            .select("id, status")
-            .in("status", ["live", "registration"])
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
-          
-          if (fallbackError || !fallbackData) {
-            console.log("[v0] No live tournaments found");
-            setTournamentStatus(null);
-            setCurrentTournamentId(null);
-          } else {
-            console.log("[v0] Found fallback tournament with id:", fallbackData.id, "status:", fallbackData.status);
-            setTournamentStatus(fallbackData.status);
-            setCurrentTournamentId(fallbackData.id);
-          }
+          console.log("[v0] No OPEN tournament marked as current. Error:", error?.message);
+          setTournamentStatus(null);
+          setCurrentTournamentId(null);
         } else {
-          console.log("[v0] Found is_current tournament with id:", data.id, "status:", data.status);
+          console.log("[v0] Found OPEN tournament - id:", data.id, "status:", data.status);
           setTournamentStatus(data.status);
           setCurrentTournamentId(data.id);
         }
@@ -76,10 +61,15 @@ export default function TournamentPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "tournaments" },
         (payload) => {
-          if (payload.new?.is_current === true) {
-            console.log("[v0] Tournament marked as current, id:", payload.new.id, "status:", payload.new.status);
+          // Only update if tournament is marked as current AND is in open status
+          if (payload.new?.is_current === true && ["registration", "live"].includes(payload.new?.status)) {
+            console.log("[v0] Tournament marked as current and OPEN - id:", payload.new.id, "status:", payload.new.status);
             setTournamentStatus(payload.new.status);
             setCurrentTournamentId(payload.new.id);
+          } else if (payload.new?.is_current === false || !["registration", "live"].includes(payload.new?.status)) {
+            console.log("[v0] Current tournament is no longer open, clearing...");
+            setTournamentStatus(null);
+            setCurrentTournamentId(null);
           }
         }
       )

@@ -48,7 +48,15 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ tournament });
+    return NextResponse.json({ tournament });
+  } catch (error) {
+    console.error("Error in update status:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
     }
 
     // For other statuses (completed, cancelled), just update status and clear is_current
@@ -58,11 +66,13 @@ export async function POST(request: NextRequest) {
       .eq("id", tournamentId)
       .select()
       .single();
-  } catch (error) {
-    console.error("Error in update status:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
+
+    if (error) {
+      console.error("Error updating tournament status:", error);
+      return NextResponse.json(
+        { error: "Failed to update tournament status" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ tournament });
