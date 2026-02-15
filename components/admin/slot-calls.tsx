@@ -11,7 +11,6 @@ import { Plus, Check, Trash2 } from 'lucide-react';
 interface SlotCall {
   id: string;
   username: string;
-  slot_request: string;
   buy_amount: number;
   buy_result: number | null;
   status: 'pending' | 'completed';
@@ -25,7 +24,6 @@ export function SlotCalls() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
-    slot_request: '',
     buy_amount: '',
   });
   const [completingId, setCompletingId] = useState<string | null>(null);
@@ -58,7 +56,7 @@ export function SlotCalls() {
   };
 
   const addNewSlotCall = async () => {
-    if (!formData.username || !formData.slot_request || !formData.buy_amount) {
+    if (!formData.username || !formData.buy_amount) {
       alert('Please fill in all fields');
       return;
     }
@@ -66,19 +64,19 @@ export function SlotCalls() {
     try {
       const { error } = await supabase.from('slot_calls').insert({
         username: formData.username,
-        slot_request: formData.slot_request,
         buy_amount: parseFloat(formData.buy_amount),
-        buy_result: null,
+        buy_result: 0,
         status: 'pending',
       });
 
       if (error) throw error;
 
-      setFormData({ username: '', slot_request: '', buy_amount: '' });
+      setFormData({ username: '', buy_amount: '' });
       setShowNewForm(false);
       fetchSlotCalls();
     } catch (error) {
       console.error('Error adding slot call:', error);
+      alert('Error adding slot call: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -155,17 +153,6 @@ export function SlotCalls() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Slot Request</label>
-                  <Input
-                    placeholder="Slot Request"
-                    value={formData.slot_request}
-                    onChange={(e) =>
-                      setFormData({ ...formData, slot_request: e.target.value })
-                    }
-                    className="h-8"
-                  />
-                </div>
-                <div className="flex-1">
                   <label className="text-xs font-semibold text-muted-foreground mb-1 block">Buy Amount</label>
                   <Input
                     placeholder="Buy Amount"
@@ -198,9 +185,8 @@ export function SlotCalls() {
           ) : (
             <div className="space-y-2">
               {/* Header Row */}
-              <div className="grid grid-cols-7 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
+              <div className="grid grid-cols-6 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
                 <div>Username</div>
-                <div>Slot Request</div>
                 <div>Buy Amount</div>
                 <div>Result</div>
                 <div>Multiplier</div>
@@ -212,10 +198,9 @@ export function SlotCalls() {
               {pendingCalls.map((call) => (
                 <div
                   key={call.id}
-                  className="grid grid-cols-7 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
+                  className="grid grid-cols-6 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
                 >
                   <div className="font-medium">{call.username}</div>
-                  <div className="text-sm">{call.slot_request}</div>
                   <div>${call.buy_amount.toFixed(2)}</div>
 
                   {completingId === call.id ? (
@@ -280,9 +265,8 @@ export function SlotCalls() {
           ) : (
             <div className="space-y-2">
               {/* Header Row */}
-              <div className="grid grid-cols-6 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
+              <div className="grid grid-cols-5 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
                 <div>Username</div>
-                <div>Slot Request</div>
                 <div>Buy Amount</div>
                 <div>Result</div>
                 <div>Multiplier</div>
@@ -293,10 +277,9 @@ export function SlotCalls() {
               {completedCalls.map((call) => (
                 <div
                   key={call.id}
-                  className="grid grid-cols-6 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
+                  className="grid grid-cols-5 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
                 >
                   <div className="font-medium">{call.username}</div>
-                  <div className="text-sm">{call.slot_request}</div>
                   <div>${call.buy_amount.toFixed(2)}</div>
                   <div className="text-green-500 font-medium">
                     ${call.buy_result?.toFixed(2) || '-'}
