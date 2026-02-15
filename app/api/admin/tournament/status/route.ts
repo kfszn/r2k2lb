@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { generateBracket } from "@/lib/tournament/utils";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tournamentId, status, winner } = body;
+    const { tournamentId, status } = body;
 
     if (!tournamentId || !status) {
       return NextResponse.json(
@@ -14,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validStatuses = ["pending", "registration", "active", "completed", "cancelled"];
+    const validStatuses = ["REGISTERING", "LIVE", "CLOSED"];
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
         { error: "Invalid status" },
@@ -24,8 +23,8 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // If marking as live/registration, set is_current to true and clear other tournaments
-    if (["live", "registration"].includes(status)) {
+    // If marking as LIVE or REGISTERING, set is_current to true and clear other tournaments
+    if (["LIVE", "REGISTERING"].includes(status)) {
       // Clear is_current from all other tournaments
       await supabase
         .from("tournaments")
@@ -48,18 +47,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-    return NextResponse.json({ tournament });
-  } catch (error) {
-    console.error("Error in update status:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
+      return NextResponse.json({ tournament });
     }
 
-    // For other statuses (completed, cancelled), just update status and clear is_current
+    // For CLOSED status, just update status and clear is_current
     const { data: tournament, error } = await supabase
       .from("tournaments")
       .update({ status, is_current: false })
@@ -76,3 +67,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ tournament });
+  } catch (error) {
+    console.error("Error in update status:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

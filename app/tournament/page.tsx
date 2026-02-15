@@ -25,12 +25,12 @@ export default function TournamentPage() {
       try {
         const supabase = createClient();
         
-        // STRICTLY require is_current = true AND status must be open (registration or live)
+        // STRICTLY require is_current = true AND status must be open (REGISTERING or LIVE)
         const { data, error } = await supabase
           .from("tournaments")
           .select("id, status")
           .eq("is_current", true)
-          .in("status", ["registration", "live"])
+          .in("status", ["REGISTERING", "LIVE"])
           .single();
 
         if (error || !data) {
@@ -62,11 +62,11 @@ export default function TournamentPage() {
         { event: "*", schema: "public", table: "tournaments" },
         (payload) => {
           // Only update if tournament is marked as current AND is in open status
-          if (payload.new?.is_current === true && ["registration", "live"].includes(payload.new?.status)) {
+          if (payload.new?.is_current === true && ["REGISTERING", "LIVE"].includes(payload.new?.status)) {
             console.log("[v0] Tournament marked as current and OPEN - id:", payload.new.id, "status:", payload.new.status);
             setTournamentStatus(payload.new.status);
             setCurrentTournamentId(payload.new.id);
-          } else if (payload.new?.is_current === false || !["registration", "live"].includes(payload.new?.status)) {
+          } else if (payload.new?.is_current === false || !["REGISTERING", "LIVE"].includes(payload.new?.status)) {
             console.log("[v0] Current tournament is no longer open, clearing...");
             setTournamentStatus(null);
             setCurrentTournamentId(null);
@@ -113,8 +113,8 @@ export default function TournamentPage() {
     fetchBracketMatches();
   }, [currentTournamentId, setMatches]);
 
-  // Show bracket only if tournament is live or registration (not closed)
-  const isLive = (tournamentStatus === "live" || tournamentStatus === "registration") && isLoaded && matches.length > 0;
+  // Show bracket only if tournament is LIVE or REGISTERING (not CLOSED)
+  const isLive = (tournamentStatus === "LIVE" || tournamentStatus === "REGISTERING") && isLoaded && matches.length > 0;
   const hasBracket = isLive;
 
   return (
