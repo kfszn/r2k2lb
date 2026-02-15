@@ -66,8 +66,8 @@ export default function TournamentPage() {
     };
   }, []);
 
-  // Show bracket only if tournament is LIVE or REGISTERING (not CLOSED or completed)
-  const isLive = (tournamentStatus === "LIVE" || tournamentStatus === "REGISTERING") && isLoaded && matches.length > 0;
+  // Show bracket only if tournament is live or registration (not closed)
+  const isLive = (tournamentStatus === "live" || tournamentStatus === "registration") && isLoaded && matches.length > 0;
   const hasBracket = isLive;
 
   return (
