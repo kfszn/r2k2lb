@@ -403,12 +403,27 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   const recordTournamentWinner = async (winnerId: string, tournamentId?: string, tournamentName?: string, prizeAmount?: number) => {
     try {
       const winner = entrantMap[winnerId];
-      if (!winner) return;
+      if (!winner || !tournamentId) return;
+      
       const supabase = createClient();
+      
+      // Check if winner already recorded for this tournament to prevent duplicates
+      const { data: existing } = await supabase
+        .from('tournament_winners')
+        .select('id')
+        .eq('tournament_id', tournamentId)
+        .limit(1)
+        .single();
+      
+      if (existing) {
+        console.log('[v0] Winner already recorded for tournament:', tournamentId);
+        return;
+      }
+      
       await supabase.from('tournament_winners').insert({
         acebet_username: winner.acebet_username,
         kick_username: winner.kick_username,
-        tournament_id: tournamentId || null,
+        tournament_id: tournamentId,
         tournament_name: tournamentName || 'Tournament',
         prize_amount: prizeAmount || 0,
       });
