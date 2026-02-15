@@ -182,24 +182,25 @@ class KickTournamentBot {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bot/slot-calls`, {
+      const response = await fetch(`${API_BASE_URL}/api/slot-calls`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          kickUsername,
+          username: kickUsername,
           slotName,
-          botSecret: BOT_SECRET,
+          type: 'call',
+          timestamp: new Date().toISOString(),
         }),
       });
 
       const data = await response.json();
-      console.log(`[Bot] Slot call response: ${data.message}`);
+      console.log(`[Bot] Slot call response:`, data);
       
       // Send response message to chat
       if (data.success) {
         this.sendChatMessage(data.message);
-      } else {
-        this.sendChatMessage(`@${kickUsername} ${data.message}`);
+      } else if (data.error) {
+        this.sendChatMessage(`@${kickUsername} ${data.error}`);
       }
     } catch (error) {
       console.error("[Bot] Error handling slot call:", error);
