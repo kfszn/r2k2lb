@@ -23,9 +23,11 @@ export default function TournamentPage() {
     const checkTournamentStatus = async () => {
       try {
         const supabase = createClient();
+        // Filter for live or registration tournaments, then get the most recent one
         const { data, error } = await supabase
           .from("tournaments")
           .select("status")
+          .in("status", ["live", "registration"])
           .order("created_at", { ascending: false })
           .limit(1)
           .single();
