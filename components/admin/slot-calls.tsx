@@ -11,26 +11,26 @@ import { Plus, Check, Trash2, Power } from 'lucide-react';
 interface SlotCall {
   id: string;
   username: string;
-  slot: string;
-  buy_amount: number;
+  slot_name: string;
+  type: string;
+  timestamp: string;
+  buy_amount: number | null;
   buy_result: number | null;
-  status: 'pending' | 'completed';
-  created_at: string;
 }
 
 export function SlotCalls() {
-  const [pendingCalls, setPendingCalls] = useState<SlotCall[]>([]);
-  const [completedCalls, setCompletedCalls] = useState<SlotCall[]>([]);
+  const [slotCalls, setSlotCalls] = useState<SlotCall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
-    slot: '',
+    slot_name: '',
+    type: 'call',
     buy_amount: '',
   });
-  const [editingResultId, setEditingResultId] = useState<string | null>(null);
-  const [resultValues, setResultValues] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, { buy_amount: string; buy_result: string }>>({});
 
   const supabase = createClient();
 
@@ -46,11 +46,10 @@ export function SlotCalls() {
       const { data } = await supabase
         .from('slot_calls')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('timestamp', { ascending: false });
 
       if (data) {
-        setPendingCalls(data.filter(c => c.status === 'pending'));
-        setCompletedCalls(data.filter(c => c.status === 'completed'));
+        setSlotCalls(data);
       }
     } catch (error) {
       console.error('Error fetching slot calls:', error);
@@ -93,23 +92,24 @@ export function SlotCalls() {
   };
 
   const addNewSlotCall = async () => {
-    if (!formData.username || !formData.slot || !formData.buy_amount) {
-      alert('Please fill in all fields');
+    if (!formData.username || !formData.slot_name) {
+      alert('Please fill in username and slot name');
       return;
     }
 
     try {
       const { error } = await supabase.from('slot_calls').insert({
         username: formData.username,
-        slot: formData.slot,
-        buy_amount: parseFloat(formData.buy_amount),
-        buy_result: 0,
-        status: 'pending',
+        slot_name: formData.slot_name,
+        type: formData.type,
+        timestamp: new Date().toISOString(),
+        buy_amount: formData.buy_amount ? parseFloat(formData.buy_amount) : null,
+        buy_result: null,
       });
 
       if (error) throw error;
 
-      setFormData({ username: '', slot: '', buy_amount: '' });
+      setFormData({ username: '', slot_name: '', type: 'call', buy_amount: '' });
       setShowNewForm(false);
       fetchSlotCalls();
     } catch (error) {
@@ -118,30 +118,41 @@ export function SlotCalls() {
     }
   };
 
-  const updateSlotResult = async (id: string, resultValue: string) => {
-    if (!resultValue) {
-      alert('Please enter a result');
-      return;
-    }
+  const handleUpdate = async (id: string) => {
+    const values = editValues[id];
+    if (!values) return;
+
+    const buyAmount = values.buy_amount ? parseFloat(values.buy_amount) : null;
+    const buyResult = values.buy_result ? parseFloat(values.buy_result) : null;
 
     try {
       const { error } = await supabase
         .from('slot_calls')
         .update({
-          buy_result: parseFloat(resultValue),
-          status: 'completed',
+          buy_amount: buyAmount,
+          buy_result: buyResult,
         })
         .eq('id', id);
 
       if (error) throw error;
 
-      setEditingResultId(null);
-      setResultValues({});
+      setEditingId(null);
+      setEditValues({});
       fetchSlotCalls();
     } catch (error) {
-      console.error('Error updating slot result:', error);
+      console.error('Error updating slot call:', error);
       alert('Error updating result: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
+  };
+
+  const handleStartEdit = (call: SlotCall) => {
+    setEditingId(call.id);
+    setEditValues({
+      [call.id]: {
+        buy_amount: (call.buy_amount || '').toString(),
+        buy_result: (call.buy_result || '').toString(),
+      },
+    });
   };
 
   const deleteSlotCall = async (id: string) => {
@@ -158,11 +169,10 @@ export function SlotCalls() {
 
   return (
     <div className="space-y-6">
-      {/* Pending Section */}
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
-            <CardTitle>Pending Slot Calls</CardTitle>
+            <CardTitle>Slot Calls</CardTitle>
             <Badge variant={isOpen ? 'default' : 'secondary'}>
               {isOpen ? 'OPEN' : 'CLOSED'}
             </Badge>
@@ -203,20 +213,34 @@ export function SlotCalls() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Slot</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Slot Name</label>
                   <Input
-                    placeholder="Slot"
-                    value={formData.slot}
+                    placeholder="Slot Name"
+                    value={formData.slot_name}
                     onChange={(e) =>
-                      setFormData({ ...formData, slot: e.target.value })
+                      setFormData({ ...formData, slot_name: e.target.value })
                     }
                     className="h-8"
                   />
                 </div>
                 <div className="flex-1">
+                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Type</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value })
+                    }
+                    className="h-8 px-2 rounded border border-input bg-background text-sm w-full"
+                  >
+                    <option value="call">Call</option>
+                    <option value="bonus">Bonus</option>
+                    <option value="hunt">Hunt</option>
+                  </select>
+                </div>
+                <div className="flex-1">
                   <label className="text-xs font-semibold text-muted-foreground mb-1 block">Buy Amount</label>
                   <Input
-                    placeholder="Buy Amount"
+                    placeholder="Buy Amount (optional)"
                     type="number"
                     value={formData.buy_amount}
                     onChange={(e) =>
@@ -239,65 +263,77 @@ export function SlotCalls() {
             </div>
           )}
 
-          {pendingCalls.length === 0 ? (
+          {slotCalls.length === 0 ? (
             <p className="text-muted-foreground text-sm py-8 text-center">
-              No pending slot calls
+              No slot calls
             </p>
           ) : (
             <div className="space-y-2">
               {/* Header Row */}
-              <div className="grid grid-cols-7 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
+              <div className="grid grid-cols-8 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
+                <div>ID</div>
                 <div>Username</div>
-                <div>Slot</div>
+                <div>Slot Name</div>
+                <div>Type</div>
                 <div>Buy Amount</div>
                 <div>Result</div>
                 <div>Multiplier</div>
                 <div></div>
-                <div></div>
               </div>
 
               {/* Data Rows */}
-              {pendingCalls.map((call) => {
-                const currentResult = resultValues[call.id] !== undefined ? resultValues[call.id] : (call.buy_result || 0).toString();
-                const resultNum = parseFloat(currentResult) || 0;
-                const multiplier = call.buy_amount > 0 ? (resultNum / call.buy_amount).toFixed(2) : '0';
+              {slotCalls.map((call) => {
+                const values = editValues[call.id] || { buy_amount: (call.buy_amount || '').toString(), buy_result: (call.buy_result || '').toString() };
+                const buyAmount = values.buy_amount ? parseFloat(values.buy_amount) : 0;
+                const buyResult = values.buy_result ? parseFloat(values.buy_result) : 0;
+                const multiplier = buyAmount > 0 && buyResult > 0 ? (buyResult / buyAmount).toFixed(3) : '-';
                 
                 return (
                   <div
                     key={call.id}
-                    className="grid grid-cols-7 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
+                    className="grid grid-cols-8 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
                   >
-                    <div className="font-medium">{call.username}</div>
-                    <div className="text-sm">{call.slot}</div>
-                    <div>${call.buy_amount.toFixed(2)}</div>
-
-                    {editingResultId === call.id ? (
+                    <div className="text-xs font-mono">{call.id.slice(0, 8)}</div>
+                    <div className="font-medium text-sm">{call.username}</div>
+                    <div className="text-sm">{call.slot_name}</div>
+                    <div className="text-xs"><Badge variant="outline">{call.type}</Badge></div>
+                    
+                    {editingId === call.id ? (
                       <Input
                         type="number"
-                        placeholder="Enter result"
-                        value={currentResult}
-                        onChange={(e) => setResultValues({ ...resultValues, [call.id]: e.target.value })}
+                        placeholder="Buy Amount"
+                        value={values.buy_amount}
+                        onChange={(e) => setEditValues({ ...editValues, [call.id]: { ...values, buy_amount: e.target.value } })}
+                        className="h-8"
+                      />
+                    ) : (
+                      <div className="text-sm">{call.buy_amount ? `$${call.buy_amount.toFixed(2)}` : '-'}</div>
+                    )}
+
+                    {editingId === call.id ? (
+                      <Input
+                        type="number"
+                        placeholder="Result"
+                        value={values.buy_result}
+                        onChange={(e) => setEditValues({ ...editValues, [call.id]: { ...values, buy_result: e.target.value } })}
                         className="h-8"
                       />
                     ) : (
                       <div 
-                        className="text-muted-foreground cursor-pointer hover:text-primary"
-                        onClick={() => {
-                          setEditingResultId(call.id);
-                          setResultValues({ ...resultValues, [call.id]: (call.buy_result || 0).toString() });
-                        }}
+                        className="text-sm text-green-500 cursor-pointer hover:text-green-600"
+                        onClick={() => handleStartEdit(call)}
                       >
-                        {call.buy_result !== null && call.buy_result !== 0 ? `$${call.buy_result.toFixed(2)}` : '-'}
+                        {call.buy_result ? `$${call.buy_result.toFixed(2)}` : '-'}
                       </div>
                     )}
 
-                    <div className="font-semibold">{multiplier}x</div>
+                    <div className="font-semibold text-sm">{multiplier}x</div>
 
-                    {editingResultId === call.id ? (
+                    {editingId === call.id ? (
                       <Button
                         size="sm"
                         variant="default"
-                        onClick={() => updateSlotResult(call.id, currentResult)}
+                        onClick={() => handleUpdate(call.id)}
                         className="h-8"
                       >
                         <Check className="h-4 w-4" />
@@ -305,80 +341,13 @@ export function SlotCalls() {
                     ) : (
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setEditingResultId(call.id);
-                          setResultValues({ ...resultValues, [call.id]: (call.buy_result || 0).toString() });
-                        }}
-                        className="h-8"
+                        variant="ghost"
+                        onClick={() => deleteSlotCall(call.id)}
+                        className="h-8 text-destructive hover:text-destructive"
                       >
-                        Edit
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
-
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => deleteSlotCall(call.id)}
-                      className="h-8 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Completed Section */}
-      <Card className="border-primary/20">
-        <CardHeader>
-          <CardTitle>Completed Slot Calls</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {completedCalls.length === 0 ? (
-            <p className="text-muted-foreground text-sm py-8 text-center">
-              No completed slot calls
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {/* Header Row */}
-              <div className="grid grid-cols-6 gap-2 px-3 py-2 text-sm font-semibold text-muted-foreground">
-                <div>Username</div>
-                <div>Slot</div>
-                <div>Buy Amount</div>
-                <div>Result</div>
-                <div>Multiplier</div>
-                <div></div>
-              </div>
-
-              {/* Data Rows */}
-              {completedCalls.map((call) => {
-                const multiplier = call.buy_amount > 0 && call.buy_result ? (call.buy_result / call.buy_amount).toFixed(2) : '0';
-                return (
-                  <div
-                    key={call.id}
-                    className="grid grid-cols-6 gap-2 px-3 py-3 items-center bg-background/50 border border-primary/10 rounded-lg"
-                  >
-                    <div className="font-medium">{call.username}</div>
-                    <div className="text-sm">{call.slot}</div>
-                    <div>${call.buy_amount.toFixed(2)}</div>
-                    <div className="text-green-500 font-medium">
-                      ${call.buy_result?.toFixed(2) || '-'}
-                    </div>
-                    <div className="font-semibold">
-                      {multiplier}x
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => deleteSlotCall(call.id)}
-                      className="h-8 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 );
               })}
