@@ -23,13 +23,11 @@ export default function TournamentPage() {
     const checkTournamentStatus = async () => {
       try {
         const supabase = createClient();
-        // Filter for live or registration tournaments, then get the most recent one
+        // Query for the tournament marked as current/live
         const { data, error } = await supabase
           .from("tournaments")
           .select("status")
-          .in("status", ["live", "registration"])
-          .order("created_at", { ascending: false })
-          .limit(1)
+          .eq("is_current", true)
           .single();
 
         // Handle both error and no data cases
@@ -56,7 +54,7 @@ export default function TournamentPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "tournaments" },
         (payload) => {
-          if (payload.new?.status) {
+          if (payload.new?.is_current === true) {
             setTournamentStatus(payload.new.status);
           }
         }

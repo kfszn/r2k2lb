@@ -24,108 +24,40 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // If completing tournament and winner data is provided, record to winners circle
-    if (status === "completed" && winner) {
-      // Get tournament name
-      const { data: tournamentData } = await supabase
+    // If marking as live/registration, set is_current to true and clear other tournaments
+    if (["live", "registration"].includes(status)) {
+      // Clear is_current from all other tournaments
+      await supabase
         .from("tournaments")
-        .select("name")
+        .update({ is_current: false })
+        .neq("id", tournamentId);
+      
+      // Set this tournament as current
+      const { data: tournament, error } = await supabase
+        .from("tournaments")
+        .update({ status, is_current: true })
         .eq("id", tournamentId)
+        .select()
         .single();
 
-      const { error: winnerError } = await supabase
-        .from("tournament_winners")
-        .insert({
-          acebet_username: winner.acebet_username,
-          kick_username: winner.kick_username,
-          tournament_id: tournamentId,
-          tournament_name: tournamentData?.name || "Tournament",
-          prize_amount: winner.prize_amount || 0,
-        });
-
-      if (winnerError) {
-        console.error("Error recording tournament winner:", winnerError);
-        // Continue with status update even if winner recording fails
-      }
-    }
-
-    // If starting tournament, generate bracket first
-    if (status === "active") {
-      // Get players for bracket generation
-      const { data: players, error: playersError } = await supabase
-        .from("tournament_players")
-        .select("*")
-        .eq("tournament_id", tournamentId)
-        .order("seed", { ascending: true, nullsFirst: false });
-
-      if (playersError || !players || players.length < 2) {
+      if (error) {
+        console.error("Error updating tournament status:", error);
         return NextResponse.json(
-          { error: "Need at least 2 players to start tournament" },
-          { status: 400 }
-        );
-      }
-
-      // Assign seeds to unseeded players
-      const seededPlayers = players.map((player, index) => ({
-        ...player,
-        seed: player.seed || index + 1,
-      }));
-
-      // Update seeds for players that didn't have one
-      const unseededPlayers = seededPlayers.filter(
-        (p, i) => players[i].seed === null
-      );
-      
-      for (const player of unseededPlayers) {
-        await supabase
-          .from("tournament_players")
-          .update({ seed: player.seed, status: "checked_in" })
-          .eq("id", player.id);
-      }
-
-      // Generate bracket matches
-      const bracketMatches = generateBracket(seededPlayers);
-
-      // Insert bracket matches
-      const { error: matchError } = await supabase
-        .from("bracket_matches")
-        .insert(
-          bracketMatches.map((match) => ({
-            tournament_id: tournamentId,
-            round: match.round,
-            match_number: match.match_number,
-            player1_id: match.player1_id,
-            player2_id: match.player2_id,
-            status: "pending",
-          }))
-        );
-
-      if (matchError) {
-        console.error("Error creating bracket:", matchError);
-        return NextResponse.json(
-          { error: "Failed to generate bracket" },
+          { error: "Failed to update tournament status" },
           { status: 500 }
         );
       }
+
+      return NextResponse.json({ tournament });
     }
 
-    // Update tournament status
+    // For other statuses (completed, cancelled), just update status and clear is_current
     const { data: tournament, error } = await supabase
       .from("tournaments")
-      .update({ status })
+      .update({ status, is_current: false })
       .eq("id", tournamentId)
       .select()
       .single();
-
-    if (error) {
-      console.error("Error updating tournament status:", error);
-      return NextResponse.json(
-        { error: "Failed to update tournament status" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ tournament });
   } catch (error) {
     console.error("Error in update status:", error);
     return NextResponse.json(
