@@ -23,21 +23,38 @@ export default function TournamentPage() {
     const checkTournamentStatus = async () => {
       try {
         const supabase = createClient();
-        // Query for the tournament marked as current/live
-        const { data, error } = await supabase
+        
+        // First, try to find a tournament marked as current
+        let { data, error } = await supabase
           .from("tournaments")
           .select("status")
           .eq("is_current", true)
           .single();
 
-        // Handle both error and no data cases
-        if (error) {
-          setTournamentStatus(null);
+        // If no current tournament, fall back to most recent live/registration tournament
+        if (error || !data) {
+          console.log("[v0] No is_current tournament, falling back to recent live tournament");
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from("tournaments")
+            .select("status")
+            .in("status", ["live", "registration"])
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+          
+          if (fallbackError || !fallbackData) {
+            console.log("[v0] No live tournaments found");
+            setTournamentStatus(null);
+          } else {
+            console.log("[v0] Found fallback tournament with status:", fallbackData.status);
+            setTournamentStatus(fallbackData.status);
+          }
         } else {
-          const status = data?.status || null;
-          setTournamentStatus(status);
+          console.log("[v0] Found is_current tournament with status:", data.status);
+          setTournamentStatus(data.status);
         }
       } catch (error) {
+        console.log("[v0] Error checking tournament status:", error);
         setTournamentStatus(null);
       } finally {
         setIsLoaded(true);
@@ -55,6 +72,7 @@ export default function TournamentPage() {
         { event: "*", schema: "public", table: "tournaments" },
         (payload) => {
           if (payload.new?.is_current === true) {
+            console.log("[v0] Tournament marked as current, status:", payload.new.status);
             setTournamentStatus(payload.new.status);
           }
         }
