@@ -14,8 +14,9 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function TournamentPage() {
-  const { matches } = useBracket();
+  const { matches, setMatches } = useBracket();
   const [tournamentStatus, setTournamentStatus] = useState<string | null>(null);
+  const [currentTournamentId, setCurrentTournamentId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Check tournament status on mount
@@ -27,7 +28,7 @@ export default function TournamentPage() {
         // First, try to find a tournament marked as current
         let { data, error } = await supabase
           .from("tournaments")
-          .select("status")
+          .select("id, status")
           .eq("is_current", true)
           .single();
 
@@ -36,7 +37,7 @@ export default function TournamentPage() {
           console.log("[v0] No is_current tournament, falling back to recent live tournament");
           const { data: fallbackData, error: fallbackError } = await supabase
             .from("tournaments")
-            .select("status")
+            .select("id, status")
             .in("status", ["live", "registration"])
             .order("created_at", { ascending: false })
             .limit(1)
@@ -45,17 +46,21 @@ export default function TournamentPage() {
           if (fallbackError || !fallbackData) {
             console.log("[v0] No live tournaments found");
             setTournamentStatus(null);
+            setCurrentTournamentId(null);
           } else {
-            console.log("[v0] Found fallback tournament with status:", fallbackData.status);
+            console.log("[v0] Found fallback tournament with id:", fallbackData.id, "status:", fallbackData.status);
             setTournamentStatus(fallbackData.status);
+            setCurrentTournamentId(fallbackData.id);
           }
         } else {
-          console.log("[v0] Found is_current tournament with status:", data.status);
+          console.log("[v0] Found is_current tournament with id:", data.id, "status:", data.status);
           setTournamentStatus(data.status);
+          setCurrentTournamentId(data.id);
         }
       } catch (error) {
         console.log("[v0] Error checking tournament status:", error);
         setTournamentStatus(null);
+        setCurrentTournamentId(null);
       } finally {
         setIsLoaded(true);
       }
@@ -72,8 +77,9 @@ export default function TournamentPage() {
         { event: "*", schema: "public", table: "tournaments" },
         (payload) => {
           if (payload.new?.is_current === true) {
-            console.log("[v0] Tournament marked as current, status:", payload.new.status);
+            console.log("[v0] Tournament marked as current, id:", payload.new.id, "status:", payload.new.status);
             setTournamentStatus(payload.new.status);
+            setCurrentTournamentId(payload.new.id);
           }
         }
       )
@@ -83,6 +89,39 @@ export default function TournamentPage() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Fetch bracket matches for the current tournament
+  useEffect(() => {
+    if (!currentTournamentId) return;
+
+    const fetchBracketMatches = async () => {
+      try {
+        const supabase = createClient();
+        console.log("[v0] Fetching bracket for tournament:", currentTournamentId);
+        
+        const { data: matches, error } = await supabase
+          .from("bracket_matches")
+          .select("*")
+          .eq("tournament_id", currentTournamentId)
+          .order("round", { ascending: true })
+          .order("match_number", { ascending: true });
+
+        if (error) {
+          console.log("[v0] Error fetching bracket matches:", error);
+          return;
+        }
+
+        console.log("[v0] Fetched", matches?.length || 0, "matches from database for tournament:", currentTournamentId);
+        if (matches && matches.length > 0) {
+          setMatches(matches);
+        }
+      } catch (error) {
+        console.log("[v0] Error in fetchBracketMatches:", error);
+      }
+    };
+
+    fetchBracketMatches();
+  }, [currentTournamentId, setMatches]);
 
   // Show bracket only if tournament is live or registration (not closed)
   const isLive = (tournamentStatus === "live" || tournamentStatus === "registration") && isLoaded && matches.length > 0;
