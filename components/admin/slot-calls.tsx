@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
-import { Plus, Check, Trash2 } from 'lucide-react';
+import { Plus, Check, Trash2, Power } from 'lucide-react';
 
 interface SlotCall {
   id: string;
@@ -22,6 +22,7 @@ export function SlotCalls() {
   const [pendingCalls, setPendingCalls] = useState<SlotCall[]>([]);
   const [completedCalls, setCompletedCalls] = useState<SlotCall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
@@ -33,9 +34,10 @@ export function SlotCalls() {
 
   const supabase = createClient();
 
-  // Fetch slot calls
+  // Fetch slot calls and game status
   useEffect(() => {
     fetchSlotCalls();
+    fetchGameStatus();
   }, []);
 
   const fetchSlotCalls = async () => {
@@ -54,6 +56,39 @@ export function SlotCalls() {
       console.error('Error fetching slot calls:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchGameStatus = async () => {
+    try {
+      const { data } = await supabase
+        .from('stream_games_config')
+        .select('is_open')
+        .eq('game_name', 'slot_calls')
+        .single();
+
+      if (data) {
+        setIsOpen(data.is_open);
+      }
+    } catch (error) {
+      console.error('Error fetching game status:', error);
+    }
+  };
+
+  const toggleGameStatus = async () => {
+    try {
+      const newStatus = !isOpen;
+      const { error } = await supabase
+        .from('stream_games_config')
+        .update({ is_open: newStatus })
+        .eq('game_name', 'slot_calls');
+
+      if (error) throw error;
+
+      setIsOpen(newStatus);
+    } catch (error) {
+      console.error('Error toggling game status:', error);
+      alert('Error toggling status');
     }
   };
 
@@ -126,15 +161,31 @@ export function SlotCalls() {
       {/* Pending Section */}
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Pending Slot Calls</CardTitle>
-          <Button
-            size="sm"
-            onClick={() => setShowNewForm(!showNewForm)}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            New Slot Call
-          </Button>
+          <div className="flex items-center gap-3">
+            <CardTitle>Pending Slot Calls</CardTitle>
+            <Badge variant={isOpen ? 'default' : 'secondary'}>
+              {isOpen ? 'OPEN' : 'CLOSED'}
+            </Badge>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant={isOpen ? 'destructive' : 'default'}
+              onClick={toggleGameStatus}
+              className="gap-2"
+            >
+              <Power className="h-4 w-4" />
+              {isOpen ? 'Close' : 'Open'}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setShowNewForm(!showNewForm)}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              New Slot Call
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {showNewForm && (

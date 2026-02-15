@@ -194,7 +194,13 @@ class KickTournamentBot {
 
       const data = await response.json();
       console.log(`[Bot] Slot call response: ${data.message}`);
-      this.sendChatMessage(data.message);
+      
+      // Send response message to chat
+      if (data.success) {
+        this.sendChatMessage(data.message);
+      } else {
+        this.sendChatMessage(`@${kickUsername} ${data.message}`);
+      }
     } catch (error) {
       console.error("[Bot] Error handling slot call:", error);
       this.sendChatMessage(`@${kickUsername} Error submitting slot call. Please try again.`);
