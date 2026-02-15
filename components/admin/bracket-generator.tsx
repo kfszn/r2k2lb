@@ -24,10 +24,12 @@ export function BracketGenerator({ tournament }: { tournament: Tournament }) {
 
   // Load bracket for this tournament on mount
   useEffect(() => {
-    if (tournament.id && tournament.id !== activeTournamentId) {
+    console.log('[v0] BracketGenerator - tournament.id:', tournament.id, 'activeTournamentId:', activeTournamentId);
+    if (tournament.id) {
+      console.log('[v0] BracketGenerator - Loading bracket for tournament:', tournament.id);
       loadBracketForTournament(tournament.id);
     }
-  }, [tournament.id, activeTournamentId, loadBracketForTournament]);
+  }, [tournament.id, loadBracketForTournament]);
 
   const { data: players = [] } = useSWR(
     tournament ? `players-${tournament.id}` : null,
