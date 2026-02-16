@@ -189,7 +189,7 @@ export default function LossBackPage() {
               </div>
               <div className="p-3 bg-secondary/20 rounded-lg">
                 <p className="text-sm">
-                  <span className="font-medium">Tier:</span> Tier 2 (5% loss-back, $200 max)
+                  <span className="font-medium">Tier:</span> Tier 1 (5% loss-back, $100 max)
                 </p>
               </div>
               <div className="p-3 bg-secondary/20 rounded-lg">
@@ -199,7 +199,7 @@ export default function LossBackPage() {
               </div>
               <div className="p-3 bg-primary/20 rounded-lg border border-primary/30">
                 <p className="text-sm">
-                  <span className="font-medium">Loss-back Credit:</span> $2,500 × 5% = $125 <span className="text-muted-foreground ml-2">(under $200 max)</span>
+                  <span className="font-medium">Loss-back Credit:</span> $2,500 × 5% = $125 <span className="text-muted-foreground ml-2">(capped at $100 max)</span>
                 </p>
               </div>
             </CardContent>
