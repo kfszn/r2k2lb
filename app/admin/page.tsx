@@ -26,10 +26,11 @@ import { TournamentDetailView } from "@/components/admin/tournament-detail-view"
 import { StreamGamesManager } from "@/components/admin/stream-games-manager";
 import { WagerRaceManagement } from "@/components/admin/wager-race-management";
 import { TotalWagerStats } from "@/components/admin/total-wager-stats";
+import { RaffleManager } from "@/components/admin/raffle-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "wager-races";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "wager-races" | "raffle";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -151,6 +152,18 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">Create and manage wager races with milestone rewards</p>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("raffle")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-8 w-8 text-primary" />
+                  <CardTitle>Weekly Raffle</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Configure raffle settings and select winners</p>
               </CardContent>
             </Card>
 
@@ -336,6 +349,26 @@ export default function AdminPage() {
               </Card>
             </TabsContent>
           </Tabs>
+        </div>
+      </main>
+    );
+  }
+
+  // Raffle Management View
+  if (currentView === "raffle") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Weekly Raffle Management</h1>
+          </div>
+          <RaffleManager />
         </div>
       </main>
     );
