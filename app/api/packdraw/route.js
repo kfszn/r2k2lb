@@ -8,7 +8,7 @@ export async function GET(req) {
   try {
     const apiKey = "edadb58b-ea99-4c27-9b91-60b84c095ee9";
     const { searchParams } = new URL(req.url);
-    const after = searchParams.get('after') || "1-17-2026"; // expects M-D-YYYY
+    const after = searchParams.get('after') || "2-16-2026"; // expects M-D-YYYY
     
     // Create cache key from parameters
     const cacheKey = `packdraw_${after}`;
