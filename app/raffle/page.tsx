@@ -83,7 +83,6 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               <p className="text-3xl font-bold text-primary">{entries.length} / {config?.max_entries || 10000}</p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mt-4">Min wager: ${config?.min_wager || 50} | Prize: {config?.prize_percentage || 10}% of total wagers</p>
         </CardContent>
       </Card>
       
@@ -134,7 +133,7 @@ export default function RafflePage() {
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Weekly Raffle</h1>
-          <p className="text-muted-foreground">Win big with our weekly raffles. Minimum $50 wager to enter.</p>
+          <p className="text-muted-foreground">Win big with our weekly raffles.</p>
         </div>
         
         <Tabs defaultValue="acebet" className="w-full">
