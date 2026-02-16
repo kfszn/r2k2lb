@@ -34,6 +34,7 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   const [winners, setWinners] = useState<Winner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalPrize, setTotalPrize] = useState(0);
+  const [config, setConfig] = useState<{ min_wager: number; prize_percentage: number; max_entries: number } | null>(null);
   
   useEffect(() => {
     fetchData();
@@ -43,17 +44,20 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   
   const fetchData = async () => {
     try {
-      const [entriesRes, winnersRes] = await Promise.all([
+      const [entriesRes, winnersRes, configRes] = await Promise.all([
         fetch(`/api/raffle/entries?platform=${platform}`),
         fetch(`/api/raffle/winners?platform=${platform}`),
+        fetch(`/api/raffle/config?platform=${platform}`),
       ]);
       
       const entriesData = await entriesRes.json();
       const winnersData = await winnersRes.json();
+      const configData = await configRes.json();
       
       setEntries(entriesData.entries || []);
       setTotalPrize(entriesData.totalPrize || 0);
       setWinners(winnersData.winners || []);
+      setConfig(configData);
     } catch (error) {
       console.error('Error fetching raffle data:', error);
     } finally {
@@ -76,10 +80,10 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-1">Entries</p>
-              <p className="text-3xl font-bold text-primary">{entries.length} / 10,000</p>
+              <p className="text-3xl font-bold text-primary">{entries.length} / {config?.max_entries || 10000}</p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mt-4">Min wager: $50 | Prize: 10% of total wagers</p>
+          <p className="text-xs text-muted-foreground mt-4">Min wager: ${config?.min_wager || 50} | Prize: {config?.prize_percentage || 10}% of total wagers</p>
         </CardContent>
       </Card>
       
