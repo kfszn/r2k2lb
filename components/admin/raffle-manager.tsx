@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 interface RaffleConfig {
   platform: string;
   min_wager: number;
-  prize_percentage: number;
+  prize_amount: number;
   max_entries: number;
 }
 
@@ -19,7 +19,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   const [selectedWinner, setSelectedWinner] = useState<{ username: string; prizeAmount: number } | null>(null);
   const [adminSecret, setAdminSecret] = useState('');
   const [config, setConfig] = useState<RaffleConfig | null>(null);
-  const [configForm, setConfigForm] = useState({ min_wager: 50, prize_percentage: 10, max_entries: 10000 });
+  const [configForm, setConfigForm] = useState({ min_wager: 50, prize_amount: 1000, max_entries: 10000 });
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   
   useEffect(() => {
@@ -33,7 +33,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
       setConfig(data);
       setConfigForm({
         min_wager: data.min_wager,
-        prize_percentage: data.prize_percentage,
+        prize_amount: data.prize_amount,
         max_entries: data.max_entries,
       });
     } catch (error) {
@@ -120,11 +120,11 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Prize Percentage (%)</label>
+              <label className="text-sm font-medium mb-2 block">Prize Amount ($)</label>
               <Input
                 type="number"
-                value={configForm.prize_percentage}
-                onChange={(e) => setConfigForm({ ...configForm, prize_percentage: parseFloat(e.target.value) })}
+                value={configForm.prize_amount}
+                onChange={(e) => setConfigForm({ ...configForm, prize_amount: parseFloat(e.target.value) })}
               />
             </div>
             <div>
