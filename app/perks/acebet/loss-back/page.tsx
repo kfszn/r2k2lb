@@ -32,9 +32,9 @@ export default function LossBackPage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <h3 className="font-semibold text-lg">Loss-back Percentage</h3>
-                  <p className="text-3xl font-bold text-primary">Up to 15%</p>
+                  <p className="text-3xl font-bold text-primary">5%</p>
                   <p className="text-sm text-muted-foreground">
-                    Earn loss-back credits based on your monthly wager tier. Monthly cap of $250 per player.
+                    Earn loss-back credits based on your tier. Monthly caps: Tier 1 ($100), Tier 2 ($200), Tier 3 ($300).
                   </p>
                   <div className="pt-4 space-y-2 text-sm">
                     <p className="flex items-center gap-2">
@@ -64,7 +64,7 @@ export default function LossBackPage() {
                     </li>
                     <li>
                       <span className="font-medium">Monthly Cap:</span>
-                      <span className="text-primary font-bold ml-2">$250 max</span>
+                      <span className="text-primary font-bold ml-2">$100 (Tier 1), $200 (Tier 2), $300 (Tier 3)</span>
                     </li>
                     <li>
                       <span className="font-medium">Code Required:</span>
@@ -84,24 +84,27 @@ export default function LossBackPage() {
             <CardContent>
               <div className="space-y-4">
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Tier 1</p>
-                    <p className="text-2xl font-bold text-primary mb-2">5%</p>
-                    <p className="text-sm font-medium mb-2">$1 - $100,000</p>
-                    <p className="text-xs text-muted-foreground">Monthly wager range</p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Tier 2</p>
-                    <p className="text-2xl font-bold text-primary mb-2">10%</p>
-                    <p className="text-sm font-medium mb-2">$100,001 - $499,999</p>
-                    <p className="text-xs text-muted-foreground">Monthly wager range</p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
-                    <p className="font-semibold mb-2">Tier 3 (Max)</p>
-                    <p className="text-2xl font-bold text-primary mb-2">15%</p>
-                    <p className="text-sm font-medium mb-2">$500,000+</p>
-                    <p className="text-xs text-muted-foreground">Monthly wager range</p>
-                  </div>
+                <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
+                  <p className="font-semibold mb-2">Tier 1</p>
+                  <p className="text-2xl font-bold text-primary mb-2">5%</p>
+                  <p className="text-sm font-medium mb-2">$1 - $100,000</p>
+                  <p className="text-xs text-muted-foreground mb-3">Monthly wager range</p>
+                  <p className="text-xs font-medium text-primary">Max: $100/month</p>
+                </div>
+                <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
+                  <p className="font-semibold mb-2">Tier 2</p>
+                  <p className="text-2xl font-bold text-primary mb-2">5%</p>
+                  <p className="text-sm font-medium mb-2">$1 - $100,000</p>
+                  <p className="text-xs text-muted-foreground mb-3">Monthly wager range</p>
+                  <p className="text-xs font-medium text-primary">Max: $200/month</p>
+                </div>
+                <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
+                  <p className="font-semibold mb-2">Tier 3 (Max)</p>
+                  <p className="text-2xl font-bold text-primary mb-2">5%</p>
+                  <p className="text-sm font-medium mb-2">$1 - $100,000</p>
+                  <p className="text-xs text-muted-foreground mb-3">Monthly wager range</p>
+                  <p className="text-xs font-medium text-primary">Max: $300/month</p>
+                </div>
                 </div>
               </div>
             </CardContent>
@@ -181,12 +184,12 @@ export default function LossBackPage() {
             <CardContent className="space-y-3">
               <div className="p-3 bg-secondary/20 rounded-lg">
                 <p className="text-sm">
-                  <span className="font-medium">Monthly Wagers:</span> $250,000
+                  <span className="font-medium">Monthly Wagers:</span> $50,000
                 </p>
               </div>
               <div className="p-3 bg-secondary/20 rounded-lg">
                 <p className="text-sm">
-                  <span className="font-medium">Tier:</span> Tier 2 (10% loss-back)
+                  <span className="font-medium">Tier:</span> Tier 2 (5% loss-back, $200 max)
                 </p>
               </div>
               <div className="p-3 bg-secondary/20 rounded-lg">
@@ -196,7 +199,7 @@ export default function LossBackPage() {
               </div>
               <div className="p-3 bg-primary/20 rounded-lg border border-primary/30">
                 <p className="text-sm">
-                  <span className="font-medium">Loss-back Credit:</span> $2,500 × 10% = $250 <span className="text-muted-foreground ml-2">(capped at max $250/month)</span>
+                  <span className="font-medium">Loss-back Credit:</span> $2,500 × 5% = $125 <span className="text-muted-foreground ml-2">(under $200 max)</span>
                 </p>
               </div>
             </CardContent>
@@ -239,8 +242,8 @@ export default function LossBackPage() {
                 <p className="text-muted-foreground">You must have a minimum net loss of $300 to qualify for a Loss-back claim.</p>
               </div>
               <div>
-                <p className="font-semibold mb-1">Monthly Cap</p>
-                <p className="text-muted-foreground">Loss-back is capped at $250 per player, per month. This amount comes from R2K2's pocket, not the casino.</p>
+                <p className="font-semibold mb-1">Monthly Caps by Tier</p>
+                <p className="text-muted-foreground">Tier 1: $100/month, Tier 2: $200/month, Tier 3: $300/month. This amount comes from R2K2's pocket, not the casino.</p>
               </div>
               <div>
                 <p className="font-semibold mb-1">Tier Calculation</p>
