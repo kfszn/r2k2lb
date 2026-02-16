@@ -33,7 +33,7 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   const [winners, setWinners] = useState<Winner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalPrize, setTotalPrize] = useState(0);
-  const [config, setConfig] = useState<{ min_wager: number; prize_percentage: number; max_entries: number } | null>(null);
+  const [config, setConfig] = useState<{ min_wager: number; prize_amount: number; max_entries: number } | null>(null);
   
   useEffect(() => {
     fetchData();
@@ -43,20 +43,22 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   
   const fetchData = async () => {
     try {
-      const [entriesRes, winnersRes, configRes] = await Promise.all([
+      const [entriesRes, winnersRes] = await Promise.all([
         fetch(`/api/raffle/entries?platform=${platform}`),
         fetch(`/api/raffle/winners?platform=${platform}`),
-        fetch(`/api/raffle/config?platform=${platform}`),
       ]);
       
       const entriesData = await entriesRes.json();
       const winnersData = await winnersRes.json();
-      const configData = await configRes.json();
       
       setEntries(entriesData.entries || []);
       setTotalPrize(entriesData.totalPrize || 0);
       setWinners(winnersData.winners || []);
-      setConfig(configData);
+      setConfig({
+        min_wager: entriesData.minWager || 50,
+        prize_amount: entriesData.totalPrize || 0,
+        max_entries: entriesData.maxEntries || 10000
+      });
     } catch (error) {
       console.error('Error fetching raffle data:', error);
     } finally {
@@ -81,6 +83,9 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               <p className="text-sm text-muted-foreground mb-1">Entries</p>
               <p className="text-3xl font-bold text-primary">{entries.length} / {config?.max_entries || 10000}</p>
             </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-primary/20">
+            <p className="text-sm text-muted-foreground">Minimum wager to enter: <span className="text-primary font-semibold">${config?.min_wager || 50}</span></p>
           </div>
         </CardContent>
       </Card>
