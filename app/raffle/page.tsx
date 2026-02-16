@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GiveawayCounter } from '@/components/giveaway-counter';
 import { Header } from '@/components/header';
 import { CountdownTimer } from '@/components/raffle/countdown-timer';
-import { WheelSpinner } from '@/components/raffle/wheel-spinner';
 import { PreviousWinners } from '@/components/raffle/previous-winners';
 
 function maskName(name: string): string {
@@ -115,9 +114,6 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
           </div>
         </CardContent>
       </Card>
-      
-      {/* Wheel Spinner */}
-      <WheelSpinner entries={entries} />
       
       {/* Previous Winners */}
       <PreviousWinners winners={winners} />
