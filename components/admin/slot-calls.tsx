@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
-import { Plus, Check, Trash2, Power } from 'lucide-react';
+import { Plus, Check, Trash2 } from 'lucide-react';
 
 interface SlotCall {
   id: string;
@@ -21,7 +21,6 @@ interface SlotCall {
 export function SlotCalls() {
   const [slotCalls, setSlotCalls] = useState<SlotCall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isOpen, setIsOpen] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
@@ -34,10 +33,9 @@ export function SlotCalls() {
 
   const supabase = createClient();
 
-  // Fetch slot calls and game status
+  // Fetch slot calls
   useEffect(() => {
     fetchSlotCalls();
-    fetchGameStatus();
   }, []);
 
   const fetchSlotCalls = async () => {
@@ -171,31 +169,15 @@ export function SlotCalls() {
     <div className="space-y-6">
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CardTitle>Slot Calls</CardTitle>
-            <Badge variant={isOpen ? 'default' : 'secondary'}>
-              {isOpen ? 'OPEN' : 'CLOSED'}
-            </Badge>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant={isOpen ? 'destructive' : 'default'}
-              onClick={toggleGameStatus}
-              className="gap-2"
-            >
-              <Power className="h-4 w-4" />
-              {isOpen ? 'Close' : 'Open'}
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setShowNewForm(!showNewForm)}
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              New Slot Call
-            </Button>
-          </div>
+          <CardTitle>Slot Calls</CardTitle>
+          <Button
+            size="sm"
+            onClick={() => setShowNewForm(!showNewForm)}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            New Slot Call
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           {showNewForm && (
