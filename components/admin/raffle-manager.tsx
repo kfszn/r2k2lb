@@ -115,24 +115,24 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               <label className="text-sm font-medium mb-2 block">Minimum Wager ($)</label>
               <Input
                 type="number"
-                value={configForm.min_wager}
-                onChange={(e) => setConfigForm({ ...configForm, min_wager: parseFloat(e.target.value) })}
+                value={configForm.min_wager || 0}
+                onChange={(e) => setConfigForm({ ...configForm, min_wager: parseFloat(e.target.value) || 0 })}
               />
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Prize Amount ($)</label>
               <Input
                 type="number"
-                value={configForm.prize_amount}
-                onChange={(e) => setConfigForm({ ...configForm, prize_amount: parseFloat(e.target.value) })}
+                value={configForm.prize_amount || 0}
+                onChange={(e) => setConfigForm({ ...configForm, prize_amount: parseFloat(e.target.value) || 0 })}
               />
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Max Entries</label>
               <Input
                 type="number"
-                value={configForm.max_entries}
-                onChange={(e) => setConfigForm({ ...configForm, max_entries: parseInt(e.target.value) })}
+                value={configForm.max_entries || 0}
+                onChange={(e) => setConfigForm({ ...configForm, max_entries: parseInt(e.target.value) || 0 })}
               />
             </div>
           </div>
