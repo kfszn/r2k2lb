@@ -1,270 +1,216 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
+// ─── Acebet helpers (same logic as /api/leaderboard) ───
+const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
+
+const PACKDRAW_API_KEY = "edadb58b-ea99-4c27-9b91-60b84c095ee9";
+
+function toISODate(d: Date) { return d.toISOString().slice(0, 10); }
+
+function* dateRangeUTC(startISO: string, endISO: string) {
+  const start = new Date(`${startISO}T00:00:00Z`);
+  const end = new Date(`${endISO}T00:00:00Z`);
+  for (let d = new Date(start); d <= end; d = new Date(d.getTime() + 86400000)) {
+    yield toISODate(d);
+  }
+}
+
+async function fetchAcebetDay(dayISO: string) {
+  const url = `https://api.acebet.com/affiliates/detailed-summary/v2/${dayISO}`;
+  const r = await fetch(url, {
+    headers: { Authorization: `Bearer ${ACEBET_TOKEN}` },
+    cache: 'no-store',
+  });
+  if (!r.ok) return [];
+  const j = await r.json().catch(() => null);
+  return Array.isArray(j) ? j : [];
+}
+
+async function getAcebetWagers(startDate: string, endDate: string): Promise<{ username: string; wager_amount: number }[]> {
+  const users = new Map<number, { name: string; min: number; max: number }>();
+
+  for (const day of dateRangeUTC(startDate, endDate)) {
+    const rows = await fetchAcebetDay(day);
+    for (const r of rows) {
+      const userId = r?.userId;
+      if (userId == null) continue;
+      const wagered = Number(r?.wagered ?? 0);
+      const name = r?.name ?? '';
+
+      const u = users.get(userId) || { name, min: wagered, max: wagered };
+      u.min = Math.min(u.min, wagered);
+      u.max = Math.max(u.max, wagered);
+      u.name = r?.name ?? u.name;
+      users.set(userId, u);
+    }
+  }
+
+  return [...users.values()]
+    .map(u => ({ username: u.name, wager_amount: u.max - u.min }))
+    .filter(u => u.username && u.wager_amount > 0)
+    .sort((a, b) => b.wager_amount - a.wager_amount);
+}
+
+// ─── Packdraw helper (same logic as /api/packdraw) ───
+async function getPackdrawWagers(startDate: string): Promise<{ username: string; wager_amount: number }[]> {
+  // Packdraw expects M-D-YYYY format for the "after" param
+  const [y, m, d] = startDate.split('-');
+  const afterParam = `${parseInt(m)}-${parseInt(d)}-${y}`;
+
+  const url = `https://packdraw.com/api/v1/affiliates/leaderboard?after=${encodeURIComponent(afterParam)}&apiKey=${encodeURIComponent(PACKDRAW_API_KEY)}`;
+  const res = await fetch(url, {
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!res.ok) return [];
+
+  const data = await res.json().catch(() => null);
+  if (!data) return [];
+
+  // Packdraw returns { leaderboard: [...] }
+  const list = data.leaderboard || data.data || (Array.isArray(data) ? data : []);
+  return list
+    .map((u: any) => ({
+      username: u.username || u.name || '',
+      wager_amount: u.wagerAmount || u.wagered || 0,
+    }))
+    .filter((u: any) => u.username && u.wager_amount > 0)
+    .sort((a: any, b: any) => b.wager_amount - a.wager_amount);
+}
+
+// ─── Main GET handler ───
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const platform = searchParams.get('platform') || 'acebet';
-    
+    const platform = request.nextUrl.searchParams.get('platform') || 'acebet';
     const supabase = await createClient();
-    
-    // Get raffle config for this platform
+
+    // 1. Load config from admin panel
     const { data: configData } = await supabase
       .from('raffle_config')
       .select('*')
       .eq('platform', platform)
-      .single();
-    
-    if (!configData) {
-      console.log('[v0] No config found for platform:', platform);
-      return NextResponse.json({
-        entries: [],
-        count: 0,
-        totalPrize: 0,
-        minWager: 50,
-        maxEntries: 10000,
-        startDate: '2026-02-14',
-        endDate: '2026-02-21'
-      });
-    }
+      .maybeSingle();
 
-    const minWager = configData.min_wager;
-    const prizeAmount = configData.prize_amount;
-    const maxEntries = configData.max_entries;
-    const startDate = configData.start_date;
-    const endDate = configData.end_date;
+    const minWager   = configData?.min_wager   ?? 50;
+    const prizeAmount = configData?.prize_amount ?? 1000;
+    const maxEntries = configData?.max_entries  ?? 10000;
+    const startDate  = configData?.start_date   ?? '2026-02-14';
+    const endDate    = configData?.end_date     ?? '2026-02-21';
 
-    console.log('[v0] Raffle config loaded - platform:', platform, 'minWager:', minWager, 'startDate:', startDate, 'endDate:', endDate);
-
-    // Use the existing leaderboard API which already fetches from Acebet/Packdraw
-    let eligibleUsers: any[] = [];
+    // 2. Pull wager data directly from platform API for the configured date range
+    let allWagers: { username: string; wager_amount: number }[] = [];
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      const leaderboardUrl = `${baseUrl}/api/leaderboard?start_at=${startDate}&end_at=${endDate}`;
-      
-      console.log('[v0] Fetching leaderboard from:', leaderboardUrl);
-      
-      const leaderboardRes = await fetch(leaderboardUrl, {
-        cache: 'no-store',
-        method: 'GET'
-      });
-
-      if (!leaderboardRes.ok) {
-        console.error('[v0] Leaderboard API error:', leaderboardRes.status);
-        throw new Error(`Leaderboard returned ${leaderboardRes.status}`);
+      if (platform === 'acebet') {
+        allWagers = await getAcebetWagers(startDate, endDate);
+      } else if (platform === 'packdraw') {
+        allWagers = await getPackdrawWagers(startDate);
       }
-
-      const leaderboardData = await leaderboardRes.json();
-      console.log('[v0] Leaderboard response - users:', leaderboardData.data?.length || 0);
-
-      // Filter users who wagered at least the minimum amount
-      eligibleUsers = (leaderboardData.data || [])
-        .filter((user: any) => (user.wagered || 0) >= minWager)
-        .slice(0, maxEntries)
-        .map((user: any) => ({
-          username: user.name || user.username || '',
-          wager_amount: user.wagered || 0
-        }));
-      
-      console.log('[v0] Eligible users after filtering:', eligibleUsers.length, 'eligible');
-    } catch (fetchError) {
-      console.error('[v0] Error fetching leaderboard:', fetchError);
+    } catch (apiErr) {
+      console.error('[v0] Error fetching platform wagers:', apiErr);
     }
 
-    // Sync eligible users to database
-    if (eligibleUsers.length > 0) {
-      // Get existing entries
-      const { data: existingEntries } = await supabase
+    // 3. Filter by min wager threshold
+    const eligible = allWagers
+      .filter(u => u.wager_amount >= minWager)
+      .slice(0, maxEntries);
+
+    // 4. Sync eligible users to raffle_entries table (upsert to avoid dupes)
+    if (eligible.length > 0) {
+      const { data: existing } = await supabase
         .from('raffle_entries')
         .select('username')
         .eq('platform', platform)
         .eq('week_start', startDate);
 
-      const existingUsernames = new Set((existingEntries || []).map(e => e.username));
-      const newEntries = eligibleUsers.filter(u => !existingUsernames.has(u.username) && u.username);
+      const existingNames = new Set((existing || []).map(e => e.username));
+      const toInsert = eligible.filter(u => !existingNames.has(u.username));
 
-      if (newEntries.length > 0) {
-        console.log('[v0] Inserting', newEntries.length, 'new raffle entries');
-        const { error: insertError } = await supabase.from('raffle_entries').insert(
-          newEntries.map((u: any) => ({
+      if (toInsert.length > 0) {
+        await supabase.from('raffle_entries').insert(
+          toInsert.map(u => ({
             platform,
             username: u.username,
             wager_amount: u.wager_amount,
             week_start: startDate,
             entered: true,
-            entry_date: new Date().toISOString()
+            entry_date: new Date().toISOString(),
           }))
         );
-        if (insertError) {
-          console.error('[v0] Insert error:', insertError);
-        }
+      }
+
+      // Update wager amounts for existing entries
+      for (const u of eligible.filter(u => existingNames.has(u.username))) {
+        await supabase
+          .from('raffle_entries')
+          .update({ wager_amount: u.wager_amount })
+          .eq('platform', platform)
+          .eq('week_start', startDate)
+          .eq('username', u.username);
       }
     }
 
-    // Get all entries for this raffle period
-    const { data: allEntries, error: entriesError } = await supabase
+    // 5. Return all entries for this raffle period
+    const { data: entries } = await supabase
       .from('raffle_entries')
       .select('*')
       .eq('platform', platform)
       .eq('week_start', startDate)
       .limit(maxEntries);
 
-    if (entriesError) {
-      console.error('[v0] Error fetching entries from DB:', entriesError);
-    }
-
-    console.log('[v0] Total entries for display:', allEntries?.length || 0);
-
-    const entriesCount = allEntries?.length || 0;
-
     return NextResponse.json({
-      entries: allEntries || [],
-      count: entriesCount,
+      entries: entries || [],
+      count: entries?.length || 0,
       totalPrize: prizeAmount,
       minWager,
       maxEntries,
       startDate,
-      endDate
+      endDate,
     });
   } catch (error) {
-    console.error('[v0] Error in raffle entries API:', error);
-    return NextResponse.json(
-      { 
-        entries: [],
-        count: 0,
-        totalPrize: 0,
-        minWager: 50,
-        maxEntries: 10000,
-        startDate: '2026-02-14',
-        endDate: '2026-02-21',
-        error: 'Failed to fetch raffle entries'
-      },
-      { status: 500 }
-    );
+    console.error('[v0] Raffle entries error:', error);
+    return NextResponse.json({
+      entries: [],
+      count: 0,
+      totalPrize: 0,
+      minWager: 50,
+      maxEntries: 10000,
+      startDate: '2026-02-14',
+      endDate: '2026-02-21',
+      error: 'Failed to fetch raffle entries',
+    }, { status: 500 });
   }
 }
 
-    const minWager = configData.min_wager;
-    const prizeAmount = configData.prize_amount;
-    const maxEntries = configData.max_entries;
-    const startDate = configData.start_date;
-    const endDate = configData.end_date;
+// ─── POST handler for manual admin entry ───
+export async function POST(request: NextRequest) {
+  try {
+    const { platform, username, wager_amount } = await request.json();
+    const supabase = await createClient();
 
-    console.log('[v0] Raffle config loaded - platform:', platform, 'minWager:', minWager, 'startDate:', startDate, 'endDate:', endDate);
-
-    // Fetch from Acebet or Packdraw API based on platform
-    let apiUrl = '';
-    if (platform === 'acebet') {
-      apiUrl = 'https://api.acebet.com/affiliates/detailed-summary/v2/';
-    } else if (platform === 'packdraw') {
-      apiUrl = 'https://api.packdraw.com/affiliates/detailed-summary/v2/';
-    }
-
-    console.log('[v0] Fetching from API:', apiUrl);
-
-    let eligibleUsers: any[] = [];
-    if (apiUrl) {
-      try {
-        const apiResponse = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': platform === 'acebet' ? process.env.ACEBET_API_KEY || '' : process.env.PACKDRAW_API_KEY || ''
-          },
-          body: JSON.stringify({
-            dateFrom: startDate,
-            dateTo: endDate
-          }),
-          cache: 'no-store'
-        });
-
-        if (apiResponse.ok) {
-          const apiData = await apiResponse.json();
-          console.log('[v0] API response received:', apiData?.data?.length || 0, 'users');
-          
-          // Filter users who wagered at least the minimum amount
-          eligibleUsers = (apiData.data || [])
-            .filter((user: any) => (user.wagered || user.total_wagered || 0) >= minWager)
-            .map((user: any) => ({
-              username: user.name || user.username || '',
-              wager_amount: user.wagered || user.total_wagered || 0
-            }));
-          
-          console.log('[v0] Eligible users after filtering:', eligibleUsers.length);
-        } else {
-          console.error('[v0] API fetch failed:', apiResponse.status);
-        }
-      } catch (apiError) {
-        console.error('[v0] Error fetching from API:', apiError);
-      }
-    }
-
-    // Sync eligible users to database
-    if (eligibleUsers.length > 0) {
-      // Get existing entries
-      const { data: existingEntries } = await supabase
-        .from('raffle_entries')
-        .select('username')
-        .eq('platform', platform)
-        .eq('week_start', startDate);
-
-      const existingUsernames = new Set((existingEntries || []).map(e => e.username));
-      const newEntries = eligibleUsers.filter(u => !existingUsernames.has(u.username) && u.username);
-
-      if (newEntries.length > 0) {
-        console.log('[v0] Inserting', newEntries.length, 'new entries');
-        await supabase.from('raffle_entries').insert(
-          newEntries.map((u: any) => ({
-            platform,
-            username: u.username,
-            wager_amount: u.wager_amount,
-            week_start: startDate,
-            entered: true,
-            entry_date: new Date().toISOString()
-          }))
-        );
-      }
-    }
-
-    // Get all entries for this raffle period
-    const { data: allEntries, error: entriesError } = await supabase
-      .from('raffle_entries')
-      .select('*')
+    const { data: configData } = await supabase
+      .from('raffle_config')
+      .select('start_date')
       .eq('platform', platform)
-      .eq('week_start', startDate)
-      .limit(maxEntries);
+      .maybeSingle();
 
-    if (entriesError) {
-      console.error('[v0] Error fetching entries from DB:', entriesError);
-    }
+    const startDate = configData?.start_date ?? '2026-02-14';
 
-    console.log('[v0] Total entries for display:', allEntries?.length || 0);
-
-    const entriesCount = allEntries?.length || 0;
-
-    return NextResponse.json({
-      entries: allEntries || [],
-      count: entriesCount,
-      totalPrize: prizeAmount,
-      minWager,
-      maxEntries,
-      startDate,
-      endDate
+    const { error } = await supabase.from('raffle_entries').insert({
+      platform,
+      username,
+      wager_amount,
+      week_start: startDate,
+      entered: true,
+      entry_date: new Date().toISOString(),
     });
+
+    if (error) throw error;
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[v0] Error in raffle entries API:', error);
-    return NextResponse.json(
-      { 
-        entries: [],
-        count: 0,
-        totalPrize: 0,
-        minWager: 50,
-        maxEntries: 10000,
-        startDate: '2026-02-14',
-        endDate: '2026-02-21',
-        error: 'Failed to fetch raffle entries'
-      },
-      { status: 500 }
-    );
+    console.error('[v0] Error adding raffle entry:', error);
+    return NextResponse.json({ error: 'Failed to add entry' }, { status: 500 });
   }
 }

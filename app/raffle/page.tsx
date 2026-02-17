@@ -48,42 +48,13 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
         fetch(`/api/raffle/winners?platform=${platform}`),
         fetch(`/api/raffle/config?platform=${platform}`),
       ]);
-      
-      // Check response status and get text first to debug
-      console.log('[v0] Entries API status:', entriesRes.status);
-      console.log('[v0] Winners API status:', winnersRes.status);
-      console.log('[v0] Config API status:', configRes.status);
 
-      let entriesData = {};
-      let winnersData = { winners: [] };
-      let configData = {};
+      const entriesData = entriesRes.ok ? await entriesRes.json() : { entries: [] };
+      const winnersData = winnersRes.ok ? await winnersRes.json() : { winners: [] };
+      const configData  = configRes.ok  ? await configRes.json()  : {};
 
-      // Parse entries
-      if (entriesRes.ok) {
-        entriesData = await entriesRes.json();
-      } else {
-        const errorText = await entriesRes.text();
-        console.error('[v0] Entries API error:', entriesRes.status, errorText);
-      }
-
-      // Parse winners
-      if (winnersRes.ok) {
-        winnersData = await winnersRes.json();
-      } else {
-        const errorText = await winnersRes.text();
-        console.error('[v0] Winners API error:', winnersRes.status, errorText);
-      }
-
-      // Parse config
-      if (configRes.ok) {
-        configData = await configRes.json();
-      } else {
-        const errorText = await configRes.text();
-        console.error('[v0] Config API error:', configRes.status, errorText);
-      }
-      
       setEntries(entriesData.entries || []);
-      setTotalPrize(configData.prize_amount || 0);
+      setTotalPrize(configData.prize_amount || entriesData.totalPrize || 0);
       setWinners(winnersData.winners || []);
       setConfig({
         min_wager: configData.min_wager || 50,
@@ -93,7 +64,7 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
         endDate: configData.end_date || '2026-02-21'
       });
     } catch (error) {
-      console.error('[v0] Error fetching raffle data:', error);
+      console.error('Error fetching raffle data:', error);
     } finally {
       setIsLoading(false);
     }
