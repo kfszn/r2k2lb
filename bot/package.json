@@ -1,0 +1,19 @@
+{
+  "name": "r2k2-kick-bot",
+  "version": "1.0.0",
+  "description": "Kick chat bot for R2K2 tournament",
+  "main": "dist/kick-bot.js",
+  "scripts": {
+    "start": "node --loader ts-node/esm kick-bot.ts",
+    "dev": "npx ts-node kick-bot.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  }
+}

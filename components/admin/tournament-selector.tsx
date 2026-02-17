@@ -15,6 +15,7 @@ interface Tournament {
   bet_amount: number;
   max_players: number;
   created_at: string;
+  is_current?: boolean;
   player_count?: number;
 }
 

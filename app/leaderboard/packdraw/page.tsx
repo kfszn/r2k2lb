@@ -95,12 +95,12 @@ export default function PackdrawLeaderboard() {
 
   const totalWagered = entries.reduce((sum, entry: any) => sum + (entry.wagerAmount || 0), 0)
   
-  // Calculate time remaining (30 day period from 1-17-2026)
+  // Calculate time remaining (30 day period from 2-16-2026)
   const [timeRemaining, setTimeRemaining] = useState('')
   
   useEffect(() => {
     const calculateTimeRemaining = () => {
-      const startDate = new Date('2026-01-17T00:00:00.000Z')
+      const startDate = new Date('2026-02-16T00:00:00.000Z')
       const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days
       const now = new Date()
       const diff = endDate.getTime() - now.getTime()
@@ -168,7 +168,7 @@ export default function PackdrawLeaderboard() {
           
           <GoalTracker
             current={totalWagered}
-            goal={67000}
+            goal={75000}
             formatMoney={formatMoney}
             label="Goal Progress"
           />

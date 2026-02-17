@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Zap, Trash2 } from 'lucide-react';
@@ -20,7 +20,14 @@ export function BracketGenerator({ tournament }: { tournament: Tournament }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const { generateBracket, clearBracket, matches } = useBracket();
+  const { generateBracket, clearBracket, matches, loadBracketForTournament, activeTournamentId } = useBracket();
+
+  // Load bracket for this tournament on mount
+  useEffect(() => {
+    if (tournament.id) {
+      loadBracketForTournament(tournament.id);
+    }
+  }, [tournament.id, loadBracketForTournament]);
 
   const { data: players = [] } = useSWR(
     tournament ? `players-${tournament.id}` : null,
@@ -34,7 +41,7 @@ export function BracketGenerator({ tournament }: { tournament: Tournament }) {
     }
   );
 
-  const handleGenerateBracket = () => {
+  const handleGenerateBracket = async () => {
     if (players.length < 2) {
       setError('Need at least 2 players to generate bracket');
       return;
@@ -45,7 +52,7 @@ export function BracketGenerator({ tournament }: { tournament: Tournament }) {
     setSuccess('');
 
     try {
-      generateBracket(players);
+      await generateBracket(players, tournament.id);
       const numRounds = Math.ceil(Math.log2(players.length));
       setSuccess(
         `Bracket generated with ${Math.floor(players.length / 2)} matches across ${numRounds} rounds`
@@ -57,13 +64,13 @@ export function BracketGenerator({ tournament }: { tournament: Tournament }) {
     }
   };
 
-  const handleClearBracket = () => {
+  const handleClearBracket = async () => {
     if (!confirm('Are you sure you want to clear this bracket? This cannot be undone.')) {
       return;
     }
 
     try {
-      clearBracket();
+      await clearBracket(tournament.id);
       setSuccess('Bracket cleared successfully');
       setError('');
     } catch (err) {

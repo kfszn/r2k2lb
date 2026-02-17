@@ -10,6 +10,7 @@ interface Winner {
   acebet_username: string;
   tournament_name: string;
   prize_amount: number;
+  tournament_id: string | null;
 }
 
 export function WinnersCircle() {
@@ -20,14 +21,31 @@ export function WinnersCircle() {
     const supabase = createClient();
 
     async function fetchWinners() {
+      // Fetch all winners, then filter to only those from completed/closed tournaments
       const { data, error } = await supabase
         .from("tournament_winners")
-        .select("acebet_username, tournament_name, prize_amount")
+        .select("acebet_username, tournament_name, prize_amount, tournament_id")
         .order("won_at", { ascending: false })
-        .limit(20);
+        .limit(50);
 
       if (!error && data) {
-        setWinners(data);
+        // Get all unique tournament IDs from winners
+        const tournamentIds = [...new Set(data.map(w => w.tournament_id).filter(Boolean))];
+        
+        if (tournamentIds.length > 0) {
+          // Only show winners from tournaments that are completed (CLOSED)
+          const { data: closedTournaments } = await supabase
+            .from("tournaments")
+            .select("id")
+            .in("id", tournamentIds)
+            .eq("status", "completed");
+
+          const closedIds = new Set((closedTournaments || []).map(t => t.id));
+          const filteredWinners = data.filter(w => w.tournament_id && closedIds.has(w.tournament_id));
+          setWinners(filteredWinners);
+        } else {
+          setWinners([]);
+        }
       }
       setIsLoading(false);
     }
