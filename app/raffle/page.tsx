@@ -245,25 +245,38 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
         </div>
       </div>
 
-      {/* Previous Winners */}
-      {winners.length > 0 && (
-        <div className="rounded-2xl border border-border/60 bg-secondary/30 overflow-hidden">
-          <div className="px-6 py-5 border-b border-border/40 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-chart-4/10 flex items-center justify-center">
-              <Trophy className="w-4 h-4 text-chart-4" />
-            </div>
-            <h3 className="font-semibold text-foreground">Previous Winners</h3>
+      {/* Past Winners */}
+      <div className="rounded-2xl border border-border/60 bg-secondary/30 overflow-hidden">
+        <div className="px-6 py-5 border-b border-border/40 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-chart-4/10 flex items-center justify-center">
+            <Trophy className="w-4 h-4 text-chart-4" />
           </div>
+          <h3 className="font-semibold text-foreground">Past Winners</h3>
+        </div>
+        {winners.length === 0 ? (
+          <div className="text-center py-12 px-6">
+            <div className="w-16 h-16 rounded-full bg-secondary border border-border/60 flex items-center justify-center mx-auto mb-4">
+              <Trophy className="w-7 h-7 text-muted-foreground" />
+            </div>
+            <p className="text-muted-foreground text-sm">No winners drawn yet.</p>
+            <p className="text-muted-foreground/60 text-xs mt-1">
+              Winners will appear here after each raffle drawing.
+            </p>
+          </div>
+        ) : (
           <div className="divide-y divide-border/30">
             {winners.map((w) => (
-              <div key={w.id} className="flex items-center justify-between px-6 py-4">
+              <div key={w.id} className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-secondary/30">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-chart-4/10 border border-chart-4/20 flex items-center justify-center">
-                    <Trophy className="w-3.5 h-3.5 text-chart-4" />
+                  <div className="w-10 h-10 rounded-full bg-chart-4/10 border border-chart-4/20 flex items-center justify-center">
+                    <Trophy className="w-4 h-4 text-chart-4" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{w.username}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(w.won_date).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(w.won_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {w.raffle_type && <span className="ml-2 text-muted-foreground/50">{'  '}{'  '}{w.raffle_type}</span>}
+                    </p>
                   </div>
                 </div>
                 <span className="text-sm font-bold text-chart-3">
@@ -272,8 +285,8 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

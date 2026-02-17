@@ -140,10 +140,6 @@ function Header() {
             Raffle
           </Link>
 
-          <Link href="/wager-races" className="text-sm font-medium hover:text-primary transition-colors">
-            Wager Races
-          </Link>
-          
           <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors">
             Tournament
           </Link>
@@ -337,14 +333,6 @@ function Header() {
                   onClick={() => setOpen(false)}
                 >
                   Raffle
-                </Link>
-
-                <Link 
-                  href="/wager-races" 
-                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                  onClick={() => setOpen(false)}
-                >
-                  Wager Races
                 </Link>
 
                 <Link 
