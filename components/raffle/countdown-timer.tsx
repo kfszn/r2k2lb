@@ -8,47 +8,75 @@ interface CountdownTimerProps {
 }
 
 export function CountdownTimer({ endDate, onTimeUp }: CountdownTimerProps) {
-  const [timeRemaining, setTimeRemaining] = useState('');
-  
+  const [days, setDays] = useState(0);
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [expired, setExpired] = useState(false);
+
   useEffect(() => {
-    const calculateTimeRemaining = () => {
+    const calculate = () => {
       const now = new Date();
-      
-      // Use provided end date or default to next Sunday
-      let targetDate = new Date(now);
+      let target = new Date(now);
       if (endDate) {
-        targetDate = new Date(endDate);
-        targetDate.setHours(23, 59, 59, 999);
+        target = new Date(endDate + 'T23:59:59');
       } else {
-        targetDate.setDate(now.getDate() + (7 - now.getDay()));
-        targetDate.setHours(0, 0, 0, 0);
+        target.setDate(now.getDate() + (7 - now.getDay()));
+        target.setHours(0, 0, 0, 0);
       }
-      
-      const diff = targetDate.getTime() - now.getTime();
-      
+
+      const diff = target.getTime() - now.getTime();
       if (diff <= 0) {
-        setTimeRemaining('00d 00h 00m 00s');
+        setDays(0);
+        setHours(0);
+        setMinutes(0);
+        setSeconds(0);
+        setExpired(true);
         onTimeUp?.();
         return;
       }
-      
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
-      setTimeRemaining(`${String(days).padStart(2, '0')}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`);
-    }
-    
-    calculateTimeRemaining();
-    const interval = setInterval(calculateTimeRemaining, 1000);
+
+      setExpired(false);
+      setDays(Math.floor(diff / (1000 * 60 * 60 * 24)));
+      setHours(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+      setMinutes(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+      setSeconds(Math.floor((diff % (1000 * 60)) / 1000));
+    };
+
+    calculate();
+    const interval = setInterval(calculate, 1000);
     return () => clearInterval(interval);
-  }, [endDate, onTimeUp])
-  
+  }, [endDate, onTimeUp]);
+
+  const blocks = [
+    { value: days, label: 'Days' },
+    { value: hours, label: 'Hours' },
+    { value: minutes, label: 'Mins' },
+    { value: seconds, label: 'Secs' },
+  ];
+
   return (
-    <div className="text-center">
-      <p className="text-sm text-muted-foreground mb-2">Time Remaining</p>
-      <p className="text-4xl font-bold text-primary font-mono">{timeRemaining}</p>
+    <div className="flex items-center justify-center gap-3">
+      {blocks.map((block, i) => (
+        <div key={block.label} className="flex items-center gap-3">
+          <div className="flex flex-col items-center">
+            <div className="relative">
+              <div className="absolute -inset-1 rounded-xl bg-primary/20 blur-md" />
+              <div className="relative w-16 h-18 sm:w-20 sm:h-22 flex items-center justify-center rounded-xl bg-secondary border border-border/80">
+                <span className="text-3xl sm:text-4xl font-bold font-mono text-foreground tabular-nums">
+                  {String(block.value).padStart(2, '0')}
+                </span>
+              </div>
+            </div>
+            <span className="text-xs sm:text-sm text-muted-foreground mt-2 uppercase tracking-wider">
+              {block.label}
+            </span>
+          </div>
+          {i < blocks.length - 1 && (
+            <span className="text-2xl font-bold text-muted-foreground mb-6">:</span>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
