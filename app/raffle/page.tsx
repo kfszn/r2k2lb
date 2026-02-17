@@ -58,12 +58,13 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
 
       if (platform === 'acebet') {
         // Uses /api/leaderboard — same endpoint as the Acebet leaderboard page
+        // Acebet API returns values in PENNIES — divide by 100 to get dollars
         const lbRes = await fetch(`/api/leaderboard?start_at=${cfgData.start_date}&end_at=${cfgData.end_date}`);
         if (lbRes.ok) {
           const lbData = await lbRes.json();
           users = (lbData.data || [])
-            .filter((u: any) => (u.wagered || 0) >= cfgData.min_wager)
-            .map((u: any) => ({ username: u.name || '', wager_amount: u.wagered || 0 }))
+            .filter((u: any) => ((u.wagered || 0) / 100) >= cfgData.min_wager)
+            .map((u: any) => ({ username: u.name || '', wager_amount: (u.wagered || 0) / 100 }))
             .filter((u: EligibleUser) => u.username);
         }
       } else if (platform === 'packdraw') {
