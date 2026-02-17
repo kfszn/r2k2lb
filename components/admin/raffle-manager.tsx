@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RaffleSpinner } from '@/components/raffle/raffle-spinner';
 
 interface RaffleConfig {
   platform: string;
@@ -17,65 +18,95 @@ interface RaffleConfig {
 }
 
 function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [selectedWinner, setSelectedWinner] = useState<{ username: string; prizeAmount: number } | null>(null);
-  const [adminSecret, setAdminSecret] = useState('');
   const [config, setConfig] = useState<RaffleConfig | null>(null);
-  const [configForm, setConfigForm] = useState({ min_wager: 50, prize_amount: 1000, max_entries: 10000, start_date: '2026-02-14', end_date: '2026-02-21' });
+  const [configForm, setConfigForm] = useState({
+    min_wager: 50,
+    prize_amount: 1000,
+    max_entries: 10000,
+    start_date: '2026-02-14',
+    end_date: '2026-02-21',
+  });
   const [isSavingConfig, setIsSavingConfig] = useState(false);
-  const [newEntryUsername, setNewEntryUsername] = useState('');
-  const [newEntryWager, setNewEntryWager] = useState('');
-  const [isAddingEntry, setIsAddingEntry] = useState(false);
-  const [entries, setEntries] = useState<any[]>([]);
+  const [eligible, setEligible] = useState<string[]>([]);
   const [isLoadingEntries, setIsLoadingEntries] = useState(false);
-  
+
+  // Spinner state
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [selectedWinner, setSelectedWinner] = useState<string | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [spinComplete, setSpinComplete] = useState(false);
+
   useEffect(() => {
     fetchConfig();
-    fetchEntries();
   }, [platform]);
-  
-  const fetchEntries = async () => {
-    try {
-      setIsLoadingEntries(true);
-      const response = await fetch(`/api/raffle/entries?platform=${platform}`);
-      const data = await response.json();
-      setEntries(data.entries || []);
-    } catch (error) {
-      console.error('Error fetching entries:', error);
-    } finally {
-      setIsLoadingEntries(false);
-    }
-  };
-  
+
+  useEffect(() => {
+    if (config) fetchEligible();
+  }, [config]);
+
   const fetchConfig = async () => {
     try {
-      const response = await fetch(`/api/raffle/config?platform=${platform}`);
-      const data = await response.json();
+      const res = await fetch(`/api/raffle/config?platform=${platform}`);
+      if (!res.ok) return;
+      const data = await res.json();
       setConfig(data);
       setConfigForm({
-        min_wager: data.min_wager,
-        prize_amount: data.prize_amount,
-        max_entries: data.max_entries,
-        start_date: data.start_date,
-        end_date: data.end_date,
+        min_wager: data.min_wager || 50,
+        prize_amount: data.prize_amount || 1000,
+        max_entries: data.max_entries || 10000,
+        start_date: data.start_date || '2026-02-14',
+        end_date: data.end_date || '2026-02-21',
       });
     } catch (error) {
       console.error('Error fetching config:', error);
     }
   };
-  
+
+  const fetchEligible = useCallback(async () => {
+    if (!config) return;
+    setIsLoadingEntries(true);
+    try {
+      let users: string[] = [];
+      if (platform === 'acebet') {
+        const lbRes = await fetch(
+          `/api/leaderboard?start_at=${config.start_date}&end_at=${config.end_date}`,
+        );
+        if (lbRes.ok) {
+          const lbData = await lbRes.json();
+          users = (lbData.data || [])
+            .filter((u: any) => (u.wagered || 0) / 100 >= config.min_wager)
+            .map((u: any) => u.name || '')
+            .filter(Boolean);
+        }
+      } else {
+        const [y, m, d] = config.start_date.split('-');
+        const afterParam = `${parseInt(m)}-${parseInt(d)}-${y}`;
+        const pdRes = await fetch(`/api/packdraw?after=${afterParam}`);
+        if (pdRes.ok) {
+          const pdData = await pdRes.json();
+          const list = pdData.leaderboard || pdData.data || (Array.isArray(pdData) ? pdData : []);
+          users = list
+            .filter((u: any) => (u.wagerAmount || u.wagered || 0) >= config.min_wager)
+            .map((u: any) => u.username || u.name || '')
+            .filter(Boolean);
+        }
+      }
+      setEligible(users);
+    } catch (err) {
+      console.error('Error fetching eligible:', err);
+    } finally {
+      setIsLoadingEntries(false);
+    }
+  }, [config, platform]);
+
   const handleSaveConfig = async () => {
     setIsSavingConfig(true);
     try {
       const response = await fetch('/api/raffle/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          platform,
-          ...configForm,
-        }),
+        body: JSON.stringify({ platform, ...configForm }),
       });
-      
       if (response.ok) {
         const data = await response.json();
         setConfig(data.data);
@@ -90,80 +121,56 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
       setIsSavingConfig(false);
     }
   };
-  
-  const handleAddEntry = async () => {
-    if (!newEntryUsername.trim()) {
-      alert('Please enter a username');
-      return;
-    }
-    if (!newEntryWager || isNaN(Number(newEntryWager))) {
-      alert('Please enter a valid wager amount');
-      return;
-    }
 
-    setIsAddingEntry(true);
+  const handleSpin = () => {
+    if (eligible.length === 0) {
+      alert('No eligible entries to draw from');
+      return;
+    }
+    // Pick random winner
+    const winner = eligible[Math.floor(Math.random() * eligible.length)];
+    setSelectedWinner(winner);
+    setIsSpinning(true);
+    setSpinComplete(false);
+  };
+
+  const handleConfirmWinner = async () => {
+    if (!selectedWinner || !config) return;
+    setIsConfirming(true);
     try {
-      const response = await fetch('/api/raffle/entries', {
+      const response = await fetch('/api/raffle/winners', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           platform,
-          username: newEntryUsername.trim(),
-          wager_amount: parseFloat(newEntryWager),
+          username: selectedWinner,
+          prizeAmount: config.prize_amount,
+          weekStart: config.start_date,
         }),
       });
-
       if (response.ok) {
-        setNewEntryUsername('');
-        setNewEntryWager('');
-        alert('Entry added successfully!');
-        fetchEntries();
+        alert(`Winner confirmed: ${selectedWinner} wins $${config.prize_amount.toLocaleString()}`);
+        // Reset
+        setIsSpinning(false);
+        setSelectedWinner(null);
+        setSpinComplete(false);
       } else {
-        const data = await response.json();
-        alert('Error: ' + (data.error || 'Failed to add entry'));
+        alert('Error confirming winner');
       }
     } catch (error) {
-      console.error('Error adding entry:', error);
-      alert('Error adding entry');
+      console.error('Error confirming winner:', error);
+      alert('Error confirming winner');
     } finally {
-      setIsAddingEntry(false);
+      setIsConfirming(false);
     }
   };
 
-  const handleSpin = async () => {
-    if (!adminSecret) {
-      alert('Please enter admin secret');
-      return;
-    }
-    
-    setIsSpinning(true);
-    
-    try {
-      const response = await fetch('/api/raffle/spin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ platform, adminSecret }),
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setSelectedWinner({
-          username: data.winner.username,
-          prizeAmount: data.prizeAmount,
-        });
-        alert(`🎉 Winner: ${data.winner.username} won $${data.prizeAmount.toFixed(2)}!`);
-      } else {
-        alert('Error: ' + (data.error || 'Failed to spin raffle'));
-      }
-    } catch (error) {
-      console.error('Error spinning raffle:', error);
-      alert('Error spinning raffle');
-    } finally {
-      setIsSpinning(false);
-    }
+  const handleResetSpin = () => {
+    setIsSpinning(false);
+    setSelectedWinner(null);
+    setSpinComplete(false);
   };
-  
+
   return (
     <div className="space-y-6">
       {/* Settings */}
@@ -178,7 +185,9 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               <Input
                 type="number"
                 value={configForm.min_wager || 0}
-                onChange={(e) => setConfigForm({ ...configForm, min_wager: parseFloat(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setConfigForm({ ...configForm, min_wager: parseFloat(e.target.value) || 0 })
+                }
               />
             </div>
             <div>
@@ -186,7 +195,9 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               <Input
                 type="number"
                 value={configForm.prize_amount || 0}
-                onChange={(e) => setConfigForm({ ...configForm, prize_amount: parseFloat(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setConfigForm({ ...configForm, prize_amount: parseFloat(e.target.value) || 0 })
+                }
               />
             </div>
             <div>
@@ -194,11 +205,12 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               <Input
                 type="number"
                 value={configForm.max_entries || 0}
-                onChange={(e) => setConfigForm({ ...configForm, max_entries: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setConfigForm({ ...configForm, max_entries: parseInt(e.target.value) || 0 })
+                }
               />
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Raffle Start Date</label>
@@ -217,38 +229,77 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               />
             </div>
           </div>
-
           <Button onClick={handleSaveConfig} disabled={isSavingConfig} className="w-full">
             {isSavingConfig ? 'Saving...' : 'Save Settings'}
           </Button>
         </CardContent>
       </Card>
-      
-      {/* Spin Raffle */}
+
+      {/* Eligible entries */}
       <Card className="border-primary/20">
         <CardHeader>
-          <CardTitle>Select Winner</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">Admin Secret</label>
-            <Input
-              type="password"
-              placeholder="Enter admin secret"
-              value={adminSecret}
-              onChange={(e) => setAdminSecret(e.target.value)}
-            />
+          <div className="flex items-center justify-between">
+            <CardTitle>Eligible Entries</CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">{eligible.length} entries</Badge>
+              <Button variant="outline" size="sm" onClick={fetchEligible} disabled={isLoadingEntries}>
+                {isLoadingEntries ? 'Loading...' : 'Refresh'}
+              </Button>
+            </div>
           </div>
-          <Button onClick={handleSpinRaffle} disabled={isSpinning} className="w-full">
-            {isSpinning ? 'Spinning...' : 'Spin Raffle'}
-          </Button>
-          
-          {selectedWinner && (
-            <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-              <p className="text-sm"><span className="font-medium">Last Winner:</span> {selectedWinner.username}</p>
-              <p className="text-sm"><span className="font-medium">Prize:</span> ${selectedWinner.prizeAmount.toFixed(2)}</p>
+        </CardHeader>
+        <CardContent>
+          {eligible.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No eligible entries found. Users need to wager at least ${configForm.min_wager.toLocaleString()} to qualify.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+              {eligible.map((name, i) => (
+                <Badge key={`${name}-${i}`} variant="secondary" className="text-xs">
+                  {name}
+                </Badge>
+              ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Draw Winner - Visual Spinner */}
+      <Card className="border-chart-3/30">
+        <CardHeader>
+          <CardTitle>Draw Winner</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <RaffleSpinner
+            entries={eligible}
+            winner={selectedWinner}
+            prizeAmount={config?.prize_amount || 0}
+            isSpinning={isSpinning}
+            onSpinComplete={() => setSpinComplete(true)}
+          />
+
+          <div className="flex gap-3">
+            {!isSpinning && !spinComplete && (
+              <Button onClick={handleSpin} disabled={eligible.length === 0} className="flex-1">
+                Spin Raffle
+              </Button>
+            )}
+            {spinComplete && selectedWinner && (
+              <>
+                <Button
+                  onClick={handleConfirmWinner}
+                  disabled={isConfirming}
+                  className="flex-1 bg-chart-3 hover:bg-chart-3/90 text-background"
+                >
+                  {isConfirming ? 'Confirming...' : `Confirm ${selectedWinner} as Winner`}
+                </Button>
+                <Button variant="outline" onClick={handleResetSpin}>
+                  Re-spin
+                </Button>
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -262,17 +313,15 @@ export function RaffleManager() {
         <h1 className="text-3xl font-bold mb-2">Raffle Management</h1>
         <p className="text-muted-foreground">Control raffle entries and spin winners</p>
       </div>
-      
+
       <Tabs defaultValue="acebet" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="acebet">Acebet</TabsTrigger>
           <TabsTrigger value="packdraw">Packdraw</TabsTrigger>
         </TabsList>
-        
         <TabsContent value="acebet">
           <RaffleAdminTab platform="acebet" />
         </TabsContent>
-        
         <TabsContent value="packdraw">
           <RaffleAdminTab platform="packdraw" />
         </TabsContent>

@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GiveawayCounter } from '@/components/giveaway-counter';
 import { Header } from '@/components/header';
 import { CountdownTimer } from '@/components/raffle/countdown-timer';
+import { RaffleSpinner } from '@/components/raffle/raffle-spinner';
 import { Trophy, Users, DollarSign, Clock, Ticket, Star } from 'lucide-react';
 
 function maskName(name: string): string {
@@ -40,6 +41,8 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   const [eligible, setEligible] = useState<EligibleUser[]>([]);
   const [winners, setWinners] = useState<Winner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [spinnerActive, setSpinnerActive] = useState(false);
+  const [spinnerWinner, setSpinnerWinner] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -83,7 +86,16 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
         const winnersRes = await fetch(`/api/raffle/winners?platform=${platform}`);
         if (winnersRes.ok) {
           const winnersData = await winnersRes.json();
-          setWinners(winnersData.winners || []);
+          const newWinners: Winner[] = winnersData.winners || [];
+          // If a new winner appeared since last check, trigger the spinner
+          if (newWinners.length > 0 && newWinners.length > winners.length) {
+            const latest = newWinners[0]; // most recent
+            if (!spinnerActive && !spinnerWinner) {
+              setSpinnerWinner(latest.username);
+              setSpinnerActive(true);
+            }
+          }
+          setWinners(newWinners);
         }
       } catch {}
     } catch (err) {
@@ -192,6 +204,21 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
         )}
       </div>
 
+      {/* Winner Spinner */}
+      <RaffleSpinner
+        entries={eligible.map(u => u.username)}
+        winner={spinnerWinner}
+        prizeAmount={config?.prize_amount || 0}
+        isSpinning={spinnerActive}
+        onSpinComplete={() => {
+          // Keep spinner visible for 30s then reset
+          setTimeout(() => {
+            setSpinnerActive(false);
+            setSpinnerWinner(null);
+          }, 30000);
+        }}
+      />
+
       {/* Entries Grid */}
       <div className="rounded-2xl border border-border/60 bg-secondary/30 overflow-hidden">
         <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between">
@@ -264,27 +291,33 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-border/30">
-            {winners.map((w) => (
-              <div key={w.id} className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-secondary/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-chart-4/10 border border-chart-4/20 flex items-center justify-center">
-                    <Trophy className="w-4 h-4 text-chart-4" />
+          <>
+            {/* Table header */}
+            <div className="grid grid-cols-3 px-6 py-3 border-b border-border/40 text-xs uppercase tracking-wider text-muted-foreground font-medium">
+              <span>Username</span>
+              <span className="text-center">Raffle Period</span>
+              <span className="text-right">Amount</span>
+            </div>
+            <div className="divide-y divide-border/20">
+              {winners.map((w) => (
+                <div key={w.id} className="grid grid-cols-3 items-center px-6 py-4 transition-colors hover:bg-secondary/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-chart-4/10 border border-chart-4/20 flex items-center justify-center shrink-0">
+                      <Trophy className="w-3.5 h-3.5 text-chart-4" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground truncate">{w.username}</span>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{w.username}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(w.won_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      {w.raffle_type && <span className="ml-2 text-muted-foreground/50">{'  '}{'  '}{w.raffle_type}</span>}
-                    </p>
-                  </div>
+                  <span className="text-sm text-muted-foreground text-center">
+                    {new Date(w.won_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {w.raffle_type && ` - ${w.raffle_type}`}
+                  </span>
+                  <span className="text-sm font-bold text-chart-3 text-right">
+                    +${w.prize_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
                 </div>
-                <span className="text-sm font-bold text-chart-3">
-                  +${w.prize_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

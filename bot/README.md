@@ -14,11 +14,11 @@ This bot listens to your Kick channel and processes tournament commands like `!s
 
 ### 2. Set Environment Variables
 Copy `.env.example` to `.env` and fill in:
-```
+\`\`\`
 KICK_CHANNEL_ID=your_channel_id
 API_BASE_URL=https://www.r2k2.gg
 BOT_SECRET=your_secret_from_vercel
-```
+\`\`\`
 
 ### 3. Deploy to Railway
 
@@ -31,18 +31,18 @@ BOT_SECRET=your_secret_from_vercel
 6. Done! Bot will auto-start
 
 **Option B: Via Railway CLI**
-```bash
+\`\`\`bash
 npm install -g @railway/cli
 railway login
 railway init
 railway up
-```
+\`\`\`
 
 ### 4. Local Testing
-```bash
+\`\`\`bash
 npm install
 npm run dev
-```
+\`\`\`
 
 ## Commands
 - `!slot <slot_name>` - Add slot call (when Slot Calls is OPEN)
