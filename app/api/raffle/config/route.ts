@@ -13,9 +13,22 @@ export async function GET(request: NextRequest) {
         .from('raffle_config')
         .select('*')
         .eq('platform', platform)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      // Return default config if not found
+      if (!data) {
+        return NextResponse.json({
+          platform,
+          min_wager: 50,
+          prize_amount: 1000,
+          max_entries: 10000,
+          start_date: '2026-02-14',
+          end_date: '2026-02-21'
+        });
+      }
+      
       return NextResponse.json(data);
     } else {
       const { data, error } = await supabase
@@ -23,7 +36,7 @@ export async function GET(request: NextRequest) {
         .select('*');
 
       if (error) throw error;
-      return NextResponse.json(data);
+      return NextResponse.json(data || []);
     }
   } catch (error) {
     console.error('[v0] Error fetching raffle config:', error);

@@ -49,12 +49,38 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
         fetch(`/api/raffle/config?platform=${platform}`),
       ]);
       
-      const entriesData = await entriesRes.json();
-      const winnersData = await winnersRes.json();
-      const configData = await configRes.json();
-      
-      console.log('[v0] Raffle entries fetched:', entriesData);
-      console.log('[v0] Raffle config fetched:', configData);
+      // Check response status and get text first to debug
+      console.log('[v0] Entries API status:', entriesRes.status);
+      console.log('[v0] Winners API status:', winnersRes.status);
+      console.log('[v0] Config API status:', configRes.status);
+
+      let entriesData = {};
+      let winnersData = { winners: [] };
+      let configData = {};
+
+      // Parse entries
+      if (entriesRes.ok) {
+        entriesData = await entriesRes.json();
+      } else {
+        const errorText = await entriesRes.text();
+        console.error('[v0] Entries API error:', entriesRes.status, errorText);
+      }
+
+      // Parse winners
+      if (winnersRes.ok) {
+        winnersData = await winnersRes.json();
+      } else {
+        const errorText = await winnersRes.text();
+        console.error('[v0] Winners API error:', winnersRes.status, errorText);
+      }
+
+      // Parse config
+      if (configRes.ok) {
+        configData = await configRes.json();
+      } else {
+        const errorText = await configRes.text();
+        console.error('[v0] Config API error:', configRes.status, errorText);
+      }
       
       setEntries(entriesData.entries || []);
       setTotalPrize(configData.prize_amount || 0);
