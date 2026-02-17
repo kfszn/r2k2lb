@@ -144,24 +144,6 @@ function Header() {
               >
                 Loss-back
               </Link>
-              <Link 
-                href="/perks/packdraw/welcome-bonus" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Welcome Bonus
-              </Link>
-              <Link 
-                href="/perks/packdraw/lucky-draw-rewards" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Lucky Draw Rewards
-              </Link>
-              <Link 
-                href="/perks/packdraw/seasonal-bonus" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Seasonal Bonus
-              </Link>
             </div>
           </div>
 
@@ -282,15 +264,6 @@ function Header() {
                       </Link>
                       <Link href="/perks/packdraw/loss-back" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Loss-back
-                      </Link>
-                      <Link href="/perks/packdraw/welcome-bonus" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Welcome Bonus
-                      </Link>
-                      <Link href="/perks/packdraw/lucky-draw-rewards" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Lucky Draw Rewards
-                      </Link>
-                      <Link href="/perks/packdraw/seasonal-bonus" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Seasonal Bonus
                       </Link>
                     </div>
                   )}
