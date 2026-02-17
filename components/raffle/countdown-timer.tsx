@@ -3,23 +3,31 @@
 import { useState, useEffect } from 'react';
 
 interface CountdownTimerProps {
+  endDate?: string;
   onTimeUp?: () => void;
 }
 
-export function CountdownTimer({ onTimeUp }: CountdownTimerProps) {
+export function CountdownTimer({ endDate, onTimeUp }: CountdownTimerProps) {
   const [timeRemaining, setTimeRemaining] = useState('');
   
   useEffect(() => {
     const calculateTimeRemaining = () => {
       const now = new Date();
-      const nextSunday = new Date(now);
-      nextSunday.setDate(now.getDate() + (7 - now.getDay()));
-      nextSunday.setHours(0, 0, 0, 0);
       
-      const diff = nextSunday.getTime() - now.getTime();
+      // Use provided end date or default to next Sunday
+      let targetDate = new Date(now);
+      if (endDate) {
+        targetDate = new Date(endDate);
+        targetDate.setHours(23, 59, 59, 999);
+      } else {
+        targetDate.setDate(now.getDate() + (7 - now.getDay()));
+        targetDate.setHours(0, 0, 0, 0);
+      }
+      
+      const diff = targetDate.getTime() - now.getTime();
       
       if (diff <= 0) {
-        setTimeRemaining('00:00:00');
+        setTimeRemaining('00d 00h 00m 00s');
         onTimeUp?.();
         return;
       }
@@ -35,7 +43,7 @@ export function CountdownTimer({ onTimeUp }: CountdownTimerProps) {
     calculateTimeRemaining();
     const interval = setInterval(calculateTimeRemaining, 1000);
     return () => clearInterval(interval);
-  }, [onTimeUp])
+  }, [endDate, onTimeUp])
   
   return (
     <div className="text-center">

@@ -12,6 +12,8 @@ interface RaffleConfig {
   min_wager: number;
   prize_amount: number;
   max_entries: number;
+  start_date: string;
+  end_date: string;
 }
 
 function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
@@ -19,7 +21,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   const [selectedWinner, setSelectedWinner] = useState<{ username: string; prizeAmount: number } | null>(null);
   const [adminSecret, setAdminSecret] = useState('');
   const [config, setConfig] = useState<RaffleConfig | null>(null);
-  const [configForm, setConfigForm] = useState({ min_wager: 50, prize_amount: 1000, max_entries: 10000 });
+  const [configForm, setConfigForm] = useState({ min_wager: 50, prize_amount: 1000, max_entries: 10000, start_date: '2026-02-14', end_date: '2026-02-21' });
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   
   useEffect(() => {
@@ -35,6 +37,8 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
         min_wager: data.min_wager,
         prize_amount: data.prize_amount,
         max_entries: data.max_entries,
+        start_date: data.start_date,
+        end_date: data.end_date,
       });
     } catch (error) {
       console.error('Error fetching config:', error);
@@ -136,6 +140,26 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
               />
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Raffle Start Date</label>
+              <Input
+                type="date"
+                value={configForm.start_date || ''}
+                onChange={(e) => setConfigForm({ ...configForm, start_date: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Raffle End Date</label>
+              <Input
+                type="date"
+                value={configForm.end_date || ''}
+                onChange={(e) => setConfigForm({ ...configForm, end_date: e.target.value })}
+              />
+            </div>
+          </div>
+
           <Button onClick={handleSaveConfig} disabled={isSavingConfig} className="w-full">
             {isSavingConfig ? 'Saving...' : 'Save Settings'}
           </Button>

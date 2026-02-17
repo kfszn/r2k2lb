@@ -28,17 +28,15 @@ export async function GET(request: NextRequest) {
     const minWager = configData.min_wager;
     const prizeAmount = configData.prize_amount;
     const maxEntries = configData.max_entries;
-
-    // Raffle period: Friday 2/14 to Friday 2/21
-    const raffleStartStr = '2026-02-14';
-    const raffleEndStr = '2026-02-21';
+    const startDate = configData.start_date;
+    const endDate = configData.end_date;
 
     // Get all entries for this raffle period
     const { data: allEntries } = await supabase
       .from('raffle_entries')
       .select('*')
       .eq('platform', platform)
-      .eq('week_start', raffleStartStr)
+      .eq('week_start', startDate)
       .limit(maxEntries);
 
     const entriesCount = allEntries?.length || 0;
@@ -49,8 +47,8 @@ export async function GET(request: NextRequest) {
       totalPrize: prizeAmount,
       minWager,
       maxEntries,
-      raffleStart: raffleStartStr,
-      raffleEnd: raffleEndStr
+      startDate,
+      endDate
     });
   } catch (error) {
     console.error('[v0] Error in raffle entries API:', error);
@@ -61,6 +59,8 @@ export async function GET(request: NextRequest) {
         totalPrize: 0,
         minWager: 50,
         maxEntries: 10000,
+        startDate: '2026-02-14',
+        endDate: '2026-02-21',
         error: 'Failed to fetch raffle entries'
       },
       { status: 500 }

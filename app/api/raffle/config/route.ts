@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { platform, min_wager, prize_percentage, max_entries } = await request.json();
+    const { platform, min_wager, prize_amount, max_entries, start_date, end_date } = await request.json();
 
     if (!platform) {
       return NextResponse.json(
@@ -49,20 +49,23 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('raffle_config')
-      .update({
+      .upsert({
+        platform,
         min_wager: min_wager || 50,
-        prize_percentage: prize_percentage || 10,
+        prize_amount: prize_amount || 1000,
         max_entries: max_entries || 10000,
+        start_date: start_date || '2026-02-14',
+        end_date: end_date || '2026-02-21',
         updated_at: new Date().toISOString(),
-      })
-      .eq('platform', platform)
-      .select();
+      }, { onConflict: 'platform' })
+      .select()
+      .single();
 
     if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      data: data[0],
+      data: data,
     });
   } catch (error) {
     console.error('[v0] Error updating raffle config:', error);

@@ -33,7 +33,7 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   const [winners, setWinners] = useState<Winner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalPrize, setTotalPrize] = useState(0);
-  const [config, setConfig] = useState<{ min_wager: number; prize_amount: number; max_entries: number } | null>(null);
+  const [config, setConfig] = useState<{ min_wager: number; prize_amount: number; max_entries: number; startDate: string; endDate: string } | null>(null);
   
   useEffect(() => {
     fetchData();
@@ -43,21 +43,25 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   
   const fetchData = async () => {
     try {
-      const [entriesRes, winnersRes] = await Promise.all([
+      const [entriesRes, winnersRes, configRes] = await Promise.all([
         fetch(`/api/raffle/entries?platform=${platform}`),
         fetch(`/api/raffle/winners?platform=${platform}`),
+        fetch(`/api/raffle/config?platform=${platform}`),
       ]);
       
       const entriesData = await entriesRes.json();
       const winnersData = await winnersRes.json();
+      const configData = await configRes.json();
       
       setEntries(entriesData.entries || []);
-      setTotalPrize(entriesData.totalPrize || 0);
+      setTotalPrize(configData.prize_amount || 0);
       setWinners(winnersData.winners || []);
       setConfig({
-        min_wager: entriesData.minWager || 50,
-        prize_amount: entriesData.totalPrize || 0,
-        max_entries: entriesData.maxEntries || 10000
+        min_wager: configData.min_wager || 50,
+        prize_amount: configData.prize_amount || 0,
+        max_entries: configData.max_entries || 10000,
+        startDate: configData.start_date || '2026-02-14',
+        endDate: configData.end_date || '2026-02-21'
       });
     } catch (error) {
       console.error('Error fetching raffle data:', error);
@@ -92,8 +96,14 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
       
       {/* Countdown Timer */}
       <Card className="border-primary/20">
-        <CardContent className="pt-6">
-          <CountdownTimer />
+        <CardContent className="pt-6 space-y-4">
+          {config?.startDate && config?.endDate && (
+            <div className="text-center mb-4">
+              <p className="text-sm text-muted-foreground">Raffle Period</p>
+              <p className="text-sm font-medium">{config.startDate} to {config.endDate}</p>
+            </div>
+          )}
+          <CountdownTimer endDate={config?.endDate} />
         </CardContent>
       </Card>
       
