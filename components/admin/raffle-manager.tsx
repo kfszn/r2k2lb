@@ -129,7 +129,8 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
       setIsAddingEntry(false);
     }
   };
-  
+
+  const handleSpin = async () => {
     if (!adminSecret) {
       alert('Please enter admin secret');
       return;
