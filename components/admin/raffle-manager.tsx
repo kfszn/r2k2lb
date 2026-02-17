@@ -23,10 +23,29 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   const [config, setConfig] = useState<RaffleConfig | null>(null);
   const [configForm, setConfigForm] = useState({ min_wager: 50, prize_amount: 1000, max_entries: 10000, start_date: '2026-02-14', end_date: '2026-02-21' });
   const [isSavingConfig, setIsSavingConfig] = useState(false);
+  const [newEntryUsername, setNewEntryUsername] = useState('');
+  const [newEntryWager, setNewEntryWager] = useState('');
+  const [isAddingEntry, setIsAddingEntry] = useState(false);
+  const [entries, setEntries] = useState<any[]>([]);
+  const [isLoadingEntries, setIsLoadingEntries] = useState(false);
   
   useEffect(() => {
     fetchConfig();
+    fetchEntries();
   }, [platform]);
+  
+  const fetchEntries = async () => {
+    try {
+      setIsLoadingEntries(true);
+      const response = await fetch(`/api/raffle/entries?platform=${platform}`);
+      const data = await response.json();
+      setEntries(data.entries || []);
+    } catch (error) {
+      console.error('Error fetching entries:', error);
+    } finally {
+      setIsLoadingEntries(false);
+    }
+  };
   
   const fetchConfig = async () => {
     try {
@@ -72,7 +91,45 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
     }
   };
   
-  const handleSpinRaffle = async () => {
+  const handleAddEntry = async () => {
+    if (!newEntryUsername.trim()) {
+      alert('Please enter a username');
+      return;
+    }
+    if (!newEntryWager || isNaN(Number(newEntryWager))) {
+      alert('Please enter a valid wager amount');
+      return;
+    }
+
+    setIsAddingEntry(true);
+    try {
+      const response = await fetch('/api/raffle/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          platform,
+          username: newEntryUsername.trim(),
+          wager_amount: parseFloat(newEntryWager),
+        }),
+      });
+
+      if (response.ok) {
+        setNewEntryUsername('');
+        setNewEntryWager('');
+        alert('Entry added successfully!');
+        fetchEntries();
+      } else {
+        const data = await response.json();
+        alert('Error: ' + (data.error || 'Failed to add entry'));
+      }
+    } catch (error) {
+      console.error('Error adding entry:', error);
+      alert('Error adding entry');
+    } finally {
+      setIsAddingEntry(false);
+    }
+  };
+  
     if (!adminSecret) {
       alert('Please enter admin secret');
       return;

@@ -53,6 +53,9 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
       const winnersData = await winnersRes.json();
       const configData = await configRes.json();
       
+      console.log('[v0] Raffle entries fetched:', entriesData);
+      console.log('[v0] Raffle config fetched:', configData);
+      
       setEntries(entriesData.entries || []);
       setTotalPrize(configData.prize_amount || 0);
       setWinners(winnersData.winners || []);
@@ -64,7 +67,7 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
         endDate: configData.end_date || '2026-02-21'
       });
     } catch (error) {
-      console.error('Error fetching raffle data:', error);
+      console.error('[v0] Error fetching raffle data:', error);
     } finally {
       setIsLoading(false);
     }
