@@ -11,7 +11,7 @@ export const defaultMetadata: Metadata = {
     template: `%s | ${brandName}`,
   },
   description:
-    '$5,000+ in monthly leaderboards plus exclusive rewards. Use code R2K2 on Acebet and Packdraw for bonuses, wager rewards, and more!',
+    '$7,000+ in monthly leaderboards plus exclusive rewards. Use code R2K2 on Acebet and Packdraw for bonuses, wager rewards, and more!',
   keywords: [
     'leaderboards',
     'rewards',
@@ -30,14 +30,14 @@ export const defaultMetadata: Metadata = {
     siteName: brandName,
     title: `${brandName} - ${tagline}`,
     description:
-      '$5,000+ in monthly leaderboards plus exclusive rewards with code R2K2',
+      '$7,000+ in monthly leaderboards plus exclusive rewards with code R2K2',
   },
   twitter: {
     card: 'summary_large_image',
     site: '@r2ktwo',
     creator: '@r2ktwo',
     title: `${brandName} - ${tagline}`,
-    description: '$5,000+ in monthly leaderboards plus exclusive rewards',
+    description: '$7,000+ in monthly leaderboards plus exclusive rewards',
   },
   icons: {
     icon: '/assets/logo.png',
@@ -55,9 +55,9 @@ export const defaultMetadata: Metadata = {
 // Page-specific metadata
 export const pageMetadata = {
   home: {
-    title: 'Compete on R2K2 Leaderboards - $5,000+ Monthly Prizes',
+    title: 'Compete on R2K2 Leaderboards - $7,000+ Monthly Prizes',
     description:
-      'Join exclusive leaderboard competitions with $5,000+ monthly prizes across Acebet and Packdraw. Use code R2K2 for bonuses and rewards.',
+      'Join exclusive leaderboard competitions with $7,000+ monthly prizes across Acebet and Packdraw. Use code R2K2 for bonuses and rewards.',
     keywords: [
       'leaderboard',
       'competition',
