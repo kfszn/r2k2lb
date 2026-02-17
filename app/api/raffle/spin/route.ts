@@ -4,69 +4,33 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const { platform, adminSecret } = await request.json();
-    
-    // Verify admin secret
+
     if (adminSecret !== process.env.ADMIN_SECRET) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const supabase = await createClient();
-    
-    // Get current week start
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    weekStart.setHours(0, 0, 0, 0);
-    const weekStartStr = weekStart.toISOString().split('T')[0];
-    
-    // Get all entries for this week
-    const { data: entries, error: fetchError } = await supabase
-      .from('raffle_entries')
+
+    // Get raffle config for this platform
+    const { data: config } = await supabase
+      .from('raffle_config')
       .select('*')
       .eq('platform', platform)
-      .eq('week_start', weekStartStr);
-    
-    if (fetchError) throw fetchError;
-    
-    if (!entries || entries.length === 0) {
-      return NextResponse.json({ error: 'No entries found' }, { status: 400 });
+      .maybeSingle();
+
+    if (!config) {
+      return NextResponse.json({ error: 'No raffle config found' }, { status: 400 });
     }
-    
-    // Select random winner
-    const winner = entries[Math.floor(Math.random() * entries.length)];
-    const totalPrize = entries.reduce((sum, entry) => sum + (entry.wager_amount || 0) * 0.1, 0);
-    
-    // Store winner
-    const { data: winnerData, error: winnerError } = await supabase
-      .from('raffle_winners')
-      .insert({
-        platform,
-        username: winner.username,
-        prize_amount: totalPrize,
-        week_start: weekStartStr,
-        raffle_type: 'Weekly',
-      })
-      .select();
-    
-    if (winnerError) throw winnerError;
-    
-    // Clear entries for next week
-    const nextWeekStart = new Date(weekStart);
-    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
-    
-    return NextResponse.json({ 
-      winner: winnerData?.[0],
-      prizeAmount: totalPrize,
-      entryCount: entries.length,
+
+    // Return the config so the client can draw from real leaderboard data
+    // The actual winner selection happens client-side from the fetched leaderboard entries
+    // and then the admin confirms + stores via POST /api/raffle/winners
+    return NextResponse.json({
+      config,
+      message: 'Use the visual spinner to select from leaderboard entries, then confirm the winner.',
     });
   } catch (error) {
-    console.error('Error spinning raffle:', error);
-    return NextResponse.json(
-      { error: 'Failed to spin raffle' },
-      { status: 500 }
-    );
+    console.error('Error in raffle spin:', error);
+    return NextResponse.json({ error: 'Failed to process spin' }, { status: 500 });
   }
 }
