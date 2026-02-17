@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,12 +10,20 @@ import { CountdownTimer } from '@/components/raffle/countdown-timer';
 import { PreviousWinners } from '@/components/raffle/previous-winners';
 
 function maskName(name: string): string {
-  if (name.length <= 4) return '*'.repeat(name.length);
-  return name.substring(0, 3) + '*'.repeat(Math.max(3, name.length - 4)) + name.substring(name.length - 1);
+  if (!name) return '***';
+  if (name.length <= 4) return name[0] + '*'.repeat(name.length - 1);
+  return name.substring(0, 2) + '*'.repeat(name.length - 3) + name.substring(name.length - 1);
 }
 
-interface RaffleEntry {
-  id: string;
+interface RaffleConfig {
+  min_wager: number;
+  prize_amount: number;
+  max_entries: number;
+  start_date: string;
+  end_date: string;
+}
+
+interface EligibleUser {
   username: string;
   wager_amount: number;
 }
@@ -29,47 +37,58 @@ interface Winner {
 }
 
 function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
-  const [entries, setEntries] = useState<RaffleEntry[]>([]);
+  const [config, setConfig] = useState<RaffleConfig | null>(null);
+  const [eligible, setEligible] = useState<EligibleUser[]>([]);
   const [winners, setWinners] = useState<Winner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [totalPrize, setTotalPrize] = useState(0);
-  const [config, setConfig] = useState<{ min_wager: number; prize_amount: number; max_entries: number; startDate: string; endDate: string } | null>(null);
-  
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 60000); // refresh every 60s to avoid rate limits
-    return () => clearInterval(interval);
-  }, [platform]);
-  
-  const fetchData = async () => {
+  const [error, setError] = useState('');
+
+  const fetchData = useCallback(async () => {
     try {
-      // Fetch entries first (contains config data too), then winners and config in parallel
-      const entriesRes = await fetch(`/api/raffle/entries?platform=${platform}`);
-      const entriesData = entriesRes.ok ? await entriesRes.json() : { entries: [] };
+      setError('');
 
-      setEntries(entriesData.entries || []);
+      // 1. Get raffle config from admin panel
+      const configRes = await fetch(`/api/raffle/config?platform=${platform}`);
+      if (!configRes.ok) throw new Error('Config fetch failed');
+      const cfgData: RaffleConfig = await configRes.json();
+      setConfig(cfgData);
 
-      // entries response already has config info as fallback
-      let cfgMinWager = entriesData.minWager || 50;
-      let cfgPrize = entriesData.totalPrize || 0;
-      let cfgMaxEntries = entriesData.maxEntries || 10000;
-      let cfgStartDate = entriesData.startDate || '2026-02-14';
-      let cfgEndDate = entriesData.endDate || '2026-02-21';
+      // 2. Fetch wager data from the same APIs the leaderboard pages use
+      let users: EligibleUser[] = [];
 
-      // Try config endpoint for latest admin values (non-blocking)
-      try {
-        const configRes = await fetch(`/api/raffle/config?platform=${platform}`);
-        if (configRes.ok) {
-          const configData = await configRes.json();
-          cfgMinWager = configData.min_wager || cfgMinWager;
-          cfgPrize = configData.prize_amount || cfgPrize;
-          cfgMaxEntries = configData.max_entries || cfgMaxEntries;
-          cfgStartDate = configData.start_date || cfgStartDate;
-          cfgEndDate = configData.end_date || cfgEndDate;
+      if (platform === 'acebet') {
+        // Uses /api/leaderboard — same endpoint as the Acebet leaderboard page
+        const lbRes = await fetch(`/api/leaderboard?start_at=${cfgData.start_date}&end_at=${cfgData.end_date}`);
+        if (lbRes.ok) {
+          const lbData = await lbRes.json();
+          users = (lbData.data || [])
+            .filter((u: any) => (u.wagered || 0) >= cfgData.min_wager)
+            .map((u: any) => ({ username: u.name || '', wager_amount: u.wagered || 0 }))
+            .filter((u: EligibleUser) => u.username);
         }
-      } catch {}
+      } else if (platform === 'packdraw') {
+        // Uses /api/packdraw — same endpoint as the Packdraw leaderboard page
+        // Convert YYYY-MM-DD to M-D-YYYY format the Packdraw API expects
+        const [y, m, d] = cfgData.start_date.split('-');
+        const afterParam = `${parseInt(m)}-${parseInt(d)}-${y}`;
+        const pdRes = await fetch(`/api/packdraw?after=${afterParam}`);
+        if (pdRes.ok) {
+          const pdData = await pdRes.json();
+          const list = pdData.leaderboard || pdData.data || (Array.isArray(pdData) ? pdData : []);
+          users = list
+            .filter((u: any) => (u.wagerAmount || u.wagered || 0) >= cfgData.min_wager)
+            .map((u: any) => ({
+              username: u.username || u.name || '',
+              wager_amount: u.wagerAmount || u.wagered || 0,
+            }))
+            .filter((u: EligibleUser) => u.username);
+        }
+      }
 
-      // Try winners endpoint (non-blocking)
+      users.sort((a, b) => b.wager_amount - a.wager_amount);
+      setEligible(users);
+
+      // 3. Fetch previous winners (non-blocking)
       try {
         const winnersRes = await fetch(`/api/raffle/winners?platform=${platform}`);
         if (winnersRes.ok) {
@@ -77,82 +96,102 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
           setWinners(winnersData.winners || []);
         }
       } catch {}
-
-      setTotalPrize(cfgPrize);
-      setConfig({
-        min_wager: cfgMinWager,
-        prize_amount: cfgPrize,
-        max_entries: cfgMaxEntries,
-        startDate: cfgStartDate,
-        endDate: cfgEndDate,
-      });
-    } catch (error) {
-      console.error('Error fetching raffle data:', error);
+    } catch (err: any) {
+      console.error('Error fetching raffle data:', err);
+      setError(err.message || 'Failed to load raffle data');
     } finally {
       setIsLoading(false);
     }
-  };
-  
+  }, [platform]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchData();
+    // Refresh every 5 minutes — the leaderboard APIs already cache for 5 min
+    const interval = setInterval(fetchData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-border/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center py-12">
+              <div className="text-muted-foreground">Loading raffle data...</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Prize Pool */}
-      <Card className="border-primary/20">
+      <Card className="border-border/50">
         <CardHeader>
-          <CardTitle>Prize Pool - {platform.toUpperCase()}</CardTitle>
+          <CardTitle className="text-foreground">Prize Pool - {platform === 'acebet' ? 'Acebet' : 'Packdraw'}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Total Prize</p>
-              <p className="text-3xl font-bold text-primary">${totalPrize.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-primary">${(config?.prize_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-1">Entries</p>
-              <p className="text-3xl font-bold text-primary">{entries.length} / {config?.max_entries || 10000}</p>
+              <p className="text-3xl font-bold text-primary">{eligible.length}</p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-primary/20">
-            <p className="text-sm text-muted-foreground">Minimum wager to enter: <span className="text-primary font-semibold">${config?.min_wager || 50}</span></p>
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <p className="text-sm text-muted-foreground">
+              {'Minimum wager to enter: '}
+              <span className="text-primary font-semibold">${(config?.min_wager || 0).toLocaleString()}</span>
+            </p>
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Countdown Timer */}
-      <Card className="border-primary/20">
+      <Card className="border-border/50">
         <CardContent className="pt-6 space-y-4">
-          {config?.startDate && config?.endDate && (
+          {config?.start_date && config?.end_date && (
             <div className="text-center mb-4">
               <p className="text-sm text-muted-foreground">Raffle Period</p>
-              <p className="text-sm font-medium">{config.startDate} to {config.endDate}</p>
+              <p className="text-sm font-medium text-foreground">
+                {new Date(config.start_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {' - '}
+                {new Date(config.end_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </p>
             </div>
           )}
-          <CountdownTimer endDate={config?.endDate} />
+          <CountdownTimer endDate={config?.end_date} />
         </CardContent>
       </Card>
-      
-      {/* Entries Display */}
-      <Card className="border-primary/20">
+
+      {/* Current Entries */}
+      <Card className="border-border/50">
         <CardHeader>
-          <CardTitle>Current Entries ({entries.length})</CardTitle>
+          <CardTitle className="text-foreground">Current Entries ({eligible.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {entries.length === 0 ? (
-              <p className="text-muted-foreground text-sm w-full text-center py-8">No entries yet</p>
-            ) : (
-              entries.slice(0, 50).map((entry) => (
-                <Badge key={entry.id} variant="outline" className="text-sm">
-                  {maskName(entry.username)}
+          {eligible.length === 0 ? (
+            <p className="text-muted-foreground text-sm text-center py-8">
+              No entries yet. Wager at least ${(config?.min_wager || 0).toLocaleString()} to enter.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {eligible.map((user, i) => (
+                <Badge key={`${user.username}-${i}`} variant="outline" className="text-sm py-1.5 px-3">
+                  {maskName(user.username)}
                 </Badge>
-              ))
-            )}
-            {entries.length > 50 && (
-              <Badge variant="secondary">+{entries.length - 50} more</Badge>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
-      
+
       {/* Previous Winners */}
       <PreviousWinners winners={winners} />
     </div>
@@ -166,20 +205,20 @@ export default function RafflePage() {
       <Header />
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Weekly Raffle</h1>
-          <p className="text-muted-foreground">Win big with our weekly raffles.</p>
+          <h1 className="text-4xl font-bold mb-2 text-foreground text-balance">Weekly Raffle</h1>
+          <p className="text-muted-foreground">Wager during the raffle period to automatically earn your entry.</p>
         </div>
-        
+
         <Tabs defaultValue="acebet" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="acebet">Acebet</TabsTrigger>
             <TabsTrigger value="packdraw">Packdraw</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="acebet" className="space-y-6">
             <RaffleTab platform="acebet" />
           </TabsContent>
-          
+
           <TabsContent value="packdraw" className="space-y-6">
             <RaffleTab platform="packdraw" />
           </TabsContent>
