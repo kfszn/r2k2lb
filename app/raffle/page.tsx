@@ -37,31 +37,54 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
   
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 60000); // refresh every 60s to avoid rate limits
     return () => clearInterval(interval);
   }, [platform]);
   
   const fetchData = async () => {
     try {
-      const [entriesRes, winnersRes, configRes] = await Promise.all([
-        fetch(`/api/raffle/entries?platform=${platform}`),
-        fetch(`/api/raffle/winners?platform=${platform}`),
-        fetch(`/api/raffle/config?platform=${platform}`),
-      ]);
-
+      // Fetch entries first (contains config data too), then winners and config in parallel
+      const entriesRes = await fetch(`/api/raffle/entries?platform=${platform}`);
       const entriesData = entriesRes.ok ? await entriesRes.json() : { entries: [] };
-      const winnersData = winnersRes.ok ? await winnersRes.json() : { winners: [] };
-      const configData  = configRes.ok  ? await configRes.json()  : {};
 
       setEntries(entriesData.entries || []);
-      setTotalPrize(configData.prize_amount || entriesData.totalPrize || 0);
-      setWinners(winnersData.winners || []);
+
+      // entries response already has config info as fallback
+      let cfgMinWager = entriesData.minWager || 50;
+      let cfgPrize = entriesData.totalPrize || 0;
+      let cfgMaxEntries = entriesData.maxEntries || 10000;
+      let cfgStartDate = entriesData.startDate || '2026-02-14';
+      let cfgEndDate = entriesData.endDate || '2026-02-21';
+
+      // Try config endpoint for latest admin values (non-blocking)
+      try {
+        const configRes = await fetch(`/api/raffle/config?platform=${platform}`);
+        if (configRes.ok) {
+          const configData = await configRes.json();
+          cfgMinWager = configData.min_wager || cfgMinWager;
+          cfgPrize = configData.prize_amount || cfgPrize;
+          cfgMaxEntries = configData.max_entries || cfgMaxEntries;
+          cfgStartDate = configData.start_date || cfgStartDate;
+          cfgEndDate = configData.end_date || cfgEndDate;
+        }
+      } catch {}
+
+      // Try winners endpoint (non-blocking)
+      try {
+        const winnersRes = await fetch(`/api/raffle/winners?platform=${platform}`);
+        if (winnersRes.ok) {
+          const winnersData = await winnersRes.json();
+          setWinners(winnersData.winners || []);
+        }
+      } catch {}
+
+      setTotalPrize(cfgPrize);
       setConfig({
-        min_wager: configData.min_wager || 50,
-        prize_amount: configData.prize_amount || 0,
-        max_entries: configData.max_entries || 10000,
-        startDate: configData.start_date || '2026-02-14',
-        endDate: configData.end_date || '2026-02-21'
+        min_wager: cfgMinWager,
+        prize_amount: cfgPrize,
+        max_entries: cfgMaxEntries,
+        startDate: cfgStartDate,
+        endDate: cfgEndDate,
       });
     } catch (error) {
       console.error('Error fetching raffle data:', error);
