@@ -87,21 +87,21 @@ export default function LossBackPage() {
                 <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
                   <p className="font-semibold mb-2">Tier 1</p>
                   <p className="text-2xl font-bold text-primary mb-2">5%</p>
-                  <p className="text-sm font-medium mb-2">$1 - $100,000</p>
+                  <p className="text-sm font-medium mb-2">$1.00 - $100,000</p>
                   <p className="text-xs text-muted-foreground mb-3">Monthly wager range</p>
                   <p className="text-xs font-medium text-primary">Max: $100/month</p>
                 </div>
                 <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
                   <p className="font-semibold mb-2">Tier 2</p>
-                  <p className="text-2xl font-bold text-primary mb-2">5%</p>
-                  <p className="text-sm font-medium mb-2">$1 - $100,000</p>
+                  <p className="text-2xl font-bold text-primary mb-2">10%</p>
+                  <p className="text-sm font-medium mb-2">$100,001 - $299,999</p>
                   <p className="text-xs text-muted-foreground mb-3">Monthly wager range</p>
                   <p className="text-xs font-medium text-primary">Max: $200/month</p>
                 </div>
                 <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
                   <p className="font-semibold mb-2">Tier 3 (Max)</p>
-                  <p className="text-2xl font-bold text-primary mb-2">5%</p>
-                  <p className="text-sm font-medium mb-2">$1 - $100,000</p>
+                  <p className="text-2xl font-bold text-primary mb-2">15%</p>
+                  <p className="text-sm font-medium mb-2">$300,000+</p>
                   <p className="text-xs text-muted-foreground mb-3">Monthly wager range</p>
                   <p className="text-xs font-medium text-primary">Max: $300/month</p>
                 </div>
