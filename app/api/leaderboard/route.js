@@ -13,10 +13,11 @@ const HARDCODED_ACEBET_TOKEN =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
 
 // ===============================
-// ✅ EDIT DEFAULT DATES HERE
+// ✅ LEADERBOARD TIMING (30-DAY CYCLE)
 // ===============================
-const DEFAULT_START = "2026-01-26";
-const DEFAULT_END = "2026-02-24"; // 30 day cycle
+// Leaderboard: 2/24/2026 2pm EST → 3/26/2026 2pm EST (30 days, no daily resets)
+const DEFAULT_START = "2026-02-24";
+const DEFAULT_END = "2026-03-26"; // 30 day cycle
 
 // ===============================
 // ⚡ SPEED / SAFETY KNOBS
