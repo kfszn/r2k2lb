@@ -150,9 +150,9 @@ export default function AcebetLeaderboard() {
               <em className="text-sm">Feb 24 - Mar 26, 2026 • 2pm EST</em>
             </p>
             
-            <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 space-y-3">
-              <p className="text-sm text-amber-900 dark:text-amber-200">
-                <strong>Disclaimer:</strong> This page displays raw wager statistics for wager rewards tracking purposes only.
+            <div className="mt-6 p-4 rounded-lg bg-muted/40 border border-border space-y-3">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Disclaimer:</strong> This page displays raw wager statistics for wager rewards tracking purposes only.
                 The official Acebet point-based leaderboards are below.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -160,7 +160,7 @@ export default function AcebetLeaderboard() {
                   href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=230"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500/20 border border-amber-500/50 text-amber-900 dark:text-amber-200 hover:bg-amber-500/30 transition-colors text-sm font-semibold"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold"
                 >
                   <Trophy className="h-4 w-4" />
                   $3,000 Monthly Leaderboard
@@ -169,7 +169,7 @@ export default function AcebetLeaderboard() {
                   href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=231"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500/20 border border-amber-500/50 text-amber-900 dark:text-amber-200 hover:bg-amber-500/30 transition-colors text-sm font-semibold"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold"
                 >
                   <Trophy className="h-4 w-4" />
                   $3,000 Bi-Weekly Leaderboard
