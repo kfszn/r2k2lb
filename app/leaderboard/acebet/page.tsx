@@ -142,7 +142,7 @@ export default function AcebetLeaderboard() {
               <span className="text-3xl font-bold text-primary">$10,000</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-              30 Day <span className="text-primary">R2K2</span> Wager Accounts
+              30 Day <span className="text-primary">R2K2</span> Wager Amounts
             </h1>
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
@@ -175,9 +175,6 @@ export default function AcebetLeaderboard() {
                   $3,000 Bi-Weekly Leaderboard
                 </Link>
               </div>
-            </div>
-            <div className="inline-block px-4 py-2 bg-destructive/10 border border-destructive/40 rounded-lg">
-              <p className="text-destructive font-bold">It Only Takes One!</p>
             </div>
           </div>
         </div>
