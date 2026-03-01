@@ -30,10 +30,10 @@ export default function HomePage() {
               Compete on Our <span className="text-primary">Leaderboards</span>
             </h1>
             <p className="text-2xl font-bold text-primary mt-2">
-              $7,000+ in Monthly/Weekly Leaderboards
+              $12,000 in Monthly Leaderboards
             </p>
             <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
-              Plus $1,000's in additional rewards. Join exclusive competitions across multiple platforms and climb the ranks with code R2K2.
+              Plus thousands in additional rewards. Join exclusive competitions across multiple platforms and climb the ranks with code R2K2.
             </p>
 
           </div>
