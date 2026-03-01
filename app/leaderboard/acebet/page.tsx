@@ -141,7 +141,7 @@ export default function AcebetLeaderboard() {
               <Trophy className="h-6 w-6 text-primary" />
               <span className="text-3xl font-bold text-primary">$10,000</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
               30 Day <span className="text-primary">R2K2</span> Wager Amounts
             </h1>
             <p className="text-lg text-muted-foreground">
