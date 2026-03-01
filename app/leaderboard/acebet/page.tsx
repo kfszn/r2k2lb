@@ -139,10 +139,10 @@ export default function AcebetLeaderboard() {
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40">
               <Trophy className="h-6 w-6 text-primary" />
-              <span className="text-3xl font-bold text-primary">$3,000</span>
+              <span className="text-3xl font-bold text-primary">$10,000</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-              30-Day <span className="text-primary">R2K2</span> Leaderboard
+              30 Day <span className="text-primary">R2K2</span> Wager Accounts
             </h1>
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
