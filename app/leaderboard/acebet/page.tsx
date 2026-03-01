@@ -139,10 +139,10 @@ export default function AcebetLeaderboard() {
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40">
               <Trophy className="h-6 w-6 text-primary" />
-              <span className="text-3xl font-bold text-primary">$3,000</span>
+              <span className="text-3xl font-bold text-primary">$10,000</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-              30-Day <span className="text-primary">R2K2</span> Leaderboard
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
+              30 Day <span className="text-primary">R2K2</span> Wager Amounts
             </h1>
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
@@ -150,22 +150,31 @@ export default function AcebetLeaderboard() {
               <em className="text-sm">Feb 24 - Mar 26, 2026 • 2pm EST</em>
             </p>
             
-            <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
-              <p className="text-sm text-amber-900 dark:text-amber-200">
-                <strong>Disclaimer:</strong> This page displays raw wager statistics for wager rewards tracking purposes only. 
-                The official Acebet leaderboard tracking points is located at{' '}
-                <Link 
-                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=230" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="underline font-semibold hover:text-amber-700 dark:hover:text-amber-100"
-                >
-                  acebet.com
-                </Link>.
+            <div className="mt-6 p-4 rounded-lg bg-muted/40 border border-border space-y-3">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Disclaimer:</strong> This page displays raw wager statistics for wager rewards tracking purposes only.
+                The official Acebet point-based leaderboards are below.
               </p>
-            </div>
-            <div className="inline-block px-4 py-2 bg-destructive/10 border border-destructive/40 rounded-lg">
-              <p className="text-destructive font-bold">It Only Takes One!</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=230"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold"
+                >
+                  <Trophy className="h-4 w-4" />
+                  $3,000 Monthly Leaderboard
+                </Link>
+                <Link
+                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=231"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold"
+                >
+                  <Trophy className="h-4 w-4" />
+                  $3,000 Bi-Weekly Leaderboard
+                </Link>
+              </div>
             </div>
           </div>
         </div>
