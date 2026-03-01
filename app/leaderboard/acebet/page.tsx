@@ -150,19 +150,31 @@ export default function AcebetLeaderboard() {
               <em className="text-sm">Feb 24 - Mar 26, 2026 • 2pm EST</em>
             </p>
             
-            <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+            <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 space-y-3">
               <p className="text-sm text-amber-900 dark:text-amber-200">
-                <strong>Disclaimer:</strong> This page displays raw wager statistics for wager rewards tracking purposes only. 
-                The official Acebet leaderboard tracking points is located at{' '}
-                <Link 
-                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=230" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="underline font-semibold hover:text-amber-700 dark:hover:text-amber-100"
-                >
-                  acebet.com
-                </Link>.
+                <strong>Disclaimer:</strong> This page displays raw wager statistics for wager rewards tracking purposes only.
+                The official Acebet point-based leaderboards are below.
               </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=230"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500/20 border border-amber-500/50 text-amber-900 dark:text-amber-200 hover:bg-amber-500/30 transition-colors text-sm font-semibold"
+                >
+                  <Trophy className="h-4 w-4" />
+                  $3,000 Monthly Leaderboard
+                </Link>
+                <Link
+                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=231"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500/20 border border-amber-500/50 text-amber-900 dark:text-amber-200 hover:bg-amber-500/30 transition-colors text-sm font-semibold"
+                >
+                  <Trophy className="h-4 w-4" />
+                  $3,000 Bi-Weekly Leaderboard
+                </Link>
+              </div>
             </div>
             <div className="inline-block px-4 py-2 bg-destructive/10 border border-destructive/40 rounded-lg">
               <p className="text-destructive font-bold">It Only Takes One!</p>
