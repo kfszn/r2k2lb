@@ -78,11 +78,22 @@ function shiftRangeBack(startISO, endISO) {
 
 async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.com/affiliates/detailed-summary/v2/${dayISO}`;
+  console.log(`[v0] Fetching Acebet data for ${dayISO}`);
+  
   const r = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
-  if (!r.ok) return [];
+  
+  if (!r.ok) {
+    console.error(`[v0] Acebet API error: ${r.status} ${r.statusText} for ${dayISO}`);
+    // If you see 403, it's likely an IP block
+    if (r.status === 403) {
+      console.error("[v0] ⚠️ 403 Forbidden - Acebet may be blocking this IP. Contact Acebet support with your Vercel deployment IP.");
+    }
+    return [];
+  }
+  
   const j = await r.json().catch(() => null);
   return Array.isArray(j) ? j : [];
 }
