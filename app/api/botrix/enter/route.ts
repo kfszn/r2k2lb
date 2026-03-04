@@ -2,7 +2,7 @@ import { createApiClient } from "@/lib/supabase/api";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/client"; // Import createClient
 
-const ACEBET_API_URL = "https://api.acebet.com/affiliates/detailed-summary/v2";
+const ACEBET_API_URL = "https://api.acebet.co/affiliates/detailed-summary/v2";
 const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
 
 interface AcebetUser {

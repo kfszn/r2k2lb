@@ -43,7 +43,7 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
 
   try {
     // Use the wager window start date to get cumulative wager data
-    const url = `https://api.acebet.com/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
+    const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
 
     console.log("[v0] Fetching Acebet users from:", url);
 

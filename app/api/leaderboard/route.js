@@ -77,7 +77,7 @@ function shiftRangeBack(startISO, endISO) {
 }
 
 async function fetchDayAcebet(dayISO, token) {
-  const url = `https://api.acebet.com/affiliates/detailed-summary/v2/${dayISO}`;
+  const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
   console.log(`[v0] Fetching Acebet data for ${dayISO}`);
   
   const r = await fetch(url, {
