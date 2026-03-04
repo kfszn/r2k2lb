@@ -78,42 +78,18 @@ function shiftRangeBack(startISO, endISO) {
 
 async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
-  console.log(`[v0] Fetching Acebet data for ${dayISO} from ${url}`);
-  
-  try {
-    const r = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-        "Referer": "https://acebet.co/",
-        "Authorization": `Bearer ${token}`,
-      },
-      cache: "no-store",
-    });
-    
-    console.log(`[v0] Acebet response status: ${r.status} for ${dayISO}`);
-    
-    if (!r.ok) {
-      const errorText = await r.text().catch(() => "");
-      console.error(`[v0] Acebet API error: ${r.status} ${r.statusText} for ${dayISO}`);
-      console.error(`[v0] Error response body: ${errorText.slice(0, 500)}`);
-      if (r.status === 403) {
-        console.error("[v0] 403 Forbidden - Cloudflare may be blocking. Check headers.");
-      }
-      return [];
-    }
-    
-    const j = await r.json().catch((e) => {
-      console.error(`[v0] JSON parse error for ${dayISO}:`, e);
-      return null;
-    });
-    
-    console.log(`[v0] Got ${Array.isArray(j) ? j.length : 0} entries for ${dayISO}`);
-    return Array.isArray(j) ? j : [];
-  } catch (err) {
-    console.error(`[v0] Fetch error for ${dayISO}:`, err);
-    return [];
-  }
+  const r = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      "Accept": "application/json",
+      "Referer": "https://acebet.co/",
+      "Authorization": `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+  if (!r.ok) return [];
+  const j = await r.json().catch(() => null);
+  return Array.isArray(j) ? j : [];
 }
 
 function makeCacheKey({ start_at, end_at, prev }) {
@@ -210,8 +186,6 @@ async function computeLeaderboard({ start_at, end_at, token }) {
 }
 
 export async function GET(req) {
-  console.log("[v0] Leaderboard API called");
-  
   // CORS headers
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -227,7 +201,6 @@ export async function GET(req) {
 
   try {
     const token = process.env.ACEBET_API_TOKEN || HARDCODED_ACEBET_TOKEN;
-    console.log("[v0] Token present:", !!token);
     if (!token) {
       return Response.json(
         {
