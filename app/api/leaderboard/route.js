@@ -7,10 +7,13 @@
 // Adds CORS and returns JSON sorted by wagered desc.
 
 // ===============================
-// 🔥 DROP YOUR TOKEN HERE
+// 🔥 PROXY + FETCH SETUP FOR CLOUDFLARE BYPASS
 // ===============================
-const HARDCODED_ACEBET_TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
+import fetch from 'node-fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
+const HARDCODED_ACEBET_TOKEN = process.env.ACEBET_API_TOKEN || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
 
 // ===============================
 // ✅ LEADERBOARD TIMING (30-DAY CYCLE)
@@ -77,16 +80,34 @@ function shiftRangeBack(startISO, endISO) {
 
 async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
-  const r = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...CF_HEADERS,
-    },
-    cache: "no-store",
-  });
-  if (!r.ok) return [];
-  const j = await r.json().catch(() => null);
-  return Array.isArray(j) ? j : [];
+  try {
+    console.log(`[v0] fetchDayAcebet ${dayISO}: calling ${url} with proxy=${proxyAgent ? 'yes' : 'no'}`);
+    const r = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Referer': 'https://acebet.co/',
+      },
+      agent: proxyAgent,
+    });
+    console.log(`[v0] fetchDayAcebet ${dayISO}: status ${r.status}`);
+    if (!r.ok) {
+      const text = await r.text().catch(() => 'no body');
+      console.log(`[v0] fetchDayAcebet ${dayISO}: not ok (${r.status}), body: ${text.slice(0, 200)}`);
+      return [];
+    }
+    const j = await r.json().catch((err) => {
+      console.log(`[v0] fetchDayAcebet ${dayISO}: json parse error:`, err);
+      return null;
+    });
+    const result = Array.isArray(j) ? j : [];
+    console.log(`[v0] fetchDayAcebet ${dayISO}: returning ${result.length} rows`);
+    return result;
+  } catch (err) {
+    console.log(`[v0] fetchDayAcebet ${dayISO}: error:`, err.message, err.stack);
+    return [];
+  }
 }
 
 function makeCacheKey({ start_at, end_at, prev }) {
@@ -95,11 +116,13 @@ function makeCacheKey({ start_at, end_at, prev }) {
 
 async function computeLeaderboard({ start_at, end_at, token }) {
   const totalDays = daysBetweenInclusive(start_at, end_at);
+  console.log(`[v0] computeLeaderboard: ${start_at} to ${end_at} (${totalDays} days)`);
 
   const users = new Map();
 
   for (const day of dateRangeUTC(start_at, end_at)) {
     const rows = await fetchDayAcebet(day, token);
+    console.log(`[v0] computeLeaderboard day ${day}: got ${rows.length} rows`);
 
     for (const r of rows) {
       const userId = r?.userId;
@@ -173,6 +196,7 @@ async function computeLeaderboard({ start_at, end_at, token }) {
   }));
 
   data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
+  console.log(`[v0] computeLeaderboard: returning ${data.length} users`);
 
   return {
     ok: true,
@@ -279,6 +303,7 @@ export async function GET(req) {
     const payload = await CACHE.inflight;
     return Response.json(payload, { headers });
   } catch (e) {
+    console.log("[v0] leaderboard GET error:", e.message, e.stack);
     CACHE.inflight = null;
     return Response.json(
       { error: "leaderboard_failed", detail: String(e) },

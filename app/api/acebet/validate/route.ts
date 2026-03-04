@@ -41,9 +41,6 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
   try {
     // Use the wager window start date to get cumulative wager data
     const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
-
-    // FIX 1: Changed .com to .co
-    const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
     console.log("[v0] Fetching Acebet users from:", url);
     const response = await fetch(url, {
       headers: {
@@ -51,11 +48,6 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
         "Accept": "application/json",
         "Referer": "https://acebet.co/",
         "Authorization": `Bearer ${ACEBET_TOKEN}`,
-        Authorization: `Bearer ${ACEBET_TOKEN}`,
-        // FIX 2: Added required Cloudflare bypass headers
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-        "Referer": "https://acebet.co/",
       },
       // @ts-ignore
       agent: proxyAgent,

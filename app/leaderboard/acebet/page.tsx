@@ -259,16 +259,24 @@ export default function AcebetLeaderboard() {
             )}
 
             {error && (
-              <div className="text-center py-12">
-                <p className="text-destructive text-lg">{error}</p>
+              <div className="text-center py-12 bg-destructive/10 rounded-lg border border-destructive/30 p-6">
+                <p className="text-destructive text-lg font-semibold mb-2">Error Loading Leaderboard</p>
+                <p className="text-sm text-muted-foreground">{error}</p>
               </div>
             )}
 
             {!loading && !error && leaderboard && (
               <>
-                {/* Podium Top 3 */}
-                <div className="mb-16">
-                  <h2 className="text-2xl font-bold text-center mb-12">Top Performers</h2>
+                {leaderboard.data.length === 0 ? (
+                  <div className="text-center py-12 bg-muted/40 rounded-lg border border-border p-6">
+                    <p className="text-muted-foreground text-lg">No leaderboard data available for the selected period</p>
+                    <p className="text-sm text-muted-foreground mt-2">Range: {leaderboard.range.start_at} to {leaderboard.range.end_at}</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Podium Top 3 */}
+                    <div className="mb-16">
+                      <h2 className="text-2xl font-bold text-center mb-12">Top Performers</h2>
                   <div className="flex items-end justify-center gap-4 md:gap-6">
                     {/* 2nd Place */}
                     {leaderboard.data[1] && (
@@ -381,6 +389,8 @@ export default function AcebetLeaderboard() {
                     />
                   ))}
                 </div>
+                  </>
+                )}
               </>
             )}
           </div>
