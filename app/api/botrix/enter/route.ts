@@ -1,6 +1,9 @@
 import { createApiClient } from "@/lib/supabase/api";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/client"; // Import createClient
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
 
 const ACEBET_API_URL = "https://api.acebet.co/affiliates/detailed-summary/v2";
 const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
@@ -50,6 +53,8 @@ async function getAcebetUsers(): Promise<AcebetUser[]> {
         "Referer": "https://acebet.co/",
         "Authorization": `Bearer ${ACEBET_TOKEN}`,
       },
+      // @ts-ignore
+      agent: proxyAgent,
     });
 
     if (!response.ok) {

@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
 
 const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
 
@@ -54,6 +57,8 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
         "Referer": "https://acebet.co/",
         "Authorization": `Bearer ${ACEBET_TOKEN}`,
       },
+      // @ts-ignore
+      agent: proxyAgent,
       cache: "no-store",
     });
 

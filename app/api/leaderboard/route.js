@@ -6,6 +6,10 @@
 //   - ?fresh=1 (force recompute; bypass cache)
 // Adds CORS and returns JSON sorted by wagered desc.
 
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
+
 // ===============================
 // 🔥 DROP YOUR TOKEN HERE
 // ===============================
@@ -85,6 +89,8 @@ async function fetchDayAcebet(dayISO, token) {
       "Referer": "https://acebet.co/",
       "Authorization": `Bearer ${token}`,
     },
+    // @ts-ignore
+    agent: proxyAgent,
     cache: "no-store",
   });
   if (!r.ok) return [];
