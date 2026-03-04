@@ -22,27 +22,26 @@ const DEFAULT_END = "2026-03-26"; // 30 day cycle
 // ===============================
 // ⚡ SPEED / SAFETY KNOBS
 // ===============================
-// Reduce delay to speed up first computation. If Acebet rate-limits you, raise it.
 const DEFAULT_DELAY_MS = 0;
-
-// Safety cap (days)
 const DEFAULT_MAX_DAYS = 180;
-
-// Cache TTL (ms). 5 minutes for faster responses
 const CACHE_TTL_MS = 5 * 60 * 1000;
-
-// OPTIONAL: If you want the response cacheable by CDNs too
-// (still safe because you are not returning private token, only aggregated results)
 const ENABLE_EDGE_CACHE_HEADERS = true;
 
+// Cloudflare bypass headers — required or Acebet returns 403
+const CF_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  "Accept": "application/json",
+  "Referer": "https://acebet.co/",
+};
+
 // ------------------------------
-// Simple in-memory cache (persists while the lambda stays warm)
+// Simple in-memory cache
 // ------------------------------
 let CACHE = {
   key: "",
   ts: 0,
   payload: null,
-  inflight: null, // Promise to de-dupe concurrent requests
+  inflight: null,
 };
 
 function toISODateUTC(d) {
@@ -77,9 +76,14 @@ function shiftRangeBack(startISO, endISO) {
 }
 
 async function fetchDayAcebet(dayISO, token) {
-  const url = `https://api.acebet.com/affiliates/detailed-summary/v2/${dayISO}`;
+  // FIX 1: Changed .com to .co
+  const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
   const r = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // FIX 2: Added Cloudflare bypass headers
+      ...CF_HEADERS,
+    },
     cache: "no-store",
   });
   if (!r.ok) return [];
@@ -181,7 +185,6 @@ async function computeLeaderboard({ start_at, end_at, token }) {
 }
 
 export async function GET(req) {
-  // CORS headers
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -223,20 +226,18 @@ export async function GET(req) {
       return Response.json(
         {
           error: "bad_dates",
-          detail: "Use YYYY-MM-DD for start_at and end_at (or set DEFAULT_END to a valid date / empty string).",
+          detail: "Use YYYY-MM-DD for start_at and end_at.",
         },
         { status: 400, headers }
       );
     }
 
-    // Ensure start <= end
     if (new Date(`${start_at}T00:00:00Z`) > new Date(`${end_at}T00:00:00Z`)) {
       const tmp = start_at;
       start_at = end_at;
       end_at = tmp;
     }
 
-    // prev window (same length)
     if (prev) {
       const shifted = shiftRangeBack(start_at, end_at);
       start_at = shifted.start_at;
@@ -256,7 +257,6 @@ export async function GET(req) {
 
     const key = makeCacheKey({ start_at, end_at, prev });
 
-    // Serve from cache if fresh and not forced
     const cacheFresh = CACHE.payload && CACHE.key === key && (Date.now() - CACHE.ts) < CACHE_TTL_MS;
     const forceFresh = fresh && fresh !== "0";
 
@@ -264,13 +264,11 @@ export async function GET(req) {
       return Response.json(CACHE.payload, { headers });
     }
 
-    // De-dupe concurrent requests
     if (!forceFresh && CACHE.inflight && CACHE.key === key) {
       const payload = await CACHE.inflight;
       return Response.json(payload, { headers });
     }
 
-    // Compute and cache
     CACHE.key = key;
     CACHE.inflight = (async () => {
       const payload = await computeLeaderboard({ start_at, end_at, token });
