@@ -6,11 +6,6 @@
 //   - ?fresh=1 (force recompute; bypass cache)
 // Adds CORS and returns JSON sorted by wagered desc.
 
-import fetch from 'node-fetch';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-
-const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
-
 // ===============================
 // 🔥 DROP YOUR TOKEN HERE
 // ===============================
@@ -84,19 +79,7 @@ async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
   const r = await fetch(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-      "Accept": "application/json",
-      "Referer": "https://acebet.co/",
-      "Authorization": `Bearer ${token}`,
-    },
-    // @ts-ignore
-    agent: proxyAgent,
-  // FIX 1: Changed .com to .co
-  const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
-  const r = await fetch(url, {
-    headers: {
       Authorization: `Bearer ${token}`,
-      // FIX 2: Added Cloudflare bypass headers
       ...CF_HEADERS,
     },
     cache: "no-store",
