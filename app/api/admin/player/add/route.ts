@@ -50,7 +50,10 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
 
     const response = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${ACEBET_TOKEN}`,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+        "Referer": "https://acebet.co/",
+        "Authorization": `Bearer ${ACEBET_TOKEN}`,
       },
       cache: "no-store",
     });

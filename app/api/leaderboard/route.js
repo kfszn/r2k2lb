@@ -81,7 +81,12 @@ async function fetchDayAcebet(dayISO, token) {
   console.log(`[v0] Fetching Acebet data for ${dayISO}`);
   
   const r = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      "Accept": "application/json",
+      "Referer": "https://acebet.co/",
+      "Authorization": `Bearer ${token}`,
+    },
     cache: "no-store",
   });
   
