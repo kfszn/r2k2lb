@@ -7,10 +7,13 @@
 // Adds CORS and returns JSON sorted by wagered desc.
 
 // ===============================
-// 🔥 DROP YOUR TOKEN HERE
+// 🔥 PROXY + FETCH SETUP FOR CLOUDFLARE BYPASS
 // ===============================
-const HARDCODED_ACEBET_TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
+import fetch from 'node-fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
+const HARDCODED_ACEBET_TOKEN = process.env.ACEBET_API_TOKEN || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
 
 // ===============================
 // ✅ LEADERBOARD TIMING (30-DAY CYCLE)
@@ -78,16 +81,20 @@ function shiftRangeBack(startISO, endISO) {
 async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
   try {
+    console.log(`[v0] fetchDayAcebet ${dayISO}: calling ${url} with proxy=${proxyAgent ? 'yes' : 'no'}`);
     const r = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${token}`,
-        ...CF_HEADERS,
+        'Authorization': `Bearer ${token}`,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Referer': 'https://acebet.co/',
       },
-      cache: "no-store",
+      agent: proxyAgent,
     });
     console.log(`[v0] fetchDayAcebet ${dayISO}: status ${r.status}`);
     if (!r.ok) {
-      console.log(`[v0] fetchDayAcebet ${dayISO}: not ok, returning []`);
+      const text = await r.text().catch(() => 'no body');
+      console.log(`[v0] fetchDayAcebet ${dayISO}: not ok (${r.status}), body: ${text.slice(0, 200)}`);
       return [];
     }
     const j = await r.json().catch((err) => {
@@ -98,7 +105,7 @@ async function fetchDayAcebet(dayISO, token) {
     console.log(`[v0] fetchDayAcebet ${dayISO}: returning ${result.length} rows`);
     return result;
   } catch (err) {
-    console.log(`[v0] fetchDayAcebet ${dayISO}: error:`, err.message);
+    console.log(`[v0] fetchDayAcebet ${dayISO}: error:`, err.message, err.stack);
     return [];
   }
 }
