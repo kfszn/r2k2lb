@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import fetch from 'node-fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
 
 const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
 
@@ -44,14 +48,19 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
 
   try {
     // Use the wager window start date to get cumulative wager data
-    const url = `https://api.acebet.com/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
+    const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
 
     console.log("[v0] Fetching Acebet users from:", url);
 
     const response = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${ACEBET_TOKEN}`,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+        "Referer": "https://acebet.co/",
+        "Authorization": `Bearer ${ACEBET_TOKEN}`,
       },
+      // @ts-ignore
+      agent: proxyAgent,
       cache: "no-store",
     });
 

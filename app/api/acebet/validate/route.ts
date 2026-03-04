@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import fetch from 'node-fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
+
 const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
 interface AcebetUser {
   userId: number;
@@ -34,17 +39,26 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
     return [];
   }
   try {
+    // Use the wager window start date to get cumulative wager data
+    const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
+
     // FIX 1: Changed .com to .co
     const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
     console.log("[v0] Fetching Acebet users from:", url);
     const response = await fetch(url, {
       headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+        "Referer": "https://acebet.co/",
+        "Authorization": `Bearer ${ACEBET_TOKEN}`,
         Authorization: `Bearer ${ACEBET_TOKEN}`,
         // FIX 2: Added required Cloudflare bypass headers
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
         "Accept": "application/json",
         "Referer": "https://acebet.co/",
       },
+      // @ts-ignore
+      agent: proxyAgent,
       cache: "no-store",
     });
     console.log("[v0] Acebet API response status:", response.status);

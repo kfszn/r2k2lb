@@ -73,11 +73,11 @@ function Header() {
 
           {/* Acebet Dropdown */}
           <div className="relative group">
-            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
               Acebet
               <ChevronDown className="h-4 w-4" />
             </button>
-            <div className="absolute left-0 mt-0 hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
+            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
               <Link 
                 href="/leaderboard/acebet" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
@@ -111,11 +111,11 @@ function Header() {
 
           {/* Packdraw Dropdown */}
           <div className="relative group">
-            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
               Packdraw
               <ChevronDown className="h-4 w-4" />
             </button>
-            <div className="absolute left-0 mt-0 hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
+            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
               <Link 
                 href="/leaderboard/packdraw" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"

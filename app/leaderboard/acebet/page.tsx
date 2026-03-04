@@ -39,7 +39,6 @@ export default function AcebetLeaderboard() {
     setLoading(true)
     setError(null)
     try {
-      const startTime = Date.now()
       const url = previous ? '/api/leaderboard?prev=1' : '/api/leaderboard'
       const res = await fetch(url)
       const data = await res.json()
@@ -155,16 +154,7 @@ export default function AcebetLeaderboard() {
                 <strong className="text-foreground">Disclaimer:</strong> This page displays raw wager statistics for wager rewards tracking purposes only.
                 The official Acebet point-based leaderboards are below.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link
-                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=230"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold"
-                >
-                  <Trophy className="h-4 w-4" />
-                  $3,000 Monthly Leaderboard
-                </Link>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
                 <Link
                   href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=231"
                   target="_blank"
@@ -172,7 +162,20 @@ export default function AcebetLeaderboard() {
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold"
                 >
                   <Trophy className="h-4 w-4" />
-                  $3,000 Bi-Weekly Leaderboard
+                  $3,000 March 1H Bi-Weekly Leaderboard
+                </Link>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border text-muted-foreground text-sm font-semibold cursor-not-allowed opacity-50">
+                  <Trophy className="h-4 w-4" />
+                  $4,000 March 2H Bi-Weekly Leaderboard (Coming Soon)
+                </div>
+                <Link
+                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=230"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold"
+                >
+                  <Trophy className="h-4 w-4" />
+                  $3,000 March Monthly Leaderboard
                 </Link>
               </div>
             </div>
