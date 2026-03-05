@@ -274,7 +274,7 @@ export default function BlackjackPage() {
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 pointer-events-none select-none">
             <span className="text-[11px] uppercase tracking-[0.35em] text-white/20 font-bold">Code</span>
             <span className="text-2xl md:text-3xl font-black tracking-[0.2em] text-white/15">R2K2</span>
-            <span className="text-[10px] uppercase tracking-[0.25em] text-white/15 font-semibold mt-1">Blackjack Pays 2 to 1</span>
+            <span className="text-[10px] uppercase tracking-[0.25em] text-white/15 font-semibold mt-1">Blackjack Pays 3 to 2</span>
           </div>
 
           {/* ── DEALER HAND ────────────────────────────────────────────────────── */}
