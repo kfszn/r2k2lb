@@ -124,6 +124,9 @@ class KickTournamentBot {
     console.log(`[Bot] Command from ${username}: ${command} ${args.join(" ")}`);
 
     switch (command.toLowerCase()) {
+      case "verify":
+        await this.handleVerify(username, args[0]);
+        break;
       case "enter":
         await this.handleEnter(username, args[0]);
         break;
@@ -142,6 +145,41 @@ class KickTournamentBot {
       case "help":
         await this.handleHelp();
         break;
+    }
+  }
+
+  private async handleVerify(kickUsername: string, accountId?: string) {
+    if (!accountId) {
+      this.sendChatMessage(`@${kickUsername} Usage: !verify R2K2-XXXXX (use your account ID from r2k2.gg)`);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/kick/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          account_id: accountId.trim().toUpperCase(),
+          kick_username: kickUsername,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        this.sendChatMessage(`@${kickUsername} Your Kick account has been linked to ${data.account_id}!`);
+      } else if (response.status === 404) {
+        this.sendChatMessage(`@${kickUsername} Account ID ${accountId} not found. Check your ID at r2k2.gg/account`);
+      } else if (response.status === 409 && data.error === 'already_linked') {
+        this.sendChatMessage(`@${kickUsername} That account is already linked to a Kick user.`);
+      } else if (response.status === 409 && data.error === 'kick_already_linked') {
+        this.sendChatMessage(`@${kickUsername} Your Kick account is already linked to a different R2K2 account.`);
+      } else {
+        this.sendChatMessage(`@${kickUsername} Something went wrong. Please try again later.`);
+      }
+    } catch (error) {
+      console.error("[Bot] Error handling verify:", error);
+      this.sendChatMessage(`@${kickUsername} Something went wrong. Please try again later.`);
     }
   }
 
