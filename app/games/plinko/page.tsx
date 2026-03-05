@@ -175,7 +175,7 @@ export default function PlinkoPage() {
 
           {/* Bet Amount */}
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2 font-semibold">Bet Amount</p>
+            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2 font-semibold">Bet Amount <span className="text-red-400">(Max: 5000)</span></p>
             <div className="relative mb-2">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs font-mono">pts</span>
               <Input type="number" min={1} max={5000} value={wager}
