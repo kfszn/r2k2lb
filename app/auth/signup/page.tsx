@@ -50,13 +50,13 @@ export default function SignUpPage() {
       setError('This email is already registered but not verified. Please check your email (including spam folder) for the verification link, or contact support if you need help.')
       setLoading(false)
     } else if (data?.user) {
-      // Fetch the auto-generated account_id from profiles
-      // The trigger runs synchronously so it should be available immediately
+      // Try to fetch the auto-generated account_id from profiles.
+      // If email confirmation is required, the trigger may not have fired yet — profile will be null.
       const { data: profile } = await supabase
         .from('profiles')
         .select('account_id')
         .eq('id', data.user.id)
-        .maybeSingle()
+        .single()
 
       setAccountId(profile?.account_id ?? null)
       setSuccess(true)
@@ -116,29 +116,37 @@ export default function SignUpPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
-            {accountId && (
-              <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center space-y-2">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Your Account ID</p>
-                <p className="text-3xl font-bold tracking-wider text-primary font-mono">{accountId}</p>
-                <button
-                  type="button"
-                  onClick={() => navigator.clipboard.writeText(accountId)}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
-                >
-                  Copy to clipboard
-                </button>
+            {accountId ? (
+              <>
+                <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center space-y-2">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Your Account ID</p>
+                  <p className="text-3xl font-bold tracking-wider text-primary font-mono">{accountId}</p>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(accountId)}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                  >
+                    Copy to clipboard
+                  </button>
+                </div>
+
+                <div className="bg-muted/50 border border-border/40 rounded-lg p-4 text-sm text-muted-foreground space-y-1">
+                  <p className="font-semibold text-foreground">Link your Kick account</p>
+                  <p>Go to R2K2&apos;s Kick chat and type:</p>
+                  <p className="font-mono bg-background/60 rounded px-3 py-1.5 text-foreground text-center">
+                    !verify {accountId}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="bg-muted/50 border border-border/40 rounded-lg p-4 text-sm text-muted-foreground text-center space-y-1">
+                <p className="font-semibold text-foreground">Confirm your email first</p>
+                <p>
+                  Your Account ID will be shown after you confirm your email and log in. Find it on your{' '}
+                  <Link href="/account" className="text-primary hover:underline">Account page</Link>.
+                </p>
               </div>
             )}
-
-            <div className="bg-muted/50 border border-border/40 rounded-lg p-4 text-sm text-muted-foreground space-y-1">
-              <p className="font-semibold text-foreground">Link your Kick account</p>
-              <p>
-                Go to R2K2&apos;s Kick chat and type:
-              </p>
-              <p className="font-mono bg-background/60 rounded px-3 py-1.5 text-foreground text-center">
-                !verify {accountId ?? 'R2K2-XXXXX'}
-              </p>
-            </div>
 
             {resendSuccess && (
               <div className="bg-primary/10 border border-primary/20 text-primary px-4 py-3 rounded-lg text-sm text-center">
