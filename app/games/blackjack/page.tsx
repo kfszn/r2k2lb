@@ -1,333 +1,454 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { mutate } from 'swr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
 import { GameLayout } from '@/components/games/game-layout'
 import { cn } from '@/lib/utils'
+import {
+  buildDeck, shuffleDeck, handTotal, isBust, isBlackjack,
+  dealerShouldHit, resolveOutcome, cardsToWire,
+  type Card, type Phase, type Outcome,
+} from '@/lib/games/blackjack-engine'
 
-// ── Card helpers ─────────────────────────────────────────────────────────────
+// ── Suit helpers ──────────────────────────────────────────────────────────────
 const SUIT_SYMBOLS: Record<string, string> = { S: '♠', H: '♥', D: '♦', C: '♣' }
 const RED_SUITS = new Set(['H', 'D'])
-function rank(card: string) { return card.slice(0, -1) }
-function suit(card: string) { return card.slice(-1) }
-function isRed(card: string) { return RED_SUITS.has(suit(card)) }
 
-function handTotal(cards: string[]) {
-  let total = 0; let aces = 0
-  for (const c of cards) {
-    const r = rank(c)
-    if (['J', 'Q', 'K'].includes(r)) total += 10
-    else if (r === 'A') { total += 11; aces++ }
-    else total += parseInt(r)
-  }
-  while (total > 21 && aces > 0) { total -= 10; aces-- }
-  return total
-}
-
-// ── Playing Card component ────────────────────────────────────────────────────
-function PlayingCard({ card, hidden = false, delay = 0 }: { card: string; hidden?: boolean; delay?: number }) {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), delay)
-    return () => clearTimeout(t)
-  }, [delay])
-
-  if (!visible) return (
-    <div className="w-16 h-24 md:w-20 md:h-28 rounded-xl border-2 border-border/20 bg-[#1a2744] opacity-0" />
-  )
+// ── Playing Card ──────────────────────────────────────────────────────────────
+function PlayingCard({ card, hidden = false, animIn = false }: {
+  card: Card; hidden?: boolean; animIn?: boolean
+}) {
+  const red = RED_SUITS.has(card.suit)
+  const sym = SUIT_SYMBOLS[card.suit]
 
   if (hidden) {
     return (
       <div className={cn(
-        'w-16 h-24 md:w-20 md:h-28 rounded-xl border-2 border-[#2a3f6a] bg-[#1a2744]',
-        'flex items-center justify-center shadow-lg',
-        'transition-all duration-300 opacity-100 translate-y-0',
+        'w-[60px] h-[84px] md:w-[72px] md:h-[100px] rounded-xl border-2 border-[#2a3f6a]',
+        'bg-[#1a2744] flex items-center justify-center shadow-xl select-none flex-shrink-0',
+        animIn && 'animate-[dealIn_0.25s_ease-out]',
       )}>
-        <div className="w-10 h-14 md:w-12 md:h-18 rounded-lg border border-[#3a5080]/50 bg-[#162040] flex items-center justify-center">
-          <span className="text-[#3a5080] text-2xl font-bold select-none">A</span>
+        <div className="w-9 h-12 rounded-lg border border-[#3a5080]/50 bg-[#162040] flex items-center justify-center">
+          <span className="text-[#3a5080] text-xl font-black select-none">✦</span>
         </div>
       </div>
     )
   }
 
-  const r = rank(card)
-  const s = suit(card)
-  const red = isRed(card)
-
   return (
     <div className={cn(
-      'w-16 h-24 md:w-20 md:h-28 rounded-xl border-2 bg-white shadow-lg',
-      'flex flex-col p-1.5 select-none relative',
-      'transition-all duration-300 opacity-100',
-      red ? 'border-red-200 text-red-500' : 'border-slate-200 text-slate-800',
+      'w-[60px] h-[84px] md:w-[72px] md:h-[100px] rounded-xl border-2 bg-white',
+      'flex flex-col p-1.5 select-none shadow-xl relative flex-shrink-0',
+      red ? 'border-red-200' : 'border-slate-200',
+      animIn && 'animate-[dealIn_0.25s_ease-out]',
     )}>
-      {/* Top-left rank+suit */}
-      <div className="flex flex-col items-start leading-none">
-        <span className="text-sm md:text-base font-extrabold leading-none">{r}</span>
-        <span className="text-xs md:text-sm leading-none">{SUIT_SYMBOLS[s]}</span>
+      <div className={cn('flex flex-col items-start leading-none', red ? 'text-red-500' : 'text-slate-800')}>
+        <span className="text-[13px] font-extrabold leading-none">{card.rank}</span>
+        <span className="text-[11px] leading-none">{sym}</span>
       </div>
-      {/* Center suit */}
       <div className="flex-1 flex items-center justify-center">
-        <span className="text-2xl md:text-3xl">{SUIT_SYMBOLS[s]}</span>
+        <span className={cn('text-2xl', red ? 'text-red-500' : 'text-slate-800')}>{sym}</span>
       </div>
-      {/* Bottom-right (rotated) */}
-      <div className="flex flex-col items-end leading-none rotate-180">
-        <span className="text-sm md:text-base font-extrabold leading-none">{r}</span>
-        <span className="text-xs md:text-sm leading-none">{SUIT_SYMBOLS[s]}</span>
+      <div className={cn('flex flex-col items-end leading-none rotate-180', red ? 'text-red-500' : 'text-slate-800')}>
+        <span className="text-[13px] font-extrabold leading-none">{card.rank}</span>
+        <span className="text-[11px] leading-none">{sym}</span>
       </div>
     </div>
   )
 }
 
-// ── Chip button ───────────────────────────────────────────────────────────────
+function HandBadge({ cards, hide2nd = false }: { cards: Card[]; hide2nd?: boolean }) {
+  const visible = hide2nd ? [cards[0]] : cards
+  const { total } = handTotal(visible)
+  const bust = !hide2nd && isBust(cards)
+  const bj = !hide2nd && isBlackjack(cards)
+  return (
+    <span className={cn(
+      'text-[11px] font-bold px-2 py-0.5 rounded-full border',
+      bust  ? 'bg-red-900/60 text-red-300 border-red-500/40' :
+      bj    ? 'bg-yellow-900/60 text-yellow-300 border-yellow-500/40' :
+              'bg-black/40 text-white/80 border-white/10'
+    )}>
+      {hide2nd ? `${total}+?` : total}
+    </span>
+  )
+}
+
+// ── Chips ─────────────────────────────────────────────────────────────────────
 const CHIPS = [
-  { value: 50,   label: '50',   bg: 'bg-red-600 hover:bg-red-500 border-red-400 text-white' },
-  { value: 100,  label: '100',  bg: 'bg-green-600 hover:bg-green-500 border-green-400 text-white' },
-  { value: 500,  label: '500',  bg: 'bg-slate-800 hover:bg-slate-700 border-slate-500 text-white' },
-  { value: 1000, label: '1K',   bg: 'bg-purple-700 hover:bg-purple-600 border-purple-400 text-white' },
+  { value: 50,   label: '50',  cls: 'bg-red-600 hover:bg-red-500 border-red-400' },
+  { value: 100,  label: '100', cls: 'bg-green-600 hover:bg-green-500 border-green-400' },
+  { value: 500,  label: '500', cls: 'bg-slate-700 hover:bg-slate-600 border-slate-500' },
+  { value: 1000, label: '1K',  cls: 'bg-purple-700 hover:bg-purple-600 border-purple-400' },
 ]
 
 // ── Outcome config ────────────────────────────────────────────────────────────
-const OUTCOMES: Record<string, { label: string; sub: (pts: number, w: number) => string; color: string; bg: string }> = {
-  blackjack:        { label: 'Blackjack!', sub: (p) => `+${p.toLocaleString()} pts`, color: 'text-yellow-300', bg: 'from-yellow-950/90 to-yellow-900/80 border-yellow-500/40' },
-  win:              { label: 'You Win!', sub: (p, w) => `+${(p - w).toLocaleString()} pts`, color: 'text-green-300', bg: 'from-green-950/90 to-green-900/80 border-green-500/40' },
-  dealer_bust:      { label: 'Dealer Bust!', sub: (p, w) => `+${(p - w).toLocaleString()} pts`, color: 'text-green-300', bg: 'from-green-950/90 to-green-900/80 border-green-500/40' },
-  push:             { label: 'Push', sub: () => 'Wager returned', color: 'text-blue-300', bg: 'from-blue-950/90 to-blue-900/80 border-blue-500/40' },
-  bust:             { label: 'Bust!', sub: (_, w) => `-${w.toLocaleString()} pts`, color: 'text-red-300', bg: 'from-red-950/90 to-red-900/80 border-red-500/40' },
-  lose:             { label: 'Dealer Wins', sub: (_, w) => `-${w.toLocaleString()} pts`, color: 'text-red-300', bg: 'from-red-950/90 to-red-900/80 border-red-500/40' },
-  dealer_blackjack: { label: 'Dealer Blackjack', sub: (_, w) => `-${w.toLocaleString()} pts`, color: 'text-red-300', bg: 'from-red-950/90 to-red-900/80 border-red-500/40' },
+const OC_CFG: Record<Outcome, { label: string; color: string; bg: string; sub: (w: number, p: number) => string }> = {
+  blackjack:        { label: 'Blackjack!',      color: 'text-yellow-300', bg: 'from-yellow-950/95 to-yellow-900/85 border-yellow-500/40', sub: (_,p) => `+${(p).toLocaleString()} pts` },
+  win:              { label: 'You Win!',         color: 'text-green-300',  bg: 'from-green-950/95 to-green-900/85 border-green-500/40',   sub: (w,p) => `+${(p-w).toLocaleString()} pts` },
+  dealer_bust:      { label: 'Dealer Busts!',   color: 'text-green-300',  bg: 'from-green-950/95 to-green-900/85 border-green-500/40',   sub: (w,p) => `+${(p-w).toLocaleString()} pts` },
+  push:             { label: 'Push',             color: 'text-blue-300',   bg: 'from-blue-950/95 to-blue-900/85 border-blue-500/40',      sub: () => 'Wager returned' },
+  bust:             { label: 'Bust!',            color: 'text-red-300',    bg: 'from-red-950/95 to-red-900/85 border-red-500/40',         sub: (w) => `-${w.toLocaleString()} pts` },
+  lose:             { label: 'Dealer Wins',      color: 'text-red-300',    bg: 'from-red-950/95 to-red-900/85 border-red-500/40',         sub: (w) => `-${w.toLocaleString()} pts` },
+  dealer_blackjack: { label: 'Dealer Blackjack', color: 'text-red-300',    bg: 'from-red-950/95 to-red-900/85 border-red-500/40',         sub: (w) => `-${w.toLocaleString()} pts` },
 }
 
-type GameState = 'idle' | 'done'
-
+// ── Main component ────────────────────────────────────────────────────────────
 export default function BlackjackPage() {
-  const [wager, setWager] = useState(100)
-  const [state, setState] = useState<GameState>('idle')
-  const [playerCards, setPlayerCards] = useState<string[]>([])
-  const [dealerCards, setDealerCards] = useState<string[]>([])
-  const [dealerHideSecond, setDealerHideSecond] = useState(false)
-  const [outcome, setOutcome] = useState<string | null>(null)
-  const [payout, setPayout] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [cardKey, setCardKey] = useState(0)
+  const [wager, setWager]         = useState(100)
+  const [phase, setPhase]         = useState<Phase>('BETTING')
+  const [shoe, setShoe]           = useState<Card[]>([])
+  const shoeRef                   = useRef<Card[]>([])
+  const [playerCards, setPlayer]  = useState<Card[]>([])
+  const [dealerCards, setDealer]  = useState<Card[]>([])
+  const [holeHidden, setHoleHidden] = useState(true)
+  const [doubled, setDoubled]     = useState(false)
+  const [outcome, setOutcome]     = useState<Outcome | null>(null)
+  const [payout, setPayout]       = useState(0)
+  const [settling, setSettling]   = useState(false)
+  // Track which cards are "new" for animation
+  const [animKeys, setAnimKeys]   = useState<Set<string>>(new Set())
 
-  const bet = async (action: 'stand' | 'hit' | 'double') => {
-    setLoading(true)
+  // Draw next card from shoe ref (mutable during a hand)
+  const drawCard = useCallback((): Card => {
+    const card = shoeRef.current.shift()!
+    return card
+  }, [])
+
+  const markAnim = (key: string) => setAnimKeys(s => new Set(s).add(key))
+
+  // ── DEAL ─────────────────────────────────────────────────────────────────────
+  const deal = useCallback(() => {
+    const freshShoe = shuffleDeck(buildDeck())
+    shoeRef.current = freshShoe
+
+    const p1 = drawCard()
+    const d1 = drawCard()
+    const p2 = drawCard()
+    const d2 = drawCard() // hole card — stays hidden
+
+    const pHand = [p1, p2]
+    const dHand = [d1, d2]
+
+    setShoe([...shoeRef.current])
+    setPlayer(pHand)
+    setDealer(dHand)
+    setHoleHidden(true)
+    setDoubled(false)
+    setOutcome(null)
+    setPayout(0)
+    setAnimKeys(new Set(['p0','p1','d0']))
+    setPhase('PLAYER_TURN')
+
+    // Immediate resolution: both blackjack, player blackjack, dealer blackjack
+    const pBJ = isBlackjack(pHand)
+    const dBJ = isBlackjack(dHand)
+    if (pBJ || dBJ) {
+      setHoleHidden(false)
+      const { outcome: oc, payout: po } = resolveOutcome(pHand, dHand, wager, false)
+      settle(pHand, dHand, oc, po, false)
+    }
+  }, [wager])
+
+  // ── HIT ──────────────────────────────────────────────────────────────────────
+  const hit = useCallback((currentPlayer: Card[], currentDealer: Card[], isDoubling = false) => {
+    const newCard = drawCard()
+    const next = [...currentPlayer, newCard]
+    setPlayer(next)
+    setAnimKeys(s => new Set(s).add(`p${next.length - 1}`))
+
+    const bust = isBust(next)
+    const is21 = handTotal(next).total === 21
+
+    if (bust || is21 || isDoubling) {
+      // Run dealer turn then resolve
+      setTimeout(() => runDealerTurn(next, currentDealer, isDoubling ? wager : wager), 400)
+    }
+    // else stay in PLAYER_TURN — user must click again
+  }, [drawCard, wager])
+
+  // ── STAND ─────────────────────────────────────────────────────────────────────
+  const stand = useCallback((currentPlayer: Card[], currentDealer: Card[]) => {
+    runDealerTurn(currentPlayer, currentDealer, false)
+  }, [])
+
+  // ── DOUBLE ───────────────────────────────────────────────────────────────────
+  const doubleDown = useCallback((currentPlayer: Card[], currentDealer: Card[]) => {
+    setDoubled(true)
+    setPhase('DEALER_TURN') // lock buttons immediately
+    hit(currentPlayer, currentDealer, true)
+  }, [hit])
+
+  // ── DEALER TURN ───────────────────────────────────────────────────────────────
+  const runDealerTurn = useCallback((pHand: Card[], dHand: Card[], _isDoubled: boolean | number) => {
+    setPhase('DEALER_TURN')
+    setHoleHidden(false)
+
+    let current = [...dHand]
+
+    const drawLoop = (hand: Card[]) => {
+      if (dealerShouldHit(hand)) {
+        const newCard = drawCard()
+        const next = [...hand, newCard]
+        setDealer(next)
+        setAnimKeys(s => new Set(s).add(`d${next.length - 1}`))
+        setTimeout(() => drawLoop(next), 600)
+      } else {
+        // Resolve
+        const isDoubledFinal = _isDoubled === true || doubled
+        const { outcome: oc, payout: po } = resolveOutcome(pHand, hand, wager, isDoubledFinal)
+        settle(pHand, hand, oc, po, isDoubledFinal)
+      }
+    }
+
+    // Small delay to show hole card reveal
+    setTimeout(() => drawLoop(current), 500)
+  }, [drawCard, wager, doubled])
+
+  // ── SETTLE (call server once) ──────────────────────────────────────────────
+  const settle = useCallback(async (
+    pHand: Card[], dHand: Card[], oc: Outcome, po: number, isDoubled: boolean
+  ) => {
+    setOutcome(oc)
+    setPayout(po)
+    setPhase('RESOLUTION')
+    setSettling(true)
+
     try {
-      const res = await fetch('/api/games/bet', {
+      await fetch('/api/games/settle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game: 'blackjack', wager, gameData: { action } }),
+        body: JSON.stringify({
+          game: 'blackjack',
+          wager,
+          outcome: oc,
+          payout: po,
+          playerHand: cardsToWire(pHand),
+          dealerHand: cardsToWire(dHand),
+          doubled: isDoubled,
+        }),
       })
-      const data = await res.json()
-      if (data.error) return
-
-      setCardKey(k => k + 1)
-      setPlayerCards(data.result.playerHand)
-      setDealerCards(data.result.dealerHand)
-      setDealerHideSecond(false)
-      setOutcome(data.result.outcome)
-      setPayout(data.payout)
-      setState('done')
       mutate('/api/games/profile')
       mutate('/api/games/history')
     } finally {
-      setLoading(false)
+      setSettling(false)
     }
-  }
+  }, [wager])
 
+  // ── RESET ─────────────────────────────────────────────────────────────────────
   const reset = () => {
-    setState('idle')
-    setPlayerCards([])
-    setDealerCards([])
+    setPhase('BETTING')
+    setPlayer([])
+    setDealer([])
     setOutcome(null)
     setPayout(0)
-    setDealerHideSecond(false)
+    setDoubled(false)
+    setHoleHidden(true)
+    setAnimKeys(new Set())
   }
 
-  // Show a preview deal when user picks action — show 2 cards for player, 1+hidden for dealer
-  const showPreview = (action: 'stand' | 'hit' | 'double') => {
-    setDealerHideSecond(true)
-    bet(action)
-  }
-
-  const oc = outcome ? OUTCOMES[outcome] : null
-  const playerTotal = playerCards.length ? handTotal(playerCards) : null
-  const dealerTotal = dealerCards.length && !dealerHideSecond ? handTotal(dealerCards) : null
+  const canAct  = phase === 'PLAYER_TURN'
+  const canDouble = canAct && playerCards.length === 2
+  const effectiveWager = doubled ? wager * 2 : wager
+  const oc = outcome ? OC_CFG[outcome] : null
 
   return (
     <GameLayout title="Blackjack">
-      {/* Full dark table */}
-      <div className="relative flex flex-col min-h-[calc(100vh-120px)] bg-[#0d1f0f]">
+      <style>{`
+        @keyframes dealIn {
+          from { opacity: 0; transform: translateY(-18px) scale(0.92); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
 
-        {/* Felt texture overlay */}
-        <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
-          style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0px, #fff 1px, transparent 0px, transparent 50%)' ,backgroundSize:'4px 4px'}} />
+      <div className="relative flex flex-col min-h-[calc(100vh-120px)] bg-[#0d1f0f] overflow-hidden">
+        {/* Felt texture */}
+        <div className="absolute inset-0 opacity-[0.035] pointer-events-none"
+          style={{ backgroundImage: 'repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 0,transparent 50%)', backgroundSize:'4px 4px' }} />
+        {/* Table oval rim */}
+        <div className="absolute inset-4 rounded-[50%/18%] border-2 border-[#1a4020]/50 pointer-events-none" />
 
-        {/* Table oval border */}
-        <div className="absolute inset-4 rounded-[50%/20%] border-2 border-[#1a4020]/60 pointer-events-none" />
+        <div className="relative flex flex-col flex-1 px-4 md:px-8 pt-6 pb-0">
 
-        <div className="relative flex flex-col flex-1 px-6 pt-6 pb-0">
-
-          {/* ── Dealer hand ── */}
-          <div className="flex flex-col items-center gap-3 pt-4">
+          {/* ── Dealer ── */}
+          <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-widest text-white/40 font-semibold">Dealer</span>
-              {dealerTotal !== null && (
-                <span className="bg-black/40 text-white/80 text-xs font-bold px-2 py-0.5 rounded-full border border-white/10">
-                  {dealerTotal}
-                </span>
+              <span className="text-[11px] uppercase tracking-widest text-white/40 font-semibold">Dealer</span>
+              {dealerCards.length > 0 && <HandBadge cards={dealerCards} hide2nd={holeHidden} />}
+              {phase === 'DEALER_TURN' && (
+                <span className="text-[11px] text-white/40 animate-pulse">drawing…</span>
               )}
             </div>
-            <div className="flex gap-2 min-h-28 items-center">
+            <div className="flex gap-[-8px] min-h-[100px] items-center justify-center" style={{ gap: '-8px' }}>
               {dealerCards.length === 0 ? (
-                <div className="w-16 h-24 md:w-20 md:h-28 rounded-xl border border-white/10 border-dashed flex items-center justify-center">
-                  <span className="text-white/20 text-xs">Dealer</span>
+                <div className="w-[60px] h-[84px] rounded-xl border border-dashed border-white/10 flex items-center justify-center">
+                  <span className="text-white/15 text-[10px]">Dealer</span>
                 </div>
-              ) : dealerCards.map((c, i) => (
-                <PlayingCard key={`${cardKey}-d-${i}`} card={c} hidden={dealerHideSecond && i === 1} delay={i * 120} />
-              ))}
+              ) : (
+                <div className="flex" style={{ gap: '6px' }}>
+                  {dealerCards.map((c, i) => (
+                    <PlayingCard
+                      key={`d-${i}-${c.rank}${c.suit}`}
+                      card={c}
+                      hidden={holeHidden && i === dealerCards.length - 1}
+                      animIn={animKeys.has(`d${i}`)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* ── Center info ── */}
-          <div className="flex flex-col items-center gap-1 my-4">
+          {/* ── Center rules strip ── */}
+          <div className="flex flex-col items-center gap-0.5 my-3">
             <p className="text-white/20 text-[10px] uppercase tracking-widest">Insurance pays 2 to 1</p>
-            <p className="text-white/30 text-[11px] uppercase tracking-widest font-semibold">Blackjack pays 3 to 2</p>
+            <p className="text-white/25 text-[11px] uppercase tracking-widest font-semibold">Blackjack pays 3 to 2</p>
           </div>
 
           {/* ── Outcome overlay ── */}
-          {oc && state === 'done' && (
+          {oc && phase === 'RESOLUTION' && (
             <div className={cn(
-              'absolute inset-x-6 top-1/2 -translate-y-1/2 z-10',
-              'rounded-2xl border bg-gradient-to-br p-6 text-center',
-              'shadow-2xl backdrop-blur-sm',
+              'absolute inset-x-6 md:inset-x-16 top-1/2 -translate-y-1/2 z-20',
+              'rounded-2xl border bg-gradient-to-br p-6 text-center shadow-2xl backdrop-blur-sm',
               oc.bg
             )}>
-              <p className={cn('text-4xl font-extrabold mb-1', oc.color)}>{oc.label}</p>
-              <p className="text-white/60 text-lg font-semibold">{oc.sub(payout, wager)}</p>
+              <p className={cn('text-4xl md:text-5xl font-extrabold mb-1 tracking-tight', oc.color)}>
+                {oc.label}
+              </p>
+              <p className="text-white/60 text-lg font-semibold">
+                {oc.sub(effectiveWager, payout)}
+              </p>
               <Button
                 onClick={reset}
+                disabled={settling}
                 className="mt-5 px-8 h-11 text-base font-bold bg-white text-black hover:bg-white/90 rounded-full"
               >
-                Deal Again
+                {settling ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Deal Again'}
               </Button>
             </div>
           )}
 
           {/* ── Player hand ── */}
-          <div className="flex flex-col items-center gap-3 mt-auto mb-4">
+          <div className="flex flex-col items-center gap-2 mt-auto mb-4">
             <div className="flex items-center gap-2">
-              {payout > 0 && state === 'done' && (
-                <span className="bg-black/50 text-white/50 text-xs font-mono px-2 py-0.5 rounded-full border border-white/10">
-                  {wager.toLocaleString()} pts
-                </span>
-              )}
-              <span className="text-xs uppercase tracking-widest text-white/40 font-semibold">Your Hand</span>
-              {playerTotal !== null && (
-                <span className={cn(
-                  'text-xs font-bold px-2 py-0.5 rounded-full border',
-                  playerTotal > 21 ? 'bg-red-900/60 text-red-300 border-red-500/40' :
-                  playerTotal === 21 ? 'bg-yellow-900/60 text-yellow-300 border-yellow-500/40' :
-                  'bg-black/40 text-white/80 border-white/10'
-                )}>
-                  {playerTotal}
-                </span>
-              )}
+              <span className="text-[11px] uppercase tracking-widest text-white/40 font-semibold">Your Hand</span>
+              {playerCards.length > 0 && <HandBadge cards={playerCards} />}
+              {doubled && <span className="text-[11px] text-amber-400 font-bold">DOUBLED</span>}
             </div>
             <div className={cn(
-              'flex gap-2 min-h-28 items-center p-3 rounded-2xl transition-all',
-              state === 'idle' && 'border-2 border-green-500/30'
-            )}>
+              'flex min-h-[100px] items-center justify-center p-3 rounded-2xl transition-all',
+              canAct && 'ring-2 ring-green-500/30',
+            )} style={{ gap: '6px' }}>
               {playerCards.length === 0 ? (
-                <div className="w-16 h-24 md:w-20 md:h-28 rounded-xl border border-white/10 border-dashed flex items-center justify-center">
-                  <span className="text-white/20 text-xs">Player</span>
+                <div className="w-[60px] h-[84px] rounded-xl border border-dashed border-white/10 flex items-center justify-center">
+                  <span className="text-white/15 text-[10px]">Player</span>
                 </div>
-              ) : playerCards.map((c, i) => (
-                <PlayingCard key={`${cardKey}-p-${i}`} card={c} delay={i * 150 + 80} />
-              ))}
+              ) : (
+                playerCards.map((c, i) => (
+                  <PlayingCard
+                    key={`p-${i}-${c.rank}${c.suit}`}
+                    card={c}
+                    animIn={animKeys.has(`p${i}`)}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>
 
-        {/* ── Bottom controls bar ── */}
+        {/* ── Bottom controls ── */}
         <div className="bg-[#0a1a0c]/95 border-t border-[#1a3a1e] px-4 py-4 space-y-3">
 
-          {/* Wager row */}
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <span className="text-white/40 text-xs font-semibold uppercase tracking-widest mr-1">Wager</span>
-            <Input
-              type="number" min={1}
-              value={wager}
-              onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 1))}
-              disabled={state !== 'idle' || loading}
-              className="w-24 h-8 text-sm text-center bg-black/30 border-white/10 text-white"
-            />
-            {CHIPS.map(chip => (
-              <button
-                key={chip.value}
-                disabled={state !== 'idle' || loading}
-                onClick={() => setWager(chip.value)}
-                className={cn(
-                  'w-10 h-10 rounded-full font-bold text-xs border-2 transition-all shadow-md',
-                  'disabled:opacity-40 disabled:cursor-not-allowed',
-                  chip.bg,
-                  wager === chip.value && 'ring-2 ring-white/40 ring-offset-1 ring-offset-black scale-110'
-                )}
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Action buttons */}
-          {state === 'idle' && (
-            <div className="grid grid-cols-3 gap-2 max-w-md mx-auto">
-              <button
-                onClick={() => showPreview('hit')}
-                disabled={loading || wager < 1}
-                className={cn(
-                  'h-12 rounded-xl font-bold text-sm border-2 transition-all',
-                  'bg-green-700 hover:bg-green-600 border-green-500 text-white',
-                  'disabled:opacity-40 disabled:cursor-not-allowed',
-                  'flex items-center justify-center gap-1.5'
-                )}
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Hit <span className="opacity-60 text-lg">↗</span></>}
-              </button>
-              <button
-                onClick={() => showPreview('stand')}
-                disabled={loading || wager < 1}
-                className={cn(
-                  'h-12 rounded-xl font-bold text-sm border-2 transition-all',
-                  'bg-red-700 hover:bg-red-600 border-red-500 text-white',
-                  'disabled:opacity-40 disabled:cursor-not-allowed',
-                  'flex items-center justify-center gap-1.5'
-                )}
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Stand <span className="opacity-60 text-lg">✋</span></>}
-              </button>
-              <button
-                onClick={() => showPreview('double')}
-                disabled={loading || wager < 1}
-                className={cn(
-                  'h-12 rounded-xl font-bold text-sm border-2 transition-all',
-                  'bg-amber-600 hover:bg-amber-500 border-amber-400 text-white',
-                  'disabled:opacity-40 disabled:cursor-not-allowed',
-                  'flex items-center justify-center gap-1.5'
-                )}
-              >
-                Double <span className="text-xs font-normal opacity-70">2x</span>
-              </button>
+          {/* Wager + chips — only in BETTING phase */}
+          {phase === 'BETTING' && (
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <span className="text-white/40 text-[11px] font-semibold uppercase tracking-widest">Wager</span>
+              <Input
+                type="number" min={1} max={20000}
+                value={wager}
+                onChange={e => setWager(Math.max(1, Math.min(20000, parseInt(e.target.value) || 1)))}
+                className="w-24 h-8 text-sm text-center bg-black/30 border-white/10 text-white"
+              />
+              {CHIPS.map(chip => (
+                <button
+                  key={chip.value}
+                  onClick={() => setWager(chip.value)}
+                  className={cn(
+                    'w-11 h-11 rounded-full font-bold text-xs border-2 transition-all shadow-md text-white',
+                    chip.cls,
+                    wager === chip.value && 'ring-2 ring-white/50 ring-offset-1 ring-offset-black scale-110'
+                  )}
+                >
+                  {chip.label}
+                </button>
+              ))}
             </div>
           )}
 
-          {/* Rules */}
-          <p className="text-center text-white/20 text-[10px] uppercase tracking-widest">
-            Dealer stands soft 17 · Blackjack pays 1.5x · Max 20,000 pts
+          {/* Current wager display during hand */}
+          {phase !== 'BETTING' && phase !== 'RESOLUTION' && (
+            <div className="flex justify-center">
+              <span className="text-white/40 text-xs font-mono">
+                Wager: <span className="text-white/70 font-bold">{effectiveWager.toLocaleString()} pts</span>
+              </span>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="grid gap-2 max-w-md mx-auto" style={{
+            gridTemplateColumns: phase === 'BETTING' ? '1fr' : canDouble ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)'
+          }}>
+            {phase === 'BETTING' && (
+              <button
+                onClick={deal}
+                className={cn(
+                  'h-13 py-3 rounded-xl font-bold text-base border-2 transition-all',
+                  'bg-green-600 hover:bg-green-500 border-green-400 text-white',
+                  'flex items-center justify-center gap-2'
+                )}
+              >
+                Deal
+              </button>
+            )}
+
+            {canAct && (
+              <>
+                <button
+                  onClick={() => hit(playerCards, dealerCards)}
+                  className="h-12 rounded-xl font-bold text-sm border-2 transition-all bg-green-700 hover:bg-green-600 border-green-500 text-white flex items-center justify-center gap-1.5"
+                >
+                  Hit <span className="opacity-60">↗</span>
+                </button>
+                <button
+                  onClick={() => stand(playerCards, dealerCards)}
+                  className="h-12 rounded-xl font-bold text-sm border-2 transition-all bg-red-700 hover:bg-red-600 border-red-500 text-white flex items-center justify-center gap-1.5"
+                >
+                  Stand <span className="opacity-60">✋</span>
+                </button>
+                {canDouble && (
+                  <button
+                    onClick={() => doubleDown(playerCards, dealerCards)}
+                    className="h-12 rounded-xl font-bold text-sm border-2 transition-all bg-amber-600 hover:bg-amber-500 border-amber-400 text-white flex items-center justify-center gap-1.5"
+                  >
+                    Double <span className="text-xs font-normal opacity-70">2×</span>
+                  </button>
+                )}
+              </>
+            )}
+
+            {phase === 'DEALER_TURN' && (
+              <div className="col-span-full h-12 flex items-center justify-center gap-2 text-white/40 text-sm">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Dealer is playing…
+              </div>
+            )}
+          </div>
+
+          <p className="text-center text-white/15 text-[10px] uppercase tracking-widest">
+            Dealer stands soft 17 · Blackjack pays 3:2 · Max 20,000 pts
           </p>
         </div>
       </div>

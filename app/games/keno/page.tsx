@@ -134,7 +134,7 @@ export default function KenoPage() {
     setMultiplier(0)
     setPayout(0)
     setIsPlaying(false)
-    // Keep picks so user can quickly replay
+    // Intentionally keep picks — user can replay with the same numbers
   }
 
   const riskColors: Record<Risk, string> = {
@@ -331,12 +331,12 @@ export default function KenoPage() {
                     !isPicked && !isRevealedDrawn && 'bg-[#1a2744] border-[#243050] text-white/60 hover:bg-[#1e2f55] hover:text-white',
                     // player picked (not yet result)
                     isPicked && !hasResult && !isRevealedDrawn && 'bg-[#39d353] border-[#39d353] text-black scale-105 shadow-lg shadow-[#39d353]/20',
-                    // drawn but not picked (orange/red)
-                    !isPicked && isRevealedDrawn && 'bg-[#1a2744] border-[#1a2744] text-red-400',
-                    // hit = picked AND drawn = bright green
-                    isHit && 'bg-[#39d353] border-[#39d353] text-black scale-105 shadow-lg shadow-[#39d353]/30',
-                    // miss = picked but not drawn
-                    isMiss && 'bg-[#1a2744] border-[#243050] text-white/30',
+                    // drawn but not picked — dark tile, red number (matches reference)
+                    !isPicked && isRevealedDrawn && 'bg-[#1a2744] border-[#243050] text-red-400',
+                    // hit = picked AND drawn = bright green with white border flash
+                    isHit && 'bg-[#39d353] border-white/40 text-black scale-[1.07] shadow-xl shadow-[#39d353]/30 z-10',
+                    // miss = picked but not drawn — stays green but dimmed
+                    isMiss && 'bg-[#2d7a3a] border-[#39d353]/30 text-black/50',
                   )}
                 >
                   {n}

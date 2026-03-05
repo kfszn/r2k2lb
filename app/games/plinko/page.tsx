@@ -27,27 +27,28 @@ function bucketColor(mult: number): string {
   return 'bg-[#1a3d25] text-green-400/70 border-[#1f4a2d]'
 }
 
-// Build a ball path that ends at targetSlot
+// Build a ball path that ends at targetSlot (0-indexed from left)
+// After ROWS bounces the ball has made exactly targetSlot right-moves.
 function buildPath(targetSlot: number): boolean[] {
-  // returns array of ROWS booleans: true = go right
   const path: boolean[] = []
-  let pos = 0
+  let rightMoves = 0
   for (let row = 0; row < ROWS; row++) {
-    const remaining = ROWS - row - 1
-    const needed = targetSlot - pos
+    const rowsLeft = ROWS - row - 1
+    const rightNeeded = targetSlot - rightMoves
+    const leftNeeded = rowsLeft - rightNeeded
     let goRight: boolean
-    if (needed >= remaining + 1) {
-      goRight = true
-    } else if (needed <= 0) {
+    if (rightNeeded <= 0) {
       goRight = false
+    } else if (leftNeeded <= 0) {
+      goRight = true
     } else {
-      // pseudo-random but deterministic
-      goRight = (row * 7 + pos * 3) % 2 === 0
-        ? needed > remaining / 2
-        : needed >= remaining / 2
+      // Spread moves: bias toward target proportionally, with jitter
+      goRight = (row + rightMoves) % 2 === 0
+        ? rightNeeded > rowsLeft / 2
+        : rightNeeded >= rowsLeft / 2
     }
     path.push(goRight)
-    if (goRight) pos++
+    if (goRight) rightMoves++
   }
   return path
 }
@@ -128,24 +129,28 @@ export default function PlinkoPage() {
     high:   'bg-red-600/20 border-red-400 text-red-300',
   }
 
-  // Calculate ball pixel positions per row for the SVG board
-  // Board width: 100 units. Each row has (row+2) pegs evenly spaced.
+  // SVG board geometry — reference: triangle of pegs growing from 3 at top to ROWS+2 at bottom
+  // We use a fixed-width grid. Each row r has (r+3) pegs.
+  // The centre column stays at x=50. Pegs are spaced PEG_SPACING apart horizontally.
   const BOARD_W = 100
   const ROW_H = 5.5
-  const BOARD_H = ROWS * ROW_H + 8
+  const BOARD_H = ROWS * ROW_H + 10
+  const PEG_SPACING = 4.5 // horizontal gap between pegs
 
-  // Peg positions for each row
+  // Peg positions — row r has (r+3) pegs centered at x=50
   const pegRows = Array.from({ length: ROWS }, (_, row) => {
     const numPegs = row + 3
-    return Array.from({ length: numPegs }, (_, col) => {
-      const spacing = BOARD_W / (numPegs + 1)
-      const x = spacing * (col + 1)
-      const y = ROW_H * (row + 1)
-      return { x, y }
-    })
+    const totalWidth = (numPegs - 1) * PEG_SPACING
+    const startX = (BOARD_W - totalWidth) / 2
+    return Array.from({ length: numPegs }, (_, col) => ({
+      x: startX + col * PEG_SPACING,
+      y: ROW_H * (row + 1),
+    }))
   })
 
   // Ball position during animation
+  // At row `animStep`, the ball has made `col` right-moves so far.
+  // The ball sits at the gap left of peg[col] in that row (between peg col-1 and col).
   let ballX = BOARD_W / 2
   let ballY = ROW_H * 0.5
   if (path && animStep >= 0) {
@@ -153,11 +158,13 @@ export default function PlinkoPage() {
     for (let r = 0; r < animStep && r < ROWS; r++) {
       if (path[r]) col++
     }
-    const row = animStep
+    const row = Math.min(animStep, ROWS - 1)
     const numPegs = row + 3
-    const spacing = BOARD_W / (numPegs + 1)
-    // Ball sits between two pegs
-    ballX = spacing * (col + 1)
+    const totalWidth = (numPegs - 1) * PEG_SPACING
+    const startX = (BOARD_W - totalWidth) / 2
+    // Ball hovers between the col-th and (col+1)-th peg — i.e. at startX + col * PEG_SPACING + PEG_SPACING/2
+    // But for row 0 the ball starts at center above first peg row
+    ballX = startX + col * PEG_SPACING + (row > 0 ? PEG_SPACING / 2 : 0)
     ballY = ROW_H * (row + 0.5)
   }
 
@@ -286,23 +293,32 @@ export default function PlinkoPage() {
               <circle
                 cx={finalSlot !== null
                   ? (() => {
-                      const numBuckets = mults.length
-                      const bw = BOARD_W / numBuckets
-                      return bw * finalSlot + bw / 2
+                      // Bucket positions mirror the bottom row of pegs
+                      const numBuckets = mults.length // = ROWS + 1 = 17
+                      const bottomRowPegs = ROWS + 2 // row ROWS-1 has ROWS+2 pegs
+                      const totalWidth = (bottomRowPegs - 1) * PEG_SPACING
+                      const startX = (BOARD_W - totalWidth) / 2
+                      // bucket i sits between peg i-1 and peg i → center at startX + (i-0.5)*PEG_SPACING... 
+                      // simpler: bucket i center = startX - PEG_SPACING/2 + i * PEG_SPACING
+                      return startX - PEG_SPACING / 2 + finalSlot * PEG_SPACING
                     })()
                   : ballX}
-                cy={finalSlot !== null ? BOARD_H - 5 : ballY}
+                cy={finalSlot !== null ? BOARD_H - 4.5 : ballY}
                 r="1.8"
                 fill="#39d353"
                 style={{ filter: 'drop-shadow(0 0 3px #39d353)' }}
               />
             )}
 
-            {/* Bucket multipliers */}
+            {/* Bucket multipliers — 17 buckets aligned under the bottom peg row */}
             {mults.map((m, i) => {
-              const bw = BOARD_W / mults.length
-              const x = bw * i
-              const y = BOARD_H - 6
+              // Bottom peg row (row 15) has 18 pegs; buckets sit in the 17 gaps between them
+              const bottomRowPegs = ROWS + 2
+              const totalWidth = (bottomRowPegs - 1) * PEG_SPACING
+              const startX = (BOARD_W - totalWidth) / 2
+              const bw = PEG_SPACING
+              const x = startX - PEG_SPACING / 2 + i * bw
+              const y = BOARD_H - 7
               const isLit = finalSlot === i
               const colors: Record<string, string> = {
                 red:    '#ef4444',
@@ -315,18 +331,18 @@ export default function PlinkoPage() {
               return (
                 <g key={i}>
                   <rect
-                    x={x + 0.3}
+                    x={x + 0.2}
                     y={y}
-                    width={bw - 0.6}
-                    height={5.5}
+                    width={bw - 0.4}
+                    height={6}
                     rx="0.8"
-                    fill={isLit ? col : col + '66'}
+                    fill={isLit ? col : col + '55'}
                     stroke={isLit ? '#fff' : 'none'}
-                    strokeWidth={isLit ? 0.3 : 0}
+                    strokeWidth={isLit ? 0.25 : 0}
                   />
                   <text
                     x={x + bw / 2}
-                    y={y + 3.5}
+                    y={y + 3.8}
                     textAnchor="middle"
                     fontSize="1.8"
                     fontWeight="bold"
