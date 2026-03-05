@@ -32,8 +32,16 @@ async function getProfile() {
   return data
 }
 
-// Keno multiplier tables
+// Keno multiplier tables (30-number grid, 10 drawn, pick 1–6)
 const KENO_MULTIPLIERS: Record<string, Record<number, Record<number, number>>> = {
+  classic: {
+    1: { 1: 3 },
+    2: { 2: 7,   1: 0 },
+    3: { 3: 27,  2: 2,  1: 0 },
+    4: { 4: 90,  3: 3,  2: 1 },
+    5: { 5: 250, 4: 7,  3: 2, 2: 0 },
+    6: { 6: 750, 5: 18, 4: 4, 3: 1 },
+  },
   low: {
     1: { 1: 2 },
     2: { 2: 4, 1: 1 },
