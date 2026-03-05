@@ -180,6 +180,13 @@ function Header() {
               >
                 Games
               </Link>
+              <div className="h-px bg-border/20 mx-2 my-1" />
+              <Link
+                href="/how-it-works"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                How It Works
+              </Link>
             </div>
           </div>
           
@@ -323,6 +330,10 @@ function Header() {
                       </Link>
                       <Link href="/games" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Games
+                      </Link>
+                      <div className="h-px bg-border/20 my-1" />
+                      <Link href="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        How It Works
                       </Link>
                     </div>
                   )}
