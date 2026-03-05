@@ -113,7 +113,11 @@ function ProvablyFairModal() {
 
 export function GameLayout({ title, children }: { title: string; children: React.ReactNode }) {
   const { data: profile } = useSWR('/api/games/profile', fetcher, { refreshInterval: 5000 })
-  const { data: historyData } = useSWR('/api/games/history', fetcher)
+  const { data: historyData } = useSWR('/api/games/history', fetcher, {
+    refreshInterval: 4000,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+  })
   const bets: Bet[] = historyData?.bets ?? []
 
   return (
