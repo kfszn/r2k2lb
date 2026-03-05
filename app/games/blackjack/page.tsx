@@ -269,8 +269,13 @@ export default function BlackjackPage() {
           <div className="absolute inset-4 rounded-[3rem] opacity-[0.04] pointer-events-none"
                style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)', backgroundSize: '8px 8px' }} />
 
-          {/* Oval arc decoration */}
+          {/* Oval arc decoration + center table text */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[55%] h-[60%] rounded-full border border-[#1a7a4a]/40 pointer-events-none" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 pointer-events-none select-none">
+            <span className="text-[11px] uppercase tracking-[0.35em] text-white/20 font-bold">Code</span>
+            <span className="text-2xl md:text-3xl font-black tracking-[0.2em] text-white/15">R2K2</span>
+            <span className="text-[10px] uppercase tracking-[0.25em] text-white/15 font-semibold mt-1">Blackjack Pays 2 to 1</span>
+          </div>
 
           {/* ── DEALER HAND ────────────────────────────────────────────────────── */}
           <div className="relative z-10 flex flex-col items-center gap-3">
