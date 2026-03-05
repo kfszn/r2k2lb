@@ -261,16 +261,16 @@ export default function BlackjackPage() {
         {/* ── FELT TABLE ─────────────────────────────────────────────────────────── */}
         <div className="relative flex-1 flex flex-col items-center justify-between py-8 px-4 overflow-hidden">
 
-          {/* Felt background */}
-          <div className="absolute inset-4 rounded-[3rem] bg-[#0f5132] shadow-inner pointer-events-none"
-               style={{ boxShadow: 'inset 0 0 80px rgba(0,0,0,0.6), 0 0 0 6px #0a3d26, 0 0 0 10px #082e1c' }} />
+          {/* Felt background — deep navy blue */}
+          <div className="absolute inset-4 rounded-[3rem] bg-[#071428] shadow-inner pointer-events-none"
+               style={{ boxShadow: 'inset 0 0 80px rgba(0,0,0,0.7), 0 0 0 6px #0a1e3d, 0 0 0 10px #060f26' }} />
 
           {/* Subtle felt texture overlay */}
           <div className="absolute inset-4 rounded-[3rem] opacity-[0.04] pointer-events-none"
                style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)', backgroundSize: '8px 8px' }} />
 
           {/* Oval arc decoration + center table text */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[55%] h-[60%] rounded-full border border-[#1a7a4a]/40 pointer-events-none" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[55%] h-[60%] rounded-full border border-[#1a3a6e]/40 pointer-events-none" />
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 pointer-events-none select-none">
             <span className="text-[11px] uppercase tracking-[0.35em] text-white/20 font-bold">Code</span>
             <span className="text-2xl md:text-3xl font-black tracking-[0.2em] text-white/15">R2K2</span>
