@@ -401,44 +401,47 @@ export default function BlackjackPage() {
 
         {/* ── BOTTOM BAR — always visible wager area ─────────────────────────────── */}
         <div className="border-t border-white/8 bg-[#060b14] px-4 py-4">
-          <div className="max-w-md mx-auto flex items-center gap-2">
-            <div className="flex-1 flex items-center bg-[#0d1829] border border-white/10 rounded-lg overflow-hidden h-11">
-              <span className="text-white/30 text-xs px-3 font-mono shrink-0">pts</span>
-              <Input
-                type="number" min={1} max={5000}
-                value={wagerInput}
-                onChange={e => {
-                  setWagerInput(e.target.value)
-                  const v = parseInt(e.target.value)
-                  if (!isNaN(v)) setWager(Math.max(1, Math.min(5000, v)))
-                }}
-                disabled={inPlay}
-                className="flex-1 h-full bg-transparent border-0 text-white text-sm focus-visible:ring-0 p-0 disabled:opacity-40"
-              />
-            </div>
-            <button
-              onClick={() => adjustWager(0.5)}
-              disabled={inPlay}
-              className="h-11 px-3 text-xs font-semibold bg-[#1a2840] hover:bg-[#1e3050] border border-white/10 text-white/60 rounded-lg transition-colors disabled:opacity-30"
-            >1/2</button>
-            <button
-              onClick={() => adjustWager(2)}
-              disabled={inPlay}
-              className="h-11 px-3 text-xs font-semibold bg-[#1a2840] hover:bg-[#1e3050] border border-white/10 text-white/60 rounded-lg transition-colors disabled:opacity-30"
-            >x2</button>
-            <button
-              onClick={setMax}
-              disabled={inPlay}
-              className="h-11 px-3 text-xs font-bold bg-blue-600 hover:bg-blue-500 border border-blue-400 text-white rounded-lg transition-colors disabled:opacity-30"
-            >Max</button>
-            {phase === 'BETTING' && (
+          <div className="max-w-md mx-auto space-y-2">
+            <div className="text-xs text-white/40 px-1">Max bet: 5000 pts</div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 flex items-center bg-[#0d1829] border border-white/10 rounded-lg overflow-hidden h-11">
+                <span className="text-white/30 text-xs px-3 font-mono shrink-0">pts</span>
+                <Input
+                  type="number" min={1} max={5000}
+                  value={wagerInput}
+                  onChange={e => {
+                    setWagerInput(e.target.value)
+                    const v = parseInt(e.target.value)
+                    if (!isNaN(v)) setWager(Math.max(1, Math.min(5000, v)))
+                  }}
+                  disabled={inPlay}
+                  className="flex-1 h-full bg-transparent border-0 text-white text-sm focus-visible:ring-0 p-0 disabled:opacity-40"
+                />
+              </div>
               <button
-                onClick={deal}
-                className="h-11 px-6 rounded-lg font-bold text-sm bg-blue-600 hover:bg-blue-500 border border-blue-400 text-white transition-all active:scale-[0.98] whitespace-nowrap"
-              >
-                Place Bet
-              </button>
-            )}
+                onClick={() => adjustWager(0.5)}
+                disabled={inPlay}
+                className="h-11 px-3 text-xs font-semibold bg-[#1a2840] hover:bg-[#1e3050] border border-white/10 text-white/60 rounded-lg transition-colors disabled:opacity-30"
+              >1/2</button>
+              <button
+                onClick={() => adjustWager(2)}
+                disabled={inPlay}
+                className="h-11 px-3 text-xs font-semibold bg-[#1a2840] hover:bg-[#1e3050] border border-white/10 text-white/60 rounded-lg transition-colors disabled:opacity-30"
+              >x2</button>
+              <button
+                onClick={setMax}
+                disabled={inPlay}
+                className="h-11 px-3 text-xs font-bold bg-blue-600 hover:bg-blue-500 border border-blue-400 text-white rounded-lg transition-colors disabled:opacity-30"
+              >Max</button>
+              {phase === 'BETTING' && (
+                <button
+                  onClick={deal}
+                  className="h-11 px-6 rounded-lg font-bold text-sm bg-blue-600 hover:bg-blue-500 border border-blue-400 text-white transition-all active:scale-[0.98] whitespace-nowrap"
+                >
+                  Place Bet
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

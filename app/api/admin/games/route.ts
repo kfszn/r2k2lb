@@ -10,7 +10,7 @@ export async function GET() {
   const [statsResult, recentResult] = await Promise.all([
     admin.from('game_bets').select('wager, payout, game'),
     admin.from('game_bets')
-      .select('id, game, wager, payout, profit, result, created_at, profile_id')
+      .select('id, game, wager, payout, profit, result, created_at, profiles(account_id, email)')
       .order('created_at', { ascending: false })
       .limit(50),
   ])
