@@ -284,10 +284,10 @@ export default function KenoPage() {
         </aside>
 
         {/* ── Game area ── */}
-        <div className="flex-1 flex flex-col p-4 md:p-6 gap-4 overflow-hidden">
+        <div className="flex-1 flex flex-col p-4 md:p-6 gap-4">
 
-          {/* Number grid 8×5 = 40 */}
-          <div className="grid grid-cols-8 gap-2 flex-1">
+          {/* Number grid 8×5 = 40 — fixed tile size so rows don't stretch */}
+          <div className="grid grid-cols-8 gap-2" style={{ gridAutoRows: '80px' }}>
             {Array.from({ length: TOTAL }, (_, i) => i + 1).map(n => {
               const isPicked        = picks.has(n)
               const isRevealedDrawn = activeDrawnSet.has(n)
@@ -301,7 +301,7 @@ export default function KenoPage() {
                   onClick={() => togglePick(n)}
                   disabled={isPlaying || loading}
                   className={cn(
-                    'aspect-square rounded-xl font-bold text-sm transition-all duration-150',
+                    'w-full h-full rounded-xl font-bold text-sm transition-all duration-150',
                     'flex items-center justify-center border relative',
                     'disabled:cursor-default',
                     // default
