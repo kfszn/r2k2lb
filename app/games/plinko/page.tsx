@@ -11,24 +11,24 @@ type Risk = 'low' | 'medium' | 'high'
 
 const ROWS = 16
 
-// 17 bucket multipliers for low/medium/high matching Stake-style layout
-const MULTIPLIERS: Record<Risk, number[]> = {
-  low:    [16, 9, 2, 1.4, 1.4, 1.2, 1.1, 1.0, 0.5, 1.0, 1.1, 1.2, 1.4, 1.4, 2, 9, 16],
-  medium: [110, 41, 10, 5, 3, 1.5, 1.0, 0.5, 0.3, 0.5, 1.0, 1.5, 3, 5, 10, 41, 110],
+// These MUST exactly match the server PLINKO_MULTIPLIERS in /app/api/games/bet/route.ts
+// Slot 0 = leftmost bucket, slot 16 = rightmost bucket
+const SERVER_MULTIPLIERS: Record<Risk, number[]> = {
+  low:    [0.5, 0.7, 1.0, 1.2, 1.5, 2.0, 3.0, 5.0, 3.0, 2.0, 1.5, 1.2, 1.0, 0.7, 0.5, 0.3, 0.2],
+  medium: [0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 5.0, 8.0, 5.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1],
   high:   [1000, 130, 26, 9, 4, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 2, 4, 9, 26, 130, 1000],
 }
 
 function bucketColor(mult: number): string {
-  if (mult >= 100) return 'bg-red-500 text-white border-red-400'
-  if (mult >= 25)  return 'bg-orange-500 text-white border-orange-400'
-  if (mult >= 10)  return 'bg-yellow-500 text-black border-yellow-400'
-  if (mult >= 3)   return 'bg-[#39d353] text-black border-green-400'
-  if (mult >= 1)   return 'bg-[#2ebd4a] text-black border-green-500'
-  return 'bg-[#1a3d25] text-green-400/70 border-[#1f4a2d]'
+  if (mult >= 100)  return '#ef4444'
+  if (mult >= 20)   return '#f97316'
+  if (mult >= 5)    return '#eab308'
+  if (mult >= 2)    return '#22c55e'
+  if (mult >= 1)    return '#3b82f6'
+  return '#1e3a5f'
 }
 
-// Build a ball path that ends at targetSlot (0-indexed from left)
-// After ROWS bounces the ball has made exactly targetSlot right-moves.
+// Build a deterministic ball path that ends at targetSlot out of ROWS bounces
 function buildPath(targetSlot: number): boolean[] {
   const path: boolean[] = []
   let rightMoves = 0
@@ -42,7 +42,7 @@ function buildPath(targetSlot: number): boolean[] {
     } else if (leftNeeded <= 0) {
       goRight = true
     } else {
-      // Spread moves: bias toward target proportionally, with jitter
+      // Deterministic jitter: alternates bias based on row parity
       goRight = (row + rightMoves) % 2 === 0
         ? rightNeeded > rowsLeft / 2
         : rightNeeded >= rowsLeft / 2
@@ -53,7 +53,7 @@ function buildPath(targetSlot: number): boolean[] {
   return path
 }
 
-const CHIP_COLORS = [
+const CHIPS = [
   { value: 50,   label: '50',  cls: 'bg-red-600 border-red-400 hover:bg-red-500' },
   { value: 100,  label: '100', cls: 'bg-green-600 border-green-400 hover:bg-green-500' },
   { value: 500,  label: '500', cls: 'bg-slate-700 border-slate-500 hover:bg-slate-600' },
@@ -62,24 +62,26 @@ const CHIP_COLORS = [
 
 export default function PlinkoPage() {
   const [wager, setWager] = useState(100)
-  const [risk, setRisk] = useState<Risk>('medium')
+  const [risk, setRisk] = useState<Risk>('high')
   const [loading, setLoading] = useState(false)
-  const [animStep, setAnimStep] = useState(-1)        // -1 = no ball
-  const [ballCol, setBallCol] = useState(0)            // current column of ball
+  const [animStep, setAnimStep] = useState(-1)
+  const [ballCol, setBallCol] = useState(0)
   const [finalSlot, setFinalSlot] = useState<number | null>(null)
   const [payout, setPayout] = useState<number | null>(null)
-  const [multiplier, setMultiplier] = useState<number | null>(null)
+  // multiplier shown to user — comes FROM SERVER, not from local table
+  const [resultMultiplier, setResultMultiplier] = useState<number | null>(null)
   const [path, setPath] = useState<boolean[] | null>(null)
   const animRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isAnimating = animStep >= 0 && finalSlot === null
+  const mults = SERVER_MULTIPLIERS[risk]
 
   const placeBet = async () => {
     if (loading || isAnimating) return
     setLoading(true)
     setFinalSlot(null)
     setPayout(null)
-    setMultiplier(null)
+    setResultMultiplier(null)
     setAnimStep(-1)
     setBallCol(0)
     setPath(null)
@@ -93,8 +95,11 @@ export default function PlinkoPage() {
     setLoading(false)
     if (data.error) return
 
-    const slot = data.result.slot as number
+    // Server tells us the exact slot (0–16) and the exact multiplier it used
+    const slot: number = data.result.slot
+    const serverMult: number = data.result.multiplier
     const ballPath = buildPath(slot)
+
     setPath(ballPath)
     setAnimStep(0)
     setBallCol(0)
@@ -103,9 +108,10 @@ export default function PlinkoPage() {
     let col = 0
     const tick = () => {
       if (step >= ROWS) {
+        // Animation complete — show final result using SERVER values
         setFinalSlot(slot)
         setPayout(data.payout)
-        setMultiplier(data.result.multiplier)
+        setResultMultiplier(serverMult)
         setAnimStep(-1)
         mutate('/api/games/profile')
         mutate('/api/games/history')
@@ -122,22 +128,13 @@ export default function PlinkoPage() {
 
   useEffect(() => () => { if (animRef.current) clearTimeout(animRef.current) }, [])
 
-  const mults = MULTIPLIERS[risk]
-  const riskColors: Record<Risk, string> = {
-    low:    'bg-blue-600/20 border-blue-400 text-blue-300',
-    medium: 'bg-yellow-600/20 border-yellow-400 text-yellow-300',
-    high:   'bg-red-600/20 border-red-400 text-red-300',
-  }
-
-  // SVG board geometry — reference: triangle of pegs growing from 3 at top to ROWS+2 at bottom
-  // We use a fixed-width grid. Each row r has (r+3) pegs.
-  // The centre column stays at x=50. Pegs are spaced PEG_SPACING apart horizontally.
+  // ── SVG geometry ──
   const BOARD_W = 100
   const ROW_H = 5.5
+  const PEG_SPACING = 4.5
+  // row r has (r+3) pegs. Row ROWS-1 (row 15) has 18 pegs → 17 gaps = 17 buckets ✓
   const BOARD_H = ROWS * ROW_H + 10
-  const PEG_SPACING = 4.5 // horizontal gap between pegs
 
-  // Peg positions — row r has (r+3) pegs centered at x=50
   const pegRows = Array.from({ length: ROWS }, (_, row) => {
     const numPegs = row + 3
     const totalWidth = (numPegs - 1) * PEG_SPACING
@@ -149,8 +146,6 @@ export default function PlinkoPage() {
   })
 
   // Ball position during animation
-  // At row `animStep`, the ball has made `col` right-moves so far.
-  // The ball sits at the gap left of peg[col] in that row (between peg col-1 and col).
   let ballX = BOARD_W / 2
   let ballY = ROW_H * 0.5
   if (path && animStep >= 0) {
@@ -162,32 +157,44 @@ export default function PlinkoPage() {
     const numPegs = row + 3
     const totalWidth = (numPegs - 1) * PEG_SPACING
     const startX = (BOARD_W - totalWidth) / 2
-    // Ball hovers between the col-th and (col+1)-th peg — i.e. at startX + col * PEG_SPACING + PEG_SPACING/2
-    // But for row 0 the ball starts at center above first peg row
     ballX = startX + col * PEG_SPACING + (row > 0 ? PEG_SPACING / 2 : 0)
     ballY = ROW_H * (row + 0.5)
   }
 
+  // Bucket layout: 17 buckets sitting under the 17 gaps in the bottom row (18 pegs)
+  const bottomRowPegs = ROWS + 2 // = 18
+  const bottomTotalWidth = (bottomRowPegs - 1) * PEG_SPACING
+  const bottomStartX = (BOARD_W - bottomTotalWidth) / 2
+  const bucketY = BOARD_H - 7
+
+  const getBucketCenterX = (i: number) => bottomStartX - PEG_SPACING / 2 + i * PEG_SPACING
+
+  const riskBtnCls: Record<Risk, string> = {
+    low:    'bg-blue-600/20 border-blue-500 text-blue-300',
+    medium: 'bg-yellow-600/20 border-yellow-500 text-yellow-300',
+    high:   'bg-red-600/20 border-red-500 text-red-300',
+  }
+
   return (
     <GameLayout title="Plinko">
-      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-120px)] bg-[#0f1923]">
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-120px)] bg-[#0d1117]">
 
         {/* ── Sidebar ── */}
-        <div className="w-full lg:w-64 xl:w-72 shrink-0 bg-[#0d1620] border-b lg:border-b-0 lg:border-r border-white/5 p-5 flex flex-col gap-5">
+        <div className="w-full lg:w-64 xl:w-72 shrink-0 bg-[#0d1117] border-b lg:border-b-0 lg:border-r border-white/5 p-5 flex flex-col gap-5">
 
           {/* Risk */}
           <div>
             <p className="text-xs uppercase tracking-widest text-white/40 mb-2">Risk</p>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
               {(['low', 'medium', 'high'] as Risk[]).map(r => (
                 <button
                   key={r}
                   disabled={isAnimating || loading}
-                  onClick={() => { setRisk(r); setFinalSlot(null); setPayout(null); setMultiplier(null) }}
+                  onClick={() => { setRisk(r); setFinalSlot(null); setPayout(null); setResultMultiplier(null) }}
                   className={cn(
-                    'flex-1 h-8 rounded-lg border text-xs font-semibold capitalize transition-all',
+                    'flex-1 h-9 rounded-lg border text-xs font-semibold capitalize transition-all',
                     'disabled:opacity-40 disabled:cursor-not-allowed',
-                    risk === r ? riskColors[r] : 'border-white/10 text-white/40 hover:border-white/20'
+                    risk === r ? riskBtnCls[r] : 'border-white/10 text-white/40 hover:border-white/20'
                   )}
                 >
                   {r}
@@ -196,30 +203,30 @@ export default function PlinkoPage() {
             </div>
           </div>
 
-          {/* Wager */}
+          {/* Bet Amount */}
           <div>
             <p className="text-xs uppercase tracking-widest text-white/40 mb-2">Bet Amount</p>
             <div className="relative mb-2">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">pts</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs font-mono">pts</span>
               <Input
                 type="number" min={1}
                 value={wager}
                 onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 1))}
                 disabled={isAnimating || loading}
-                className="pl-9 bg-black/20 border-white/10 text-white h-9 text-sm"
+                className="pl-10 bg-[#161b22] border-white/10 text-white h-10 text-sm"
               />
             </div>
             <div className="flex gap-1.5">
-              {CHIP_COLORS.map(chip => (
+              {CHIPS.map(chip => (
                 <button
                   key={chip.value}
                   disabled={isAnimating || loading}
                   onClick={() => setWager(chip.value)}
                   className={cn(
-                    'flex-1 h-7 rounded-lg border text-xs font-bold text-white transition-all',
+                    'flex-1 h-8 rounded-lg border text-xs font-bold text-white transition-all',
                     'disabled:opacity-40 disabled:cursor-not-allowed',
                     chip.cls,
-                    wager === chip.value && 'ring-1 ring-white/30'
+                    wager === chip.value && 'ring-2 ring-white/30 scale-105'
                   )}
                 >
                   {chip.label}
@@ -228,39 +235,42 @@ export default function PlinkoPage() {
             </div>
           </div>
 
-          {/* Rows display */}
+          {/* Rows */}
           <div>
             <p className="text-xs uppercase tracking-widest text-white/40 mb-1">Rows</p>
-            <div className="h-9 px-3 flex items-center rounded-lg bg-black/20 border border-white/10 text-white text-sm">
+            <div className="h-10 px-3 flex items-center rounded-lg bg-[#161b22] border border-white/10 text-white text-sm">
               16
             </div>
           </div>
 
-          {/* Place bet */}
+          {/* Drop Ball */}
           <button
             onClick={placeBet}
             disabled={loading || isAnimating || wager < 1}
             className={cn(
               'w-full h-12 rounded-xl font-bold text-sm mt-auto',
-              'bg-[#39d353] hover:bg-[#4ae664] text-black transition-all',
+              'bg-blue-600 hover:bg-blue-500 text-white transition-all',
               'disabled:opacity-40 disabled:cursor-not-allowed',
-              'flex items-center justify-center'
+              'flex items-center justify-center gap-2'
             )}
           >
-            {loading || isAnimating ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : 'Drop Ball'}
+            {loading || isAnimating
+              ? <Loader2 className="h-5 w-5 animate-spin" />
+              : 'Drop Ball'}
           </button>
 
           {/* Result */}
-          {finalSlot !== null && (
+          {finalSlot !== null && resultMultiplier !== null && (
             <div className={cn(
-              'rounded-xl border p-3 text-center',
-              (multiplier ?? 0) >= 1
-                ? 'border-[#39d353]/30 bg-[#39d353]/10'
+              'rounded-xl border p-4 text-center',
+              (payout ?? 0) >= wager
+                ? 'border-blue-500/40 bg-blue-600/10'
                 : 'border-red-500/30 bg-red-500/10'
             )}>
-              <p className="text-xs text-white/40 uppercase tracking-widest mb-1">{multiplier}x</p>
-              <p className={cn('text-xl font-extrabold',
-                (payout ?? 0) >= wager ? 'text-[#39d353]' : 'text-red-400'
+              <p className="text-lg font-black text-white/70 mb-1">{resultMultiplier}x</p>
+              <p className={cn(
+                'text-2xl font-extrabold',
+                (payout ?? 0) >= wager ? 'text-blue-400' : 'text-red-400'
               )}>
                 {(payout ?? 0) >= wager
                   ? `+${((payout ?? 0) - wager).toLocaleString()} pts`
@@ -271,83 +281,60 @@ export default function PlinkoPage() {
           )}
         </div>
 
-        {/* ── Plinko board ── */}
-        <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
+        {/* ── Board ── */}
+        <div className="flex-1 flex items-center justify-center p-4 md:p-8">
           <svg
             viewBox={`0 0 ${BOARD_W} ${BOARD_H}`}
-            className="w-full max-w-lg"
-            style={{ maxHeight: '70vh' }}
+            className="w-full max-w-xl"
+            style={{ maxHeight: '75vh' }}
           >
-            {/* Background */}
-            <rect width={BOARD_W} height={BOARD_H} fill="#0f1923" rx="2" />
+            <rect width={BOARD_W} height={BOARD_H} fill="#0d1117" />
 
             {/* Pegs */}
             {pegRows.map((pegs, row) =>
               pegs.map((peg, col) => (
-                <circle key={`${row}-${col}`} cx={peg.x} cy={peg.y} r="0.8" fill="#e2e8f0" opacity="0.85" />
+                <circle
+                  key={`${row}-${col}`}
+                  cx={peg.x} cy={peg.y} r="0.9"
+                  fill="#c9d1d9" opacity="0.8"
+                />
               ))
             )}
 
-            {/* Animated ball */}
+            {/* Ball */}
             {(isAnimating || finalSlot !== null) && (
               <circle
-                cx={finalSlot !== null
-                  ? (() => {
-                      // Bucket positions mirror the bottom row of pegs
-                      const numBuckets = mults.length // = ROWS + 1 = 17
-                      const bottomRowPegs = ROWS + 2 // row ROWS-1 has ROWS+2 pegs
-                      const totalWidth = (bottomRowPegs - 1) * PEG_SPACING
-                      const startX = (BOARD_W - totalWidth) / 2
-                      // bucket i sits between peg i-1 and peg i → center at startX + (i-0.5)*PEG_SPACING... 
-                      // simpler: bucket i center = startX - PEG_SPACING/2 + i * PEG_SPACING
-                      return startX - PEG_SPACING / 2 + finalSlot * PEG_SPACING
-                    })()
-                  : ballX}
-                cy={finalSlot !== null ? BOARD_H - 4.5 : ballY}
-                r="1.8"
-                fill="#39d353"
-                style={{ filter: 'drop-shadow(0 0 3px #39d353)' }}
+                cx={finalSlot !== null ? getBucketCenterX(finalSlot) : ballX}
+                cy={finalSlot !== null ? BOARD_H - 4 : ballY}
+                r="2"
+                fill="#3b82f6"
+                style={{ filter: 'drop-shadow(0 0 4px #3b82f6)' }}
               />
             )}
 
-            {/* Bucket multipliers — 17 buckets aligned under the bottom peg row */}
+            {/* Buckets */}
             {mults.map((m, i) => {
-              // Bottom peg row (row 15) has 18 pegs; buckets sit in the 17 gaps between them
-              const bottomRowPegs = ROWS + 2
-              const totalWidth = (bottomRowPegs - 1) * PEG_SPACING
-              const startX = (BOARD_W - totalWidth) / 2
-              const bw = PEG_SPACING
-              const x = startX - PEG_SPACING / 2 + i * bw
-              const y = BOARD_H - 7
+              const cx = getBucketCenterX(i)
+              const bw = PEG_SPACING - 0.4
+              const x = cx - bw / 2
               const isLit = finalSlot === i
-              const colors: Record<string, string> = {
-                red:    '#ef4444',
-                orange: '#f97316',
-                yellow: '#eab308',
-                green:  '#39d353',
-                dkgreen:'#1a5e28',
-              }
-              const col = m >= 100 ? colors.red : m >= 25 ? colors.orange : m >= 10 ? colors.yellow : m >= 1 ? colors.green : colors.dkgreen
+              const col = bucketColor(m)
               return (
                 <g key={i}>
                   <rect
-                    x={x + 0.2}
-                    y={y}
-                    width={bw - 0.4}
-                    height={6}
+                    x={x} y={bucketY}
+                    width={bw} height={6}
                     rx="0.8"
-                    fill={isLit ? col : col + '55'}
-                    stroke={isLit ? '#fff' : 'none'}
-                    strokeWidth={isLit ? 0.25 : 0}
+                    fill={isLit ? col : col + '44'}
+                    stroke={isLit ? '#fff' : col + '88'}
+                    strokeWidth={isLit ? 0.3 : 0.15}
                   />
                   <text
-                    x={x + bw / 2}
-                    y={y + 3.8}
+                    x={cx} y={bucketY + 3.8}
                     textAnchor="middle"
-                    fontSize="1.8"
+                    fontSize="1.55"
                     fontWeight="bold"
-                    fill={isLit ? '#000' : '#fff'}
-                    opacity={isLit ? 1 : 0.7}
+                    fill={isLit ? '#fff' : '#94a3b8'}
                   >
                     {m >= 1 ? `${m}x` : `${m}x`}
                   </text>

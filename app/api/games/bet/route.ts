@@ -60,10 +60,11 @@ const KENO_MULTIPLIERS: Record<string, Record<number, Record<number, number>>> =
   },
 }
 
+// 17 slots (0-16) for 16 rows — must match client SERVER_MULTIPLIERS exactly
 const PLINKO_MULTIPLIERS: Record<string, number[]> = {
-  low:    [0.5, 0.7, 1.0, 1.2, 1.5, 2.0, 3.0, 5.0, 3.0, 2.0, 1.5, 1.2, 1.0, 0.7, 0.5, 0.3, 0.2],
-  medium: [0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 5.0, 8.0, 5.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1],
-  high:   [0.2, 0.3, 0.5, 0.7, 1.0, 2.0, 5.0, 10.0, 25.0, 10.0, 5.0, 2.0, 1.0, 0.7, 0.5, 0.3, 0.2],
+  low:    [16,   9,    2,   1.4, 1.4, 1.2, 1.1, 1.0, 0.5, 1.0, 1.1, 1.2, 1.4, 1.4,  2,   9,   16],
+  medium: [110,  41,   10,  5,   3,   1.5, 1.0, 0.5, 0.3, 0.5, 1.0, 1.5, 3,   5,   10,  41,  110],
+  high:   [1000, 130,  26,  9,   4,   2,   0.2, 0.2, 0.2, 0.2, 0.2, 2,   4,   9,   26,  130, 1000],
 }
 
 function calcBlackjack(deck: string[], gameData: { action?: string; playerCards?: string[]; dealerCards?: string[] }, wager: number) {

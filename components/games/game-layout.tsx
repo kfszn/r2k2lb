@@ -25,7 +25,7 @@ type Bet = {
 }
 
 function formatProfit(profit: number) {
-  if (profit > 0) return <span className="text-green-400 flex items-center gap-1"><TrendingUp className="h-3 w-3" />+{profit.toLocaleString()}</span>
+  if (profit > 0) return <span className="text-blue-400 flex items-center gap-1"><TrendingUp className="h-3 w-3" />+{profit.toLocaleString()}</span>
   if (profit < 0) return <span className="text-red-400 flex items-center gap-1"><TrendingDown className="h-3 w-3" />{profit.toLocaleString()}</span>
   return <span className="text-muted-foreground flex items-center gap-1"><Minus className="h-3 w-3" />0</span>
 }
@@ -54,14 +54,14 @@ function ProvablyFairModal() {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2 text-xs">
-          <ShieldCheck className="h-3.5 w-3.5 text-green-400" />
+          <ShieldCheck className="h-3.5 w-3.5 text-blue-400" />
           Provably Fair
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-green-400" />
+            <ShieldCheck className="h-5 w-5 text-blue-400" />
             Provably Fair
           </DialogTitle>
         </DialogHeader>
@@ -82,8 +82,8 @@ function ProvablyFairModal() {
           </div>
 
           {revealed && (
-            <div className="space-y-2 border border-green-500/30 rounded-lg p-3 bg-green-500/5">
-              <label className="text-xs font-medium uppercase tracking-wider text-green-400">Revealed Server Seed</label>
+            <div className="space-y-2 border border-blue-500/30 rounded-lg p-3 bg-blue-500/5">
+              <label className="text-xs font-medium uppercase tracking-wider text-blue-400">Revealed Server Seed</label>
               <code className="block break-all bg-muted rounded px-3 py-2 text-xs">{revealed}</code>
             </div>
           )}
@@ -129,7 +129,7 @@ export function GameLayout({ title, children }: { title: string; children: React
           <div className="flex items-center gap-3">
             <div className="text-sm">
               <span className="text-muted-foreground">Balance: </span>
-              <span className="font-bold text-primary">{(profile?.points ?? 0).toLocaleString()} pts</span>
+              <span className="font-bold text-blue-400">{(profile?.points ?? 0).toLocaleString()} pts</span>
             </div>
             <ProvablyFairModal />
           </div>
