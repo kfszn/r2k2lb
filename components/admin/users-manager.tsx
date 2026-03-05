@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Users, Search, Plus, Minus, Loader2 } from 'lucide-react'
+import { Users, Search, Plus, Minus, Loader2, Link2, Check, X } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -25,6 +25,10 @@ export function UsersManager() {
   const [search, setSearch] = useState('')
   const [adjusting, setAdjusting] = useState<string | null>(null)
   const [amounts, setAmounts] = useState<Record<string, string>>({})
+  // Acebet linking state
+  const [linkingUser, setLinkingUser] = useState<string | null>(null)
+  const [acebetInputs, setAcebetInputs] = useState<Record<string, string>>({})
+  const [linkingLoading, setLinkingLoading] = useState<string | null>(null)
 
   const users = data?.users ?? []
   const filtered = users.filter(u => {
@@ -52,6 +56,24 @@ export function UsersManager() {
     }
   }
 
+  const saveAcebetLink = async (userId: string) => {
+    setLinkingLoading(userId)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/link-acebet`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acebet_username:acebetInputs[userId] ?? '' }),
+      })
+      if (res.ok) {
+        mutate()
+        setLinkingUser(null)
+        setAcebetInputs(v => ({ ...v, [userId]: '' }))
+      }
+    } finally {
+      setLinkingLoading(null)
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -63,7 +85,7 @@ export function UsersManager() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-9"
-            placeholder="Search by email, account ID, or Kick username..."
+            placeholder="Search by email, account ID, Kick or Acebet username..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -78,6 +100,7 @@ export function UsersManager() {
           <div className="space-y-3">
             {filtered.map(user => (
               <div key={user.id} className="border border-border/40 rounded-lg p-4 space-y-3">
+                {/* User info row */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-medium text-sm truncate">{user.email}</p>
@@ -86,8 +109,14 @@ export function UsersManager() {
                       {user.kick_username && (
                         <Badge variant="secondary" className="text-xs">Kick: @{user.kick_username}</Badge>
                       )}
-                      {user.acebet_username && (
-                        <Badge variant="secondary" className="text-xs">Acebet: {user.acebet_username}</Badge>
+                      {user.acebet_username ? (
+                        <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-400 border-green-500/20">
+                          Acebet: {user.acebet_username}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-muted-foreground border-dashed">
+                          No Acebet linked
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -96,6 +125,57 @@ export function UsersManager() {
                     <p className="text-xs text-muted-foreground">points</p>
                   </div>
                 </div>
+
+                {/* Acebet link row */}
+                {linkingUser === user.id ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      autoFocus
+                      placeholder="Acebet username"
+                      value={acebetInputs[user.id] ?? user.acebet_username ?? ''}
+                      onChange={e => setAcebetInputs(v => ({ ...v, [user.id]: e.target.value }))}
+                      className="h-8 text-sm"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') saveAcebetLink(user.id)
+                        if (e.key === 'Escape') setLinkingUser(null)
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      className="h-8 text-xs gap-1"
+                      disabled={linkingLoading === user.id}
+                      onClick={() => saveAcebetLink(user.id)}
+                    >
+                      {linkingLoading === user.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Check className="h-3 w-3" />
+                      )}
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 text-xs"
+                      onClick={() => setLinkingUser(null)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1.5 w-full"
+                    onClick={() => {
+                      setAcebetInputs(v => ({ ...v, [user.id]: user.acebet_username ?? '' }))
+                      setLinkingUser(user.id)
+                    }}
+                  >
+                    <Link2 className="h-3 w-3" />
+                    {user.acebet_username ? 'Update Acebet Link' : 'Link Acebet Account'}
+                  </Button>
+                )}
 
                 {/* Points adjustment */}
                 <div className="flex items-center gap-2">
