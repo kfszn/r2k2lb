@@ -184,9 +184,9 @@ export default function PlinkoPage() {
 
       setAnimStep(step)
       step++
-      animRef.current = setTimeout(tick, step === 1 ? 120 : 70)
+      animRef.current = setTimeout(tick, step === 1 ? 198 : 116)
     }
-    animRef.current = setTimeout(tick, 80)
+    animRef.current = setTimeout(tick, 132)
   }
 
   useEffect(() => () => { if (animRef.current) clearTimeout(animRef.current) }, [])
@@ -315,7 +315,7 @@ export default function PlinkoPage() {
               <circle
                 key={i}
                 cx={pt.x} cy={pt.y}
-                r={1.2 * ((i + 1) / trailPoints.length)}
+                r={0.6 * ((i + 1) / trailPoints.length)}
                 fill="#3b82f6"
                 opacity={(i + 1) / trailPoints.length * 0.4}
               />
@@ -325,9 +325,9 @@ export default function PlinkoPage() {
             {(isAnimating) && (
               <circle
                 cx={ballX} cy={ballY}
-                r="1.8"
+                r="0.9"
                 fill="#e0f2fe"
-                style={{ filter: 'drop-shadow(0 0 3px #3b82f6) drop-shadow(0 0 6px #3b82f6)' }}
+                style={{ filter: 'drop-shadow(0 0 2px #3b82f6) drop-shadow(0 0 4px #3b82f6)' }}
               />
             )}
 
@@ -365,9 +365,9 @@ export default function PlinkoPage() {
               <circle
                 cx={getBucketCentre(finalSlot)}
                 cy={BUCKET_Y + BUCKET_H / 2}
-                r="1.8"
+                r="0.9"
                 fill="#e0f2fe"
-                style={{ filter: 'drop-shadow(0 0 3px #3b82f6) drop-shadow(0 0 6px #3b82f6)' }}
+                style={{ filter: 'drop-shadow(0 0 2px #3b82f6) drop-shadow(0 0 4px #3b82f6)' }}
               />
             )}
           </svg>
