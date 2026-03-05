@@ -147,6 +147,10 @@ function Header() {
             </div>
           </div>
 
+          <Link href="/games" className="text-sm font-medium hover:text-primary transition-colors">
+            Games
+          </Link>
+
           <Link href="/shop" className="text-sm font-medium hover:text-primary transition-colors">
             Shop
           </Link>
@@ -276,6 +280,10 @@ function Header() {
                     </div>
                   )}
                 </div>
+
+                <Link href="/games" className="text-base font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                  Games
+                </Link>
 
                 <Link href="/shop" className="text-base font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                   Shop

@@ -30,10 +30,11 @@ import { RaffleManager } from "@/components/admin/raffle-manager";
 import { ShopManager } from "@/components/admin/shop-manager";
 import { UsersManager } from "@/components/admin/users-manager";
 import { RewardsSettings } from "@/components/admin/rewards-settings";
+import { GamesManager } from "@/components/admin/games-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "wager-races" | "raffle" | "shop" | "users";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "wager-races" | "raffle" | "shop" | "users" | "games";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
