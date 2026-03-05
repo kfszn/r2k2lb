@@ -178,20 +178,20 @@ export default function PlinkoPage() {
             <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2 font-semibold">Bet Amount</p>
             <div className="relative mb-2">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs font-mono">pts</span>
-              <Input type="number" min={1} value={wager}
-                onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 1))}
+              <Input type="number" min={1} max={5000} value={wager}
+                onChange={e => setWager(Math.max(1, Math.min(5000, parseInt(e.target.value) || 1)))}
                 disabled={isAnimating || loading}
                 className="pl-9 bg-[#161b22] border-white/10 text-white h-9 text-sm" />
             </div>
             <div className="flex gap-1.5">
-              {[['1/2', (w:number) => Math.max(1, Math.floor(w/2))], ['x2', (w:number) => w*2]].map(([label, fn]) => (
+              {[['1/2', (w:number) => Math.max(1, Math.floor(w/2))], ['x2', (w:number) => Math.min(5000, w*2)], ['Max', (w:number) => 5000]].map(([label, fn]) => (
                 <button key={label as string} disabled={isAnimating || loading}
                   onClick={() => setWager((fn as (w:number)=>number)(wager))}
                   className="flex-1 h-8 rounded-lg bg-[#1c2333] border border-white/10 text-white/60 text-xs font-semibold hover:bg-[#232d3f] hover:text-white disabled:opacity-40 transition-all">
                   {label as string}
                 </button>
               ))}
-              <button disabled={isAnimating || loading} onClick={() => setWager(20000)}
+              <button disabled={isAnimating || loading} onClick={() => setWager(5000)}
                 className="flex-1 h-8 rounded-lg bg-blue-600/20 border border-blue-500/40 text-blue-400 text-xs font-semibold hover:bg-blue-600/30 disabled:opacity-40 transition-all">
                 Max
               </button>

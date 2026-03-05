@@ -192,18 +192,18 @@ export default function KenoPage() {
         <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5">Bet Amount</p>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">pts</span>
-          <Input type="number" min={1} value={wager}
-            onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 1))}
+          <Input type="number" min={1} max={5000} value={wager}
+            onChange={e => setWager(Math.max(1, Math.min(5000, parseInt(e.target.value) || 1)))}
             disabled={isDisabled} className="pl-10 h-10 text-sm font-mono" />
         </div>
         <div className="flex gap-1 mt-1.5">
-          {[['1/2', () => setWager(v => Math.max(1, Math.floor(v / 2)))], ['x2', () => setWager(v => v * 2)]].map(([label, fn]) => (
+          {[['1/2', () => setWager(v => Math.max(1, Math.floor(v / 2)))], ['x2', () => setWager(v => Math.min(5000, v * 2))], ['Max', () => setWager(5000)]].map(([label, fn]) => (
             <button key={label as string} onClick={fn as () => void} disabled={isDisabled}
               className="flex-1 h-9 rounded-md bg-muted border border-border text-muted-foreground text-xs hover:text-foreground transition-colors disabled:opacity-40">
               {label as string}
             </button>
           ))}
-          <button onClick={() => setWager(999999)} disabled={isDisabled}
+            <button onClick={() => setWager(5000)} disabled={isDisabled}
             className="flex-1 h-9 rounded-md bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 disabled:opacity-40">
             Max
           </button>
