@@ -27,10 +27,14 @@ import { StreamGamesManager } from "@/components/admin/stream-games-manager";
 import { WagerRaceManagement } from "@/components/admin/wager-race-management";
 import { TotalWagerStats } from "@/components/admin/total-wager-stats";
 import { RaffleManager } from "@/components/admin/raffle-manager";
+import { ShopManager } from "@/components/admin/shop-manager";
+import { UsersManager } from "@/components/admin/users-manager";
+import { RewardsSettings } from "@/components/admin/rewards-settings";
+import { GamesManager } from "@/components/admin/games-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "wager-races" | "raffle";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "wager-races" | "raffle" | "shop" | "users" | "games";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -164,6 +168,42 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">Configure raffle settings and select winners</p>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("shop")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Settings className="h-8 w-8 text-primary" />
+                  <CardTitle>Rewards Shop</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Manage shop items, fulfill redemptions, and configure point settings</p>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("users")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Users className="h-8 w-8 text-primary" />
+                  <CardTitle>Users</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">View all users, adjust point balances, and manage accounts</p>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("games")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Gamepad2 className="h-8 w-8 text-primary" />
+                  <CardTitle>Games Analytics</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko</p>
               </CardContent>
             </Card>
 
@@ -349,6 +389,73 @@ export default function AdminPage() {
               </Card>
             </TabsContent>
           </Tabs>
+        </div>
+      </main>
+    );
+  }
+
+  // Rewards Shop View
+  if (currentView === "shop") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Rewards Shop</h1>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <ShopManager />
+            </div>
+            <div>
+              <RewardsSettings />
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Users View
+  if (currentView === "users") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Users</h1>
+          </div>
+          <UsersManager />
+        </div>
+      </main>
+    );
+  }
+
+  // Games Analytics View
+  if (currentView === "games") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Games Analytics</h1>
+          </div>
+          <GamesManager />
         </div>
       </main>
     );

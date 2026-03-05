@@ -19,6 +19,7 @@ function Header() {
   const [open, setOpen] = useState(false)
   const [mobileAcebet, setMobileAcebet] = useState(false)
   const [mobilePackdraw, setMobilePackdraw] = useState(false)
+  const [mobilePoints, setMobilePoints] = useState(false)
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -49,6 +50,7 @@ function Header() {
     setOpen(false)
     setMobileAcebet(false)
     setMobilePackdraw(false)
+    setMobilePoints(false)
   }
 
   return (
@@ -83,6 +85,18 @@ function Header() {
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Leaderboard
+              </Link>
+              <Link 
+                href="/tournament" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Tournament
+              </Link>
+              <Link 
+                href="/raffle" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Raffle
               </Link>
               <div className="h-px bg-border/20 mx-2 my-1" />
               <div className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
@@ -147,13 +161,34 @@ function Header() {
             </div>
           </div>
 
-          <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">
-            Raffle
-          </Link>
-
-          <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors">
-            Tournament
-          </Link>
+          {/* Points Dropdown */}
+          <div className="relative group">
+            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
+              Points
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[180px] z-50 py-1">
+              <Link
+                href="/shop"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Shop
+              </Link>
+              <Link
+                href="/games"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Games
+              </Link>
+              <div className="h-px bg-border/20 mx-2 my-1" />
+              <Link
+                href="/how-it-works"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                How It Works
+              </Link>
+            </div>
+          </div>
           
           <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary transition-colors">
             Discord
@@ -229,6 +264,12 @@ function Header() {
                       <Link href="/leaderboard/acebet" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Leaderboard
                       </Link>
+                      <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Tournament
+                      </Link>
+                      <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Raffle
+                      </Link>
                       <div className="h-px bg-border/20 my-1" />
                       <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
                       <Link href="/perks/acebet/wager-rewards" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
@@ -273,13 +314,30 @@ function Header() {
                   )}
                 </div>
 
-                <Link href="/raffle" className="text-base font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                  Raffle
-                </Link>
-
-                <Link href="/tournament" className="text-base font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                  Tournament
-                </Link>
+                {/* Mobile Points */}
+                <div className="space-y-1">
+                  <button
+                    onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false); setMobilePackdraw(false) }}
+                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
+                  >
+                    Points
+                    <ChevronDown className={`h-4 w-4 transition-transform ${mobilePoints ? 'rotate-180' : ''}`} />
+                  </button>
+                  {mobilePoints && (
+                    <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
+                      <Link href="/shop" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Shop
+                      </Link>
+                      <Link href="/games" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Games
+                      </Link>
+                      <div className="h-px bg-border/20 my-1" />
+                      <Link href="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        How It Works
+                      </Link>
+                    </div>
+                  )}
+                </div>
 
                 <a 
                   href="https://discord.gg/r2k2" 

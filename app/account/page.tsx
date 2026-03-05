@@ -139,12 +139,17 @@ export default function AccountPage() {
 
         {/* Points */}
         <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground font-semibold">Points Balance</CardTitle>
+            <Link href="/shop">
+              <Button size="sm" variant="outline" className="text-xs bg-transparent h-7 px-3">
+                Visit Shop
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             <p className="text-5xl font-bold text-foreground">{profile.points.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">Points earned from wagers and participation</p>
+            <p className="text-xs text-muted-foreground mt-1">Spend points in the Shop to redeem exclusive rewards</p>
           </CardContent>
         </Card>
 
