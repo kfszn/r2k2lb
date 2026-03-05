@@ -192,7 +192,11 @@ function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : null}
+          ) : (
+            <Link href="/auth/login" className="hidden md:block">
+              <Button size="sm">Login</Button>
+            </Link>
+          )}
 
           {/* Mobile Menu */}
           <Sheet open={open} onOpenChange={setOpen}>
@@ -292,13 +296,26 @@ function Header() {
                   </Link>
                 )}
 
-                {user && (
-                  <div className="pt-4 border-t border-border">
-                    <Button onClick={handleSignOut} className="w-full">
-                      Sign Out
-                    </Button>
-                  </div>
-                )}
+                <div className="pt-4 border-t border-border">
+                  {user ? (
+                    <div className="flex flex-col gap-2">
+                      <Link href="/account" onClick={closeMobile}>
+                        <Button variant="outline" className="w-full bg-transparent">
+                          <User className="h-4 w-4 mr-2" />
+                          My Account
+                        </Button>
+                      </Link>
+                      <Button onClick={handleSignOut} variant="destructive" className="w-full">
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Link href="/auth/login" onClick={closeMobile}>
+                      <Button className="w-full">Login</Button>
+                    </Link>
+                  )}
+                </div>
               </nav>
             </SheetContent>
           </Sheet>

@@ -19,6 +19,7 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [accountId, setAccountId] = useState<string | null>(null)
   const [resending, setResending] = useState(false)
   const [resendSuccess, setResendSuccess] = useState(false)
   const router = useRouter()
@@ -47,6 +48,18 @@ export default function SignUpPage() {
     } else if (data?.user && data?.user?.identities?.length === 0) {
       // User already exists but hasn't verified email
       setError('This email is already registered but not verified. Please check your email (including spam folder) for the verification link, or contact support if you need help.')
+      setLoading(false)
+    } else if (data?.user) {
+      // Try to fetch the auto-generated account_id from profiles.
+      // If email confirmation is required, the trigger may not have fired yet — profile will be null.
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('account_id')
+        .eq('id', data.user.id)
+        .single()
+
+      setAccountId(profile?.account_id ?? null)
+      setSuccess(true)
       setLoading(false)
     } else {
       setSuccess(true)
@@ -97,30 +110,58 @@ export default function SignUpPage() {
             <div className="flex justify-center mb-4">
               <Image src="/assets/logo.png" alt="R2K2" width={64} height={64} className="rounded-lg" />
             </div>
-            <CardTitle className="text-2xl font-bold">Check Your Email</CardTitle>
+            <CardTitle className="text-2xl font-bold">Account Created!</CardTitle>
             <CardDescription>
-              We sent a confirmation link to <strong>{email}</strong>
+              Confirm your email at <strong>{email}</strong> to activate your account
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Click the link in the email to confirm your account and start claiming your leaderboard username.
-            </p>
-            
+          <CardContent className="space-y-5">
+            {accountId ? (
+              <>
+                <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center space-y-2">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Your Account ID</p>
+                  <p className="text-3xl font-bold tracking-wider text-primary font-mono">{accountId}</p>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(accountId)}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                  >
+                    Copy to clipboard
+                  </button>
+                </div>
+
+                <div className="bg-muted/50 border border-border/40 rounded-lg p-4 text-sm text-muted-foreground space-y-1">
+                  <p className="font-semibold text-foreground">Link your Kick account</p>
+                  <p>Go to R2K2&apos;s Kick chat and type:</p>
+                  <p className="font-mono bg-background/60 rounded px-3 py-1.5 text-foreground text-center">
+                    !verify {accountId}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="bg-muted/50 border border-border/40 rounded-lg p-4 text-sm text-muted-foreground text-center space-y-1">
+                <p className="font-semibold text-foreground">Confirm your email first</p>
+                <p>
+                  Your Account ID will be shown after you confirm your email and log in. Find it on your{' '}
+                  <Link href="/account" className="text-primary hover:underline">Account page</Link>.
+                </p>
+              </div>
+            )}
+
             {resendSuccess && (
-              <div className="bg-primary/10 border border-primary/20 text-primary px-4 py-3 rounded-lg text-sm">
+              <div className="bg-primary/10 border border-primary/20 text-primary px-4 py-3 rounded-lg text-sm text-center">
                 Email resent successfully! Check your inbox.
               </div>
             )}
 
             <div className="flex flex-col gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="bg-transparent"
                 onClick={handleResendEmail}
                 disabled={resending}
               >
-                {resending ? 'Resending...' : 'Resend Email'}
+                {resending ? 'Resending...' : 'Resend Confirmation Email'}
               </Button>
               <Link href="/auth/login">
                 <Button variant="ghost" className="w-full">Go to Login</Button>
