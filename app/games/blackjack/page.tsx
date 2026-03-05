@@ -154,14 +154,14 @@ export default function BlackjackPage() {
           const card = draw()
           const next = [...current, card]
           setDealer(next); setNewDealerIdx(next.length - 1)
-          loop(next, 600)
+          loop(next, 780)
         } else {
           const { outcome: oc, payout: po } = resolveOutcome(pHand, current, w, isDoubled)
           settle(pHand, current, oc, po, isDoubled, w)
         }
       }, delay)
     }
-    loop(dHand, 500)
+    loop(dHand, 650)
   }, [settle])
 
   // ── DEAL ──────────────────────────────────────────────────────────────────────
@@ -175,10 +175,10 @@ export default function BlackjackPage() {
     setOutcome(null); setPayout(0)
     setNewPlayerIdx(null); setNewDealerIdx(null)
     setPhase('PLAYER_TURN')
-    setTimeout(() => { setPlayer([p1]);         setNewPlayerIdx(0) }, 50)
-    setTimeout(() => { setDealer([d1]);          setNewDealerIdx(0) }, 270)
-    setTimeout(() => { setPlayer([p1, p2]);      setNewPlayerIdx(1) }, 490)
-    setTimeout(() => { setDealer([d1, d2]);      setNewDealerIdx(1) }, 710)
+    setTimeout(() => { setPlayer([p1]);         setNewPlayerIdx(0) }, 65)
+    setTimeout(() => { setDealer([d1]);          setNewDealerIdx(0) }, 351)
+    setTimeout(() => { setPlayer([p1, p2]);      setNewPlayerIdx(1) }, 637)
+    setTimeout(() => { setDealer([d1, d2]);      setNewDealerIdx(1) }, 923)
     setTimeout(() => {
       setNewPlayerIdx(null); setNewDealerIdx(null)
       if (isBlackjack(pFinal) || isBlackjack(dFinal)) {
@@ -186,7 +186,7 @@ export default function BlackjackPage() {
         const { outcome: oc, payout: po } = resolveOutcome(pFinal, dFinal, w, false)
         settle(pFinal, dFinal, oc, po, false, w)
       }
-    }, 900)
+    }, 1170)
   }, [settle])
 
   // ── HIT ───────────────────────────────────────────────────────────────────────
@@ -196,7 +196,7 @@ export default function BlackjackPage() {
     setPlayer(next); setNewPlayerIdx(next.length - 1)
     const bust = isBust(next)
     const is21 = handTotal(next).total === 21
-    if (bust || is21 || isDoubled) setTimeout(() => runDealer(next, dHand, isDoubled, w), 450)
+    if (bust || is21 || isDoubled) setTimeout(() => runDealer(next, dHand, isDoubled, w), 585)
   }, [runDealer])
 
   // ── STAND ─────────────────────────────────────────────────────────────────────
@@ -233,7 +233,7 @@ export default function BlackjackPage() {
           from { opacity:0; transform:translateY(-28px) scale(0.85) rotate(-5deg); }
           to   { opacity:1; transform:translateY(0)     scale(1)    rotate(0deg);  }
         }
-        .animate-deal { animation: deal 0.26s cubic-bezier(0.22,1,0.36,1) both; }
+        .animate-deal { animation: deal 0.34s cubic-bezier(0.22,1,0.36,1) both; }
         @keyframes result-in {
           from { opacity:0; transform:translateY(10px) scale(0.95); }
           to   { opacity:1; transform:translateY(0)    scale(1);    }
