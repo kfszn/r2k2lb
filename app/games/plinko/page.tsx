@@ -268,22 +268,28 @@ export default function PlinkoPage() {
               : 'Drop Ball'}
           </button>
 
-          {/* Result */}
-          {finalSlot !== null && resultMultiplier !== null && profit !== null && (
-            <div className={cn(
-              'rounded-xl border p-4 text-center transition-all',
-              isWin ? 'border-blue-500/40 bg-blue-600/10' : 'border-red-500/30 bg-red-500/10'
-            )}>
-              <p className="text-base font-black text-white/60 mb-0.5">{resultMultiplier}x</p>
-              <p className={cn('text-2xl font-extrabold', isWin ? 'text-blue-400' : 'text-red-400')}>
-                {isWin ? `+${profit.toLocaleString()}` : profit.toLocaleString()} pts
-              </p>
-            </div>
-          )}
+
         </div>
 
         {/* ── Board ──────────────────────────────────────────────────────── */}
-        <div className="flex-1 flex items-center justify-center p-4 md:p-6">
+        <div className="flex-1 flex items-center justify-center p-4 md:p-6 relative">
+          {/* Result — overlaid on the board so the sidebar never shifts */}
+          {finalSlot !== null && resultMultiplier !== null && profit !== null && (
+            <div className={cn(
+              'absolute top-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3',
+              'px-6 py-3 rounded-2xl border backdrop-blur-sm pointer-events-none',
+              'animate-in fade-in slide-in-from-top-2 duration-300',
+              isWin
+                ? 'border-blue-500/50 bg-blue-950/80 shadow-lg shadow-blue-500/20'
+                : 'border-red-500/40 bg-red-950/80 shadow-lg shadow-red-500/10'
+            )}>
+              <span className="text-lg font-black text-white/50">{resultMultiplier}x</span>
+              <span className={cn('text-xl font-extrabold', isWin ? 'text-blue-400' : 'text-red-400')}>
+                {isWin ? `+${profit.toLocaleString()}` : profit.toLocaleString()} pts
+              </span>
+            </div>
+          )}
+
           <svg
             viewBox={`0 0 ${BOARD_W} ${BOARD_H}`}
             className="w-full max-w-2xl"
