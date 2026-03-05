@@ -9,8 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2 } from 'lucide-react'
 import { GameLayout } from '@/components/games/game-layout'
 
-type GameState = 'idle' | 'player_turn' | 'done'
-type Card = string
+type GameState = 'idle' | 'choose_action' | 'done'
 
 const SUIT_SYMBOLS: Record<string, string> = { S: '♠', H: '♥', D: '♦', C: '♣' }
 const RED_SUITS = new Set(['H', 'D'])
@@ -22,8 +21,8 @@ function isRed(card: string) { return RED_SUITS.has(getCardSuit(card)) }
 function PlayingCard({ card, hidden = false }: { card: string; hidden?: boolean }) {
   if (hidden) {
     return (
-      <div className="w-16 h-24 rounded-lg border-2 border-border/60 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shadow-md">
-        <div className="w-8 h-12 rounded border border-primary/30 bg-primary/10" />
+      <div className="w-14 h-20 rounded-lg border-2 border-border/60 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shadow-md">
+        <div className="w-7 h-10 rounded border border-primary/30 bg-primary/10" />
       </div>
     )
   }
@@ -31,18 +30,16 @@ function PlayingCard({ card, hidden = false }: { card: string; hidden?: boolean 
   const suit = getCardSuit(card)
   const red = isRed(card)
   return (
-    <div className={`w-16 h-24 rounded-lg border-2 bg-card shadow-md flex flex-col p-1.5 select-none ${red ? 'border-red-400/40 text-red-400' : 'border-border/60 text-foreground'}`}>
+    <div className={`w-14 h-20 rounded-lg border-2 bg-card shadow-md flex flex-col p-1.5 select-none ${red ? 'border-red-400/40 text-red-400' : 'border-border/60 text-foreground'}`}>
       <div className="text-xs font-bold leading-none">{rank}</div>
-      <div className="flex-1 flex items-center justify-center text-xl">{SUIT_SYMBOLS[suit]}</div>
+      <div className="flex-1 flex items-center justify-center text-lg">{SUIT_SYMBOLS[suit]}</div>
       <div className="text-xs font-bold leading-none self-end rotate-180">{rank}</div>
     </div>
   )
 }
 
-function HandValue({ cards, hidden = false }: { cards: Card[]; hidden?: boolean }) {
-  if (hidden) return null
-  let total = 0
-  let aces = 0
+function handTotal(cards: string[]) {
+  let total = 0; let aces = 0
   for (const c of cards) {
     const rank = getCardRank(c)
     if (['J', 'Q', 'K'].includes(rank)) total += 10
@@ -50,7 +47,7 @@ function HandValue({ cards, hidden = false }: { cards: Card[]; hidden?: boolean 
     else total += parseInt(rank)
   }
   while (total > 21 && aces > 0) { total -= 10; aces-- }
-  return <span className="text-xs text-muted-foreground ml-1">({total})</span>
+  return total
 }
 
 const OUTCOME_LABELS: Record<string, { label: string; color: string }> = {
@@ -66,71 +63,36 @@ const OUTCOME_LABELS: Record<string, { label: string; color: string }> = {
 export default function BlackjackPage() {
   const [wager, setWager] = useState('100')
   const [state, setState] = useState<GameState>('idle')
-  const [playerCards, setPlayerCards] = useState<Card[]>([])
-  const [dealerCards, setDealerCards] = useState<Card[]>([])
+  const [playerCards, setPlayerCards] = useState<string[]>([])
+  const [dealerCards, setDealerCards] = useState<string[]>([])
   const [outcome, setOutcome] = useState<string | null>(null)
   const [payout, setPayout] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [doubled, setDoubled] = useState(false)
 
-  const placeBet = async (action?: string) => {
+  const bet = async (action: 'stand' | 'hit' | 'double') => {
     setLoading(true)
-    const w = action === 'double' ? parseInt(wager) * 2 : parseInt(wager)
-    const res = await fetch('/api/games/bet', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        game: 'blackjack',
-        wager: parseInt(wager),
-        gameData: { action: action || 'stand' },
-      }),
-    })
-    const data = await res.json()
-    if (data.error) { setLoading(false); return }
-
-    setPlayerCards(data.result.playerHand)
-    setDealerCards(data.result.dealerHand)
-    setOutcome(data.result.outcome)
-    setPayout(data.payout)
-    setState('done')
-    setDoubled(action === 'double')
-    mutate('/api/games/profile')
-    mutate('/api/games/history')
-    setLoading(false)
-  }
-
-  const deal = async () => {
-    setLoading(true)
-    setOutcome(null)
-    setDoubled(false)
-
-    // Initial deal — hit action
-    const res = await fetch('/api/games/bet', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        game: 'blackjack',
-        wager: parseInt(wager),
-        gameData: { action: 'hit' },
-      }),
-    })
-    const data = await res.json()
-    if (data.error) { setLoading(false); return }
-
-    setPlayerCards(data.result.playerHand)
-    setDealerCards(data.result.dealerHand)
-
-    if (data.result.outcome !== 'in_progress') {
+    try {
+      const res = await fetch('/api/games/bet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          game: 'blackjack',
+          wager: parseInt(wager),
+          gameData: { action },
+        }),
+      })
+      const data = await res.json()
+      if (data.error) return
+      setPlayerCards(data.result.playerHand)
+      setDealerCards(data.result.dealerHand)
       setOutcome(data.result.outcome)
       setPayout(data.payout)
       setState('done')
-    } else {
-      setState('player_turn')
+      mutate('/api/games/profile')
+      mutate('/api/games/history')
+    } finally {
+      setLoading(false)
     }
-
-    mutate('/api/games/profile')
-    mutate('/api/games/history')
-    setLoading(false)
   }
 
   const reset = () => {
@@ -139,7 +101,6 @@ export default function BlackjackPage() {
     setDealerCards([])
     setOutcome(null)
     setPayout(0)
-    setDoubled(false)
   }
 
   const outcomeInfo = outcome ? OUTCOME_LABELS[outcome] : null
@@ -148,103 +109,112 @@ export default function BlackjackPage() {
     <GameLayout title="Blackjack">
       <Card className="border-border/40 bg-card/50">
         <CardContent className="p-6 space-y-6">
+
           {/* Table */}
-          <div className="bg-green-950/30 border border-green-900/40 rounded-xl p-6 space-y-6 min-h-72">
-            {/* Dealer */}
+          <div className="bg-green-950/30 border border-green-900/40 rounded-xl p-6 space-y-6 min-h-64">
+            {/* Dealer hand */}
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
-                Dealer <HandValue cards={dealerCards} hidden={state === 'player_turn'} />
-              </p>
-              <div className="flex gap-2 flex-wrap">
-                {dealerCards.length === 0 && state === 'idle' && (
-                  <div className="text-muted-foreground text-sm">Waiting for deal...</div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                Dealer
+                {dealerCards.length > 0 && state === 'done' && (
+                  <span className="font-semibold text-foreground">({handTotal(dealerCards)})</span>
                 )}
-                {dealerCards.map((card, i) => (
-                  <PlayingCard key={i} card={card} hidden={i === 1 && state === 'player_turn'} />
-                ))}
+              </p>
+              <div className="flex gap-2 flex-wrap min-h-[5rem]">
+                {dealerCards.length === 0
+                  ? <span className="text-muted-foreground text-sm self-center">Waiting for deal...</span>
+                  : dealerCards.map((c, i) => <PlayingCard key={i} card={c} />)
+                }
               </div>
             </div>
 
             {/* Outcome banner */}
             {outcomeInfo && (
-              <div className={`text-center text-2xl font-bold ${outcomeInfo.color}`}>
+              <div className={`text-center text-2xl font-bold py-2 ${outcomeInfo.color}`}>
                 {outcomeInfo.label}
-                {payout > 0 && <div className="text-lg text-muted-foreground mt-1">+{payout.toLocaleString()} pts</div>}
+                {payout > 0 && (
+                  <div className="text-base font-normal text-muted-foreground mt-1">
+                    +{payout.toLocaleString()} pts returned
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Player */}
+            {/* Player hand */}
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
-                Your Hand <HandValue cards={playerCards} />
-              </p>
-              <div className="flex gap-2 flex-wrap">
-                {playerCards.length === 0 && state === 'idle' && (
-                  <div className="text-muted-foreground text-sm">Place a bet to start</div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                Your Hand
+                {playerCards.length > 0 && (
+                  <span className="font-semibold text-foreground">({handTotal(playerCards)})</span>
                 )}
-                {playerCards.map((card, i) => (
-                  <PlayingCard key={i} card={card} />
-                ))}
+              </p>
+              <div className="flex gap-2 flex-wrap min-h-[5rem]">
+                {playerCards.length === 0
+                  ? <span className="text-muted-foreground text-sm self-center">Place a bet to start</span>
+                  : playerCards.map((c, i) => <PlayingCard key={i} card={c} />)
+                }
               </div>
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="space-y-4">
-            {/* Wager */}
-            <div className="flex items-center gap-3">
-              <label className="text-sm text-muted-foreground w-16 shrink-0">Wager</label>
-              <Input
-                type="number"
-                min={1}
-                value={wager}
-                onChange={e => setWager(e.target.value)}
-                disabled={state !== 'idle' || loading}
-                className="w-36"
-              />
-              <div className="flex gap-2">
-                {[50, 100, 500, 1000].map(v => (
-                  <Button key={v} size="sm" variant="outline" className="text-xs h-8 px-2"
-                    disabled={state !== 'idle' || loading}
-                    onClick={() => setWager(String(v))}>
-                    {v}
-                  </Button>
-                ))}
-              </div>
+          {/* Action description for choose_action state */}
+          {state === 'choose_action' && (
+            <p className="text-sm text-muted-foreground text-center">
+              Your hand: <span className="text-foreground font-semibold">{handTotal(playerCards)}</span> — choose your action below
+            </p>
+          )}
+
+          {/* Wager input */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="text-sm text-muted-foreground w-16 shrink-0">Wager</label>
+            <Input
+              type="number"
+              min={1}
+              value={wager}
+              onChange={e => setWager(e.target.value)}
+              disabled={state !== 'idle' || loading}
+              className="w-32"
+            />
+            <div className="flex gap-1.5 flex-wrap">
+              {[50, 100, 500, 1000].map(v => (
+                <Button key={v} size="sm" variant="outline" className="text-xs h-8 px-2.5"
+                  disabled={state !== 'idle' || loading}
+                  onClick={() => setWager(String(v))}>
+                  {v}
+                </Button>
+              ))}
             </div>
+          </div>
 
-            {/* Action buttons */}
-            {state === 'idle' && (
-              <Button onClick={deal} disabled={loading || !wager || parseInt(wager) < 1} className="w-full h-12 text-base font-semibold">
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Deal'}
-              </Button>
-            )}
-
-            {state === 'player_turn' && (
+          {/* Action buttons */}
+          {state === 'idle' && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground text-center">Choose your action before dealing — the hand resolves instantly</p>
               <div className="grid grid-cols-3 gap-3">
-                <Button onClick={() => placeBet('hit')} disabled={loading} variant="default" className="h-12">
+                <Button onClick={() => bet('stand')} disabled={loading || parseInt(wager) < 1} variant="outline" className="h-12">
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Stand'}
+                </Button>
+                <Button onClick={() => bet('hit')} disabled={loading || parseInt(wager) < 1} className="h-12 font-semibold">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Hit'}
                 </Button>
-                <Button onClick={() => placeBet('stand')} disabled={loading} variant="outline" className="h-12">
-                  Stand
-                </Button>
-                <Button onClick={() => placeBet('double')} disabled={loading} variant="outline" className="h-12">
-                  Double Down
+                <Button onClick={() => bet('double')} disabled={loading || parseInt(wager) < 1} variant="outline" className="h-12">
+                  Double
                 </Button>
               </div>
-            )}
+            </div>
+          )}
 
-            {state === 'done' && (
-              <Button onClick={reset} className="w-full h-12 text-base font-semibold" variant="outline">
-                New Hand
-              </Button>
-            )}
-          </div>
+          {state === 'done' && (
+            <Button onClick={reset} className="w-full h-12 text-base font-semibold" variant="outline">
+              New Hand
+            </Button>
+          )}
 
-          {/* Rules */}
+          {/* Rules badges */}
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground border-t border-border/30 pt-4">
             <Badge variant="outline" className="text-xs">Blackjack pays 2x</Badge>
             <Badge variant="outline" className="text-xs">Dealer stands soft 17</Badge>
+            <Badge variant="outline" className="text-xs">Double doubles wager</Badge>
             <Badge variant="outline" className="text-xs">Max payout 20,000 pts</Badge>
           </div>
         </CardContent>

@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { randomBytes } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   generateServerSeed, hashServerSeed,
-  fairShuffle, fairKenoDraw, fairPlinkoSlot, fairBlackjackDeck,
+  fairKenoDraw, fairPlinkoSlot, fairBlackjackDeck,
   handValue
 } from '@/lib/games/provably-fair'
 
@@ -142,7 +143,7 @@ export async function POST(req: NextRequest) {
     const nextSeed = generateServerSeed()
     const { data: newSeeds } = await admin.from('user_seeds').insert({
       profile_id: profile.id,
-      client_seed: require('crypto').randomBytes(16).toString('hex'),
+      client_seed: randomBytes(16).toString('hex'),
       nonce: 0,
       active_server_seed: activeSeed,
       active_server_seed_hash: hashServerSeed(activeSeed),

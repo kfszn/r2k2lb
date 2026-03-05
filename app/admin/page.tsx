@@ -195,6 +195,18 @@ export default function AdminPage() {
               </CardContent>
             </Card>
 
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("games")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Gamepad2 className="h-8 w-8 text-primary" />
+                  <CardTitle>Games Analytics</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko</p>
+              </CardContent>
+            </Card>
+
             <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("website")}>
               <CardHeader>
                 <div className="flex items-center gap-3">
@@ -424,6 +436,26 @@ export default function AdminPage() {
             <h1 className="text-3xl font-bold">Users</h1>
           </div>
           <UsersManager />
+        </div>
+      </main>
+    );
+  }
+
+  // Games Analytics View
+  if (currentView === "games") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Games Analytics</h1>
+          </div>
+          <GamesManager />
         </div>
       </main>
     );
