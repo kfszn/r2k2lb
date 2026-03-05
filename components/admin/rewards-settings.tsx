@@ -10,15 +10,16 @@ import { Settings, Loader2, Save } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
-type SettingRow = { key: string; value: string }
-
 export function RewardsSettings() {
-  const { data, mutate } = useSWR<{ settings: SettingRow[] }>('/api/settings', fetcher)
+  const { data, mutate, isLoading } = useSWR<Record<string, number>>('/api/settings', fetcher)
   const [saving, setSaving] = useState(false)
   const [values, setValues] = useState<Record<string, string>>({})
   const [saved, setSaved] = useState(false)
 
-  const settings = data?.settings ?? []
+  // Convert flat object to array of settings
+  const settings = data && !('error' in data) 
+    ? Object.entries(data).map(([key, value]) => ({ key, value: String(value) }))
+    : []
   const getValue = (key: string) => values[key] ?? settings.find(s => s.key === key)?.value ?? ''
 
   const save = async () => {
@@ -57,8 +58,10 @@ export function RewardsSettings() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        {settings.length === 0 ? (
+        {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading settings...</p>
+        ) : settings.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No settings found. Add settings to the database.</p>
         ) : (
           <>
             {settings.map(s => {

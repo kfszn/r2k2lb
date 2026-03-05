@@ -54,6 +54,9 @@ export async function POST(req: NextRequest) {
   if (effectiveWager < 1) {
     return NextResponse.json({ error: 'invalid wager' }, { status: 400 })
   }
+  if (effectiveWager > 5000) {
+    return NextResponse.json({ error: 'wager exceeds maximum of 5000' }, { status: 400 })
+  }
   if (profile.points < effectiveWager) {
     return NextResponse.json({ error: 'insufficient_points' }, { status: 400 })
   }

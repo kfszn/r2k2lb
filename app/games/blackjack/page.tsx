@@ -130,10 +130,10 @@ export default function BlackjackPage() {
   const draw = (): Card => shoeRef.current.shift()!
 
   const adjustWager = (factor: number) => {
-    const next = Math.max(1, Math.min(20000, factor < 1 ? Math.floor(wager * factor) : Math.min(20000, wager * factor)))
+    const next = Math.max(1, Math.min(5000, factor < 1 ? Math.floor(wager * factor) : Math.min(5000, wager * factor)))
     setWager(next); setWagerInput(String(next))
   }
-  const setMax = () => { setWager(20000); setWagerInput('20000') }
+  const setMax = () => { setWager(5000); setWagerInput('5000') }
 
   // ── SETTLE ───────────────────────────────────────────────────────────────────
   const settle = useCallback(async (
@@ -405,12 +405,12 @@ export default function BlackjackPage() {
             <div className="flex-1 flex items-center bg-[#0d1829] border border-white/10 rounded-lg overflow-hidden h-11">
               <span className="text-white/30 text-xs px-3 font-mono shrink-0">pts</span>
               <Input
-                type="number" min={1} max={20000}
+                type="number" min={1} max={5000}
                 value={wagerInput}
                 onChange={e => {
                   setWagerInput(e.target.value)
                   const v = parseInt(e.target.value)
-                  if (!isNaN(v)) setWager(Math.max(1, Math.min(20000, v)))
+                  if (!isNaN(v)) setWager(Math.max(1, Math.min(5000, v)))
                 }}
                 disabled={inPlay}
                 className="flex-1 h-full bg-transparent border-0 text-white text-sm focus-visible:ring-0 p-0 disabled:opacity-40"
