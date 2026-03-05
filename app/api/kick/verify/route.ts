@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
 
   const { account_id, kick_username } = body
 
+  console.log('[v0] verify route hit — account_id:', account_id, 'kick_username:', kick_username)
+
   if (!account_id || !kick_username) {
     return NextResponse.json(
       { error: 'missing_fields', message: 'account_id and kick_username are required' },
@@ -41,6 +43,8 @@ export async function POST(req: NextRequest) {
     .select('id, account_id, kick_username')
     .eq('account_id', normalizedAccountId)
     .maybeSingle()
+
+  console.log('[v0] profile lookup — data:', profile, 'error:', profileError)
 
   if (profileError) {
     return NextResponse.json({ error: 'db_error', message: profileError.message }, { status: 500 })
