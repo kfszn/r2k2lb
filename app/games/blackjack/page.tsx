@@ -127,12 +127,14 @@ export default function BlackjackPage() {
     pHand: Card[], dHand: Card[], oc: Outcome, po: number, isDoubled: boolean, w: number
   ) => {
     setOutcome(oc); setPayout(po); setPhase('RESOLUTION'); setSettling(true)
+    // Send the effective wager (already doubled if applicable) — server does NOT multiply again
+    const effectiveW = isDoubled ? w * 2 : w
     try {
       await fetch('/api/games/settle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          game: 'blackjack', wager: w, outcome: oc, payout: po,
+          game: 'blackjack', wager: effectiveW, outcome: oc, payout: po,
           playerHand: cardsToWire(pHand), dealerHand: cardsToWire(dHand), doubled: isDoubled,
         }),
       })

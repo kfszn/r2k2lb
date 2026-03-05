@@ -48,9 +48,10 @@ export async function POST(req: NextRequest) {
 
   if (game !== 'blackjack') return NextResponse.json({ error: 'unsupported game' }, { status: 400 })
 
-  const effectiveWager = doubled ? (wager ?? 0) * 2 : (wager ?? 0)
+  // Client sends the already-effective wager (doubled amount if applicable) — do NOT multiply again
+  const effectiveWager = Math.round(wager ?? 0)
 
-  if (typeof effectiveWager !== 'number' || effectiveWager < 1) {
+  if (effectiveWager < 1) {
     return NextResponse.json({ error: 'invalid wager' }, { status: 400 })
   }
   if (profile.points < effectiveWager) {
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Cap payout server-side — never trust client payout directly
-  const payout = Math.min(claimedPayout ?? 0, MAX_PAYOUT)
+  const payout = Math.min(Math.round(claimedPayout ?? 0), MAX_PAYOUT)
   const profit = payout - effectiveWager
   const newPoints = Math.max(0, profile.points - effectiveWager + payout)
 
@@ -71,13 +72,16 @@ export async function POST(req: NextRequest) {
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
-  // Log to game_bets
+  // Log to game_bets — provably-fair fields are null for client-side blackjack
   await admin.from('game_bets').insert({
     profile_id: profile.id,
     game: 'blackjack',
     wager: effectiveWager,
     payout,
     profit,
+    server_seed_hash: 'client-side',
+    client_seed: 'client-side',
+    nonce: 0,
     result: { playerHand, dealerHand, outcome, doubled: doubled ?? false },
   })
 
