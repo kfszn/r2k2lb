@@ -36,7 +36,7 @@ export async function GET() {
     redemption_count: countMap[item.id] ?? 0,
   }))
 
-  return NextResponse.json(result)
+  return NextResponse.json({ items: result })
 }
 
 // POST create new shop item

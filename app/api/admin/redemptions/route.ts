@@ -15,8 +15,8 @@ export async function GET() {
     .from('redemptions')
     .select(`
       *,
-      profile:profiles(account_id, email, kick_username),
-      shop_item:shop_items(name, points_cost)
+      profiles(account_id, email, kick_username),
+      shop_items(name, points_cost)
     `)
     .order('created_at', { ascending: false })
 
@@ -24,5 +24,5 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(data)
+  return NextResponse.json({ redemptions: data ?? [] })
 }
