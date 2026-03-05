@@ -410,8 +410,8 @@ export default function KenoPage() {
             {/* Wager quick-input */}
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">pts</span>
-              <Input type="number" min={1} value={wager}
-                onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 1))}
+              <Input type="number" min={1} max={5000} value={wager}
+                onChange={e => setWager(Math.max(1, Math.min(5000, parseInt(e.target.value) || 1)))}
                 disabled={isDisabled} className="pl-10 h-12 text-sm font-mono" />
             </div>
 

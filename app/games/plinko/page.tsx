@@ -295,8 +295,8 @@ export default function PlinkoPage() {
           <div className="flex items-center gap-2 p-3">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs font-mono">pts</span>
-              <Input type="number" min={1} value={wager}
-                onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 1))}
+              <Input type="number" min={1} max={5000} value={wager}
+                onChange={e => setWager(Math.max(1, Math.min(5000, parseInt(e.target.value) || 1)))}
                 disabled={isAnimating || loading}
                 className="pl-9 bg-[#0d1117] border-white/10 text-white h-12 text-sm" />
             </div>
@@ -307,7 +307,7 @@ export default function PlinkoPage() {
               ½
             </button>
             <button
-              onClick={() => setWager(wager * 2)}
+              onClick={() => setWager(Math.min(5000, wager * 2))}
               disabled={isAnimating || loading}
               className="h-12 w-12 shrink-0 rounded-xl bg-[#1c2333] border border-white/10 text-white/60 text-xs font-bold disabled:opacity-40">
               2×
