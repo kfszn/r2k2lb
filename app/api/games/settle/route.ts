@@ -75,24 +75,23 @@ export async function POST(req: NextRequest) {
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
-  // Log to game_bets — provably-fair fields are null for client-side blackjack
-  await admin.from('game_bets').insert({
+  // Log to game_bets — provably-fair fields use placeholder values for client-side blackjack
+  const { error: betError } = await admin.from('game_bets').insert({
     profile_id: profile.id,
     game: 'blackjack',
     wager: effectiveWager,
     payout,
     profit,
+    server_seed: 'client-side',
     server_seed_hash: 'client-side',
     client_seed: 'client-side',
     nonce: 0,
     result: { playerHand, dealerHand, outcome, doubled: doubled ?? false },
   })
 
-  // Log point transactions
-  await admin.from('point_transactions').insert([
-    { profile_id: profile.id, amount: -effectiveWager, type: 'game_loss', description: 'blackjack wager' },
-    ...(payout > 0 ? [{ profile_id: profile.id, amount: payout, type: 'game_win', description: 'blackjack payout' }] : []),
-  ])
+  if (betError) {
+    console.error('[settle] game_bets insert error:', betError.message)
+  }
 
   return NextResponse.json({ success: true, payout, profit, new_balance: newPoints })
 }

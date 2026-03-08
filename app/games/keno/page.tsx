@@ -189,7 +189,7 @@ export default function KenoPage() {
 
       {/* Bet Amount */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5">Bet Amount</p>
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5">Bet Amount <span className="text-red-400 text-[10px]">(Max: 5000)</span></p>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">pts</span>
           <Input type="number" min={1} max={5000} value={wager}
@@ -410,8 +410,8 @@ export default function KenoPage() {
             {/* Wager quick-input */}
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">pts</span>
-              <Input type="number" min={1} value={wager}
-                onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 1))}
+              <Input type="number" min={1} max={5000} value={wager}
+                onChange={e => setWager(Math.max(1, Math.min(5000, parseInt(e.target.value) || 1)))}
                 disabled={isDisabled} className="pl-10 h-12 text-sm font-mono" />
             </div>
 
