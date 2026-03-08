@@ -15,10 +15,13 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  const result: Record<string, number> = {}
-  for (const row of data) {
-    result[row.key] = Number(row.value)
+  const map: Record<string, number> = {}
+  for (const row of data ?? []) {
+    map[row.key] = Number(row.value)
   }
 
-  return NextResponse.json(result)
+  return NextResponse.json({
+    pointsPerMessage: map['points_per_message'] ?? 1,
+    pointsPer10Min: map['points_per_10min_watch'] ?? 10,
+  })
 }
