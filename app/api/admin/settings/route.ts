@@ -26,7 +26,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const supabase = getSupabase()
-  let body: Record<string, string>
+  let body: { pointsPerMessage: number; pointsPer10Min: number }
 
   try {
     body = await req.json()
@@ -34,15 +34,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 })
   }
 
-  const upserts = Object.entries(body).map(([key, value]) => ({
-    key,
-    value: String(value),
-    updated_at: new Date().toISOString(),
-  }))
+  const { pointsPerMessage, pointsPer10Min } = body
+
+  if (pointsPerMessage === undefined || pointsPer10Min === undefined) {
+    return NextResponse.json({ error: 'missing_fields' }, { status: 400 })
+  }
 
   const { error } = await supabase
     .from('settings')
-    .upsert(upserts, { onConflict: 'key' })
+    .upsert(
+      [
+        { key: 'points_per_message', value: String(pointsPerMessage) },
+        { key: 'points_per_10min_watch', value: String(pointsPer10Min) },
+      ],
+      { onConflict: 'key' }
+    )
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
