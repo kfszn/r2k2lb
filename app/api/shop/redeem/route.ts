@@ -45,6 +45,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'item_not_found' }, { status: 404 })
   }
 
+  // Check inventory (null = unlimited; 0 = out of stock)
+  if (item.inventory !== null && item.inventory <= 0) {
+    return NextResponse.json({ error: 'out_of_stock', message: 'This item is out of stock.' }, { status: 400 })
+  }
+
   // Get profile and check balance
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
@@ -106,6 +111,14 @@ export async function POST(req: NextRequest) {
 
   if (updateError) {
     return NextResponse.json({ error: 'update_failed', message: updateError.message }, { status: 500 })
+  }
+
+  // Decrement inventory if limited
+  if (item.inventory !== null) {
+    await supabase
+      .from('shop_items')
+      .update({ inventory: item.inventory - 1 })
+      .eq('id', shop_item_id)
   }
 
   // Create redemption

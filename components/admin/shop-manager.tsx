@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, ShoppingBag, Loader2, Check, X, RotateCcw, Trash2 } from 'lucide-react'
+import { Plus, ShoppingBag, Loader2, Check, X, RotateCcw, Trash2, Package, Infinity } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -19,6 +19,7 @@ type ShopItem = {
   description: string | null
   points_cost: number
   active: boolean
+  inventory: number | null
 }
 
 type Redemption = {
@@ -35,10 +36,12 @@ export function ShopManager() {
   const { data: shopData, mutate: mutateShop } = useSWR<{ items: ShopItem[] }>('/api/admin/shop', fetcher)
   const { data: redemptionsData, mutate: mutateRedemptions } = useSWR<{ redemptions: Redemption[] }>('/api/admin/redemptions', fetcher)
 
-  const [newItem, setNewItem] = useState({ name: '', description: '', points_cost: '' })
+  const [newItem, setNewItem] = useState({ name: '', description: '', points_cost: '', inventory: '' })
   const [creating, setCreating] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [processing, setProcessing] = useState<{ id: number; action: string } | null>(null)
+  const [editingInventory, setEditingInventory] = useState<{ id: number; value: string } | null>(null)
+  const [savingInventory, setSavingInventory] = useState(false)
 
   const createItem = async () => {
     if (!newItem.name || !newItem.points_cost) return
@@ -51,14 +54,28 @@ export function ShopManager() {
           name: newItem.name,
           description: newItem.description || null,
           points_cost: parseInt(newItem.points_cost),
+          inventory: newItem.inventory === '' ? null : parseInt(newItem.inventory),
         }),
       })
-      setNewItem({ name: '', description: '', points_cost: '' })
+      setNewItem({ name: '', description: '', points_cost: '', inventory: '' })
       setShowForm(false)
       mutateShop()
     } finally {
       setCreating(false)
     }
+  }
+
+  const saveInventory = async (id: number, value: string) => {
+    setSavingInventory(true)
+    const inventory = value === '' ? null : parseInt(value)
+    await fetch(`/api/admin/shop/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inventory }),
+    })
+    setEditingInventory(null)
+    setSavingInventory(false)
+    mutateShop()
   }
 
   const toggleItem = async (id: number, active: boolean) => {
@@ -135,7 +152,7 @@ export function ShopManager() {
         <CardContent className="space-y-4">
           {showForm && (
             <div className="border border-border/50 rounded-lg p-4 space-y-3 bg-muted/30">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1.5">
                   <Label>Item Name</Label>
                   <Input
@@ -151,6 +168,16 @@ export function ShopManager() {
                     value={newItem.points_cost}
                     onChange={e => setNewItem(v => ({ ...v, points_cost: e.target.value }))}
                     placeholder="e.g. 60000"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Quantity (blank = unlimited)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={newItem.inventory}
+                    onChange={e => setNewItem(v => ({ ...v, inventory: e.target.value }))}
+                    placeholder="e.g. 10"
                   />
                 </div>
               </div>
@@ -176,24 +203,82 @@ export function ShopManager() {
             <p className="text-sm text-muted-foreground text-center py-4">No shop items yet.</p>
           ) : (
             <div className="space-y-2">
-              {items.map(item => (
-                <div key={item.id} className="flex items-center justify-between p-3 border border-border/40 rounded-lg">
-                  <div>
-                    <p className="font-medium text-sm">{item.name}</p>
-                    {item.description && <p className="text-xs text-muted-foreground">{item.description}</p>}
-                    <p className="text-xs text-primary font-mono mt-0.5">{item.points_cost.toLocaleString()} pts</p>
+              {items.map(item => {
+                const isEditingThis = editingInventory?.id === item.id
+                const outOfStock = item.inventory !== null && item.inventory <= 0
+                return (
+                  <div key={item.id} className="flex items-center justify-between p-3 border border-border/40 rounded-lg gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{item.name}</p>
+                      {item.description && <p className="text-xs text-muted-foreground truncate">{item.description}</p>}
+                      <p className="text-xs text-primary font-mono mt-0.5">{item.points_cost.toLocaleString()} pts</p>
+                    </div>
+
+                    {/* Inventory editor */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                      {isEditingThis ? (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            type="number"
+                            min="0"
+                            className="h-7 w-20 text-xs px-2"
+                            value={editingInventory.value}
+                            onChange={e => setEditingInventory({ id: item.id, value: e.target.value })}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') saveInventory(item.id, editingInventory.value)
+                              if (e.key === 'Escape') setEditingInventory(null)
+                            }}
+                            autoFocus
+                            placeholder="∞"
+                          />
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            disabled={savingInventory}
+                            onClick={() => saveInventory(item.id, editingInventory.value)}
+                          >
+                            {savingInventory ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-500" />}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            onClick={() => setEditingInventory(null)}
+                          >
+                            <X className="h-3 w-3 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <button
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors min-w-[3rem] text-left"
+                          onClick={() => setEditingInventory({ id: item.id, value: item.inventory === null ? '' : String(item.inventory) })}
+                          title="Click to edit quantity"
+                        >
+                          {outOfStock ? (
+                            <span className="text-destructive font-medium">Out of stock</span>
+                          ) : item.inventory === null ? (
+                            <span className="flex items-center gap-1"><Infinity className="h-3 w-3" /> Unlimited</span>
+                          ) : (
+                            <span>{item.inventory} left</span>
+                          )}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Badge variant={outOfStock ? 'destructive' : item.active ? 'default' : 'secondary'} className="text-xs">
+                        {outOfStock ? 'Out of Stock' : item.active ? 'Active' : 'Hidden'}
+                      </Badge>
+                      <Switch
+                        checked={item.active}
+                        onCheckedChange={v => toggleItem(item.id, v)}
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant={item.active ? 'default' : 'secondary'} className="text-xs">
-                      {item.active ? 'Active' : 'Hidden'}
-                    </Badge>
-                    <Switch
-                      checked={item.active}
-                      onCheckedChange={v => toggleItem(item.id, v)}
-                    />
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </CardContent>
