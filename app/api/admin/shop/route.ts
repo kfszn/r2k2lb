@@ -43,7 +43,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const supabase = getSupabase()
   const body = await req.json()
-  const { name, description, points_cost } = body
+  const { name, description, points_cost, inventory } = body
 
   if (!name || !points_cost) {
     return NextResponse.json({ error: 'name and points_cost required' }, { status: 400 })
@@ -51,7 +51,12 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('shop_items')
-    .insert({ name, description, points_cost: Number(points_cost) })
+    .insert({
+      name,
+      description,
+      points_cost: Number(points_cost),
+      inventory: inventory !== undefined ? (inventory === '' || inventory === null ? null : Number(inventory)) : null,
+    })
     .select()
     .single()
 

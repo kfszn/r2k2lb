@@ -29,6 +29,7 @@ type ShopItem = {
   description: string | null
   points_cost: number
   active: boolean
+  inventory: number | null
 }
 
 type Profile = {
@@ -93,6 +94,8 @@ export default function ShopPage() {
           setError('You can only redeem once every 30 days. Please check back later.')
         } else if (json.error === 'playthrough_required') {
           setError(`You must wager ${json.playthrough_remaining?.toLocaleString()} more points before you can redeem. Complete 1x play-through on your bonus points!`)
+          } else if (json.error === 'out_of_stock') {
+          setError('This item is out of stock.')
         } else {
           setError('Something went wrong. Please try again.')
         }
@@ -191,16 +194,25 @@ export default function ShopPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {items.map(item => {
-              const canAfford = profile && profile.points >= item.points_cost
+              const outOfStock = item.inventory !== null && item.inventory <= 0
+              const canAfford = profile && profile.points >= item.points_cost && !outOfStock
               return (
                 <Card
                   key={item.id}
                   className={`border-border/40 bg-card/50 backdrop-blur-sm flex flex-col transition-shadow ${
                     canAfford ? 'hover:shadow-lg hover:shadow-primary/10' : ''
-                  }`}
+                  } ${outOfStock ? 'opacity-60' : ''}`}
                 >
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">{item.name}</CardTitle>
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg">{item.name}</CardTitle>
+                      {outOfStock && (
+                        <Badge variant="destructive" className="text-xs shrink-0">Out of Stock</Badge>
+                      )}
+                      {!outOfStock && item.inventory !== null && (
+                        <Badge variant="secondary" className="text-xs shrink-0">{item.inventory} left</Badge>
+                      )}
+                    </div>
                     {item.description && (
                       <CardDescription>{item.description}</CardDescription>
                     )}
@@ -212,7 +224,11 @@ export default function ShopPage() {
                       <span className="text-sm text-muted-foreground">points</span>
                     </div>
 
-                    {profile ? (
+                    {outOfStock ? (
+                      <Button className="w-full" disabled>
+                        Out of Stock
+                      </Button>
+                    ) : profile ? (
                       <Button
                         className="w-full"
                         disabled={!canAfford}
