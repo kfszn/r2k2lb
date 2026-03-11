@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   // Get profile and check balance
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, points, kick_username, email')
+    .select('id, points, kick_username, email, manual_award_balance, manual_award_wagered')
     .eq('id', profile_id)
     .maybeSingle()
 
@@ -58,6 +58,41 @@ export async function POST(req: NextRequest) {
 
   if (profile.points < item.points_cost) {
     return NextResponse.json({ error: 'insufficient_points', points: profile.points, required: item.points_cost }, { status: 400 })
+  }
+
+  // Check play-through requirement for manually awarded points
+  const manualAwardBalance = profile.manual_award_balance ?? 0
+  const manualAwardWagered = profile.manual_award_wagered ?? 0
+  
+  if (manualAwardBalance > 0 && manualAwardWagered < manualAwardBalance) {
+    const amountRemaining = manualAwardBalance - manualAwardWagered
+    return NextResponse.json(
+      { 
+        error: 'playthrough_required', 
+        message: `You have ${amountRemaining.toLocaleString()} points remaining that require 1x play-through before redemption`,
+        manual_award_balance: manualAwardBalance,
+        manual_award_wagered: manualAwardWagered,
+        playthrough_remaining: amountRemaining
+      },
+      { status: 400 }
+    )
+  }
+
+  // Check for 30-day redemption cooldown
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: recentRedemption, error: recentError } = await supabase
+    .from('redemptions')
+    .select('id, created_at')
+    .eq('profile_id', profile_id)
+    .gte('created_at', thirtyDaysAgo)
+    .limit(1)
+    .maybeSingle()
+
+  if (recentRedemption) {
+    return NextResponse.json(
+      { error: 'redemption_cooldown', message: 'You can only redeem once every 30 days' },
+      { status: 400 }
+    )
   }
 
   const orderId = generateOrderId()

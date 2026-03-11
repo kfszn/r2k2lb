@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, ShoppingBag, Loader2, Check, X } from 'lucide-react'
+import { Plus, ShoppingBag, Loader2, Check, X, RotateCcw, Trash2 } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -38,7 +38,7 @@ export function ShopManager() {
   const [newItem, setNewItem] = useState({ name: '', description: '', points_cost: '' })
   const [creating, setCreating] = useState(false)
   const [showForm, setShowForm] = useState(false)
-  const [fulfilling, setFulfilling] = useState<number | null>(null)
+  const [processing, setProcessing] = useState<{ id: number; action: string } | null>(null)
 
   const createItem = async () => {
     if (!newItem.name || !newItem.points_cost) return
@@ -71,16 +71,45 @@ export function ShopManager() {
   }
 
   const fulfill = async (id: number) => {
-    setFulfilling(id)
+    setProcessing({ id, action: 'fulfill' })
     try {
       await fetch(`/api/admin/redemptions/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'fulfilled' }),
+        body: JSON.stringify({ action: 'fulfill', status: 'fulfilled' }),
       })
       mutateRedemptions()
     } finally {
-      setFulfilling(null)
+      setProcessing(null)
+    }
+  }
+
+  const refund = async (id: number) => {
+    setProcessing({ id, action: 'refund' })
+    try {
+      await fetch(`/api/admin/redemptions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'refund' }),
+      })
+      mutateRedemptions()
+    } finally {
+      setProcessing(null)
+    }
+  }
+
+  const deleteRedemption = async (id: number) => {
+    if (!confirm('Are you sure? This will permanently delete the redemption.')) return
+    setProcessing({ id, action: 'delete' })
+    try {
+      await fetch(`/api/admin/redemptions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete' }),
+      })
+      mutateRedemptions()
+    } finally {
+      setProcessing(null)
     }
   }
 
@@ -194,20 +223,56 @@ export function ShopManager() {
                     </p>
                     <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</p>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => fulfill(r.id)}
-                    disabled={fulfilling === r.id}
-                  >
-                    {fulfilling === r.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Check className="h-4 w-4 mr-1" />
-                        Fulfill
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => fulfill(r.id)}
+                      disabled={processing?.id === r.id}
+                      className="bg-green-500/10 hover:bg-green-500/20 text-green-400 border-green-500/30"
+                      variant="outline"
+                    >
+                      {processing?.id === r.id && processing?.action === 'fulfill' ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 mr-1" />
+                          Fulfill
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => refund(r.id)}
+                      disabled={processing?.id === r.id}
+                      className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border-blue-500/30"
+                      variant="outline"
+                    >
+                      {processing?.id === r.id && processing?.action === 'refund' ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <RotateCcw className="h-4 w-4 mr-1" />
+                          Refund
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => deleteRedemption(r.id)}
+                      disabled={processing?.id === r.id}
+                      className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/30"
+                      variant="outline"
+                    >
+                      {processing?.id === r.id && processing?.action === 'delete' ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

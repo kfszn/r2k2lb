@@ -1,6 +1,10 @@
+import type { Metadata } from 'next'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+export const metadata: Metadata = generatePageMetadata('perksPackdrawLossBack')
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Shield, TrendingDown, TrendingUp } from 'lucide-react'

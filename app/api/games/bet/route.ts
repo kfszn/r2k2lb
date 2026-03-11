@@ -11,6 +11,13 @@ import {
 
 const MAX_PAYOUT = 20000
 
+// House edge per game (applied to winning payouts only)
+const HOUSE_EDGE: Record<string, number> = {
+  blackjack: 0.012, // 1.2%
+  keno:      0.03,  // 3%
+  plinko:    0.05,  // 5%
+}
+
 function getAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,7 +35,7 @@ async function getProfile() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const admin = getAdmin()
-  const { data } = await admin.from('profiles').select('id, points').eq('id', user.id).single()
+  const { data } = await admin.from('profiles').select('id, points, manual_award_balance, manual_award_wagered').eq('id', user.id).single()
   return data
 }
 
@@ -197,13 +204,27 @@ export async function POST(req: NextRequest) {
     resultData = { slot, multiplier, risk, rows }
   }
 
+  // Apply house edge to winning payouts (profit portion only, not returned wager)
+  const edge = HOUSE_EDGE[game!] ?? 0
+  const profit = rawPayout - wager
+  const edgedPayout = profit > 0
+    ? Math.floor(wager + profit * (1 - edge))
+    : rawPayout
+
   // Hard cap
-  const payout = Math.min(rawPayout, MAX_PAYOUT)
+  const payout = Math.min(edgedPayout, MAX_PAYOUT)
   const profit = payout - wager
   const newPoints = Math.max(0, profile.points - wager + payout)
 
+  // Track wager toward play-through requirement
+  let updateData: any = { points: newPoints }
+  if ((profile.manual_award_balance ?? 0) > 0) {
+    const wagerTowardPlaythrough = Math.min(wager, profile.manual_award_balance)
+    updateData.manual_award_wagered = (profile.manual_award_wagered ?? 0) + wagerTowardPlaythrough
+  }
+
   // Update points
-  const { error: updateError } = await admin.from('profiles').update({ points: newPoints }).eq('id', profile.id)
+  const { error: updateError } = await admin.from('profiles').update(updateData).eq('id', profile.id)
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
   // Increment nonce

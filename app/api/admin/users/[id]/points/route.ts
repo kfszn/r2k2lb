@@ -23,10 +23,10 @@ export async function POST(
     return NextResponse.json({ error: 'delta must be a non-zero number' }, { status: 400 })
   }
 
-  // Fetch current points
+  // Fetch current points and manual award balance
   const { data: profile, error: fetchError } = await supabase
     .from('profiles')
-    .select('id, points')
+    .select('id, points, manual_award_balance')
     .eq('id', id)
     .single()
 
@@ -35,11 +35,17 @@ export async function POST(
   }
 
   const newPoints = Math.max(0, (profile.points ?? 0) + delta)
+  
+  // If adding points, track as manual award requiring 1x play-through
+  let updateData: any = { points: newPoints }
+  if (delta > 0) {
+    updateData.manual_award_balance = (profile.manual_award_balance ?? 0) + delta
+  }
 
   // Update points
   const { error: updateError } = await supabase
     .from('profiles')
-    .update({ points: newPoints })
+    .update(updateData)
     .eq('id', id)
 
   if (updateError) {

@@ -36,6 +36,8 @@ type Profile = {
   account_id: string
   kick_username: string | null
   points: number
+  manual_award_balance?: number
+  manual_award_wagered?: number
 }
 
 export default function ShopPage() {
@@ -64,7 +66,7 @@ export default function ShopPage() {
       }
       const { data } = await supabase
         .from('profiles')
-        .select('id, account_id, kick_username, points')
+        .select('id, account_id, kick_username, points, manual_award_balance, manual_award_wagered')
         .eq('id', session.user.id)
         .maybeSingle()
       setProfile(data ?? null)
@@ -87,6 +89,10 @@ export default function ShopPage() {
       if (!res.ok) {
         if (json.error === 'insufficient_points') {
           setError(`You need ${selectedItem.points_cost.toLocaleString()} points but only have ${profile.points.toLocaleString()}.`)
+        } else if (json.error === 'redemption_cooldown') {
+          setError('You can only redeem once every 30 days. Please check back later.')
+        } else if (json.error === 'playthrough_required') {
+          setError(`You must wager ${json.playthrough_remaining?.toLocaleString()} more points before you can redeem. Complete 1x play-through on your bonus points!`)
         } else {
           setError('Something went wrong. Please try again.')
         }

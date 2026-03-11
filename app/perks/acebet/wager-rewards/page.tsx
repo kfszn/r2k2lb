@@ -1,6 +1,10 @@
+import type { Metadata } from 'next'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+export const metadata: Metadata = generatePageMetadata('perksAcebetWagerRewards')
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Trophy, TrendingUp, Zap, Crown, AlertCircle } from 'lucide-react'
