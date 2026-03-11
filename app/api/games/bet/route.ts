@@ -11,13 +11,6 @@ import {
 
 const MAX_PAYOUT = 20000
 
-// House edge per game (applied to winning payouts only)
-const HOUSE_EDGE: Record<string, number> = {
-  blackjack: 0.012, // 1.2%
-  keno:      0.03,  // 3%
-  plinko:    0.05,  // 5%
-}
-
 function getAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -204,15 +197,8 @@ export async function POST(req: NextRequest) {
     resultData = { slot, multiplier, risk, rows }
   }
 
-  // Apply house edge to winning payouts (profit portion only, not returned wager)
-  const edge = HOUSE_EDGE[game!] ?? 0
-  const profit = rawPayout - wager
-  const edgedPayout = profit > 0
-    ? Math.floor(wager + profit * (1 - edge))
-    : rawPayout
-
   // Hard cap
-  const payout = Math.min(edgedPayout, MAX_PAYOUT)
+  const payout = Math.min(rawPayout, MAX_PAYOUT)
   const profit = payout - wager
   const newPoints = Math.max(0, profile.points - wager + payout)
 
