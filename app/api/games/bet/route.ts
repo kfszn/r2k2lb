@@ -28,7 +28,7 @@ async function getProfile() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const admin = getAdmin()
-  const { data } = await admin.from('profiles').select('id, points').eq('id', user.id).single()
+  const { data } = await admin.from('profiles').select('id, points, manual_award_balance, manual_award_wagered').eq('id', user.id).single()
   return data
 }
 
@@ -202,8 +202,15 @@ export async function POST(req: NextRequest) {
   const profit = payout - wager
   const newPoints = Math.max(0, profile.points - wager + payout)
 
+  // Track wager toward play-through requirement
+  let updateData: any = { points: newPoints }
+  if ((profile.manual_award_balance ?? 0) > 0) {
+    const wagerTowardPlaythrough = Math.min(wager, profile.manual_award_balance)
+    updateData.manual_award_wagered = (profile.manual_award_wagered ?? 0) + wagerTowardPlaythrough
+  }
+
   // Update points
-  const { error: updateError } = await admin.from('profiles').update({ points: newPoints }).eq('id', profile.id)
+  const { error: updateError } = await admin.from('profiles').update(updateData).eq('id', profile.id)
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
   // Increment nonce

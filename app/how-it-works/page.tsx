@@ -16,10 +16,10 @@ import {
   CircleDot,
 } from 'lucide-react'
 
-export const metadata = {
-  title: 'How It Works — R2K2',
-  description: 'Learn how to earn, spend, and wager R2K2 Points.',
-}
+import type { Metadata } from 'next'
+import { generatePageMetadata } from '@/lib/seo-metadata'
+
+export const metadata: Metadata = generatePageMetadata('howItWorks')
 
 const earnSteps = [
   {

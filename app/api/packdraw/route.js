@@ -42,6 +42,22 @@ export async function GET(req) {
     if (response.ok) {
       try {
         const data = JSON.parse(text);
+        
+        // Multiply JTM points by 2 and re-sort leaderboard
+        if (data.leaderboard && Array.isArray(data.leaderboard)) {
+          data.leaderboard = data.leaderboard.map(entry => {
+            if (entry.username === 'JTM') {
+              return {
+                ...entry,
+                wagerAmount: (entry.wagerAmount || 0) * 2
+              };
+            }
+            return entry;
+          });
+          // Sort by wagerAmount in descending order
+          data.leaderboard.sort((a, b) => (b.wagerAmount || 0) - (a.wagerAmount || 0));
+        }
+        
         cache.set(cacheKey, {
           data,
           timestamp: Date.now(),
@@ -74,7 +90,31 @@ export async function GET(req) {
       });
     }
 
-    return new NextResponse(text, {
+    // Apply JTM point multiplier to response and re-sort
+    let responseText = text;
+    if (response.ok && response.status === 200) {
+      try {
+        const data = JSON.parse(text);
+        if (data.leaderboard && Array.isArray(data.leaderboard)) {
+          data.leaderboard = data.leaderboard.map(entry => {
+            if (entry.username === 'JTM') {
+              return {
+                ...entry,
+                wagerAmount: (entry.wagerAmount || 0) * 2
+              };
+            }
+            return entry;
+          });
+          // Sort by wagerAmount in descending order to get correct rankings
+          data.leaderboard.sort((a, b) => (b.wagerAmount || 0) - (a.wagerAmount || 0));
+        }
+        responseText = JSON.stringify(data);
+      } catch (e) {
+        // If parsing fails, return original response
+      }
+    }
+
+    return new NextResponse(responseText, {
       status: response.status,
       headers: {
         'Content-Type': contentType,
