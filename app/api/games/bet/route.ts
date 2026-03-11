@@ -9,7 +9,7 @@ import {
   handValue
 } from '@/lib/games/provably-fair'
 
-const MAX_PAYOUT = 20000
+const MAX_PAYOUT = 10000
 
 function getAdmin() {
   return createClient(
