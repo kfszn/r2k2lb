@@ -236,7 +236,7 @@ export default function PackdrawLeaderboard() {
                         </div>
                         <div className="bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-slate-400">
                           <div className="text-3xl md:text-4xl font-bold text-white mb-2">🥈</div>
-                          <p className="font-bold text-white truncate">{maskName(entries[1].username)}</p>
+                          <p className="font-bold text-white truncate">{entries[1].username}</p>
                           <p className="text-xs md:text-sm text-slate-100 mb-2">{formatMoney(entries[1].wagerAmount || 0)}</p>
                           <div className="bg-black/30 rounded px-2 py-1">
                             <p className="text-lg md:text-xl font-bold text-green-400">${REWARDS[1]}</p>
@@ -261,7 +261,7 @@ export default function PackdrawLeaderboard() {
                         </div>
                         <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-2xl px-6 py-8 text-center w-40 md:w-48 shadow-2xl border-4 border-yellow-400" style={{ boxShadow: '0 10px 40px rgba(250, 204, 21, 0.4)' }}>
                           <div className="text-4xl md:text-5xl font-bold mb-2">👑</div>
-                          <p className="font-bold text-gray-900 truncate text-lg">{maskName(entries[0].username)}</p>
+                          <p className="font-bold text-gray-900 truncate text-lg">{entries[0].username}</p>
                           <p className="text-xs md:text-sm text-gray-800 mb-2">{formatMoney(entries[0].wagerAmount || 0)}</p>
                           <div className="bg-black/20 rounded px-2 py-1">
                             <p className="text-2xl md:text-3xl font-bold text-green-600">${REWARDS[0]}</p>
@@ -286,7 +286,7 @@ export default function PackdrawLeaderboard() {
                         </div>
                         <div className="bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-amber-600">
                           <div className="text-3xl md:text-4xl font-bold text-white mb-2">🥉</div>
-                          <p className="font-bold text-white truncate">{maskName(entries[2].username)}</p>
+                          <p className="font-bold text-white truncate">{entries[2].username}</p>
                           <p className="text-xs md:text-sm text-amber-100 mb-2">{formatMoney(entries[2].wagerAmount || 0)}</p>
                           <div className="bg-black/30 rounded px-2 py-1">
                             <p className="text-lg md:text-xl font-bold text-green-400">${REWARDS[2]}</p>
@@ -397,7 +397,7 @@ function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
         </div>
         
         <div>
-          <p className="text-lg font-bold">{maskName(entry.username)}</p>
+          <p className="text-lg font-bold">{entry.username}</p>
         </div>
         
         <div className="space-y-2">
@@ -440,7 +440,7 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
           </div>
           
           <div className="flex-1">
-            <p className="font-bold">{maskName(entry.username)}</p>
+            <p className="font-bold">{entry.username}</p>
           </div>
           
           <div className="flex gap-8 items-center">
