@@ -86,52 +86,53 @@ export function TotalWagerStats() {
 
     try {
       const start = new Date(startDate).toISOString().split('T')[0]
-      const end = new Date(endDate).toISOString().split('T')[0]
-      
-      const apiEndpoint = source === 'acebet' ? 'leaderboard' : 'packdraw'
-      const url = `/api/${apiEndpoint}?start_at=${start}&end_at=${end}`
-      const response = await fetch(url)
-      
-      if (!response.ok) throw new Error('Failed to fetch leaderboard data')
-      
-      const data = await response.json()
-      
-      if (!data.ok || !data.data) {
-        throw new Error('Invalid response from leaderboard API')
+
+      let leaderboardData: any[]
+      let formatted: LeaderboardEntry[]
+
+      if (source === 'acebet') {
+        const end = new Date(endDate).toISOString().split('T')[0]
+        const url = `/api/leaderboard?start_at=${start}&end_at=${end}`
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('Failed to fetch Acebet data')
+        const data = await response.json()
+        if (!data.ok || !data.data) throw new Error('Invalid response from Acebet API')
+        leaderboardData = data.data
+        formatted = leaderboardData.map((p: any) => ({
+          name: p.name || 'Unknown',
+          wagered: p.wagered || 0,
+          deposited: p.deposited || 0,
+          earned: p.earned || 0,
+          active: p.active || false,
+        }))
+      } else {
+        // Packdraw API uses an `after` date param (M-D-YYYY) and returns { leaderboard: [...] }
+        // Each entry has: { username, wagerAmount }
+        // The start date is used as the `after` cutoff
+        const [year, month, day] = start.split('-')
+        const afterParam = `${parseInt(month)}-${parseInt(day)}-${year}`
+        const url = `/api/packdraw?after=${afterParam}`
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('Failed to fetch Packdraw data')
+        const data = await response.json()
+        if (!data.leaderboard || !Array.isArray(data.leaderboard)) throw new Error('Invalid response from Packdraw API')
+        leaderboardData = data.leaderboard
+        formatted = leaderboardData.map((p: any) => ({
+          name: p.username || 'Unknown',
+          // wagerAmount is already in dollars for packdraw (not cents)
+          wagered: (p.wagerAmount || 0) * 100,
+          deposited: 0,
+          earned: 0,
+          active: true,
+        }))
       }
-      
-      const leaderboardData = data.data
-      
-      const totalWagered = leaderboardData.reduce((sum: number, p: any) => {
-        return sum + (p.wagered || 0)
-      }, 0)
-      
-      const totalDeposits = leaderboardData.reduce((sum: number, p: any) => {
-        return sum + (p.deposited || 0)
-      }, 0)
-      
-      const totalEarnings = leaderboardData.reduce((sum: number, p: any) => {
-        return sum + (p.earned || 0)
-      }, 0)
-      
-      const activeMembers = leaderboardData.length
 
-      setStats({
-        totalWagered,
-        totalDeposits,
-        totalEarnings,
-        activeMembers,
-      })
+      const totalWagered = formatted.reduce((sum, p) => sum + p.wagered, 0)
+      const totalDeposits = formatted.reduce((sum, p) => sum + p.deposited, 0)
+      const totalEarnings = formatted.reduce((sum, p) => sum + p.earned, 0)
+      const activeMembers = formatted.length
 
-      // Format leaderboard data
-      const formatted: LeaderboardEntry[] = leaderboardData.map((p: any) => ({
-        name: p.name || 'Unknown',
-        wagered: p.wagered || 0,
-        deposited: p.deposited || 0,
-        earned: p.earned || 0,
-        active: p.active || false,
-      }))
-
+      setStats({ totalWagered, totalDeposits, totalEarnings, activeMembers })
       setLeaderboard(formatted)
     } catch (err) {
       console.error('[v0] Error fetching wager stats:', err)
@@ -217,27 +218,31 @@ export function TotalWagerStats() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Deposits</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">${(stats.totalDeposits / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              </CardContent>
-            </Card>
+            {source === 'acebet' && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Deposits</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-2xl font-bold">${(stats.totalDeposits / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Earnings</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-2xl font-bold">${(stats.totalEarnings / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  </CardContent>
+                </Card>
+              </>
+            )}
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Earnings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">${(stats.totalEarnings / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">Active Members</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{source === 'packdraw' ? 'Total Players' : 'Active Members'}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">{stats.activeMembers.toLocaleString('en-US')}</p>
@@ -271,30 +276,34 @@ export function TotalWagerStats() {
                             Wagered <SortIcon field="wagered" />
                           </button>
                         </th>
-                        <th className="text-right py-3 px-4 font-semibold">
-                          <button
-                            onClick={() => handleSort('deposited')}
-                            className="flex items-center justify-end gap-2 ml-auto hover:text-foreground/80"
-                          >
-                            Deposited <SortIcon field="deposited" />
-                          </button>
-                        </th>
-                        <th className="text-right py-3 px-4 font-semibold">
-                          <button
-                            onClick={() => handleSort('active')}
-                            className="flex items-center justify-end gap-2 ml-auto hover:text-foreground/80"
-                          >
-                            Active <SortIcon field="active" />
-                          </button>
-                        </th>
-                        <th className="text-right py-3 px-4 font-semibold">
-                          <button
-                            onClick={() => handleSort('earned')}
-                            className="flex items-center justify-end gap-2 ml-auto hover:text-foreground/80"
-                          >
-                            Earned <SortIcon field="earned" />
-                          </button>
-                        </th>
+                        {source === 'acebet' && (
+                          <>
+                            <th className="text-right py-3 px-4 font-semibold">
+                              <button
+                                onClick={() => handleSort('deposited')}
+                                className="flex items-center justify-end gap-2 ml-auto hover:text-foreground/80"
+                              >
+                                Deposited <SortIcon field="deposited" />
+                              </button>
+                            </th>
+                            <th className="text-right py-3 px-4 font-semibold">
+                              <button
+                                onClick={() => handleSort('active')}
+                                className="flex items-center justify-end gap-2 ml-auto hover:text-foreground/80"
+                              >
+                                Active <SortIcon field="active" />
+                              </button>
+                            </th>
+                            <th className="text-right py-3 px-4 font-semibold">
+                              <button
+                                onClick={() => handleSort('earned')}
+                                className="flex items-center justify-end gap-2 ml-auto hover:text-foreground/80"
+                              >
+                                Earned <SortIcon field="earned" />
+                              </button>
+                            </th>
+                          </>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
@@ -302,9 +311,13 @@ export function TotalWagerStats() {
                         <tr key={idx} className="border-b border-border/50 hover:bg-muted/50">
                           <td className="py-3 px-4 text-foreground">{entry.name}</td>
                           <td className="py-3 px-4 text-right text-green-500">${(entry.wagered / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                          <td className="py-3 px-4 text-right text-green-500">${(entry.deposited / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                          <td className="py-3 px-4 text-right">{entry.active ? <span className="text-green-500 font-medium">Yes</span> : <span className="text-muted-foreground">No</span>}</td>
-                          <td className="py-3 px-4 text-right text-green-500 font-medium">${(entry.earned / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          {source === 'acebet' && (
+                            <>
+                              <td className="py-3 px-4 text-right text-green-500">${(entry.deposited / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                              <td className="py-3 px-4 text-right">{entry.active ? <span className="text-green-500 font-medium">Yes</span> : <span className="text-muted-foreground">No</span>}</td>
+                              <td className="py-3 px-4 text-right text-green-500 font-medium">${(entry.earned / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            </>
+                          )}
                         </tr>
                       ))}
                     </tbody>
