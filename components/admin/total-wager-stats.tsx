@@ -5,6 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, ArrowUp, ArrowDown } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface WagerStats {
   totalWagered: number
@@ -23,6 +30,7 @@ interface LeaderboardEntry {
 
 type SortField = 'name' | 'wagered' | 'deposited' | 'active' | 'earned'
 type SortDirection = 'asc' | 'desc'
+type Source = 'acebet' | 'packdraw'
 
 export function TotalWagerStats() {
   const [startDate, setStartDate] = useState('')
@@ -33,6 +41,7 @@ export function TotalWagerStats() {
   const [error, setError] = useState('')
   const [sortField, setSortField] = useState<SortField>('wagered')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [source, setSource] = useState<Source>('acebet')
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -79,7 +88,8 @@ export function TotalWagerStats() {
       const start = new Date(startDate).toISOString().split('T')[0]
       const end = new Date(endDate).toISOString().split('T')[0]
       
-      const url = `/api/leaderboard?start_at=${start}&end_at=${end}`
+      const apiEndpoint = source === 'acebet' ? 'leaderboard' : 'packdraw'
+      const url = `/api/${apiEndpoint}?start_at=${start}&end_at=${end}`
       const response = await fetch(url)
       
       if (!response.ok) throw new Error('Failed to fetch leaderboard data')
@@ -146,7 +156,19 @@ export function TotalWagerStats() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleDateRangeSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Source</label>
+                <Select value={source} onValueChange={(value) => setSource(value as Source)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="acebet">Acebet</SelectItem>
+                    <SelectItem value="packdraw">Packdraw</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Start Date</label>
                 <Input
