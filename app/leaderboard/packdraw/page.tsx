@@ -100,7 +100,7 @@ export default function PackdrawLeaderboard() {
   
   useEffect(() => {
     const calculateTimeRemaining = () => {
-      const startDate = new Date('2026-02-16T00:00:00.000Z')
+      const startDate = new Date('2026-03-18T00:00:00.000Z')
       const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days
       const now = new Date()
       const diff = endDate.getTime() - now.getTime()
