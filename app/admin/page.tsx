@@ -380,7 +380,7 @@ export default function AdminPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-primary" />
-                    Acebet Wager Statistics
+                    Wager Statistics
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
