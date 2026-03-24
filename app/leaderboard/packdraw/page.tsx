@@ -1,5 +1,6 @@
 'use client'
 
+// Updated payouts: $800 / $500 / $350 / $250 / $100 (top 5)
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -56,7 +57,7 @@ export default function PackdrawLeaderboard() {
         leaderboardData = data.data
       }
       
-      setEntries(leaderboardData.slice(0, 10))
+      setEntries(leaderboardData.slice(0, 5))
     } catch (e) {
       console.error('[v0] Failed to fetch Packdraw leaderboard:', e)
       setError('Failed to fetch leaderboard')
@@ -144,6 +145,13 @@ export default function PackdrawLeaderboard() {
               <br />
               <em className="text-sm">The leaderboard updates in real-time.</em>
             </p>
+            <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
+              <span className="px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">1st — $800</span>
+              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $500</span>
+              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $350</span>
+              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $250</span>
+              <span className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400">5th — $100</span>
+            </div>
             <div className="inline-block px-4 py-2 bg-destructive/10 border border-destructive/40 rounded-lg">
               <p className="text-destructive font-bold">It Only Takes One!</p>
             </div>
@@ -316,7 +324,7 @@ export default function PackdrawLeaderboard() {
 
                 {/* Rest */}
                 <div className="space-y-3">
-                  {entries.slice(3, 10).map((entry, idx) => (
+                  {entries.slice(3, 5).map((entry, idx) => (
                     <LeaderboardRow
                       key={idx}
                       rank={idx + 4}
@@ -459,4 +467,4 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
   )
 }
 
-const REWARDS = [1000, 550, 250, 150, 50, 0, 0, 0, 0, 0]
+const REWARDS = [800, 500, 350, 250, 100, 0, 0, 0, 0, 0]
