@@ -158,7 +158,11 @@ export default function AcebetLeaderboard() {
               <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $900</span>
               <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $400</span>
               <span className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400">5th — $200</span>
-              <span className="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-400">6th-10th — $3k Split</span>
+              <span className="px-3 py-1 rounded-full bg-blue-400/20 border border-blue-400/40 text-blue-300">6th — $1,000</span>
+              <span className="px-3 py-1 rounded-full bg-purple-400/20 border border-purple-400/40 text-purple-300">7th — $800</span>
+              <span className="px-3 py-1 rounded-full bg-pink-400/20 border border-pink-400/40 text-pink-300">8th — $600</span>
+              <span className="px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300">9th — $400</span>
+              <span className="px-3 py-1 rounded-full bg-lime-400/20 border border-lime-400/40 text-lime-300">10th — $200</span>
             </div>
           </div>
         </div>
