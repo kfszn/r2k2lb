@@ -26,7 +26,7 @@ interface LeaderboardData {
 }
 
 // Prize pool: $10,000 total - 1st: $4k, top 5 total $7k, bottom 5 total $3k
-const REWARDS = [4000, 1500, 900, 400, 200, 1000, 800, 600, 400, 200]
+const REWARDS = [4000, 1500, 900, 400, 200, 1000, 800, 600, 150, 100]
 
 export default function AcebetLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
@@ -161,8 +161,8 @@ export default function AcebetLeaderboard() {
               <span className="px-3 py-1 rounded-full bg-blue-400/20 border border-blue-400/40 text-blue-300">6th — $1,000</span>
               <span className="px-3 py-1 rounded-full bg-purple-400/20 border border-purple-400/40 text-purple-300">7th — $800</span>
               <span className="px-3 py-1 rounded-full bg-pink-400/20 border border-pink-400/40 text-pink-300">8th — $600</span>
-              <span className="px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300">9th — $400</span>
-              <span className="px-3 py-1 rounded-full bg-lime-400/20 border border-lime-400/40 text-lime-300">10th — $200</span>
+              <span className="px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300">9th — $150</span>
+              <span className="px-3 py-1 rounded-full bg-lime-400/20 border border-lime-400/40 text-lime-300">10th — $100</span>
             </div>
           </div>
         </div>
