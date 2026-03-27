@@ -25,8 +25,8 @@ interface LeaderboardData {
   data: LeaderboardEntry[]
 }
 
-// Prize pool distribution for top 10 positions
-const REWARDS = [1000, 600, 400, 300, 250, 150, 120, 90, 60, 30]
+// Prize pool: $10,000 total - $7k top 5, $3k bottom 5 (6-10)
+const REWARDS = [2000, 1600, 1400, 1200, 800, 600, 500, 400, 300, 200]
 
 export default function AcebetLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
@@ -141,7 +141,7 @@ export default function AcebetLeaderboard() {
               <span className="text-3xl font-bold text-primary">$10,000</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
-              30 Day <span className="text-primary">R2K2</span> Wager Amounts
+              Acebet On Site <span className="text-primary">$10,000</span> Leaderboard
             </h1>
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
@@ -149,35 +149,13 @@ export default function AcebetLeaderboard() {
               <em className="text-sm">Feb 24 - Mar 26, 2026 • 2pm EST</em>
             </p>
             
-            <div className="mt-6 p-4 rounded-lg bg-muted/40 border border-border space-y-3">
-              <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">Disclaimer:</strong> This page displays raw wager statistics for wager rewards tracking purposes only.
-                The official Acebet point-based leaderboards are below.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-                <Link
-                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=231"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold"
-                >
-                  <Trophy className="h-4 w-4" />
-                  $3,000 March 1H Bi-Weekly Leaderboard
-                </Link>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border text-muted-foreground text-sm font-semibold cursor-not-allowed opacity-50">
-                  <Trophy className="h-4 w-4" />
-                  $4,000 March 2H Bi-Weekly Leaderboard (Coming Soon)
-                </div>
-                <Link
-                  href="https://acebet.com/affiliates/creator/r2k2?leaderboardId=230"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold"
-                >
-                  <Trophy className="h-4 w-4" />
-                  $3,000 March Monthly Leaderboard
-                </Link>
-              </div>
+            <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
+              <span className="px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">1st — $2,000</span>
+              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $1,600</span>
+              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $1,400</span>
+              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $1,200</span>
+              <span className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400">5th — $800</span>
+              <span className="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-400">6th-10th — $3k Split</span>
             </div>
           </div>
         </div>
