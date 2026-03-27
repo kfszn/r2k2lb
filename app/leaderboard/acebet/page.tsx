@@ -26,7 +26,7 @@ interface LeaderboardData {
 }
 
 // Prize pool: $10,000 total - 1st: $4k, top 5 total $7k, bottom 5 total $3k
-const REWARDS = [4000, 1500, 900, 400, 200, 1000, 800, 600, 150, 100]
+const REWARDS = [4000, 1650, 1050, 550, 200, 1000, 800, 600, 150, 100]
 
 export default function AcebetLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
@@ -154,9 +154,9 @@ export default function AcebetLeaderboard() {
             
             <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
               <span className="px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">1st — $4,000</span>
-              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $1,500</span>
-              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $900</span>
-              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $400</span>
+              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $1,650</span>
+              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $1,050</span>
+              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $550</span>
               <span className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400">5th — $200</span>
               <span className="px-3 py-1 rounded-full bg-blue-400/20 border border-blue-400/40 text-blue-300">6th — $1,000</span>
               <span className="px-3 py-1 rounded-full bg-purple-400/20 border border-purple-400/40 text-purple-300">7th — $800</span>
