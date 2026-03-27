@@ -25,8 +25,8 @@ interface LeaderboardData {
   data: LeaderboardEntry[]
 }
 
-// Prize pool: $10,000 total - $7k top 5, $3k bottom 5 (6-10)
-const REWARDS = [2000, 1600, 1400, 1200, 800, 600, 500, 400, 300, 200]
+// Prize pool: $10,000 total - 1st: $4k, top 5 total $7k, bottom 5 total $3k
+const REWARDS = [4000, 1500, 900, 400, 200, 1000, 800, 600, 400, 200]
 
 export default function AcebetLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
@@ -64,10 +64,13 @@ export default function AcebetLeaderboard() {
     if (!leaderboard) return
 
     const interval = setInterval(() => {
-      // Leaderboard ends 3/26/2026 at 2pm EST
-      const endDate = new Date('2026-03-26T19:00:00Z').getTime() // 2pm EST = 7pm UTC
+      // Set end date to 31 days from today at 2pm EST (7pm UTC)
+      const today = new Date()
+      const endDate = new Date(today.getTime() + 31 * 24 * 60 * 60 * 1000)
+      endDate.setUTCHours(19, 0, 0, 0) // 2pm EST = 7pm UTC
+      const endTime = endDate.getTime()
       const now = Date.now()
-      const diff = endDate - now
+      const diff = endTime - now
 
       if (diff <= 0) {
         setTimeRemaining('Ended')
@@ -146,15 +149,15 @@ export default function AcebetLeaderboard() {
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
               <br />
-              <em className="text-sm">Feb 24 - Mar 26, 2026 • 2pm EST</em>
+              <em className="text-sm">31 Days Starting Today • 2pm EST End</em>
             </p>
             
             <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
-              <span className="px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">1st — $2,000</span>
-              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $1,600</span>
-              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $1,400</span>
-              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $1,200</span>
-              <span className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400">5th — $800</span>
+              <span className="px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">1st — $4,000</span>
+              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $1,500</span>
+              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $900</span>
+              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $400</span>
+              <span className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400">5th — $200</span>
               <span className="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-400">6th-10th — $3k Split</span>
             </div>
           </div>
