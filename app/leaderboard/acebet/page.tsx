@@ -119,11 +119,11 @@ export default function AcebetLeaderboard() {
   }
 
   const getAvatarUrl = (avatar: string | null) => {
-    if (!avatar) return '/placeholder-user.jpg'
+    if (!avatar) return '/assets/r2k2-default-avatar.png'
     
     // Check if it's the anonymous/default avatar path
     if (avatar.includes('avatar-anonymous') || avatar === '/assets/common/avatar-anonymous.png') {
-      return '/placeholder-user.jpg'
+      return '/assets/r2k2-default-avatar.png'
     }
     
     // If it's already a full URL, use it directly and let the browser handle CORS
