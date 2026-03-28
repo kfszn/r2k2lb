@@ -15,12 +15,31 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
 const HARDCODED_ACEBET_TOKEN = process.env.ACEBET_API_TOKEN || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
 
-// ===============================
-// ✅ LEADERBOARD TIMING (30-DAY CYCLE)
-// ===============================
-// Leaderboard: 2/24/2026 2pm EST → 3/26/2026 2pm EST (30 days, no daily resets)
-const DEFAULT_START = "2026-02-24";
-const DEFAULT_END = "2026-03-26"; // 30 day cycle
+// ✅ LEADERBOARD TIMING (31-DAY CYCLE)
+// Leaderboard: Today 2pm EST → 31 days from now 2pm EST (31 days, no daily resets)
+function getDefaultDates() {
+  const today = new Date();
+  const start = new Date(today);
+  start.setUTCHours(0, 0, 0, 0);
+  
+  const end = new Date(today);
+  end.setUTCDate(end.getUTCDate() + 31);
+  end.setUTCHours(0, 0, 0, 0);
+  
+  return {
+    DEFAULT_START: toISODateUTC(start),
+    DEFAULT_END: toISODateUTC(end),
+  };
+}
+
+let DEFAULT_START = "";
+let DEFAULT_END = "";
+
+function updateDefaultDates() {
+  const dates = getDefaultDates();
+  DEFAULT_START = dates.DEFAULT_START;
+  DEFAULT_END = dates.DEFAULT_END;
+}
 
 // ===============================
 // ⚡ SPEED / SAFETY KNOBS
@@ -207,6 +226,9 @@ async function computeLeaderboard({ start_at, end_at, token }) {
 }
 
 export async function GET(req) {
+  // Update dynamic dates at request time
+  updateDefaultDates();
+  
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
