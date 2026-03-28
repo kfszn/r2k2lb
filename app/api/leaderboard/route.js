@@ -16,11 +16,48 @@ const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY
 const HARDCODED_ACEBET_TOKEN = process.env.ACEBET_API_TOKEN || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
 
 // ===============================
-// ✅ LEADERBOARD TIMING (30-DAY CYCLE)
+// ⚡ UTILITY FUNCTIONS (MUST BE FIRST)
 // ===============================
-// Leaderboard: 2/24/2026 2pm EST → 3/26/2026 2pm EST (30 days, no daily resets)
-const DEFAULT_START = "2026-02-24";
-const DEFAULT_END = "2026-03-26"; // 30 day cycle
+function toISODateUTC(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function isISODate(s) {
+  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function* dateRangeUTC(startISO, endISO) {
+  const start = new Date(`${startISO}T00:00:00Z`);
+  const end = new Date(`${endISO}T00:00:00Z`);
+  for (let d = start; d <= end; d = new Date(d.getTime() + 86400000)) {
+    yield toISODateUTC(d);
+  }
+}
+
+function daysBetweenInclusive(startISO, endISO) {
+  const s = new Date(`${startISO}T00:00:00Z`).getTime();
+  const e = new Date(`${endISO}T00:00:00Z`).getTime();
+  return Math.floor((e - s) / 86400000) + 1;
+}
+
+function shiftRangeBack(startISO, endISO) {
+  const len = daysBetweenInclusive(startISO, endISO);
+  const s = new Date(`${startISO}T00:00:00Z`);
+  const e = new Date(`${endISO}T00:00:00Z`);
+  s.setUTCDate(s.getUTCDate() - len);
+  e.setUTCDate(e.getUTCDate() - len);
+  return { start_at: toISODateUTC(s), end_at: toISODateUTC(e) };
+}
+
+// ✅ LEADERBOARD TIMING: 3/27/2026 → 4/27/2026 (31 days)
+const DEFAULT_START = "2026-03-27";
+const DEFAULT_END = "2026-04-27";
+
+function updateDefaultDates() {
+  // No-op: dates are hardcoded for this leaderboard cycle
+}
 
 // ===============================
 // ⚡ SPEED / SAFETY KNOBS
@@ -47,37 +84,6 @@ let CACHE = {
   inflight: null,
 };
 
-function toISODateUTC(d) {
-  return d.toISOString().slice(0, 10);
-}
-function isISODate(s) {
-  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
-}
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-function* dateRangeUTC(startISO, endISO) {
-  const start = new Date(`${startISO}T00:00:00Z`);
-  const end = new Date(`${endISO}T00:00:00Z`);
-  for (let d = start; d <= end; d = new Date(d.getTime() + 86400000)) {
-    yield toISODateUTC(d);
-  }
-}
-
-function daysBetweenInclusive(startISO, endISO) {
-  const s = new Date(`${startISO}T00:00:00Z`).getTime();
-  const e = new Date(`${endISO}T00:00:00Z`).getTime();
-  return Math.floor((e - s) / 86400000) + 1;
-}
-
-function shiftRangeBack(startISO, endISO) {
-  const len = daysBetweenInclusive(startISO, endISO);
-  const s = new Date(`${startISO}T00:00:00Z`);
-  const e = new Date(`${endISO}T00:00:00Z`);
-  s.setUTCDate(s.getUTCDate() - len);
-  e.setUTCDate(e.getUTCDate() - len);
-  return { start_at: toISODateUTC(s), end_at: toISODateUTC(e) };
-}
-
 async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
   try {
@@ -101,7 +107,20 @@ async function fetchDayAcebet(dayISO, token) {
       console.log(`[v0] fetchDayAcebet ${dayISO}: json parse error:`, err);
       return null;
     });
-    const result = Array.isArray(j) ? j : [];
+    console.log(`[v0] fetchDayAcebet ${dayISO}: raw response:`, JSON.stringify(j).slice(0, 500));
+    
+    // Handle different response structures
+    let result = [];
+    if (Array.isArray(j)) {
+      result = j;
+    } else if (j && typeof j === 'object' && Array.isArray(j.data)) {
+      result = j.data;
+    } else if (j && typeof j === 'object' && Array.isArray(j.records)) {
+      result = j.records;
+    } else if (j && typeof j === 'object' && Array.isArray(j.results)) {
+      result = j.results;
+    }
+    
     console.log(`[v0] fetchDayAcebet ${dayISO}: returning ${result.length} rows`);
     return result;
   } catch (err) {
@@ -207,6 +226,9 @@ async function computeLeaderboard({ start_at, end_at, token }) {
 }
 
 export async function GET(req) {
+  // Update dynamic dates at request time
+  updateDefaultDates();
+  
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
