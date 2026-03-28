@@ -26,7 +26,7 @@ interface LeaderboardData {
 }
 
 // Prize pool: $10,000 total - proper descending order 1-10
-const REWARDS = [4000, 1650, 1050, 950, 700, 600, 500, 300, 150, 100]
+const REWARDS = [4000, 2000, 1250, 1000, 650, 450, 300, 200, 100, 50]
 
 export default function AcebetLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
@@ -67,12 +67,12 @@ export default function AcebetLeaderboard() {
   useEffect(() => {
     if (!leaderboard) return
 
-    // Hardcoded cycle: Mar 27 - Apr 27, 2026
-    setDateRange(`Mar 27 - Apr 27, 2026 • 2pm EST End`)
+    // Hardcoded cycle: Mar 28 - Apr 27, 2026
+    setDateRange(`Mar 28 - Apr 27, 2026 • 11am EST End`)
 
     const interval = setInterval(() => {
-      // Countdown ends Apr 27, 2026 at 2pm EST (7pm UTC)
-      const endTime = new Date('2026-04-27T19:00:00Z').getTime()
+      // Countdown ends Apr 27, 2026 at 11am EST (4pm UTC)
+      const endTime = new Date('2026-04-27T16:00:00Z').getTime()
       const diff = endTime - Date.now()
 
       if (diff <= 0) {
@@ -151,7 +151,7 @@ export default function AcebetLeaderboard() {
             </h1>
             <div className="flex justify-center">
               <a
-                href="https://acebet.com"
+                href="https://acebet.co/affiliates/creator/r2k2?leaderboardId=306"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors font-semibold"
@@ -173,15 +173,15 @@ export default function AcebetLeaderboard() {
             
             <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
               <span className="px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">1st — $4,000</span>
-              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $1,650</span>
-              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $1,050</span>
-              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $950</span>
-              <span className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400">5th — $700</span>
-              <span className="px-3 py-1 rounded-full bg-blue-400/20 border border-blue-400/40 text-blue-300">6th — $600</span>
-              <span className="px-3 py-1 rounded-full bg-purple-400/20 border border-purple-400/40 text-purple-300">7th — $500</span>
-              <span className="px-3 py-1 rounded-full bg-pink-400/20 border border-pink-400/40 text-pink-300">8th — $300</span>
-              <span className="px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300">9th — $150</span>
-              <span className="px-3 py-1 rounded-full bg-lime-400/20 border border-lime-400/40 text-lime-300">10th — $100</span>
+              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $2,000</span>
+              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $1,250</span>
+              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $1,000</span>
+              <span className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400">5th — $650</span>
+              <span className="px-3 py-1 rounded-full bg-blue-400/20 border border-blue-400/40 text-blue-300">6th — $450</span>
+              <span className="px-3 py-1 rounded-full bg-purple-400/20 border border-purple-400/40 text-purple-300">7th — $300</span>
+              <span className="px-3 py-1 rounded-full bg-pink-400/20 border border-pink-400/40 text-pink-300">8th — $200</span>
+              <span className="px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300">9th — $100</span>
+              <span className="px-3 py-1 rounded-full bg-lime-400/20 border border-lime-400/40 text-lime-300">10th — $50</span>
             </div>
           </div>
         </div>
