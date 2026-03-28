@@ -166,6 +166,11 @@ export default function AcebetLeaderboard() {
                 View on Acebet
               </a>
             </div>
+            <div className="mt-4 p-4 rounded-lg bg-muted/40 border border-border">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Raw Wager Statistics:</strong> These are raw wager stats. Please use these to view your wager amounts for reward purposes. Refer to the link above for the point values and official placement.
+              </p>
+            </div>
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
               <br />
