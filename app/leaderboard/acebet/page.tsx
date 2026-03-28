@@ -214,7 +214,7 @@ export default function AcebetLeaderboard() {
             
             <GoalTracker
               current={totalWagered}
-              goal={1800000}
+              goal={180000000}
               formatMoney={formatMoney}
               label="Wager Goal"
             />
