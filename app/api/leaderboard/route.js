@@ -15,6 +15,42 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
 const HARDCODED_ACEBET_TOKEN = process.env.ACEBET_API_TOKEN || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6MzU3Mjc3LCJpYXQiOjE3NjY5NTc5MTEsImV4cCI6MTkyNDc0NTkxMX0.s8OUGHAUUSUmpsZJy5NlPjMJvnVqaYixB1J94PZGB7A";
 
+// ===============================
+// ⚡ UTILITY FUNCTIONS (MUST BE FIRST)
+// ===============================
+function toISODateUTC(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function isISODate(s) {
+  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function* dateRangeUTC(startISO, endISO) {
+  const start = new Date(`${startISO}T00:00:00Z`);
+  const end = new Date(`${endISO}T00:00:00Z`);
+  for (let d = start; d <= end; d = new Date(d.getTime() + 86400000)) {
+    yield toISODateUTC(d);
+  }
+}
+
+function daysBetweenInclusive(startISO, endISO) {
+  const s = new Date(`${startISO}T00:00:00Z`).getTime();
+  const e = new Date(`${endISO}T00:00:00Z`).getTime();
+  return Math.floor((e - s) / 86400000) + 1;
+}
+
+function shiftRangeBack(startISO, endISO) {
+  const len = daysBetweenInclusive(startISO, endISO);
+  const s = new Date(`${startISO}T00:00:00Z`);
+  const e = new Date(`${endISO}T00:00:00Z`);
+  s.setUTCDate(s.getUTCDate() - len);
+  e.setUTCDate(e.getUTCDate() - len);
+  return { start_at: toISODateUTC(s), end_at: toISODateUTC(e) };
+}
+
 // ✅ LEADERBOARD TIMING (31-DAY CYCLE)
 // Leaderboard: Today 2pm EST → 31 days from now 2pm EST (31 days, no daily resets)
 function getDefaultDates() {
@@ -65,37 +101,6 @@ let CACHE = {
   payload: null,
   inflight: null,
 };
-
-function toISODateUTC(d) {
-  return d.toISOString().slice(0, 10);
-}
-function isISODate(s) {
-  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
-}
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-function* dateRangeUTC(startISO, endISO) {
-  const start = new Date(`${startISO}T00:00:00Z`);
-  const end = new Date(`${endISO}T00:00:00Z`);
-  for (let d = start; d <= end; d = new Date(d.getTime() + 86400000)) {
-    yield toISODateUTC(d);
-  }
-}
-
-function daysBetweenInclusive(startISO, endISO) {
-  const s = new Date(`${startISO}T00:00:00Z`).getTime();
-  const e = new Date(`${endISO}T00:00:00Z`).getTime();
-  return Math.floor((e - s) / 86400000) + 1;
-}
-
-function shiftRangeBack(startISO, endISO) {
-  const len = daysBetweenInclusive(startISO, endISO);
-  const s = new Date(`${startISO}T00:00:00Z`);
-  const e = new Date(`${endISO}T00:00:00Z`);
-  s.setUTCDate(s.getUTCDate() - len);
-  e.setUTCDate(e.getUTCDate() - len);
-  return { start_at: toISODateUTC(s), end_at: toISODateUTC(e) };
-}
 
 async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
