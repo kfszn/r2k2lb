@@ -43,14 +43,17 @@ export default function AcebetLeaderboard() {
       const url = previous ? '/api/leaderboard?prev=1' : '/api/leaderboard'
       const res = await fetch(url)
       const data = await res.json()
+      console.log("[v0] Acebet leaderboard API response:", data)
       
       if (data.ok) {
         setLeaderboard(data)
         setShowPrevious(previous)
       } else {
+        console.log("[v0] API error:", data.error)
         setError(data.error || 'Failed to load leaderboard')
       }
     } catch (e) {
+      console.log("[v0] Fetch error:", e)
       setError('Failed to fetch leaderboard')
     } finally {
       setLoading(false)
