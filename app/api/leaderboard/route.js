@@ -52,15 +52,16 @@ function shiftRangeBack(startISO, endISO) {
 }
 
 // ✅ LEADERBOARD TIMING (31-DAY CYCLE)
-// Leaderboard: Today 2pm EST → 31 days from now 2pm EST (31 days, no daily resets)
+// Leaderboard: 31 days ago → today (pulls historical data that exists)
 function getDefaultDates() {
   const today = new Date();
-  const start = new Date(today);
-  start.setUTCHours(0, 0, 0, 0);
   
   const end = new Date(today);
-  end.setUTCDate(end.getUTCDate() + 31);
   end.setUTCHours(0, 0, 0, 0);
+  
+  const start = new Date(today);
+  start.setUTCDate(start.getUTCDate() - 31);
+  start.setUTCHours(0, 0, 0, 0);
   
   return {
     DEFAULT_START: toISODateUTC(start),

@@ -67,22 +67,22 @@ export default function AcebetLeaderboard() {
   useEffect(() => {
     if (!leaderboard) return
 
-    // Calculate date range for display
+    // Calculate date range for display: 31 days ago → today
     const today = new Date()
-    const endDate = new Date(today.getTime() + 31 * 24 * 60 * 60 * 1000)
+    const startDate = new Date(today.getTime() - 31 * 24 * 60 * 60 * 1000)
     
+    const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     const todayStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    const endDateStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    setDateRange(`${todayStr} - ${endDateStr} • 2pm EST End`)
+    setDateRange(`${startStr} - ${todayStr} • 2pm EST End`)
 
     const interval = setInterval(() => {
-      // Set end date to 31 days from today at 2pm EST (7pm UTC)
-      const today = new Date()
-      const endDate = new Date(today.getTime() + 31 * 24 * 60 * 60 * 1000)
+      // Countdown ends today at 2pm EST (7pm UTC)
+      const nowDate = new Date()
+      const endDate = new Date()
       endDate.setUTCHours(19, 0, 0, 0) // 2pm EST = 7pm UTC
+      if (endDate < nowDate) endDate.setUTCDate(endDate.getUTCDate() + 1) // push to tomorrow if passed
       const endTime = endDate.getTime()
-      const now = Date.now()
-      const diff = endTime - now
+      const diff = endTime - Date.now()
 
       if (diff <= 0) {
         setTimeRemaining('Ended')
