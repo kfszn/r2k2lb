@@ -63,6 +63,14 @@ export default function AcebetLeaderboard() {
   useEffect(() => {
     if (!leaderboard) return
 
+    // Calculate date range for display
+    const today = new Date()
+    const endDate = new Date(today.getTime() + 31 * 24 * 60 * 60 * 1000)
+    
+    const todayStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const endDateStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    setDateRange(`${todayStr} - ${endDateStr} • 2pm EST End`)
+
     const interval = setInterval(() => {
       // Set end date to 31 days from today at 2pm EST (7pm UTC)
       const today = new Date()
@@ -160,7 +168,7 @@ export default function AcebetLeaderboard() {
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
               <br />
-              <em className="text-sm">Monthly Leaderboard • 2pm EST End</em>
+              <em className="text-sm">{dateRange}</em>
             </p>
             
             <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
