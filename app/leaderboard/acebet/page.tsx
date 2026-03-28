@@ -34,6 +34,7 @@ export default function AcebetLeaderboard() {
   const [error, setError] = useState<string | null>(null)
   const [showPrevious, setShowPrevious] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('Loading...')
+  const [dateRange, setDateRange] = useState<string>('Loading...')
 
   const loadLeaderboard = async (previous: boolean) => {
     setLoading(true)
