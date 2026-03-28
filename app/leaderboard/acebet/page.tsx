@@ -146,6 +146,17 @@ export default function AcebetLeaderboard() {
             <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
               Acebet On Site <span className="text-primary">$10,000</span> Leaderboard
             </h1>
+            <div className="flex justify-center">
+              <a
+                href="https://acebet.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors font-semibold"
+              >
+                <Trophy className="h-4 w-4" />
+                View on Acebet
+              </a>
+            </div>
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
               <br />
