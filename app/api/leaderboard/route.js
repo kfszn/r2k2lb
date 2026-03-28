@@ -1,10 +1,11 @@
 // api/leaderboard.js — Vercel Serverless Function (Acebet) + FAST CACHE
-// Builds leaderboard totals by day: total = (max - min) per user across date range.
+// Builds leaderboard using cumulative totals from the Acebet detailed-summary API.
 // Supports:
 //   - ?start_at=YYYY-MM-DD&end_at=YYYY-MM-DD
 //   - ?prev=1  (previous window same length)
 //   - ?fresh=1 (force recompute; bypass cache)
 // Adds CORS and returns JSON sorted by wagered desc.
+// Cycle: 2026-03-28 → 2026-04-27 | Prize pool: $10,000
 
 // ===============================
 // 🔥 PROXY + FETCH SETUP FOR CLOUDFLARE BYPASS
@@ -51,8 +52,8 @@ function shiftRangeBack(startISO, endISO) {
   return { start_at: toISODateUTC(s), end_at: toISODateUTC(e) };
 }
 
-// ✅ LEADERBOARD TIMING: 3/27/2026 → 4/27/2026 (31 days)
-const DEFAULT_START = "2026-03-27";
+// ✅ LEADERBOARD TIMING: 3/28/2026 → 4/27/2026 (30 days, starts 11am EST)
+const DEFAULT_START = "2026-03-28";
 const DEFAULT_END = "2026-04-27";
 
 function updateDefaultDates() {
@@ -134,92 +135,38 @@ function makeCacheKey({ start_at, end_at, prev }) {
 }
 
 async function computeLeaderboard({ start_at, end_at, token }) {
-  const totalDays = daysBetweenInclusive(start_at, end_at);
-  console.log(`[v0] computeLeaderboard: ${start_at} to ${end_at} (${totalDays} days)`);
+  // The Acebet API /affiliates/detailed-summary/v2/:date returns cumulative totals
+  // from that date onwards. Calling it with start_at gives us the leaderboard window totals.
+  console.log(`[v0] computeLeaderboard: fetching from start_at=${start_at}`);
 
-  const users = new Map();
+  const rows = await fetchDayAcebet(start_at, token);
+  console.log(`[v0] computeLeaderboard: got ${rows.length} rows from API`);
 
-  for (const day of dateRangeUTC(start_at, end_at)) {
-    const rows = await fetchDayAcebet(day, token);
-    console.log(`[v0] computeLeaderboard day ${day}: got ${rows.length} rows`);
-
-    for (const r of rows) {
-      const userId = r?.userId;
-      if (userId == null) continue;
-
-      const wagered = Number(r?.wagered ?? 0);
-      const deposited = Number(r?.deposited ?? 0);
-      const earned = Number(r?.earned ?? 0);
-      const xp = Number(r?.xp ?? 0);
-
-      const u = users.get(userId) || {
-        userId,
-        role: r?.role ?? null,
-        name: r?.name ?? null,
-        avatar: r?.avatar ?? null,
-        badge: r?.badge ?? null,
-        isPrivate: Boolean(r?.isPrivate),
-        premiumUntil: r?.premiumUntil ?? null,
-        active: Boolean(r?.active),
-
-        firstSeen: day,
-        lastSeen: day,
-        min: { wagered, deposited, earned, xp },
-        max: { wagered, deposited, earned, xp },
-      };
-
-      u.lastSeen = day;
-
-      u.min.wagered = Math.min(u.min.wagered, wagered);
-      u.min.deposited = Math.min(u.min.deposited, deposited);
-      u.min.earned = Math.min(u.min.earned, earned);
-      u.min.xp = Math.min(u.min.xp, xp);
-
-      u.max.wagered = Math.max(u.max.wagered, wagered);
-      u.max.deposited = Math.max(u.max.deposited, deposited);
-      u.max.earned = Math.max(u.max.earned, earned);
-      u.max.xp = Math.max(u.max.xp, xp);
-
-      // keep latest metadata
-      u.role = r?.role ?? u.role;
-      u.name = r?.name ?? u.name;
-      u.avatar = r?.avatar ?? u.avatar;
-      u.badge = r?.badge ?? u.badge;
-      u.isPrivate = Boolean(r?.isPrivate);
-      u.premiumUntil = r?.premiumUntil ?? u.premiumUntil;
-      u.active = Boolean(r?.active);
-
-      users.set(userId, u);
-    }
-
-    if (DEFAULT_DELAY_MS > 0) await sleep(DEFAULT_DELAY_MS);
-  }
-
-  const data = [...users.values()].map((u) => ({
-    userId: u.userId,
-    name: u.name,
-    avatar: u.avatar,
-    badge: u.badge,
-    role: u.role,
-    active: u.active,
-    isPrivate: u.isPrivate,
-    premiumUntil: u.premiumUntil,
-
-    wagered: (u.max.wagered - u.min.wagered) || 0,
-    deposited: (u.max.deposited - u.min.deposited) || 0,
-    earned: (u.max.earned - u.min.earned) || 0,
-    xp: (u.max.xp - u.min.xp) || 0,
-
-    firstSeen: u.firstSeen,
-    lastSeen: u.lastSeen,
-  }));
+  const data = rows
+    .filter((r) => r?.userId != null)
+    .map((r) => ({
+      userId: r.userId,
+      name: r.name ?? null,
+      avatar: r.avatar ?? null,
+      badge: r.badge ?? null,
+      role: r.role ?? null,
+      active: Boolean(r.active),
+      isPrivate: Boolean(r.isPrivate),
+      premiumUntil: r.premiumUntil ?? null,
+      wagered: Number(r.wagered ?? 0),
+      deposited: Number(r.deposited ?? 0),
+      earned: Number(r.earned ?? 0),
+      xp: Number(r.xp ?? 0),
+      firstSeen: start_at,
+      lastSeen: start_at,
+    }));
 
   data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
   console.log(`[v0] computeLeaderboard: returning ${data.length} users`);
 
   return {
     ok: true,
-    range: { start_at, end_at, days: totalDays },
+    range: { start_at, end_at },
     count: data.length,
     data,
   };
@@ -259,12 +206,17 @@ export async function GET(req) {
     const qsStart = searchParams.get("start_at");
     const qsEnd = searchParams.get("end_at");
 
+    const todayISO = toISODateUTC(new Date());
+
     let start_at = isISODate(qsStart) ? qsStart : DEFAULT_START;
 
+    // Always cap end_at to today — future dates return no data from Acebet API
     let end_at;
-    if (isISODate(qsEnd)) end_at = qsEnd;
-    else if (isISODate(DEFAULT_END) && DEFAULT_END !== "") end_at = DEFAULT_END;
-    else end_at = toISODateUTC(new Date());
+    if (isISODate(qsEnd)) end_at = qsEnd < todayISO ? qsEnd : todayISO;
+    else if (isISODate(DEFAULT_END) && DEFAULT_END !== "") end_at = DEFAULT_END < todayISO ? DEFAULT_END : todayISO;
+    else end_at = todayISO;
+
+    console.log(`[v0] leaderboard GET: start=${start_at} end=${end_at} today=${todayISO}`);
 
     if (!isISODate(start_at) || !isISODate(end_at)) {
       return Response.json(
