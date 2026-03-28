@@ -51,31 +51,12 @@ function shiftRangeBack(startISO, endISO) {
   return { start_at: toISODateUTC(s), end_at: toISODateUTC(e) };
 }
 
-// ✅ LEADERBOARD TIMING (31-DAY CYCLE)
-// Leaderboard: 31 days ago → today (pulls historical data that exists)
-function getDefaultDates() {
-  const today = new Date();
-  
-  const end = new Date(today);
-  end.setUTCHours(0, 0, 0, 0);
-  
-  const start = new Date(today);
-  start.setUTCDate(start.getUTCDate() - 31);
-  start.setUTCHours(0, 0, 0, 0);
-  
-  return {
-    DEFAULT_START: toISODateUTC(start),
-    DEFAULT_END: toISODateUTC(end),
-  };
-}
-
-let DEFAULT_START = "";
-let DEFAULT_END = "";
+// ✅ LEADERBOARD TIMING: 3/27/2026 → 4/27/2026 (31 days)
+const DEFAULT_START = "2026-03-27";
+const DEFAULT_END = "2026-04-27";
 
 function updateDefaultDates() {
-  const dates = getDefaultDates();
-  DEFAULT_START = dates.DEFAULT_START;
-  DEFAULT_END = dates.DEFAULT_END;
+  // No-op: dates are hardcoded for this leaderboard cycle
 }
 
 // ===============================

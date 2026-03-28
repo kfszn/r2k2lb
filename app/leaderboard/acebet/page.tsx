@@ -67,21 +67,12 @@ export default function AcebetLeaderboard() {
   useEffect(() => {
     if (!leaderboard) return
 
-    // Calculate date range for display: 31 days ago → today
-    const today = new Date()
-    const startDate = new Date(today.getTime() - 31 * 24 * 60 * 60 * 1000)
-    
-    const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    const todayStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    setDateRange(`${startStr} - ${todayStr} • 2pm EST End`)
+    // Hardcoded cycle: Mar 27 - Apr 27, 2026
+    setDateRange(`Mar 27 - Apr 27, 2026 • 2pm EST End`)
 
     const interval = setInterval(() => {
-      // Countdown ends today at 2pm EST (7pm UTC)
-      const nowDate = new Date()
-      const endDate = new Date()
-      endDate.setUTCHours(19, 0, 0, 0) // 2pm EST = 7pm UTC
-      if (endDate < nowDate) endDate.setUTCDate(endDate.getUTCDate() + 1) // push to tomorrow if passed
-      const endTime = endDate.getTime()
+      // Countdown ends Apr 27, 2026 at 2pm EST (7pm UTC)
+      const endTime = new Date('2026-04-27T19:00:00Z').getTime()
       const diff = endTime - Date.now()
 
       if (diff <= 0) {
