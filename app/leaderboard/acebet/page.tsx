@@ -144,7 +144,7 @@ export default function AcebetLeaderboard() {
               <span className="text-3xl font-bold text-primary">$10,000</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
-              Acebet On Site <span className="text-primary">$10,000</span> Leaderboard
+              Acebet <span className="text-primary">$10,000</span> Monthly Leaderboard
             </h1>
             <div className="flex justify-center">
               <a
@@ -160,7 +160,7 @@ export default function AcebetLeaderboard() {
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
               <br />
-              <em className="text-sm">31 Days Starting Today • 2pm EST End</em>
+              <em className="text-sm">Monthly Leaderboard • 2pm EST End</em>
             </p>
             
             <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
