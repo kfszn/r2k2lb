@@ -56,7 +56,6 @@ export default function HomePage() {
               signupUrl="https://acebet.com/welcome/r/r2k2"
               rewards={[
                 "$10,000 Monthly Leaderboard Total",
-                "$5,000 Bi-Weekly Leaderboards",
                 "First Time Deposit Bonus",
                 "Monthly Wager Bonuses",
                 "VIP Rewards",
