@@ -125,7 +125,20 @@ async function fetchDayAcebet(dayISO, token) {
       console.log(`[v0] fetchDayAcebet ${dayISO}: json parse error:`, err);
       return null;
     });
-    const result = Array.isArray(j) ? j : [];
+    console.log(`[v0] fetchDayAcebet ${dayISO}: raw response:`, JSON.stringify(j).slice(0, 500));
+    
+    // Handle different response structures
+    let result = [];
+    if (Array.isArray(j)) {
+      result = j;
+    } else if (j && typeof j === 'object' && Array.isArray(j.data)) {
+      result = j.data;
+    } else if (j && typeof j === 'object' && Array.isArray(j.records)) {
+      result = j.records;
+    } else if (j && typeof j === 'object' && Array.isArray(j.results)) {
+      result = j.results;
+    }
+    
     console.log(`[v0] fetchDayAcebet ${dayISO}: returning ${result.length} rows`);
     return result;
   } catch (err) {
