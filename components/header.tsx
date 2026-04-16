@@ -54,7 +54,7 @@ function Header() {
   }
 
   return (
-    <header className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-50">
+    <header className="border-b border-border/30 bg-card/70 backdrop-blur-xl sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 md:gap-3">
           <Image 

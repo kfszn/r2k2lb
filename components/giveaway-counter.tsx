@@ -12,9 +12,8 @@ export function GiveawayCounter() {
     try {
       const value = await fetchGiveawayTotal();
       setTotal(value);
-      console.log('[v0] Updated giveaway total:', value);
-    } catch (error) {
-      console.error('[v0] Error updating giveaway total:', error);
+    } catch {
+      // Silent fail - keep showing last known value
     } finally {
       setLoading(false);
     }
@@ -30,18 +29,21 @@ export function GiveawayCounter() {
   }, []);
 
   return (
-    <div className="w-full bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border-b border-primary/20 backdrop-blur-sm">
-      <div className="container mx-auto px-4 py-2">
+    <div className="w-full bg-gradient-to-r from-primary/15 via-primary/5 to-primary/15 border-b border-primary/15 backdrop-blur-sm">
+      <div className="container mx-auto px-4 py-1.5">
         <div className="flex items-center justify-center gap-2">
-          <Gift className="h-3.5 w-3.5 text-primary animate-pulse flex-shrink-0" />
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <Gift className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
             Total Given Away:
           </span>
-          <span className="text-xs font-bold text-primary">
-            {loading ? 'Loading...' : total}
+          <span className="text-[11px] font-bold text-primary">
+            {loading ? '...' : total}
           </span>
           {!loading && (
-            <span className="text-xs text-primary/60 ml-1">Live</span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-green-400/80 ml-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+              Live
+            </span>
           )}
         </div>
       </div>

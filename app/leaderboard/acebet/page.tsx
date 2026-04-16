@@ -43,17 +43,13 @@ export default function AcebetLeaderboard() {
       const url = previous ? '/api/leaderboard?prev=1' : '/api/leaderboard'
       const res = await fetch(url)
       const data = await res.json()
-      console.log("[v0] Acebet leaderboard API response:", data)
-      
       if (data.ok) {
         setLeaderboard(data)
         setShowPrevious(previous)
       } else {
-        console.log("[v0] API error:", data.error)
         setError(data.error || 'Failed to load leaderboard')
       }
-    } catch (e) {
-      console.log("[v0] Fetch error:", e)
+    } catch {
       setError('Failed to fetch leaderboard')
     } finally {
       setLoading(false)
@@ -407,7 +403,7 @@ export default function AcebetLeaderboard() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
             <div>
               <h3 className="font-semibold mb-4">Company</h3>
-              <p className="text-sm text-muted-foreground">© 2025 R2K2<br />All Rights Reserved</p>
+              <p className="text-sm text-muted-foreground">© 2026 R2K2<br />All Rights Reserved</p>
             </div>
             <div>
               <h3 className="font-semibold mb-4">Socials</h3>
