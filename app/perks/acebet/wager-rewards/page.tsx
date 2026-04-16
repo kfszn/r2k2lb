@@ -23,11 +23,10 @@ export default function WagerRewardsPage() {
               <h1 className="text-4xl font-bold">Wager Rewards</h1>
             </div>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Earn cash rewards based on your monthly wager activity. Rewards reset monthly in alignment with our leaderboard.
+              Earn cash rewards based on your wager milestones on Acebet using code R2K2. Rewards reset monthly.
             </p>
           </div>
 
-          {/* Rewards Structure - Tiered Display */}
           <div className="space-y-6">
             {/* Tier 1 - $10 per 10,000 */}
             <div className="relative">

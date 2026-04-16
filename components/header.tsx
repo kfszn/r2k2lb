@@ -109,6 +109,13 @@ function Header() {
                 Wager Rewards
               </Link>
               <Link 
+                href="/perks/acebet/reward-match" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center gap-2"
+              >
+                <span className="text-amber-400 text-xs font-bold">2x</span>
+                Reward Match
+              </Link>
+              <Link 
                 href="/perks/acebet/first-deposit" 
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
@@ -274,6 +281,10 @@ function Header() {
                       <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
                       <Link href="/perks/acebet/wager-rewards" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Wager Rewards
+                      </Link>
+                      <Link href="/perks/acebet/reward-match" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
+                        <span className="text-amber-400 text-xs font-bold">2x</span>
+                        Reward Match
                       </Link>
                       <Link href="/perks/acebet/first-deposit" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         First Time Deposit Bonus
