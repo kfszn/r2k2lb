@@ -73,11 +73,11 @@ export default function GamesPage() {
         </div>
 
         {/* Game cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto mb-12">
           {GAMES.map(game => {
             const Icon = game.icon
             return (
-              <Card key={game.id} className="border-border/40 bg-card/50 hover:border-primary/40 transition-all group">
+              <Card key={game.id} className="border-border/40 bg-card/60 hover:border-primary/30 transition-all duration-300 group hover:shadow-lg hover:shadow-primary/5">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">

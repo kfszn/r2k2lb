@@ -22,9 +22,9 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background to-background"></div>
         <div className="container mx-auto px-4 py-12 md:py-16 relative">
           <div className="max-w-4xl mx-auto text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Exclusive Code: R2K2</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 shadow-sm shadow-primary/5">
+              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <span className="text-sm font-semibold">Exclusive Code: <span className="text-primary">R2K2</span></span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight text-balance">
               Compete on Our <span className="text-primary">Leaderboards</span>
@@ -89,48 +89,48 @@ export default function HomePage() {
             <p className="text-base text-muted-foreground">Exclusive perks for R2K2 code users</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
             {/* 1st Time Deposit Bonus */}
-            <Card className="bg-card/50 backdrop-blur border-primary/20 hover:border-primary/40 transition-all">
+            <Card className="bg-card/60 backdrop-blur-sm border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group">
               <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/15 transition-colors">
                   <Trophy className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">1st Time Deposit Bonus</h3>
-                <p className="text-sm text-muted-foreground">Available on Packdraw and Acebet for new users using code R2K2</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Available on Packdraw and Acebet for new users using code R2K2</p>
               </CardContent>
             </Card>
 
             {/* Wager Rewards */}
-            <Card className="bg-card/50 backdrop-blur border-primary/20 hover:border-primary/40 transition-all">
+            <Card className="bg-card/60 backdrop-blur-sm border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group">
               <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/15 transition-colors">
                   <TrendingUp className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Wager Rewards</h3>
-                <p className="text-sm text-muted-foreground">Earn rewards based on your wager volume on Packdraw and Acebet</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Earn rewards based on your wager volume on Packdraw and Acebet</p>
               </CardContent>
             </Card>
 
             {/* Loss Back */}
-            <Card className="bg-card/50 backdrop-blur border-primary/20 hover:border-primary/40 transition-all">
+            <Card className="bg-card/60 backdrop-blur-sm border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group">
               <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/15 transition-colors">
                   <Sparkles className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Loss Back</h3>
-                <p className="text-sm text-muted-foreground">Get a percentage of your losses back on both Packdraw and Acebet</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Get a percentage of your losses back on both Packdraw and Acebet</p>
               </CardContent>
             </Card>
 
             {/* Weekly Slot Tournaments */}
-            <Card className="bg-card/50 backdrop-blur border-primary/20 hover:border-primary/40 transition-all">
+            <Card className="bg-card/60 backdrop-blur-sm border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group">
               <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/15 transition-colors">
                   <Trophy className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Weekly Slot Tournaments</h3>
-                <p className="text-sm text-muted-foreground">Compete for $100-$50 prizes in weekly tournaments for code users</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Compete for $100-$50 prizes in weekly tournaments for code users</p>
               </CardContent>
             </Card>
           </div>
@@ -207,7 +207,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
-            <p>© 2025 R2K2. All rights reserved.</p>
+            <p>© 2026 R2K2. All rights reserved.</p>
           </div>
         </div>
       </footer>
@@ -217,7 +217,7 @@ export default function HomePage() {
 
 function PlatformCard({ name, logo, href, signupUrl, rewards }: { name: string; logo: string; href: string; signupUrl: string; rewards: string[] }) {
   return (
-    <Card className="h-full hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 bg-card/50 backdrop-blur">
+    <Card className="h-full border-border/50 hover:border-primary/40 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 bg-card/60 backdrop-blur-sm hover:-translate-y-1">
       <Link href={href} className="block group">
         <CardContent className="p-8 flex flex-col items-center gap-6">
           <div className="flex justify-center">
@@ -266,7 +266,7 @@ function SocialCard({ icon, name, handle, href }: { icon: string; name: string; 
       rel="noopener"
       className="flex-1 group"
     >
-      <Card className="hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 border-border/40 bg-card/50 backdrop-blur-sm">
+      <Card className="hover:shadow-xl hover:shadow-primary/15 transition-all duration-300 border-border/40 bg-card/60 backdrop-blur-sm hover:border-primary/30 hover:-translate-y-0.5">
         <CardContent className="p-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-lg bg-secondary/50 p-2 group-hover:scale-105 transition-transform flex items-center justify-center">
             <img src={icon || "/placeholder.svg"} alt={name} className="w-full h-full object-contain" />

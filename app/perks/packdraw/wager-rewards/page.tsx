@@ -12,26 +12,25 @@ export default function WagerRewardsPage() {
       <GiveawayCounter />
       <Header />
       <main className="container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-xl mx-auto">
           {/* Message Section */}
-          <div className="text-center space-y-8">
+          <div className="text-center space-y-6 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-8 md:p-10">
             <div className="space-y-4">
-              <div className="flex items-center justify-center gap-3">
-                <AlertCircle className="h-8 w-8 text-amber-500" />
-                <h1 className="text-4xl font-bold">
-                  Wager Bonuses
-                </h1>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20">
                 <AlertCircle className="h-8 w-8 text-amber-500" />
               </div>
-              <p className="text-xl text-muted-foreground leading-relaxed">
+              <h1 className="text-3xl md:text-4xl font-bold">
+                Wager Bonuses
+              </h1>
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 Wager bonuses are no longer available as I have activated 100% affiliate earnings back to your accounts!
               </p>
             </div>
 
             {/* CTA Section */}
-            <div className="pt-8 flex flex-col gap-4">
+            <div className="pt-4">
               <Link href="/">
-                <Button size="lg" className="w-full">
+                <Button size="lg">
                   Return to Home
                 </Button>
               </Link>
