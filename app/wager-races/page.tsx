@@ -11,7 +11,7 @@ import { format, parseISO } from 'date-fns'
 
 interface Race {
   id: string
-  platform: 'acebet' | 'packdraw'
+  platform: 'acebet'
   period: 'weekly' | 'monthly'
   start_date: string
   end_date: string
@@ -36,17 +36,12 @@ export default function WagerRacesPage() {
   useEffect(() => {
     const fetchRaces = async () => {
       try {
-        console.log('[v0] Fetching wager races from database...')
         const { data, error } = await supabase
           .from('wager_races')
           .select('*')
           .order('start_date', { ascending: false })
 
-        if (error) {
-          console.error('[v0] Error fetching races:', error)
-          throw error
-        }
-        console.log('[v0] Races fetched:', data)
+        if (error) throw error
         setRaces(data || [])
       } catch (error) {
         console.error('Failed to fetch races:', error)

@@ -30,7 +30,7 @@ interface LeaderboardEntry {
 
 type SortField = 'name' | 'wagered' | 'deposited' | 'active' | 'earned'
 type SortDirection = 'asc' | 'desc'
-type Source = 'acebet' | 'packdraw'
+type Source = 'acebet'
 
 export function TotalWagerStats() {
   const [startDate, setStartDate] = useState('')
@@ -105,26 +105,6 @@ export function TotalWagerStats() {
           earned: p.earned || 0,
           active: p.active || false,
         }))
-      } else {
-        // Packdraw API uses an `after` date param (M-D-YYYY) and returns { leaderboard: [...] }
-        // Each entry has: { username, wagerAmount }
-        // The start date is used as the `after` cutoff
-        const [year, month, day] = start.split('-')
-        const afterParam = `${parseInt(month)}-${parseInt(day)}-${year}`
-        const url = `/api/packdraw?after=${afterParam}`
-        const response = await fetch(url)
-        if (!response.ok) throw new Error('Failed to fetch Packdraw data')
-        const data = await response.json()
-        if (!data.leaderboard || !Array.isArray(data.leaderboard)) throw new Error('Invalid response from Packdraw API')
-        leaderboardData = data.leaderboard
-        formatted = leaderboardData.map((p: any) => ({
-          name: p.username || 'Unknown',
-          // wagerAmount is already in dollars for packdraw (not cents)
-          wagered: (p.wagerAmount || 0) * 100,
-          deposited: 0,
-          earned: 0,
-          active: true,
-        }))
       }
 
       const totalWagered = formatted.reduce((sum, p) => sum + p.wagered, 0)
@@ -166,7 +146,7 @@ export function TotalWagerStats() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="acebet">Acebet</SelectItem>
-                    <SelectItem value="packdraw">Packdraw</SelectItem>
+      
                   </SelectContent>
                 </Select>
               </div>
@@ -242,7 +222,7 @@ export function TotalWagerStats() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">{source === 'packdraw' ? 'Total Players' : 'Active Members'}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{'Active Members'}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">{stats.activeMembers.toLocaleString('en-US')}</p>

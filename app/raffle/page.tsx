@@ -36,7 +36,7 @@ interface Winner {
   raffle_type: string;
 }
 
-function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
+function RaffleTab({ platform }: { platform: 'acebet' }) {
   const [config, setConfig] = useState<RaffleConfig | null>(null);
   const [eligible, setEligible] = useState<EligibleUser[]>([]);
   const [winners, setWinners] = useState<Winner[]>([]);
@@ -62,19 +62,8 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
             .map((u: any) => ({ username: u.name || '', wager_amount: (u.wagered || 0) / 100 }))
             .filter((u: EligibleUser) => u.username);
         }
-      } else if (platform === 'packdraw') {
-        const [y, m, d] = cfgData.start_date.split('-');
-        const afterParam = `${parseInt(m)}-${parseInt(d)}-${y}`;
-        const pdRes = await fetch(`/api/packdraw?after=${afterParam}`);
-        if (pdRes.ok) {
-          const pdData = await pdRes.json();
-          const list = pdData.leaderboard || pdData.data || (Array.isArray(pdData) ? pdData : []);
-          users = list
-            .filter((u: any) => (u.wagerAmount || u.wagered || 0) >= cfgData.min_wager)
-            .map((u: any) => ({
-              username: u.username || u.name || '',
-              wager_amount: u.wagerAmount || u.wagered || 0,
-            }))
+      } else if (false) {
+        // reserved
             .filter((u: EligibleUser) => u.username);
         }
       }
@@ -145,7 +134,7 @@ function RaffleTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-5">
               <Trophy className="w-4 h-4 text-primary" />
               <span className="text-xs uppercase tracking-widest text-primary font-semibold">
-                {platform === 'acebet' ? 'Acebet' : 'Packdraw'} Raffle
+                Acebet Raffle
               </span>
             </div>
             <p className="text-sm text-muted-foreground mb-2">Total Prize Pool</p>
@@ -340,31 +329,7 @@ export default function RafflePage() {
           </p>
         </div>
 
-        {/* Platform Tabs */}
-        <Tabs defaultValue="acebet" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8 h-12 bg-secondary/50 border border-border/40 rounded-xl p-1">
-            <TabsTrigger
-              value="acebet"
-              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
-            >
-              Acebet
-            </TabsTrigger>
-            <TabsTrigger
-              value="packdraw"
-              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
-            >
-              Packdraw
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="acebet">
-            <RaffleTab platform="acebet" />
-          </TabsContent>
-
-          <TabsContent value="packdraw">
-            <RaffleTab platform="packdraw" />
-          </TabsContent>
-        </Tabs>
+        <RaffleTab platform="acebet" />
       </main>
     </div>
   );

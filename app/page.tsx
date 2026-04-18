@@ -30,10 +30,10 @@ export default function HomePage() {
               Compete on Our <span className="text-primary">Leaderboards</span>
             </h1>
             <p className="text-2xl font-bold text-primary mt-2">
-              $12,000 in Monthly Leaderboards
+              $15,000+ in Monthly Rewards Including $10,000 Monthly Leaderboard
             </p>
             <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
-              Plus thousands in additional rewards. Join exclusive competitions across multiple platforms and climb the ranks with code R2K2.
+              Compete on the Acebet leaderboard, earn wager bonuses, loss back, and more with code R2K2.
             </p>
 
           </div>
@@ -48,35 +48,24 @@ export default function HomePage() {
             <p className="text-base text-muted-foreground">Click a logo to view the leaderboard</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <PlatformCard
-              name="Acebet"
-              logo="/assets/rainbet.png"
-              href="/leaderboard/acebet"
-              signupUrl="https://acebet.com/welcome/r/r2k2"
-              rewards={[
-                "$10,000 Monthly Leaderboard Total",
-                "First Time Deposit Bonus",
-                "Monthly Wager Bonuses",
-                "VIP Rewards",
-                "Weekly Slot Tournaments",
-                "Daily Stream Giveaways",
-                "Lossback"
-              ]}
-            />
-            <PlatformCard
-              name="Packdraw"
-              logo="/assets/packdraw.png"
-              href="/leaderboard/packdraw"
-              signupUrl="https://packdraw.com/?ref=R2K2"
-              rewards={[
-                "Monthly Leaderboard",
-                "Rank Up Rewards",
-                "First Time Deposit Bonus",
-                "Lossback",
-                "VIP Rewards"
-              ]}
-            />
+          <div className="flex justify-center max-w-4xl mx-auto">
+            <div className="w-full max-w-sm">
+              <PlatformCard
+                name="Acebet"
+                logo="/assets/rainbet.png"
+                href="/leaderboard/acebet"
+                signupUrl="https://acebet.com/welcome/r/r2k2"
+                rewards={[
+                  "$10,000 Monthly Leaderboard",
+                  "$15,000+ Total Monthly Rewards",
+                  "First Time Deposit Bonus",
+                  "Monthly Wager Bonuses",
+                  "VIP Rewards",
+                  "Weekly Slot Tournaments",
+                  "Lossback"
+                ]}
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -97,7 +86,7 @@ export default function HomePage() {
                   <Trophy className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">1st Time Deposit Bonus</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">Available on Packdraw and Acebet for new users using code R2K2</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Available on Acebet for new users signing up with code R2K2</p>
               </CardContent>
             </Card>
 
@@ -108,7 +97,7 @@ export default function HomePage() {
                   <TrendingUp className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Wager Rewards</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">Earn rewards based on your wager volume on Packdraw and Acebet</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Earn rewards based on your wager volume on Acebet with code R2K2</p>
               </CardContent>
             </Card>
 
@@ -119,7 +108,7 @@ export default function HomePage() {
                   <Sparkles className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Loss Back</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">Get a percentage of your losses back on both Packdraw and Acebet</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Get a percentage of your losses back on Acebet with code R2K2</p>
               </CardContent>
             </Card>
 
