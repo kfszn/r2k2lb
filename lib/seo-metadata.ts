@@ -7,17 +7,16 @@ const tagline = 'Exclusive Rewards & Leaderboards'
 export const defaultMetadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: `${brandName} — $12,000 Monthly Leaderboards`,
+    default: `${brandName} — $15,000+ in Monthly Rewards`,
     template: `%s | ${brandName}`,
   },
   description:
-    '$12,000 in monthly leaderboards plus exclusive rewards. Use code R2K2 on Acebet and Packdraw for bonuses, loss back, tournaments, and more.',
+    '$15,000+ in monthly rewards including a $10,000 monthly leaderboard. Use code R2K2 on Acebet for bonuses, loss back, tournaments, and more.',
   keywords: [
     'R2K2',
     'leaderboards',
     'rewards',
     'Acebet',
-    'Packdraw',
     'wager rewards',
     'tournaments',
     'gambling affiliate',
@@ -29,16 +28,16 @@ export const defaultMetadata: Metadata = {
     locale: 'en_US',
     url: baseUrl,
     siteName: brandName,
-    title: `${brandName} — $12,000 Monthly Leaderboards`,
+    title: `${brandName} — $15,000+ in Monthly Rewards`,
     description:
-      '$12,000 in monthly leaderboards plus exclusive rewards. Use code R2K2 on Acebet and Packdraw.',
+      '$15,000+ in monthly rewards including a $10,000 monthly leaderboard. Use code R2K2 on Acebet.',
   },
   twitter: {
     card: 'summary_large_image',
     site: '@r2ktwo',
     creator: '@r2ktwo',
-    title: `${brandName} — $12,000 Monthly Leaderboards`,
-    description: '$12,000 in monthly leaderboards plus exclusive rewards with code R2K2.',
+    title: `${brandName} — $15,000+ in Monthly Rewards`,
+    description: '$15,000+ in monthly rewards including a $10,000 leaderboard with code R2K2.',
   },
   icons: {
     icon: '/assets/logo.png',
@@ -56,15 +55,15 @@ export const defaultMetadata: Metadata = {
 // Page-specific metadata
 export const pageMetadata = {
   home: {
-    title: 'R2K2 — $12,000 Monthly Leaderboards on Acebet & Packdraw',
+    title: 'R2K2 — $15,000+ in Monthly Rewards on Acebet',
     description:
-      'Compete on R2K2 leaderboards and win from a $12,000 monthly prize pool across Acebet and Packdraw. Use code R2K2 for exclusive bonuses, loss back, tournaments, and rewards.',
+      'Compete on R2K2 leaderboards for a $10,000 monthly prize pool plus $15,000+ in total monthly rewards on Acebet. Use code R2K2 for exclusive bonuses, loss back, and tournaments.',
     keywords: [
       'R2K2',
       'leaderboard',
       'Acebet leaderboard',
-      'Packdraw leaderboard',
-      '$12000 monthly prizes',
+      '$10000 monthly leaderboard',
+      '$15000 monthly rewards',
       'exclusive code R2K2',
       'gambling rewards',
       'wager competition',
@@ -86,20 +85,6 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/leaderboard/acebet`,
   },
-  packdraw: {
-    title: 'Packdraw Leaderboard — Monthly Prizes with Code R2K2',
-    description:
-      'Compete on the R2K2 Packdraw leaderboard and win monthly prizes. 100% affiliate earnings back to your account, loss back, and first deposit bonus. Use code R2K2 on Packdraw.',
-    keywords: [
-      'Packdraw leaderboard',
-      'Packdraw R2K2',
-      'Packdraw code R2K2',
-      'Packdraw affiliate earnings',
-      'Packdraw monthly prizes',
-      'Packdraw loss back',
-    ],
-    canonical: `${baseUrl}/leaderboard/packdraw`,
-  },
   tournament: {
     title: 'Live Slot Bracket Tournaments — R2K2',
     description:
@@ -117,12 +102,11 @@ export const pageMetadata = {
   wagerRaces: {
     title: 'Wager Races — Milestone Rewards on R2K2',
     description:
-      'Compete in R2K2 wager races on Acebet and Packdraw. Hit milestones to unlock exclusive cash rewards. Check active and upcoming races.',
+      'Compete in R2K2 wager races on Acebet. Hit milestones to unlock exclusive cash rewards. Check active and upcoming races.',
     keywords: [
       'wager races',
       'milestone rewards',
       'Acebet wager race',
-      'Packdraw wager race',
       'R2K2 races',
       'wager milestones',
     ],
@@ -208,44 +192,6 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/perks/acebet/wager-rewards`,
   },
-  perksPackdrawFirstDeposit: {
-    title: 'Packdraw First Deposit Bonus — Exclusive with Code R2K2',
-    description:
-      'Claim your first deposit bonus on Packdraw with code R2K2. Welcome reward for new Packdraw players signing up through R2K2.',
-    keywords: [
-      'Packdraw first deposit bonus',
-      'Packdraw welcome bonus',
-      'Packdraw new player',
-      'Packdraw code R2K2',
-      'Packdraw bonus',
-    ],
-    canonical: `${baseUrl}/perks/packdraw/first-time-deposit-bonus`,
-  },
-  perksPackdrawLossBack: {
-    title: 'Packdraw Loss Back — R2K2 Exclusive Cashback',
-    description:
-      'Get daily loss back on Packdraw with R2K2 code. Recover a percentage of losses on case openings. Exclusive R2K2 member perk.',
-    keywords: [
-      'Packdraw loss back',
-      'Packdraw cashback',
-      'Packdraw R2K2 bonus',
-      'case opening cashback',
-      'loss recovery Packdraw',
-    ],
-    canonical: `${baseUrl}/perks/packdraw/loss-back`,
-  },
-  perksPackdrawWagerRewards: {
-    title: 'Packdraw Affiliate Earnings — 100% Back with R2K2',
-    description:
-      'Wager bonuses are no longer available on Packdraw. Instead, 100% affiliate earnings are credited back to your account. Use code R2K2 on Packdraw.',
-    keywords: [
-      'Packdraw affiliate earnings',
-      'Packdraw R2K2',
-      'Packdraw rewards',
-      'affiliate cashback',
-    ],
-    canonical: `${baseUrl}/perks/packdraw/wager-rewards`,
-  },
   account: {
     title: 'My Account — R2K2 Dashboard',
     description:
@@ -282,12 +228,11 @@ export const pageMetadata = {
   wagerBonus: {
     title: 'Wager Bonus Info — R2K2 Rewards Program',
     description:
-      'Understand the R2K2 wager bonus program across Acebet and Packdraw. Learn how wager-based rewards are earned and claimed.',
+      'Understand the R2K2 wager bonus program on Acebet. Learn how wager-based rewards are earned and claimed.',
     keywords: [
       'wager bonus',
       'R2K2 wager rewards',
       'Acebet bonus',
-      'Packdraw bonus',
       'betting rewards program',
     ],
     canonical: `${baseUrl}/wagerbonus`,

@@ -17,12 +17,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
-      url: '/leaderboard/packdraw',
-      changeFrequency: 'daily' as const,
-      priority: 0.9,
-      lastModified: new Date(),
-    },
-    {
       url: '/wager-races',
       changeFrequency: 'weekly' as const,
       priority: 0.8,
@@ -65,43 +59,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
       lastModified: new Date(),
     },
-    // Packdraw Perks
-    {
-      url: '/perks/packdraw/first-time-deposit-bonus',
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: '/perks/packdraw/loss-back',
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: '/perks/packdraw/lucky-draw-rewards',
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: '/perks/packdraw/seasonal-bonus',
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: '/perks/packdraw/wager-rewards',
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: '/perks/packdraw/welcome-bonus',
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-      lastModified: new Date(),
-    },
+
   ]
 
   return routes.map((route) => ({

@@ -15,14 +15,14 @@ interface LeaderboardEntry {
 }
 
 interface DynamicRaceTrackProps {
-  platform?: 'acebet' | 'packdraw'
-  targetWager?: number // Target in dollars
+  platform?: 'acebet'
+  targetWager?: number
   showTop?: number
   autoRefresh?: number
   showPrevious?: boolean
-  startDate?: string // ISO date string for race start (used for Packdraw timeframe)
-  endDate?: string // ISO date string for race end (optional, for display)
-  onPlayersUpdate?: (players: { name: string; wagered: number }[]) => void // Callback to report players to parent
+  startDate?: string
+  endDate?: string
+  onPlayersUpdate?: (players: { name: string; wagered: number }[]) => void
 }
 
 export function DynamicRaceTrack({
@@ -47,85 +47,24 @@ export function DynamicRaceTrack({
   const fetchLeaderboard = async () => {
     setIsRefreshing(true)
     try {
-      let url: string
-      let transformedPlayers: LeaderboardEntry[] = []
+      const url = showPrevious ? '/api/leaderboard?prev=1' : '/api/leaderboard'
+      const res = await fetch(url)
+      const data = await res.json()
 
-      if (platform === 'packdraw') {
-        // Fetch from Packdraw API with race timeframe
-        // Convert ISO date to M-D-YYYY format for Packdraw API
-        let afterDate = '1-1-2026' // Default
-        if (startDate) {
-          const date = new Date(startDate)
-          afterDate = `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`
-        }
-        url = `/api/packdraw?after=${encodeURIComponent(afterDate)}`
-        const res = await fetch(url)
-        
-        if (!res.ok) {
-          // Handle rate limiting gracefully - keep showing existing data
-          if (res.status === 429) {
-            setError('Temporarily paused updates (rate limited)')
-            setIsRefreshing(false)
-            return
-          }
-          throw new Error(`API error: ${res.status}`)
-        }
-        
-        const data = await res.json()
-
-        // Transform Packdraw response format to our interface
-        // Packdraw returns: { leaderboard: [{ username, wagerAmount, image, userId }] }
-        let leaderboardData: any[] = []
-        if (Array.isArray(data)) {
-          leaderboardData = data
-        } else if (data.leaderboard && Array.isArray(data.leaderboard)) {
-          leaderboardData = data.leaderboard
-        } else if (data.data && Array.isArray(data.data)) {
-          leaderboardData = data.data
-        }
-
-        // Transform to our interface - Packdraw wagerAmount is already in dollars
-        transformedPlayers = leaderboardData.map((item: any) => ({
-          userId: item.userId || 0,
-          name: item.username || item.name || 'Unknown',
-          avatar: item.image || item.avatar || '',
-          wagered: (item.wagerAmount || 0) * 100, // Convert dollars to pennies for consistent handling
-          deposited: 0,
-          earned: 0,
-        }))
-
-        const slicedPlayers = transformedPlayers.slice(0, showTop)
+      if (data.ok && Array.isArray(data.data)) {
+        const slicedPlayers = data.data.slice(0, showTop)
         setPlayers(slicedPlayers)
         setLastUpdated(new Date())
         setError(null)
-        
-        // Report players to parent for stats calculation
+
         if (onPlayersUpdate) {
-          onPlayersUpdate(slicedPlayers.map(p => ({ name: p.name, wagered: p.wagered })))
+          onPlayersUpdate(slicedPlayers.map((p: LeaderboardEntry) => ({ name: p.name, wagered: p.wagered })))
         }
       } else {
-        // Fetch from Acebet API (default)
-        url = showPrevious ? '/api/leaderboard?prev=1' : '/api/leaderboard'
-        const res = await fetch(url)
-        const data = await res.json()
-
-        if (data.ok && Array.isArray(data.data)) {
-          const slicedPlayers = data.data.slice(0, showTop)
-          setPlayers(slicedPlayers)
-          setLastUpdated(new Date())
-          setError(null)
-          
-          // Report players to parent for stats calculation
-          if (onPlayersUpdate) {
-            onPlayersUpdate(slicedPlayers.map((p: LeaderboardEntry) => ({ name: p.name, wagered: p.wagered })))
-          }
-        } else {
-          setError(data.error || 'Failed to load leaderboard')
-        }
+        setError(data.error || 'Failed to load leaderboard')
       }
-    } catch (e) {
+    } catch {
       setError('Failed to fetch leaderboard data')
-      console.error('Leaderboard error:', e)
     } finally {
       setLoading(false)
       setIsRefreshing(false)
@@ -137,8 +76,7 @@ export function DynamicRaceTrack({
   }, [showPrevious, showTop, platform, startDate])
 
   useEffect(() => {
-    // Packdraw has strict rate limits - disable auto-refresh to prevent 429 errors
-    if (platform === 'packdraw' || autoRefresh <= 0) return
+    if (autoRefresh <= 0) return
 
     const interval = setInterval(() => {
       fetchLeaderboard()

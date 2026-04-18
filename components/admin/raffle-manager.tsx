@@ -17,7 +17,7 @@ interface RaffleConfig {
   end_date: string;
 }
 
-function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
+function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
   const [config, setConfig] = useState<RaffleConfig | null>(null);
   const [configForm, setConfigForm] = useState({
     min_wager: 50,
@@ -76,18 +76,6 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'packdraw' }) {
           users = (lbData.data || [])
             .filter((u: any) => (u.wagered || 0) / 100 >= config.min_wager)
             .map((u: any) => u.name || '')
-            .filter(Boolean);
-        }
-      } else {
-        const [y, m, d] = config.start_date.split('-');
-        const afterParam = `${parseInt(m)}-${parseInt(d)}-${y}`;
-        const pdRes = await fetch(`/api/packdraw?after=${afterParam}`);
-        if (pdRes.ok) {
-          const pdData = await pdRes.json();
-          const list = pdData.leaderboard || pdData.data || (Array.isArray(pdData) ? pdData : []);
-          users = list
-            .filter((u: any) => (u.wagerAmount || u.wagered || 0) >= config.min_wager)
-            .map((u: any) => u.username || u.name || '')
             .filter(Boolean);
         }
       }
@@ -317,14 +305,12 @@ export function RaffleManager() {
       <Tabs defaultValue="acebet" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="acebet">Acebet</TabsTrigger>
-          <TabsTrigger value="packdraw">Packdraw</TabsTrigger>
+
         </TabsList>
         <TabsContent value="acebet">
           <RaffleAdminTab platform="acebet" />
         </TabsContent>
-        <TabsContent value="packdraw">
-          <RaffleAdminTab platform="packdraw" />
-        </TabsContent>
+
       </Tabs>
     </div>
   );

@@ -14,7 +14,7 @@ import { DynamicRaceTrack } from '@/components/dynamic-race-track'
 
 interface Race {
   id: string
-  platform: 'acebet' | 'packdraw'
+  platform: 'acebet'
   period: 'weekly' | 'monthly'
   start_date: string
   end_date: string
