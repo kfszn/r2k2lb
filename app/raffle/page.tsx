@@ -62,10 +62,6 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
             .map((u: any) => ({ username: u.name || '', wager_amount: (u.wagered || 0) / 100 }))
             .filter((u: EligibleUser) => u.username);
         }
-      } else if (false) {
-        // reserved
-            .filter((u: EligibleUser) => u.username);
-        }
       }
 
       users.sort((a, b) => b.wager_amount - a.wager_amount);
