@@ -24,7 +24,6 @@ import { AllTournamentsManager } from "@/components/admin/all-tournaments-manage
 import { TournamentSelector } from "@/components/admin/tournament-selector";
 import { TournamentDetailView } from "@/components/admin/tournament-detail-view";
 import { StreamGamesManager } from "@/components/admin/stream-games-manager";
-import { WagerRaceManagement } from "@/components/admin/wager-race-management";
 import { TotalWagerStats } from "@/components/admin/total-wager-stats";
 import { RaffleManager } from "@/components/admin/raffle-manager";
 import { ShopManager } from "@/components/admin/shop-manager";
@@ -34,7 +33,7 @@ import { GamesManager } from "@/components/admin/games-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "wager-races" | "raffle" | "shop" | "users" | "games";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -144,18 +143,6 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">Manage stream games and interactive content for viewers</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("wager-races")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Zap className="h-8 w-8 text-primary" />
-                  <CardTitle>Wager Races</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Create and manage wager races with milestone rewards</p>
               </CardContent>
             </Card>
 
@@ -292,27 +279,6 @@ export default function AdminPage() {
           </div>
 
           <StreamGamesManager />
-        </div>
-      </main>
-    );
-  }
-
-  // Wager Races View
-  if (currentView === "wager-races") {
-    return (
-      <main className="min-h-screen bg-background">
-        <GiveawayCounter />
-        <Header />
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Wager Races Management</h1>
-          </div>
-
-          <WagerRaceManagement />
         </div>
       </main>
     );
