@@ -30,19 +30,19 @@ export default function RewardMatchPage() {
         <div className="max-w-4xl mx-auto space-y-12">
 
           {/* Hero */}
-          <div className="relative rounded-2xl overflow-hidden border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-card to-amber-900/10">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent pointer-events-none" />
+          <div className="relative rounded-2xl overflow-hidden border border-purple-500/40 bg-gradient-to-br from-purple-500/10 via-card to-purple-900/10">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-500/20 via-transparent to-transparent pointer-events-none" />
             <div className="absolute top-4 right-4">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 px-3 py-1 text-xs font-bold text-amber-400 uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 border border-purple-500/40 px-3 py-1 text-xs font-bold text-purple-400 uppercase tracking-wider">
                 R2K2 Exclusive
               </span>
             </div>
             <div className="relative p-8 md:p-12 space-y-6">
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-amber-400 uppercase tracking-widest">Acebet — Code R2K2</p>
+                <p className="text-sm font-semibold text-purple-400 uppercase tracking-widest">Acebet — Code R2K2</p>
                 <h1 className="text-4xl md:text-6xl font-black text-foreground leading-tight text-balance">
                   Reward<br />
-                  <span className="text-amber-400">Match.</span>
+                  <span className="text-purple-400">Match.</span>
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
                   Whatever Acebet rewards you — I&apos;ll match it. Every time. Weekly, pre-monthly, and monthly payouts all doubled, personally by me.
@@ -58,12 +58,12 @@ export default function RewardMatchPage() {
                     <p className="text-xl font-black text-foreground">$X</p>
                   </div>
                 </div>
-                <span className="text-3xl font-black text-amber-400">+</span>
-                <div className="flex items-center gap-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3">
-                  <Flame className="h-5 w-5 text-amber-400 flex-shrink-0" />
+                <span className="text-3xl font-black text-purple-400">+</span>
+                <div className="flex items-center gap-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 px-4 py-3">
+                  <Flame className="h-5 w-5 text-purple-400 flex-shrink-0" />
                   <div>
-                    <p className="text-xs text-amber-400/70 leading-none mb-0.5">R2K2 Matches</p>
-                    <p className="text-xl font-black text-amber-400">$X</p>
+                    <p className="text-xs text-purple-400/70 leading-none mb-0.5">R2K2 Matches</p>
+                    <p className="text-xl font-black text-purple-400">$X</p>
                   </div>
                 </div>
                 <span className="text-3xl font-black text-foreground">=</span>
@@ -119,15 +119,15 @@ export default function RewardMatchPage() {
               </Card>
 
               {/* Pre-Monthly */}
-              <Card className="border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-card relative overflow-hidden flex flex-col">
+              <Card className="border-purple-500/30 bg-gradient-to-b from-purple-500/10 to-card relative overflow-hidden flex flex-col">
                 <div className="absolute top-3 right-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 bg-purple-500/10 border border-purple-500/20 rounded-full px-2 py-0.5">
                     Mid-Cycle
                   </span>
                 </div>
                 <CardContent className="pt-6 pb-5 space-y-3 flex-1 flex flex-col">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-500/20">
-                    <CalendarDays className="h-5 w-5 text-amber-400" />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-500/15 border border-purple-500/20">
+                    <CalendarDays className="h-5 w-5 text-purple-400" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold">Pre-Monthly Reward</h3>
@@ -136,10 +136,10 @@ export default function RewardMatchPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 pt-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400 flex-shrink-0" />
-                    <p className="text-xs text-amber-400 font-medium">R2K2 doubles this payout</p>
+                    <span className="h-1.5 w-1.5 rounded-full bg-purple-400 flex-shrink-0" />
+                    <p className="text-xs text-purple-400 font-medium">R2K2 doubles this payout</p>
                   </div>
-                  <Button asChild size="sm" variant="outline" className="w-full mt-2 border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/50">
+                  <Button asChild size="sm" variant="outline" className="w-full mt-2 border-purple-500/30 hover:bg-purple-500/10 hover:border-purple-500/50">
                     <a href="https://discord.gg/RsjSPzGKTR" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
                       <MessageCircle className="h-4 w-4" />
                       Claim Via Discord
@@ -184,7 +184,7 @@ export default function RewardMatchPage() {
           <Card className="border-border/50 bg-card/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
-                <Flame className="h-5 w-5 text-amber-400" />
+                <Flame className="h-5 w-5 text-purple-400" />
                 How to Claim Your Match
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -237,12 +237,12 @@ export default function RewardMatchPage() {
                 </div>
 
                 {/* Step 3 */}
-                <div className="flex-1 flex md:flex-col gap-4 md:gap-3 items-start md:items-center md:text-center p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/15 border border-amber-500/20 text-xl font-black text-amber-400 flex-shrink-0">
+                <div className="flex-1 flex md:flex-col gap-4 md:gap-3 items-start md:items-center md:text-center p-4 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/15 border border-purple-500/20 text-xl font-black text-purple-400 flex-shrink-0">
                     3
                   </div>
                   <div className="space-y-1">
-                    <p className="font-bold text-amber-400">R2K2 Doubles It</p>
+                    <p className="font-bold text-purple-400">R2K2 Doubles It</p>
                     <p className="text-sm text-muted-foreground">
                       Once verified, R2K2 pays you the exact same amount Acebet rewarded you. Doubled. Done.
                     </p>
