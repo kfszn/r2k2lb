@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
-import { Trophy, TrendingUp, Zap, Crown, AlertCircle } from 'lucide-react'
+import { Trophy, TrendingUp, AlertCircle } from 'lucide-react'
 
 export const metadata: Metadata = generatePageMetadata('perksAcebetWagerRewards')
 
@@ -27,128 +27,67 @@ export default function WagerRewardsPage() {
             </p>
           </div>
 
-          <div className="space-y-6">
-            {/* Tier 1 - $10 per 10,000 */}
-            <div className="relative">
-              <Card className="bg-gradient-to-r from-blue-500/10 via-card to-blue-500/5 border border-blue-500/30 overflow-hidden">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full -mr-24 -mt-24 blur-3xl" />
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/20 text-blue-500">
-                        <Zap className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl">Tier 1 Rewards</CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">Get started earning</p>
-                      </div>
+          {/* Single reward box */}
+          <div className="relative">
+            <Card className="bg-gradient-to-r from-purple-500/10 via-card to-purple-500/5 border border-purple-500/30 overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/5 rounded-full -mr-24 -mt-24 blur-3xl" />
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/20 text-purple-500">
+                      <Trophy className="h-6 w-6" />
                     </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-bold text-blue-500">$10</div>
-                      <p className="text-xs text-muted-foreground">per milestone</p>
+                    <div>
+                      <CardTitle className="text-2xl">Wager Rewards</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">Claimable every 25,000 points minimum</p>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
-                      <p className="text-sm font-medium text-muted-foreground">Wager Required</p>
-                      <p className="text-2xl font-bold">$10,000</p>
-                    </div>
-                    <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
-                      <p className="text-sm font-medium text-muted-foreground">Reward</p>
-                      <p className="text-2xl font-bold text-blue-500">$10</p>
-                    </div>
-                    <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
-                      <p className="text-sm font-medium text-muted-foreground">Examples</p>
-                      <div className="space-y-1 text-sm font-medium">
-                        <p>$20k wagered → $20</p>
-                        <p>$50k wagered → $50</p>
-                      </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-purple-500">$1</div>
+                    <p className="text-xs text-muted-foreground">per 1,000 wagered</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
+                    <p className="text-sm font-medium text-muted-foreground">Minimum Claim</p>
+                    <p className="text-2xl font-bold">$25</p>
+                    <p className="text-xs text-muted-foreground">at 25,000 points</p>
+                  </div>
+                  <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
+                    <p className="text-sm font-medium text-muted-foreground">Rate</p>
+                    <p className="text-2xl font-bold text-purple-500">$1 / 1k</p>
+                    <p className="text-xs text-muted-foreground">wagered</p>
+                  </div>
+                  <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
+                    <p className="text-sm font-medium text-muted-foreground">Examples</p>
+                    <div className="space-y-1 text-sm font-medium">
+                      <p>$50k wagered → $50</p>
+                      <p>$100k wagered → $100</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                    <span className="text-blue-500 mt-0.5">✓</span>
-                    <p className="text-sm text-muted-foreground">Automatically credited when you reach each $10,000 wager milestone</p>
-                  </div>
-                  <div className="pt-4 space-y-3 border-t border-border/30">
-                    <a href="https://discord.gg/RsjSPzGKTR" target="_blank" rel="noopener noreferrer">
-                      <Button className="w-full gap-2" size="sm">
-                        <Trophy className="h-4 w-4" />
-                        Redeem Rewards
-                      </Button>
-                    </a>
-                    <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                      <div className="flex gap-2 items-start">
-                        <AlertCircle className="h-3 w-3 text-destructive mt-0.5 flex-shrink-0" />
-                        <p className="text-xs text-destructive/80"><span className="font-medium text-destructive">Monthly Reset:</span> You are responsible for redeeming within the month. Unredeemed rewards do not carry over. No exceptions.</p>
-                      </div>
+                </div>
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                  <span className="text-purple-500 mt-0.5">✓</span>
+                  <p className="text-sm text-muted-foreground">Claim any time you have reached at least 25,000 points — the math is simple, $1 for every $1,000 wagered</p>
+                </div>
+                <div className="pt-4 space-y-3 border-t border-border/30">
+                  <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full gap-2" size="sm">
+                      <Trophy className="h-4 w-4" />
+                      Redeem Rewards
+                    </Button>
+                  </a>
+                  <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <div className="flex gap-2 items-start">
+                      <AlertCircle className="h-3 w-3 text-destructive mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-destructive/80"><span className="font-medium text-destructive">Monthly Reset:</span> You are responsible for redeeming within the month. Unredeemed rewards do not carry over. No exceptions.</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Tier 2 - $100 per 100,000 */}
-            <div className="relative">
-              <Card className="bg-gradient-to-r from-purple-500/10 via-card to-purple-500/5 border border-purple-500/30 overflow-hidden">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/5 rounded-full -mr-24 -mt-24 blur-3xl" />
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/20 text-purple-500">
-                        <Crown className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl">Tier 2 Rewards</CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">Premium milestone rewards</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-bold text-purple-500">$100</div>
-                      <p className="text-xs text-muted-foreground">per milestone</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
-                      <p className="text-sm font-medium text-muted-foreground">Wager Required</p>
-                      <p className="text-2xl font-bold">$100,000</p>
-                    </div>
-                    <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
-                      <p className="text-sm font-medium text-muted-foreground">Reward</p>
-                      <p className="text-2xl font-bold text-purple-500">$100</p>
-                    </div>
-                    <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
-                      <p className="text-sm font-medium text-muted-foreground">Examples</p>
-                      <div className="space-y-1 text-sm font-medium">
-                        <p>$200k wagered → $200</p>
-                        <p>$500k wagered → $500</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                    <span className="text-purple-500 mt-0.5">✓</span>
-                    <p className="text-sm text-muted-foreground">Automatically credited when you reach each $100,000 wager milestone</p>
-                  </div>
-                  <div className="pt-4 space-y-3 border-t border-border/30">
-                    <a href="https://discord.gg/RsjSPzGKTR" target="_blank" rel="noopener noreferrer">
-                      <Button className="w-full gap-2" size="sm">
-                        <Trophy className="h-4 w-4" />
-                        Redeem Rewards
-                      </Button>
-                    </a>
-                    <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                      <div className="flex gap-2 items-start">
-                        <AlertCircle className="h-3 w-3 text-destructive mt-0.5 flex-shrink-0" />
-                        <p className="text-xs text-destructive/80"><span className="font-medium text-destructive">Monthly Reset:</span> You are responsible for redeeming within the month. Unredeemed rewards do not carry over. No exceptions.</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* How It Works */}
@@ -187,8 +126,8 @@ export default function WagerRewardsPage() {
                       3
                     </div>
                     <div>
-                      <p className="font-medium">Reach Milestones</p>
-                      <p className="text-sm text-muted-foreground">Hit $10k or $100k wager milestones for automatic rewards</p>
+                      <p className="font-medium">Reach 25,000 Points</p>
+                      <p className="text-sm text-muted-foreground">Once you hit 25,000 points minimum, you can claim — $1 for every $1,000 wagered</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
