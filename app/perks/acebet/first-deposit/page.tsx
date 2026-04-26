@@ -3,11 +3,11 @@ import { generatePageMetadata } from '@/lib/seo-metadata'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-
-export const metadata: Metadata = generatePageMetadata('perksAcebetFirstDeposit')
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Gift, Zap } from 'lucide-react'
+
+export const metadata: Metadata = generatePageMetadata('perksAcebetFirstDeposit')
 
 export default function FirstDepositBonusPage() {
   return (
@@ -206,7 +206,7 @@ export default function FirstDepositBonusPage() {
                   </div>
                   <div>
                     <p className="font-medium">Sign Up with Code R2K2</p>
-                    <p className="text-sm text-muted-foreground">Visit acebet.com and use code R2K2 during registration</p>
+                    <p className="text-sm text-muted-foreground">Visit acebet.co and use code R2K2 during registration</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -255,7 +255,7 @@ export default function FirstDepositBonusPage() {
           {/* CTA */}
           <div className="text-center space-y-4">
             <p className="text-lg text-muted-foreground">Claim your welcome bonus today!</p>
-            <a href="https://acebet.com/welcome/r/r2k2" target="_blank" rel="noopener noreferrer">
+            <a href="https://acebet.co/affiliates/creator/r2k2?leaderboardId=306" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">
                 <Zap className="h-5 w-5" />
                 Sign Up with Code R2K2

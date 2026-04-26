@@ -3,11 +3,11 @@ import { generatePageMetadata } from '@/lib/seo-metadata'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-
-export const metadata: Metadata = generatePageMetadata('perksAcebetWagerRewards')
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Trophy, TrendingUp, Zap, Crown, AlertCircle } from 'lucide-react'
+
+export const metadata: Metadata = generatePageMetadata('perksAcebetWagerRewards')
 
 export default function WagerRewardsPage() {
   return (
@@ -72,7 +72,7 @@ export default function WagerRewardsPage() {
                     <p className="text-sm text-muted-foreground">Automatically credited when you reach each $10,000 wager milestone</p>
                   </div>
                   <div className="pt-4 space-y-3 border-t border-border/30">
-                    <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer">
+                    <a href="https://discord.gg/RsjSPzGKTR" target="_blank" rel="noopener noreferrer">
                       <Button className="w-full gap-2" size="sm">
                         <Trophy className="h-4 w-4" />
                         Redeem Rewards
@@ -133,7 +133,7 @@ export default function WagerRewardsPage() {
                     <p className="text-sm text-muted-foreground">Automatically credited when you reach each $100,000 wager milestone</p>
                   </div>
                   <div className="pt-4 space-y-3 border-t border-border/30">
-                    <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer">
+                    <a href="https://discord.gg/RsjSPzGKTR" target="_blank" rel="noopener noreferrer">
                       <Button className="w-full gap-2" size="sm">
                         <Trophy className="h-4 w-4" />
                         Redeem Rewards
@@ -221,7 +221,7 @@ export default function WagerRewardsPage() {
               </div>
               <div className="space-y-2 p-3 rounded-lg bg-secondary/20 border border-border/50">
                 <p className="font-medium text-sm">Redemption Process</p>
-                <p className="text-sm text-muted-foreground">Head to our Discord (discord.gg/r2k2) and create a support ticket with your wager proof. Our team will verify your wagers and process your reward payout within 24-48 hours</p>
+                <p className="text-sm text-muted-foreground">Head to our Discord (discord.gg/RsjSPzGKTR) and create a support ticket with your wager proof. Our team will verify your wagers and process your reward payout within 24-48 hours</p>
               </div>
             </CardContent>
           </Card>
@@ -229,7 +229,7 @@ export default function WagerRewardsPage() {
           {/* CTA */}
           <div className="text-center space-y-4 py-6">
             <p className="text-lg text-muted-foreground">Ready to start earning wager rewards?</p>
-            <a href="https://acebet.com/welcome/r/r2k2" target="_blank" rel="noopener noreferrer">
+            <a href="https://acebet.co/affiliates/creator/r2k2?leaderboardId=306" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">
                 <Trophy className="h-5 w-5" />
                 Visit Acebet with Code R2K2
