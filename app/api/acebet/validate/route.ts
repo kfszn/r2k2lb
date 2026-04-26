@@ -25,8 +25,8 @@ interface AcebetUser {
 let cachedUsers: AcebetUser[] | null = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 5 * 60 * 1000;
-// Start date for counting wagers: 12/26/2025 EST (12am UTC)
-const WAGER_WINDOW_START = "2025-12-26";
+// Start date for counting wagers: current leaderboard cycle start
+const WAGER_WINDOW_START = "2026-03-28";
 async function fetchAcebetUsers(): Promise<AcebetUser[]> {
   const now = Date.now();
   // Return cached data if still valid

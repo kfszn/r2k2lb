@@ -63,12 +63,12 @@ export default function AcebetLeaderboard() {
   useEffect(() => {
     if (!leaderboard) return
 
-    // Hardcoded cycle: Mar 28 - Apr 27, 2026
-    setDateRange(`Mar 28 - Apr 27, 2026 • 11am EST End`)
+    // Hardcoded cycle: Apr 28 - May 27, 2026
+    setDateRange(`Apr 28 - May 27, 2026 • 11am EST End`)
 
     const interval = setInterval(() => {
-      // Countdown ends Apr 27, 2026 at 11am EST (4pm UTC)
-      const endTime = new Date('2026-04-27T16:00:00Z').getTime()
+      // Countdown ends May 27, 2026 at 11am EST (3pm UTC — DST active)
+      const endTime = new Date('2026-05-27T15:00:00Z').getTime()
       const diff = endTime - Date.now()
 
       if (diff <= 0) {

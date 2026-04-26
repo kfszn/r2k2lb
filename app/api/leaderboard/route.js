@@ -52,9 +52,9 @@ function shiftRangeBack(startISO, endISO) {
   return { start_at: toISODateUTC(s), end_at: toISODateUTC(e) };
 }
 
-// ✅ LEADERBOARD TIMING: 3/28/2026 → 4/27/2026 (30 days, starts 11am EST)
-const DEFAULT_START = "2026-03-28";
-const DEFAULT_END = "2026-04-27";
+// ✅ LEADERBOARD TIMING: 4/28/2026 → 5/27/2026 (30 days, starts 11am EST)
+const DEFAULT_START = "2026-04-28";
+const DEFAULT_END = "2026-05-27";
 
 function updateDefaultDates() {
   // No-op: dates are hardcoded for this leaderboard cycle
