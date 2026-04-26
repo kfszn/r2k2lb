@@ -221,7 +221,7 @@ export default function WagerRewardsPage() {
               </div>
               <div className="space-y-2 p-3 rounded-lg bg-secondary/20 border border-border/50">
                 <p className="font-medium text-sm">Redemption Process</p>
-                <p className="text-sm text-muted-foreground">Head to our Discord (discord.gg/RsjSPzGKTR) and create a support ticket with your wager proof. Our team will verify your wagers and process your reward payout within 24-48 hours</p>
+                <p className="text-sm text-muted-foreground">Head to our Discord (discord.gg/r2k2) and create a support ticket with your wager proof. Our team will verify your wagers and process your reward payout within 24-48 hours</p>
               </div>
             </CardContent>
           </Card>
