@@ -19,7 +19,6 @@ import { Input } from "@/components/ui/input";
 import { ClaimsManager } from "@/components/admin/claims-manager";
 import { EmailVerificationTool } from "@/components/admin/email-verification-tool";
 import { WagerVerification } from "@/components/admin/wager-verification";
-import { LossbackManagement } from "@/components/admin/lossback-management";
 import { AllTournamentsManager } from "@/components/admin/all-tournaments-manager";
 import { TournamentSelector } from "@/components/admin/tournament-selector";
 import { TournamentDetailView } from "@/components/admin/tournament-detail-view";
@@ -300,7 +299,7 @@ export default function AdminPage() {
           </div>
 
           <Tabs defaultValue="email" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="email" className="gap-2">
                 <UserCheck className="h-4 w-4" />
                 Email Verification
@@ -308,10 +307,6 @@ export default function AdminPage() {
               <TabsTrigger value="wager" className="gap-2">
                 <Zap className="h-4 w-4" />
                 Wager Verification
-              </TabsTrigger>
-              <TabsTrigger value="lossback" className="gap-2">
-                <Settings className="h-4 w-4" />
-                Reward Management
               </TabsTrigger>
               <TabsTrigger value="total-wager" className="gap-2">
                 <Trophy className="h-4 w-4" />
@@ -335,10 +330,6 @@ export default function AdminPage() {
 
             <TabsContent value="wager" className="mt-6">
               <WagerVerification />
-            </TabsContent>
-
-            <TabsContent value="lossback" className="mt-6">
-              <LossbackManagement />
             </TabsContent>
 
             <TabsContent value="total-wager" className="mt-6">
