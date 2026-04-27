@@ -428,7 +428,7 @@ export default function AcebetLeaderboard() {
                                       onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
                                     />
                                   </div>
-                                  <span className="font-semibold text-sm text-foreground">{entry.name}</span>
+                                  <span className="font-semibold text-sm text-foreground">{maskName(entry.name)}</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm">
                                   <div className="text-right">
