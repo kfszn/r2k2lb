@@ -275,105 +275,109 @@ export default function AcebetLeaderboard() {
                 ) : (
                   <>
                     {/* Podium Top 3 */}
-                    <div className="mb-16">
-                      <h2 className="text-2xl font-bold text-center mb-12">Top Performers</h2>
-                  <div className="flex items-end justify-center gap-4 md:gap-6">
-                    {/* 2nd Place */}
-                    {leaderboard.data[1] && (
-                      <div className="flex flex-col items-center">
-                        <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-silver mb-4 shadow-lg hover:scale-110 transition-transform">
-                          <img
-                            src={getAvatarUrl(leaderboard.data[1].avatar)}
-                            alt={leaderboard.data[1].name}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            crossOrigin="anonymous"
-                            onError={(e) => {
-                              const img = e.target as HTMLImageElement
-                              img.src = '/placeholder-user.jpg'
-                            }}
-                          />
-                        </div>
-                        <div className="bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-slate-400">
-                          <div className="text-3xl md:text-4xl font-bold text-white mb-2">🥈</div>
-                          <p className="font-bold text-white truncate">{maskName(leaderboard.data[1].name)}</p>
-                          <p className="text-xs md:text-sm text-slate-100 mb-2">{formatMoney(leaderboard.data[1].wagered)}</p>
-                          <div className="bg-black/30 rounded px-2 py-1">
-                            <p className="text-lg md:text-xl font-bold text-green-400">${REWARDS[1]}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    <div className="mb-10">
+                      <h2 className="text-2xl font-bold text-center mb-8">Top Performers</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                    {/* 1st Place */}
-                    {leaderboard.data[0] && (
-                      <div className="flex flex-col items-center -mb-4">
-                        <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-yellow-400 mb-4 shadow-2xl hover:scale-110 transition-transform" style={{ boxShadow: '0 0 30px rgba(250, 204, 21, 0.6)' }}>
-                          <img
-                            src={getAvatarUrl(leaderboard.data[0].avatar)}
-                            alt={leaderboard.data[0].name}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            crossOrigin="anonymous"
-                            onError={(e) => {
-                              const img = e.target as HTMLImageElement
-                              img.src = '/placeholder-user.jpg'
-                            }}
-                          />
-                        </div>
-                        <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-2xl px-6 py-8 text-center w-40 md:w-48 shadow-2xl border-4 border-yellow-400" style={{ boxShadow: '0 10px 40px rgba(250, 204, 21, 0.4)' }}>
-                          <div className="text-4xl md:text-5xl font-bold mb-2">👑</div>
-                          <p className="font-bold text-gray-900 truncate text-lg">{maskName(leaderboard.data[0].name)}</p>
-                          <p className="text-xs md:text-sm text-gray-800 mb-2">{formatMoney(leaderboard.data[0].wagered)}</p>
-                          <div className="bg-black/20 rounded px-2 py-1">
-                            <p className="text-2xl md:text-3xl font-bold text-green-600">${REWARDS[0]}</p>
+                        {/* 1st Place */}
+                        {leaderboard.data[0] && (
+                          <div className="relative rounded-2xl border border-yellow-400/50 bg-card overflow-hidden" style={{ boxShadow: '0 0 32px rgba(250,204,21,0.15)' }}>
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-yellow-400" />
+                            <div className="p-6 flex flex-col items-center text-center gap-4">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold uppercase tracking-widest text-yellow-400">1st Place</span>
+                                <Trophy className="h-4 w-4 text-yellow-400" />
+                              </div>
+                              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400/60">
+                                <img
+                                  src={getAvatarUrl(leaderboard.data[0].avatar)}
+                                  alt={leaderboard.data[0].name}
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                  crossOrigin="anonymous"
+                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
+                                />
+                              </div>
+                              <p className="font-bold text-lg text-foreground truncate w-full">{maskName(leaderboard.data[0].name)}</p>
+                              <div className="w-full space-y-2">
+                                <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
+                                  <span className="text-muted-foreground">Wagered</span>
+                                  <span className="font-semibold text-foreground">{formatMoney(leaderboard.data[0].wagered)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
+                                  <span className="text-yellow-400/80">Prize</span>
+                                  <span className="font-bold text-yellow-400 text-base">${REWARDS[0].toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
+                        )}
 
-                    {/* 3rd Place */}
-                    {leaderboard.data[2] && (
-                      <div className="flex flex-col items-center">
-                        <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-amber-700 mb-4 shadow-lg hover:scale-110 transition-transform">
-                          <img
-                            src={getAvatarUrl(leaderboard.data[2].avatar)}
-                            alt={leaderboard.data[2].name}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            crossOrigin="anonymous"
-                            onError={(e) => {
-                              const img = e.target as HTMLImageElement
-                              img.src = '/placeholder-user.jpg'
-                            }}
-                          />
-                        </div>
-                        <div className="bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-2xl px-4 py-6 text-center w-32 md:w-40 shadow-xl border-4 border-amber-600">
-                          <div className="text-3xl md:text-4xl font-bold text-white mb-2">🥉</div>
-                          <p className="font-bold text-white truncate">{maskName(leaderboard.data[2].name)}</p>
-                          <p className="text-xs md:text-sm text-amber-100 mb-2">{formatMoney(leaderboard.data[2].wagered)}</p>
-                          <div className="bg-black/30 rounded px-2 py-1">
-                            <p className="text-lg md:text-xl font-bold text-green-400">${REWARDS[2]}</p>
+                        {/* 2nd Place */}
+                        {leaderboard.data[1] && (
+                          <div className="relative rounded-2xl border border-slate-400/40 bg-card overflow-hidden" style={{ boxShadow: '0 0 24px rgba(148,163,184,0.1)' }}>
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-slate-400" />
+                            <div className="p-6 flex flex-col items-center text-center gap-4">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd Place</span>
+                              </div>
+                              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-slate-400/60">
+                                <img
+                                  src={getAvatarUrl(leaderboard.data[1].avatar)}
+                                  alt={leaderboard.data[1].name}
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                  crossOrigin="anonymous"
+                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
+                                />
+                              </div>
+                              <p className="font-bold text-lg text-foreground truncate w-full">{maskName(leaderboard.data[1].name)}</p>
+                              <div className="w-full space-y-2">
+                                <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
+                                  <span className="text-muted-foreground">Wagered</span>
+                                  <span className="font-semibold text-foreground">{formatMoney(leaderboard.data[1].wagered)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm bg-slate-400/10 border border-slate-400/20 rounded-lg px-3 py-2">
+                                  <span className="text-slate-400/80">Prize</span>
+                                  <span className="font-bold text-slate-300 text-base">${REWARDS[1].toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                        )}
 
-                {/* Top 3 */}
-                <div className="hidden">
-                  <div className="grid md:grid-cols-3 gap-6 mb-12">
-                    {leaderboard.data.slice(0, 3).map((entry, idx) => (
-                      <TopCard
-                        key={entry.userId}
-                        rank={idx + 1}
-                        entry={entry}
-                        reward={REWARDS[idx]}
-                        formatMoney={formatMoney}
-                        maskName={maskName}
-                        getAvatarUrl={getAvatarUrl}
-                      />
-                    ))}
-                  </div>
-                </div>
+                        {/* 3rd Place */}
+                        {leaderboard.data[2] && (
+                          <div className="relative rounded-2xl border border-amber-700/40 bg-card overflow-hidden" style={{ boxShadow: '0 0 24px rgba(180,83,9,0.1)' }}>
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-amber-600" />
+                            <div className="p-6 flex flex-col items-center text-center gap-4">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd Place</span>
+                              </div>
+                              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-amber-600/60">
+                                <img
+                                  src={getAvatarUrl(leaderboard.data[2].avatar)}
+                                  alt={leaderboard.data[2].name}
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                  crossOrigin="anonymous"
+                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
+                                />
+                              </div>
+                              <p className="font-bold text-lg text-foreground truncate w-full">{maskName(leaderboard.data[2].name)}</p>
+                              <div className="w-full space-y-2">
+                                <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
+                                  <span className="text-muted-foreground">Wagered</span>
+                                  <span className="font-semibold text-foreground">{formatMoney(leaderboard.data[2].wagered)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm bg-amber-600/10 border border-amber-600/20 rounded-lg px-3 py-2">
+                                  <span className="text-amber-500/80">Prize</span>
+                                  <span className="font-bold text-amber-500 text-base">${REWARDS[2].toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
 
                 {/* Rest */}
                 <div className="space-y-3">
@@ -425,53 +429,6 @@ export default function AcebetLeaderboard() {
   )
 }
 
-function TopCard({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
-  rank: number
-  entry: LeaderboardEntry
-  reward: number
-  formatMoney: (n: number) => string
-  maskName: (s: string) => string
-  getAvatarUrl: (a: string | null) => string
-}) {
-  const colors = ['#FFD700', '#C0C0C0', '#CD7F32']
-  const color = colors[rank - 1]
-  const [imgError, setImgError] = useState(false)
-  
-  return (
-    <Card className="relative overflow-hidden group hover:scale-105 transition-transform" style={{ boxShadow: `0 0 40px ${color}` }}>
-      <CardContent className="p-6 text-center space-y-4">
-        <div className="absolute top-0 right-0 px-3 py-1 rounded-bl-lg font-bold text-2xl" style={{ background: color, color: '#000' }}>
-          #{rank}
-        </div>
-        
-        <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4" style={{ borderColor: color }}>
-          <img
-            src={imgError ? '/placeholder-user.jpg' : getAvatarUrl(entry.avatar)}
-            alt={entry.name}
-            className="absolute inset-0 w-full h-full object-cover"
-            crossOrigin="anonymous"
-            onError={() => setImgError(true)}
-          />
-        </div>
-        
-        <div>
-          <p className="text-lg font-bold">{maskName(entry.name)}</p>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Wagered:</span>
-            <span className="font-bold text-foreground">{formatMoney(entry.wagered)}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Prize:</span>
-            <span className="font-bold" style={{ color: '#39ff93' }}>${reward}</span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
 
 function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
   rank: number
