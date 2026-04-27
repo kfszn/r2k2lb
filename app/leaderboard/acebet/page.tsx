@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Trophy, Clock, DollarSign, TrendingUp } from 'lucide-react'
+import { Trophy, Clock, DollarSign, TrendingUp, Users, Search } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 import { GoalTracker } from '@/components/goal-tracker'
@@ -35,6 +35,7 @@ export default function AcebetLeaderboard() {
   const [showPrevious, setShowPrevious] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('Loading...')
   const [dateRange, setDateRange] = useState<string>('Loading...')
+  const [searchQuery, setSearchQuery] = useState<string>('')
 
   const loadLeaderboard = async (previous: boolean) => {
     setLoading(true)
@@ -186,7 +187,7 @@ export default function AcebetLeaderboard() {
       {/* Stats Cards */}
       {leaderboard && (
         <section className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto">
             <Card className="bg-card/50 backdrop-blur border-primary/20">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -195,6 +196,18 @@ export default function AcebetLeaderboard() {
                     <p className="text-3xl font-bold text-primary">{formatMoney(totalWagered)}</p>
                   </div>
                   <TrendingUp className="h-12 w-12 text-primary/40" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 backdrop-blur border-blue-500/20">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground uppercase font-medium mb-1">Participants</p>
+                    <p className="text-3xl font-bold text-blue-400">{leaderboard.count.toLocaleString()}</p>
+                  </div>
+                  <Users className="h-12 w-12 text-blue-400/40" />
                 </div>
               </CardContent>
             </Card>
@@ -374,6 +387,67 @@ export default function AcebetLeaderboard() {
 
                       </div>
                     </div>
+
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Search your exact username to see your wager amount..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
+                      />
+                    </div>
+
+                    {/* Search Results */}
+                    {searchQuery.trim() && (() => {
+                      const q = searchQuery.trim().toLowerCase()
+                      const matches = leaderboard.data.filter(e => e.name?.toLowerCase() === q)
+                      if (matches.length === 0) {
+                        return (
+                          <div className="text-center py-4 rounded-xl bg-muted/30 border border-border text-sm text-muted-foreground">
+                            No user found with that exact username. Usernames are case-insensitive but must be exact.
+                          </div>
+                        )
+                      }
+                      return (
+                        <div className="space-y-2">
+                          {matches.map((entry) => {
+                            const rank = leaderboard.data.findIndex(e => e.userId === entry.userId) + 1
+                            return (
+                              <div key={entry.userId} className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/20 px-4 py-3">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm font-bold text-primary">#{rank}</span>
+                                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary/30">
+                                    <img
+                                      src={getAvatarUrl(entry.avatar)}
+                                      alt={entry.name}
+                                      className="absolute inset-0 w-full h-full object-cover"
+                                      crossOrigin="anonymous"
+                                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
+                                    />
+                                  </div>
+                                  <span className="font-semibold text-sm text-foreground">{entry.name}</span>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm">
+                                  <div className="text-right">
+                                    <p className="text-xs text-muted-foreground">Wagered</p>
+                                    <p className="font-bold text-foreground">{formatMoney(entry.wagered)}</p>
+                                  </div>
+                                  {rank <= 10 && REWARDS[rank - 1] && (
+                                    <div className="text-right">
+                                      <p className="text-xs text-muted-foreground">Prize</p>
+                                      <p className="font-bold text-green-400">${REWARDS[rank - 1].toLocaleString()}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )
+                    })()}
 
                     {/* Rest of leaderboard */}
                     <div className="space-y-3">
