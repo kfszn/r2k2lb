@@ -7,7 +7,8 @@ import { Trophy, Crown, Medal } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface Winner {
-  acebet_username: string;
+  acebet_username: string | null;
+  kick_username: string | null;
   tournament_name: string;
   prize_amount: number;
   tournament_id: string | null;
@@ -24,7 +25,7 @@ export function WinnersCircle() {
       // Fetch all winners, then filter to only those from completed/closed tournaments
       const { data, error } = await supabase
         .from("tournament_winners")
-        .select("acebet_username, tournament_name, prize_amount, tournament_id")
+        .select("acebet_username, kick_username, tournament_name, prize_amount, tournament_id")
         .order("won_at", { ascending: false })
         .limit(50);
 
@@ -107,14 +108,30 @@ export function WinnersCircle() {
             <div className="space-y-2">
               {winners.map((winner, index) => (
                 <div
-                  key={winner.acebet_username}
+                  key={`${winner.tournament_id}-${winner.acebet_username ?? winner.kick_username}`}
                   className={`flex items-center justify-between rounded-lg border px-3 py-2.5 transition-colors ${getRankBg(index)}`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     {getRankIcon(index)}
-                    <span className="font-medium text-foreground">{winner.acebet_username}</span>
+                    <div className="min-w-0">
+                      {winner.acebet_username && (
+                        <p className="font-medium text-foreground truncate leading-tight">
+                          {winner.acebet_username}
+                          <span className="ml-1.5 text-xs text-muted-foreground font-normal">Acebet</span>
+                        </p>
+                      )}
+                      {winner.kick_username && (
+                        <p className={`truncate leading-tight ${winner.acebet_username ? "text-xs text-muted-foreground" : "font-medium text-foreground"}`}>
+                          {winner.kick_username}
+                          <span className="ml-1.5 text-xs text-muted-foreground font-normal">Kick</span>
+                        </p>
+                      )}
+                      {!winner.acebet_username && !winner.kick_username && (
+                        <span className="font-medium text-muted-foreground">Unknown</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
                     <Trophy className="h-4 w-4 text-primary" />
                     <span className="font-bold text-primary">${winner.prize_amount || 0}</span>
                   </div>
