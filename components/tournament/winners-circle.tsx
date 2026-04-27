@@ -32,20 +32,27 @@ export function WinnersCircle() {
       if (!error && data) {
         // Get all unique tournament IDs from winners
         const tournamentIds = [...new Set(data.map(w => w.tournament_id).filter(Boolean))];
-        
-        if (tournamentIds.length > 0) {
-          // Only show winners from tournaments that are completed (CLOSED)
-          const { data: closedTournaments } = await supabase
-            .from("tournaments")
-            .select("id")
-            .in("id", tournamentIds)
-            .eq("status", "completed");
 
-          const closedIds = new Set((closedTournaments || []).map(t => t.id));
-          const filteredWinners = data.filter(w => w.tournament_id && closedIds.has(w.tournament_id));
+        if (tournamentIds.length > 0) {
+          // Accept any finished tournament status: completed, closed, finished, ended
+          const { data: finishedTournaments } = await supabase
+            .from("tournaments")
+            .select("id, status")
+            .in("id", tournamentIds);
+
+          const finishedStatuses = new Set(["completed", "closed", "finished", "ended"]);
+          const finishedIds = new Set(
+            (finishedTournaments || [])
+              .filter(t => finishedStatuses.has(t.status))
+              .map(t => t.id)
+          );
+
+          const filteredWinners = data.filter(
+            w => !w.tournament_id || finishedIds.has(w.tournament_id)
+          );
           setWinners(filteredWinners);
         } else {
-          setWinners([]);
+          setWinners(data);
         }
       }
       setIsLoading(false);
@@ -113,23 +120,9 @@ export function WinnersCircle() {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {getRankIcon(index)}
-                    <div className="min-w-0">
-                      {winner.acebet_username && (
-                        <p className="font-medium text-foreground truncate leading-tight">
-                          {winner.acebet_username}
-                          <span className="ml-1.5 text-xs text-muted-foreground font-normal">Acebet</span>
-                        </p>
-                      )}
-                      {winner.kick_username && (
-                        <p className={`truncate leading-tight ${winner.acebet_username ? "text-xs text-muted-foreground" : "font-medium text-foreground"}`}>
-                          {winner.kick_username}
-                          <span className="ml-1.5 text-xs text-muted-foreground font-normal">Kick</span>
-                        </p>
-                      )}
-                      {!winner.acebet_username && !winner.kick_username && (
-                        <span className="font-medium text-muted-foreground">Unknown</span>
-                      )}
-                    </div>
+                    <span className="font-medium text-foreground truncate">
+                      {winner.acebet_username ?? winner.kick_username ?? "Unknown"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
                     <Trophy className="h-4 w-4 text-primary" />
