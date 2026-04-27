@@ -544,5 +544,6 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
 
       {/* Prize */}
       <p className="text-sm font-bold text-right" style={{ color: '#39ff93' }}>${reward?.toLocaleString() ?? '—'}</p>
+    </div>
   )
 }
