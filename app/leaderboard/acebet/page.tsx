@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Trophy, Clock, DollarSign, TrendingUp, Users, Search } from 'lucide-react'
+import { Trophy, Clock, DollarSign, TrendingUp, Users, Search, ChevronDown } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 import { GoalTracker } from '@/components/goal-tracker'
@@ -28,25 +28,48 @@ interface LeaderboardData {
 // Prize pool: $20,000 total - top 15 paid spots
 const REWARDS = [6000, 4000, 2500, 2000, 1500, 1250, 1000, 500, 400, 300, 200, 150, 100, 50, 50]
 
+// Previous leaderboard months — fill in date ranges when ready
+// Dates are placeholders; update start_at/end_at once confirmed
+const PREVIOUS_MONTHS: { label: string; start_at: string; end_at: string }[] = [
+  { label: 'January', start_at: 'TBD', end_at: 'TBD' },
+  { label: 'February', start_at: 'TBD', end_at: 'TBD' },
+  { label: 'March', start_at: 'TBD', end_at: 'TBD' },
+  { label: 'April', start_at: 'TBD', end_at: 'TBD' },
+]
+
 export default function AcebetLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showPrevious, setShowPrevious] = useState(false)
+  const [selectedMonth, setSelectedMonth] = useState<string>('current') // 'current' | month label
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('Loading...')
   const [dateRange, setDateRange] = useState<string>('Loading...')
   const [searchQuery, setSearchQuery] = useState<string>('')
 
-  const loadLeaderboard = async (previous: boolean) => {
+  const showPrevious = selectedMonth !== 'current'
+
+  const loadLeaderboard = async (month: string) => {
     setLoading(true)
     setError(null)
+    setSearchQuery('')
     try {
-      const url = previous ? '/api/leaderboard?prev=1' : '/api/leaderboard'
+      let url = '/api/leaderboard'
+      if (month !== 'current') {
+        const found = PREVIOUS_MONTHS.find(m => m.label === month)
+        if (found && found.start_at !== 'TBD') {
+          url = `/api/leaderboard?start_at=${found.start_at}&end_at=${found.end_at}`
+        } else {
+          // Dates TBD — show empty state
+          setLeaderboard({ ok: true, range: { start_at: 'TBD', end_at: 'TBD', days: 0 }, count: 0, data: [] })
+          setLoading(false)
+          return
+        }
+      }
       const res = await fetch(url)
       const data = await res.json()
       if (data.ok) {
         setLeaderboard(data)
-        setShowPrevious(previous)
       } else {
         setError(data.error || 'Failed to load leaderboard')
       }
@@ -58,8 +81,16 @@ export default function AcebetLeaderboard() {
   }
 
   useEffect(() => {
-    loadLeaderboard(false)
+    loadLeaderboard('current')
   }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!dropdownOpen) return
+    const handler = () => setDropdownOpen(false)
+    document.addEventListener('click', handler)
+    return () => document.removeEventListener('click', handler)
+  }, [dropdownOpen])
 
   useEffect(() => {
     if (!leaderboard) return
@@ -244,24 +275,55 @@ export default function AcebetLeaderboard() {
       {/* Controls */}
       <section className="py-6 border-b border-border/40">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-3 justify-center items-center">
+            {/* Current tab */}
             <Button
-              variant="outline"
-              onClick={() => loadLeaderboard(true)}
-              disabled={showPrevious}
-              className="bg-transparent"
-            >
-              Previous Leaderboard
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => loadLeaderboard(false)}
-              disabled={!showPrevious}
-              className="bg-transparent"
+              variant={!showPrevious ? 'default' : 'outline'}
+              onClick={() => { setSelectedMonth('current'); loadLeaderboard('current') }}
+              className={!showPrevious ? '' : 'bg-transparent'}
             >
               Current Leaderboard
             </Button>
+
+            {/* Previous months dropdown */}
+            <div className="relative">
+              <Button
+                variant={showPrevious ? 'default' : 'outline'}
+                className={`flex items-center gap-2 ${showPrevious ? '' : 'bg-transparent'}`}
+                onClick={() => setDropdownOpen(o => !o)}
+              >
+                {showPrevious ? selectedMonth : 'Previous Leaderboards'}
+                <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </Button>
+              {dropdownOpen && (
+                <div className="absolute top-full mt-1 left-0 z-50 min-w-[180px] rounded-xl border border-border bg-card shadow-xl overflow-hidden">
+                  {PREVIOUS_MONTHS.map(m => (
+                    <button
+                      key={m.label}
+                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 ${selectedMonth === m.label ? 'text-primary font-semibold bg-primary/10' : 'text-foreground'}`}
+                      onClick={() => {
+                        setSelectedMonth(m.label)
+                        setDropdownOpen(false)
+                        loadLeaderboard(m.label)
+                      }}
+                    >
+                      {m.label}
+                      {m.start_at === 'TBD' && (
+                        <span className="text-xs text-muted-foreground">Coming soon</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Selected month label */}
+          {showPrevious && (
+            <p className="text-center text-sm text-muted-foreground mt-3">
+              Viewing: <span className="text-foreground font-semibold">{selectedMonth} Leaderboard</span>
+            </p>
+          )}
         </div>
       </section>
 
@@ -289,6 +351,12 @@ export default function AcebetLeaderboard() {
                   <div className="text-center py-12 bg-muted/40 rounded-lg border border-border p-6">
                     <p className="text-muted-foreground text-lg">No leaderboard data available for the selected period</p>
                     <p className="text-sm text-muted-foreground mt-2">Range: {leaderboard.range.start_at} to {leaderboard.range.end_at}</p>
+                  </div>
+                ) : leaderboard.range.start_at === 'TBD' ? (
+                  <div className="text-center py-16 bg-muted/30 rounded-xl border border-border p-8">
+                    <Trophy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-foreground mb-1">{selectedMonth} Leaderboard</p>
+                    <p className="text-sm text-muted-foreground">Date range coming soon. Check back later!</p>
                   </div>
                 ) : (
                   <>
