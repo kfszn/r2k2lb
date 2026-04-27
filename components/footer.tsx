@@ -62,7 +62,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="https://x.com/r2k2live"
+                  href="https://x.com/R2ktwo"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
@@ -70,12 +70,12 @@ export default function Footer() {
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary group-hover:bg-secondary/80 transition-colors">
                     <Twitter className="h-4 w-4" />
                   </div>
-                  <span>@r2k2live</span>
+                  <span>@R2ktwo</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="https://instagram.com/r2k2live"
+                  href="https://instagram.com/R2KtwoKick"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
@@ -83,7 +83,7 @@ export default function Footer() {
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary group-hover:bg-secondary/80 transition-colors">
                     <Instagram className="h-4 w-4" />
                   </div>
-                  <span>@r2k2live</span>
+                  <span>@R2KtwoKick</span>
                 </a>
               </li>
               <li>
