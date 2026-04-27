@@ -52,8 +52,8 @@ const PREVIOUS_MONTHS: MonthConfig[] = [
     start_at: '2026-01-25',
     end_at: '2026-02-23',
     display: 'Jan 25 – Feb 23, 2026',
-    rewards: [], // TBD
-    total: 0,
+    rewards: [1000, 600, 400, 300, 250, 150, 120, 90, 60, 30],
+    total: 3000,
   },
   {
     label: 'March',
