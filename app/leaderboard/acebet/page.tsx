@@ -187,27 +187,27 @@ export default function AcebetLeaderboard() {
       {/* Stats Cards */}
       {leaderboard && (
         <section className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-6xl mx-auto">
             <Card className="bg-card/50 backdrop-blur border-primary/20">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground uppercase font-medium mb-1">Total Wagered</p>
-                    <p className="text-3xl font-bold text-primary">{formatMoney(totalWagered)}</p>
+              <CardContent className="px-4 py-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground uppercase font-medium mb-0.5 tracking-wider">Total Wagered</p>
+                    <p className="text-xl font-bold text-primary truncate">{formatMoney(totalWagered)}</p>
                   </div>
-                  <TrendingUp className="h-12 w-12 text-primary/40" />
+                  <TrendingUp className="h-5 w-5 text-primary/40 flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-card/50 backdrop-blur border-blue-500/20">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground uppercase font-medium mb-1">Participants</p>
-                    <p className="text-3xl font-bold text-blue-400">{leaderboard.count.toLocaleString()}</p>
+              <CardContent className="px-4 py-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground uppercase font-medium mb-0.5 tracking-wider">Participants</p>
+                    <p className="text-xl font-bold text-blue-400">{leaderboard.count.toLocaleString()}</p>
                   </div>
-                  <Users className="h-12 w-12 text-blue-400/40" />
+                  <Users className="h-5 w-5 text-blue-400/40 flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>
@@ -221,13 +221,13 @@ export default function AcebetLeaderboard() {
             
             {!showPrevious && (
               <Card className="bg-card/50 backdrop-blur border-destructive/20">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase font-medium mb-1">Time Remaining</p>
-                      <p className="text-3xl font-bold text-destructive">{timeRemaining || 'Loading...'}</p>
+                <CardContent className="px-4 py-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground uppercase font-medium mb-0.5 tracking-wider">Time Remaining</p>
+                      <p className="text-xl font-bold text-destructive truncate">{timeRemaining || 'Loading...'}</p>
                     </div>
-                    <Clock className="h-12 w-12 text-destructive/40" />
+                    <Clock className="h-5 w-5 text-destructive/40 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>
