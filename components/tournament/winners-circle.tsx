@@ -7,7 +7,8 @@ import { Trophy, Crown, Medal } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface Winner {
-  acebet_username: string;
+  acebet_username: string | null;
+  kick_username: string | null;
   tournament_name: string;
   prize_amount: number;
   tournament_id: string | null;
@@ -24,27 +25,34 @@ export function WinnersCircle() {
       // Fetch all winners, then filter to only those from completed/closed tournaments
       const { data, error } = await supabase
         .from("tournament_winners")
-        .select("acebet_username, tournament_name, prize_amount, tournament_id")
+        .select("acebet_username, kick_username, tournament_name, prize_amount, tournament_id")
         .order("won_at", { ascending: false })
         .limit(50);
 
       if (!error && data) {
         // Get all unique tournament IDs from winners
         const tournamentIds = [...new Set(data.map(w => w.tournament_id).filter(Boolean))];
-        
-        if (tournamentIds.length > 0) {
-          // Only show winners from tournaments that are completed (CLOSED)
-          const { data: closedTournaments } = await supabase
-            .from("tournaments")
-            .select("id")
-            .in("id", tournamentIds)
-            .eq("status", "completed");
 
-          const closedIds = new Set((closedTournaments || []).map(t => t.id));
-          const filteredWinners = data.filter(w => w.tournament_id && closedIds.has(w.tournament_id));
+        if (tournamentIds.length > 0) {
+          // Accept any finished tournament status: completed, closed, finished, ended
+          const { data: finishedTournaments } = await supabase
+            .from("tournaments")
+            .select("id, status")
+            .in("id", tournamentIds);
+
+          const finishedStatuses = new Set(["completed", "closed", "finished", "ended"]);
+          const finishedIds = new Set(
+            (finishedTournaments || [])
+              .filter(t => finishedStatuses.has(t.status))
+              .map(t => t.id)
+          );
+
+          const filteredWinners = data.filter(
+            w => !w.tournament_id || finishedIds.has(w.tournament_id)
+          );
           setWinners(filteredWinners);
         } else {
-          setWinners([]);
+          setWinners(data);
         }
       }
       setIsLoading(false);
@@ -107,14 +115,16 @@ export function WinnersCircle() {
             <div className="space-y-2">
               {winners.map((winner, index) => (
                 <div
-                  key={winner.acebet_username}
+                  key={`${winner.tournament_id}-${winner.acebet_username ?? winner.kick_username}`}
                   className={`flex items-center justify-between rounded-lg border px-3 py-2.5 transition-colors ${getRankBg(index)}`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     {getRankIcon(index)}
-                    <span className="font-medium text-foreground">{winner.acebet_username}</span>
+                    <span className="font-medium text-foreground truncate">
+                      {winner.acebet_username ?? winner.kick_username ?? "Unknown"}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
                     <Trophy className="h-4 w-4 text-primary" />
                     <span className="font-bold text-primary">${winner.prize_amount || 0}</span>
                   </div>
