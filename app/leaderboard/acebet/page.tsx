@@ -173,7 +173,7 @@ export default function AcebetLeaderboard() {
               <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $2,000</span>
               <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $1,250</span>
               <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $1,000</span>
-              <span className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400">5th — $650</span>
+              <span className="px-3 py-1 rounded-full bg-green-600/20 border border-green-600/40 text-green-600">5th — $650</span>
               <span className="px-3 py-1 rounded-full bg-blue-400/20 border border-blue-400/40 text-blue-300">6th — $450</span>
               <span className="px-3 py-1 rounded-full bg-purple-400/20 border border-purple-400/40 text-purple-300">7th — $300</span>
               <span className="px-3 py-1 rounded-full bg-pink-400/20 border border-pink-400/40 text-pink-300">8th — $200</span>
@@ -491,7 +491,7 @@ export default function AcebetLeaderboard() {
                                   {rank <= 10 && REWARDS[rank - 1] && (
                                     <div className="text-right">
                                       <p className="text-xs text-muted-foreground">Prize</p>
-                                      <p className="font-bold text-green-400">${REWARDS[rank - 1].toLocaleString()}</p>
+                                      <p className="font-bold text-green-600">${REWARDS[rank - 1].toLocaleString()}</p>
                                     </div>
                                   )}
                                 </div>
@@ -596,7 +596,7 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
       <p className="text-sm font-semibold text-foreground text-right">{formatMoney(entry.wagered)}</p>
 
       {/* Prize */}
-      <p className="text-sm font-bold text-right" style={{ color: '#39ff93' }}>${reward?.toLocaleString() ?? '—'}</p>
+      <p className="text-sm font-bold text-right text-green-600">${reward?.toLocaleString() ?? '—'}</p>
     </div>
   )
 }
