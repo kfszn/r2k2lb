@@ -3,11 +3,11 @@ import { generatePageMetadata } from '@/lib/seo-metadata'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-
-export const metadata: Metadata = generatePageMetadata('perksAcebetLossBack')
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Shield, TrendingDown } from 'lucide-react'
+
+export const metadata: Metadata = generatePageMetadata('perksAcebetLossBack')
 
 export default function LossBackPage() {
   return (
@@ -129,7 +129,7 @@ export default function LossBackPage() {
                   </div>
                   <div>
                     <p className="font-medium">Request Your Monthly PnL</p>
-                    <p className="text-sm text-muted-foreground">Contact Acebet support and request your Profit & Loss statement for the calendar month</p>
+                    <p className="text-sm text-muted-foreground">Contact AceBet support and request your Profit & Loss statement for the calendar month</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -173,7 +173,7 @@ export default function LossBackPage() {
                   </div>
                   <div>
                     <p className="font-medium">Receive Your Loss-back Credit</p>
-                    <p className="text-sm text-muted-foreground">Credits are paid out based on your tier percentage, capped at $250/month</p>
+                    <p className="text-sm text-muted-foreground">Credits are paid out based on your tier percentage — $100/month (Tier 1), $200/month (Tier 2), $300/month (Tier 3)</p>
                   </div>
                 </div>
               </div>
@@ -251,7 +251,7 @@ export default function LossBackPage() {
               </div>
               <div>
                 <p className="font-semibold mb-1">Tier Calculation</p>
-                <p className="text-muted-foreground">Your tier is determined by your total monthly wagers with Acebet. Each month resets for tier calculation.</p>
+                <p className="text-muted-foreground">Your tier is determined by your total monthly wagers with AceBet. Each month resets for tier calculation.</p>
               </div>
               <div>
                 <p className="font-semibold mb-1">Progressive Claims</p>
@@ -271,7 +271,7 @@ export default function LossBackPage() {
           {/* CTA */}
           <div className="text-center space-y-4">
             <p className="text-lg text-muted-foreground">Start earning loss-back today!</p>
-            <a href="https://acebet.com/welcome/r/r2k2" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.acebet.co/welcome/r/r2k2" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">
                 <TrendingDown className="h-5 w-5" />
                 Sign Up with Code R2K2

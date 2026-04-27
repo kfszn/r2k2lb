@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { BracketProvider } from '@/lib/bracket-context'
 import { defaultMetadata } from '@/lib/seo-metadata'
+import Footer from '@/components/footer'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -21,10 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="bg-background">
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased flex flex-col min-h-screen">
         <BracketProvider>
           {children}
         </BracketProvider>
+        <Footer />
         <Analytics />
       </body>
     </html>

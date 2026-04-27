@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
     const acebetUser = users.find(u => u.name.toLowerCase() === acebetUsername.toLowerCase());
 
     if (!acebetUser && ACEBET_TOKEN) {
-      return new NextResponse(`@${kickUsername} Entry DENIED - "${acebetUsername}" not found under code R2K2. Sign up at acebet.com with code R2K2!`, { status: 200 });
+      return new NextResponse(`@${kickUsername} Entry DENIED - "${acebetUsername}" not found under code R2K2. Sign up at acebet.co with code R2K2!`, { status: 200 });
     }
 
     // Check requirements

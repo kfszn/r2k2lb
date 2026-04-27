@@ -62,7 +62,7 @@ function Header() {
             height={32}
             className="w-8 h-8 object-contain"
           />
-          <span className="font-bold text-base md:text-lg">R2K2</span>
+          <span className="font-bold text-base md:text-lg" style={{ textShadow: '0 0 8px rgba(59,130,246,0.9), 0 0 20px rgba(59,130,246,0.5)' }}>R2K2</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -74,7 +74,7 @@ function Header() {
           {/* Acebet Dropdown */}
           <div className="relative group">
             <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
-              Acebet
+              AceBet
               <ChevronDown className="h-4 w-4" />
             </button>
             <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
@@ -223,7 +223,7 @@ function Header() {
                     onClick={() => setMobileAcebet(!mobileAcebet)}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
-                    Acebet
+                    AceBet
                     <ChevronDown className={`h-4 w-4 transition-transform ${mobileAcebet ? 'rotate-180' : ''}`} />
                   </button>
                   {mobileAcebet && (

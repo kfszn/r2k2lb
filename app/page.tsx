@@ -33,7 +33,7 @@ export default function HomePage() {
               $15,000+ in Monthly Rewards Including $10,000 Monthly Leaderboard
             </p>
             <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
-              Compete on the Acebet leaderboard, earn wager bonuses, loss back, and more with code R2K2.
+              Compete on the AceBet leaderboard, earn wager bonuses, loss back, and more with code R2K2.
             </p>
 
           </div>
@@ -51,10 +51,10 @@ export default function HomePage() {
           <div className="flex justify-center max-w-4xl mx-auto">
             <div className="w-full max-w-sm">
               <PlatformCard
-                name="Acebet"
+                name="AceBet"
                 logo="/assets/rainbet.png"
                 href="/leaderboard/acebet"
-                signupUrl="https://acebet.com/welcome/r/r2k2"
+                signupUrl="https://www.acebet.co/welcome/r/r2k2"
                 rewards={[
                   "$10,000 Monthly Leaderboard",
                   "$15,000+ Total Monthly Rewards",
@@ -86,7 +86,7 @@ export default function HomePage() {
                   <Trophy className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">1st Time Deposit Bonus</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">Available on Acebet for new users signing up with code R2K2</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Available on AceBet for new users signing up with code R2K2</p>
               </CardContent>
             </Card>
 
@@ -97,7 +97,7 @@ export default function HomePage() {
                   <TrendingUp className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Wager Rewards</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">Earn rewards based on your wager volume on Acebet with code R2K2</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Earn rewards based on your wager volume on AceBet with code R2K2</p>
               </CardContent>
             </Card>
 
@@ -108,7 +108,7 @@ export default function HomePage() {
                   <Sparkles className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Loss Back</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">Get a percentage of your losses back on Acebet with code R2K2</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Get a percentage of your losses back on AceBet with code R2K2</p>
               </CardContent>
             </Card>
 
@@ -161,45 +161,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40 bg-card/30 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <div className="space-y-2">
-                <Link href="/" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link>
-                <Link href="/" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
-              <div className="space-y-2">
-                <Link href="/" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
-                <Link href="/" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Socials</h3>
-              <div className="space-y-2">
-                <a href="https://kick.com/R2Ktwo" target="_blank" rel="noopener" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Kick</a>
-                <a href="https://discord.gg/DwpA8vaGPj" target="_blank" rel="noopener" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Discord</a>
-                <a href="https://x.com/r2ktwo" target="_blank" rel="noopener" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">X</a>
-                <a href="https://instagram.com/R2ktwoKick" target="_blank" rel="noopener" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Instagram</a>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Responsible Gaming</h3>
-              <p className="text-xs text-muted-foreground">
-                Remember: Gambling over a long period will always result in losses. Please set limits and gamble responsibly.
-              </p>
-            </div>
-          </div>
-          <div className="pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
-            <p>© 2026 R2K2. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+
     </div>
   )
 }

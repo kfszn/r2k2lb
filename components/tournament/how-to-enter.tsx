@@ -24,7 +24,7 @@ export function HowToEnter({ minWager = 0, requireActive = true }: HowToEnterPro
             <div>
               <p className="font-medium text-foreground">Sign up on Acebet</p>
               <p className="text-sm text-muted-foreground">
-                Use code <span className="font-bold text-primary">R2K2</span> when signing up at acebet.com
+                Use code <span className="font-bold text-primary">R2K2</span> when signing up at acebet.co
               </p>
             </div>
           </div>
@@ -36,7 +36,7 @@ export function HowToEnter({ minWager = 0, requireActive = true }: HowToEnterPro
             <div>
               <p className="font-medium text-foreground">Meet Requirements</p>
               <p className="text-sm text-muted-foreground">
-                Be active under code <span className="font-bold text-primary">R2K2</span> on acebet.com and meet the specified wagered amount
+                Be active under code <span className="font-bold text-primary">R2K2</span> on acebet.co and meet the specified wagered amount
               </p>
             </div>
           </div>

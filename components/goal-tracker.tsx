@@ -14,18 +14,18 @@ export function GoalTracker({ current, goal, formatMoney, label = 'Goal Progress
 
   return (
     <Card className="bg-card/50 backdrop-blur border-accent/20">
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground uppercase font-medium mb-1">{label}</p>
-              <p className="text-xl font-bold text-accent">{formatMoney(current)} / {formatMoney(goal)}</p>
+      <CardContent className="px-4 py-3">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground uppercase font-medium mb-0.5 tracking-wider">{label}</p>
+              <p className="text-sm font-bold text-accent truncate">{formatMoney(current)} / {formatMoney(goal)}</p>
             </div>
-            <Target className="h-12 w-12 text-accent/40" />
+            <Target className="h-5 w-5 text-accent/40 flex-shrink-0" />
           </div>
           
-          <div className="space-y-2">
-            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+          <div className="space-y-1">
+            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-accent to-accent/60 transition-all duration-500"
                 style={{ width: `${percentage}%` }}
