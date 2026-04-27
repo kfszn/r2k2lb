@@ -30,11 +30,11 @@ const REWARDS = [6000, 4000, 2500, 2000, 1500, 1250, 1000, 500, 400, 300, 200, 1
 
 // Previous leaderboard months — fill in date ranges when ready
 // Dates are placeholders; update start_at/end_at once confirmed
-const PREVIOUS_MONTHS: { label: string; start_at: string; end_at: string }[] = [
-  { label: 'January', start_at: 'TBD', end_at: 'TBD' },
-  { label: 'February', start_at: 'TBD', end_at: 'TBD' },
-  { label: 'March', start_at: 'TBD', end_at: 'TBD' },
-  { label: 'April', start_at: 'TBD', end_at: 'TBD' },
+const PREVIOUS_MONTHS: { label: string; start_at: string; end_at: string; display: string }[] = [
+  { label: 'January', start_at: '2025-12-26', end_at: '2026-01-24', display: 'Dec 26, 2025 – Jan 24, 2026' },
+  { label: 'February', start_at: '2026-01-25', end_at: '2026-02-23', display: 'Jan 25 – Feb 23, 2026' },
+  { label: 'March', start_at: '2026-02-24', end_at: '2026-03-25', display: 'Feb 24 – Mar 25, 2026' },
+  { label: 'April', start_at: '2026-03-26', end_at: '2026-04-24', display: 'Mar 26 – Apr 24, 2026' },
 ]
 
 export default function AcebetLeaderboard() {
@@ -300,17 +300,15 @@ export default function AcebetLeaderboard() {
                   {PREVIOUS_MONTHS.map(m => (
                     <button
                       key={m.label}
-                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 ${selectedMonth === m.label ? 'text-primary font-semibold bg-primary/10' : 'text-foreground'}`}
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-muted/60 transition-colors ${selectedMonth === m.label ? 'bg-primary/10' : ''}`}
                       onClick={() => {
                         setSelectedMonth(m.label)
                         setDropdownOpen(false)
                         loadLeaderboard(m.label)
                       }}
                     >
-                      {m.label}
-                      {m.start_at === 'TBD' && (
-                        <span className="text-xs text-muted-foreground">Coming soon</span>
-                      )}
+                      <p className={`font-semibold ${selectedMonth === m.label ? 'text-primary' : 'text-foreground'}`}>{m.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{m.display}</p>
                     </button>
                   ))}
                 </div>
@@ -319,11 +317,15 @@ export default function AcebetLeaderboard() {
           </div>
 
           {/* Selected month label */}
-          {showPrevious && (
-            <p className="text-center text-sm text-muted-foreground mt-3">
-              Viewing: <span className="text-foreground font-semibold">{selectedMonth} Leaderboard</span>
-            </p>
-          )}
+          {showPrevious && (() => {
+            const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
+            return (
+              <p className="text-center text-sm text-muted-foreground mt-3">
+                Viewing: <span className="text-foreground font-semibold">{selectedMonth} Leaderboard</span>
+                {found && <span className="ml-2 text-muted-foreground">({found.display})</span>}
+              </p>
+            )
+          })()}
         </div>
       </section>
 
