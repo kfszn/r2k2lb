@@ -39,7 +39,7 @@ export default function WagerRewardsPage() {
                     </div>
                     <div>
                       <CardTitle className="text-2xl">Wager Rewards</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">Claimable every 25,000 points minimum</p>
+                      <p className="text-sm text-muted-foreground mt-1">Claimable every $25 minimum</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -53,7 +53,7 @@ export default function WagerRewardsPage() {
                   <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
                     <p className="text-sm font-medium text-muted-foreground">Minimum Claim</p>
                     <p className="text-2xl font-bold">$25</p>
-                    <p className="text-xs text-muted-foreground">at 25,000 points</p>
+                    <p className="text-xs text-muted-foreground">at $25,000 wagered</p>
                   </div>
                   <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
                     <p className="text-sm font-medium text-muted-foreground">Rate</p>
@@ -70,7 +70,7 @@ export default function WagerRewardsPage() {
                 </div>
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
                   <span className="text-purple-500 mt-0.5">✓</span>
-                  <p className="text-sm text-muted-foreground">Claim any time you have reached at least 25,000 points — the math is simple, $1 for every $1,000 wagered</p>
+                  <p className="text-sm text-muted-foreground">Claim any time you have wagered at least $25,000 — the math is simple, $1 for every $1,000 wagered</p>
                 </div>
                 <div className="pt-4 space-y-3 border-t border-border/30">
                   <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer">
@@ -126,8 +126,8 @@ export default function WagerRewardsPage() {
                       3
                     </div>
                     <div>
-                      <p className="font-medium">Reach 25,000 Points</p>
-                      <p className="text-sm text-muted-foreground">Once you hit 25,000 points minimum, you can claim — $1 for every $1,000 wagered</p>
+                      <p className="font-medium">Reach $25,000 Wagered</p>
+                      <p className="text-sm text-muted-foreground">Once you hit $25,000 wagered minimum, you can claim — $1 for every $1,000 wagered</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
