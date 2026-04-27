@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Trophy, Clock, DollarSign, TrendingUp, Users, Search } from 'lucide-react'
+import { Trophy, Clock, DollarSign, TrendingUp, Users, Search, ChevronDown } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 import { GoalTracker } from '@/components/goal-tracker'
@@ -25,28 +25,91 @@ interface LeaderboardData {
   data: LeaderboardEntry[]
 }
 
-// Prize pool: $10,000 total - proper descending order 1-10
-const REWARDS = [4000, 2000, 1250, 1000, 650, 450, 300, 200, 100, 50]
+// Prize pool: $20,000 total - top 15 paid spots
+const REWARDS = [6000, 4000, 2500, 2000, 1500, 1250, 1000, 500, 400, 300, 200, 150, 100, 50, 50]
+
+interface MonthConfig {
+  label: string
+  start_at: string
+  end_at: string
+  display: string
+  rewards: number[]
+  total: number
+}
+
+// Previous leaderboard months — top 10 paid spots each
+const PREVIOUS_MONTHS: MonthConfig[] = [
+  {
+    label: 'January',
+    start_at: '2025-12-26',
+    end_at: '2026-01-24',
+    display: 'Dec 26, 2025 – Jan 24, 2026',
+    rewards: [800, 500, 375, 300, 200, 150, 100, 40, 20, 15],
+    total: 2500,
+  },
+  {
+    label: 'February',
+    start_at: '2026-01-25',
+    end_at: '2026-02-23',
+    display: 'Jan 25 – Feb 23, 2026',
+    rewards: [1000, 600, 400, 300, 250, 150, 120, 90, 60, 30],
+    total: 3000,
+  },
+  {
+    label: 'March',
+    start_at: '2026-02-24',
+    end_at: '2026-03-25',
+    display: 'Feb 24 – Mar 25, 2026',
+    rewards: [3200, 1650, 1000, 550, 250, 150, 95, 75, 30],
+    total: 7000,
+  },
+  {
+    label: 'April',
+    start_at: '2026-03-26',
+    end_at: '2026-04-24',
+    display: 'Mar 26 – Apr 24, 2026',
+    rewards: [4000, 2000, 1250, 1000, 650, 450, 300, 200, 100, 50],
+    total: 10000,
+  },
+]
 
 export default function AcebetLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showPrevious, setShowPrevious] = useState(false)
+  const [selectedMonth, setSelectedMonth] = useState<string>('current') // 'current' | month label
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('Loading...')
   const [dateRange, setDateRange] = useState<string>('Loading...')
   const [searchQuery, setSearchQuery] = useState<string>('')
 
-  const loadLeaderboard = async (previous: boolean) => {
+  const showPrevious = selectedMonth !== 'current'
+
+  const activeMonthConfig = PREVIOUS_MONTHS.find(m => m.label === selectedMonth) ?? null
+  const activeRewards = showPrevious ? (activeMonthConfig?.rewards ?? []) : REWARDS
+  const activeTotal = showPrevious ? (activeMonthConfig?.total ?? 0) : 20000
+
+  const loadLeaderboard = async (month: string) => {
     setLoading(true)
     setError(null)
+    setSearchQuery('')
     try {
-      const url = previous ? '/api/leaderboard?prev=1' : '/api/leaderboard'
+      let url = '/api/leaderboard'
+      if (month !== 'current') {
+        const found = PREVIOUS_MONTHS.find(m => m.label === month)
+        if (found && found.start_at !== 'TBD') {
+          url = `/api/leaderboard?start_at=${found.start_at}&end_at=${found.end_at}`
+        } else {
+          // Dates TBD — show empty state
+          setLeaderboard({ ok: true, range: { start_at: 'TBD', end_at: 'TBD', days: 0 }, count: 0, data: [] })
+          setLoading(false)
+          return
+        }
+      }
       const res = await fetch(url)
       const data = await res.json()
       if (data.ok) {
         setLeaderboard(data)
-        setShowPrevious(previous)
       } else {
         setError(data.error || 'Failed to load leaderboard')
       }
@@ -58,18 +121,37 @@ export default function AcebetLeaderboard() {
   }
 
   useEffect(() => {
-    loadLeaderboard(false)
+    loadLeaderboard('current')
   }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!dropdownOpen) return
+    const handler = () => setDropdownOpen(false)
+    document.addEventListener('click', handler)
+    return () => document.removeEventListener('click', handler)
+  }, [dropdownOpen])
 
   useEffect(() => {
     if (!leaderboard) return
 
-    // Hardcoded cycle: Mar 28 - Apr 27, 2026
-    setDateRange(`Mar 28 - Apr 27, 2026 • 11am EST End`)
+    // Show the correct date range label for whichever period is selected
+    if (selectedMonth !== 'current') {
+      const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
+      if (found) setDateRange(`${found.display}`)
+    } else {
+      setDateRange(`Apr 27 - May 27, 2026 • 11am EST End`)
+    }
 
     const interval = setInterval(() => {
-      // Countdown ends Apr 27, 2026 at 11am EST (4pm UTC)
-      const endTime = new Date('2026-04-27T16:00:00Z').getTime()
+      // Countdown only applies to current cycle — May 27, 2026 at 11am EST (3pm UTC/EDT)
+      // Previous months are always ended
+      if (selectedMonth !== 'current') {
+        setTimeRemaining('Ended')
+        return
+      }
+
+      const endTime = new Date('2026-05-27T15:00:00Z').getTime()
       const diff = endTime - Date.now()
 
       if (diff <= 0) {
@@ -94,7 +176,7 @@ export default function AcebetLeaderboard() {
     }, 1000)
     
     return () => clearInterval(interval)
-  }, [leaderboard])
+  }, [leaderboard, selectedMonth])
 
   const formatMoney = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -141,10 +223,10 @@ export default function AcebetLeaderboard() {
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40">
               <Trophy className="h-6 w-6 text-primary" />
-              <span className="text-3xl font-bold text-primary">$10,000</span>
+              <span className="text-3xl font-bold text-primary">${activeTotal.toLocaleString()}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
-              AceBet <span className="text-primary">$10,000</span> Monthly Leaderboard
+              AceBet <span className="text-primary">${activeTotal.toLocaleString()}</span> Monthly Leaderboard
             </h1>
             <div className="flex justify-center">
               <a
@@ -168,17 +250,32 @@ export default function AcebetLeaderboard() {
               <em className="text-sm">{dateRange}</em>
             </p>
             
-            <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
-              <span className="px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">1st — $4,000</span>
-              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $2,000</span>
-              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $1,250</span>
-              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $1,000</span>
-              <span className="px-3 py-1 rounded-full bg-green-600/20 border border-green-600/40 text-green-600">5th — $650</span>
-              <span className="px-3 py-1 rounded-full bg-blue-400/20 border border-blue-400/40 text-blue-300">6th — $450</span>
-              <span className="px-3 py-1 rounded-full bg-purple-400/20 border border-purple-400/40 text-purple-300">7th — $300</span>
-              <span className="px-3 py-1 rounded-full bg-pink-400/20 border border-pink-400/40 text-pink-300">8th — $200</span>
-              <span className="px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300">9th — $100</span>
-              <span className="px-3 py-1 rounded-full bg-lime-400/20 border border-lime-400/40 text-lime-300">10th — $50</span>
+            <div className="flex flex-wrap justify-center gap-2 text-sm font-semibold">
+              {activeRewards.map((prize, i) => {
+                const ordinals = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th','13th','14th','15th']
+                const colors = [
+                  'bg-yellow-400/20 border-yellow-400/40 text-yellow-400',
+                  'bg-slate-400/20 border-slate-400/40 text-slate-300',
+                  'bg-amber-700/20 border-amber-700/40 text-amber-500',
+                  'bg-primary/20 border-primary/40 text-primary',
+                  'bg-green-600/20 border-green-600/40 text-green-500',
+                  'bg-blue-400/20 border-blue-400/40 text-blue-300',
+                  'bg-purple-400/20 border-purple-400/40 text-purple-300',
+                  'bg-pink-400/20 border-pink-400/40 text-pink-300',
+                  'bg-cyan-400/20 border-cyan-400/40 text-cyan-300',
+                  'bg-lime-400/20 border-lime-400/40 text-lime-300',
+                  'bg-orange-400/20 border-orange-400/40 text-orange-300',
+                  'bg-rose-400/20 border-rose-400/40 text-rose-300',
+                  'bg-teal-400/20 border-teal-400/40 text-teal-300',
+                  'bg-indigo-400/20 border-indigo-400/40 text-indigo-300',
+                  'bg-indigo-400/20 border-indigo-400/40 text-indigo-300',
+                ]
+                return (
+                  <span key={i} className={`px-3 py-1 rounded-full border ${colors[i] ?? colors[colors.length - 1]}`}>
+                    {ordinals[i]} — ${prize.toLocaleString()}
+                  </span>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -214,7 +311,7 @@ export default function AcebetLeaderboard() {
             
             <GoalTracker
               current={totalWagered}
-              goal={180000000}
+              goal={200000000}
               formatMoney={formatMoney}
               label="Wager Goal"
             />
@@ -239,24 +336,57 @@ export default function AcebetLeaderboard() {
       {/* Controls */}
       <section className="py-6 border-b border-border/40">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-3 justify-center items-center">
+            {/* Current tab */}
             <Button
-              variant="outline"
-              onClick={() => loadLeaderboard(true)}
-              disabled={showPrevious}
-              className="bg-transparent"
-            >
-              Previous Leaderboard
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => loadLeaderboard(false)}
-              disabled={!showPrevious}
-              className="bg-transparent"
+              variant={!showPrevious ? 'default' : 'outline'}
+              onClick={() => { setSelectedMonth('current'); loadLeaderboard('current') }}
+              className={!showPrevious ? '' : 'bg-transparent'}
             >
               Current Leaderboard
             </Button>
+
+            {/* Previous months dropdown */}
+            <div className="relative">
+              <Button
+                variant={showPrevious ? 'default' : 'outline'}
+                className={`flex items-center gap-2 ${showPrevious ? '' : 'bg-transparent'}`}
+                onClick={() => setDropdownOpen(o => !o)}
+              >
+                {showPrevious ? selectedMonth : 'Previous Leaderboards'}
+                <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </Button>
+              {dropdownOpen && (
+                <div className="absolute top-full mt-1 left-0 z-50 min-w-[180px] rounded-xl border border-border bg-card shadow-xl overflow-hidden">
+                  {PREVIOUS_MONTHS.map(m => (
+                    <button
+                      key={m.label}
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-muted/60 transition-colors ${selectedMonth === m.label ? 'bg-primary/10' : ''}`}
+                      onClick={() => {
+                        setSelectedMonth(m.label)
+                        setDropdownOpen(false)
+                        loadLeaderboard(m.label)
+                      }}
+                    >
+                      <p className={`font-semibold ${selectedMonth === m.label ? 'text-primary' : 'text-foreground'}`}>{m.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{m.display}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Selected month label */}
+          {showPrevious && (() => {
+            const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
+            return (
+              <p className="text-center text-sm text-muted-foreground mt-3">
+                Viewing: <span className="text-foreground font-semibold">{selectedMonth} Leaderboard</span>
+                {found && <span className="ml-2 text-muted-foreground">({found.display})</span>}
+              </p>
+            )
+          })()}
         </div>
       </section>
 
@@ -285,6 +415,12 @@ export default function AcebetLeaderboard() {
                     <p className="text-muted-foreground text-lg">No leaderboard data available for the selected period</p>
                     <p className="text-sm text-muted-foreground mt-2">Range: {leaderboard.range.start_at} to {leaderboard.range.end_at}</p>
                   </div>
+                ) : leaderboard.range.start_at === 'TBD' ? (
+                  <div className="text-center py-16 bg-muted/30 rounded-xl border border-border p-8">
+                    <Trophy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-foreground mb-1">{selectedMonth} Leaderboard</p>
+                    <p className="text-sm text-muted-foreground">Date range coming soon. Check back later!</p>
+                  </div>
                 ) : (
                   <>
                     {/* Podium Top 3 */}
@@ -312,7 +448,7 @@ export default function AcebetLeaderboard() {
                                 </div>
                                 <div className="flex items-center justify-between text-sm bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
                                   <span className="text-yellow-400/80">Prize</span>
-                                  <span className="font-bold text-yellow-400">${REWARDS[0].toLocaleString()}</span>
+                                  <span className="font-bold text-yellow-400">${activeRewards[0]?.toLocaleString() ?? '—'}</span>
                                 </div>
                               </div>
                             </div>
@@ -336,7 +472,7 @@ export default function AcebetLeaderboard() {
                                   </div>
                                   <div className="rounded-lg bg-slate-400/10 border border-slate-400/20 px-2 py-1.5 text-center">
                                     <p className="text-xs text-slate-400/80">Prize</p>
-                                    <p className="text-xs font-bold text-slate-300">${REWARDS[1].toLocaleString()}</p>
+                                    <p className="text-xs font-bold text-slate-300">${activeRewards[1]?.toLocaleString() ?? '—'}</p>
                                   </div>
                                 </div>
                               </div>
@@ -358,7 +494,7 @@ export default function AcebetLeaderboard() {
                                   </div>
                                   <div className="rounded-lg bg-amber-600/10 border border-amber-600/20 px-2 py-1.5 text-center">
                                     <p className="text-xs text-amber-500/80">Prize</p>
-                                    <p className="text-xs font-bold text-amber-500">${REWARDS[2].toLocaleString()}</p>
+                                    <p className="text-xs font-bold text-amber-500">${activeRewards[2]?.toLocaleString() ?? '—'}</p>
                                   </div>
                                 </div>
                               </div>
@@ -385,7 +521,7 @@ export default function AcebetLeaderboard() {
                                 </div>
                                 <div className="flex items-center justify-between text-xs bg-slate-400/10 border border-slate-400/20 rounded-lg px-3 py-1.5">
                                   <span className="text-slate-400/80">Prize</span>
-                                  <span className="font-bold text-slate-300">${REWARDS[1].toLocaleString()}</span>
+                                  <span className="font-bold text-slate-300">${activeRewards[1]?.toLocaleString() ?? '—'}</span>
                                 </div>
                               </div>
                             </div>
@@ -410,7 +546,7 @@ export default function AcebetLeaderboard() {
                                 </div>
                                 <div className="flex items-center justify-between text-sm bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
                                   <span className="text-yellow-400/80">Prize</span>
-                                  <span className="font-bold text-yellow-400 text-lg">${REWARDS[0].toLocaleString()}</span>
+                                  <span className="font-bold text-yellow-400 text-lg">${activeRewards[0]?.toLocaleString() ?? '—'}</span>
                                 </div>
                               </div>
                             </div>
@@ -432,7 +568,7 @@ export default function AcebetLeaderboard() {
                                 </div>
                                 <div className="flex items-center justify-between text-xs bg-amber-600/10 border border-amber-600/20 rounded-lg px-3 py-1.5">
                                   <span className="text-amber-500/80">Prize</span>
-                                  <span className="font-bold text-amber-500">${REWARDS[2].toLocaleString()}</span>
+                                  <span className="font-bold text-amber-500">${activeRewards[2]?.toLocaleString() ?? '—'}</span>
                                 </div>
                               </div>
                             </div>
@@ -488,10 +624,10 @@ export default function AcebetLeaderboard() {
                                     <p className="text-xs text-muted-foreground">Wagered</p>
                                     <p className="font-bold text-foreground">{formatMoney(entry.wagered)}</p>
                                   </div>
-                                  {rank <= 10 && REWARDS[rank - 1] && (
+                                  {rank <= activeRewards.length && activeRewards[rank - 1] && (
                                     <div className="text-right">
                                       <p className="text-xs text-muted-foreground">Prize</p>
-                                      <p className="font-bold text-green-600">${REWARDS[rank - 1].toLocaleString()}</p>
+                                      <p className="font-bold text-green-600">${activeRewards[rank - 1].toLocaleString()}</p>
                                     </div>
                                   )}
                                 </div>
@@ -513,12 +649,12 @@ export default function AcebetLeaderboard() {
                       </div>
                       {/* Rows */}
                       <div className="divide-y divide-border/30">
-                        {leaderboard.data.slice(3, 10).map((entry, idx) => (
+                        {leaderboard.data.slice(3, activeRewards.length).map((entry, idx) => (
                           <LeaderboardRow
                             key={entry.userId}
                             rank={idx + 4}
                             entry={entry}
-                            reward={REWARDS[idx + 3]}
+                            reward={activeRewards[idx + 3]}
                             formatMoney={formatMoney}
                             maskName={maskName}
                             getAvatarUrl={getAvatarUrl}

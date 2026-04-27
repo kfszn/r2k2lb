@@ -5,7 +5,7 @@
 //   - ?prev=1  (previous window same length)
 //   - ?fresh=1 (force recompute; bypass cache)
 // Adds CORS and returns JSON sorted by wagered desc.
-// Cycle: 2026-03-28 → 2026-04-27 | Prize pool: $10,000
+// Cycle: 2026-04-27 → 2026-05-27 | Prize pool: $20,000
 
 // ===============================
 // 🔥 PROXY + FETCH SETUP FOR CLOUDFLARE BYPASS
@@ -52,9 +52,9 @@ function shiftRangeBack(startISO, endISO) {
   return { start_at: toISODateUTC(s), end_at: toISODateUTC(e) };
 }
 
-// ✅ LEADERBOARD TIMING: 3/28/2026 → 4/27/2026 (30 days, starts 11am EST)
-const DEFAULT_START = "2026-03-28";
-const DEFAULT_END = "2026-04-27";
+// ✅ LEADERBOARD TIMING: 4/27/2026 → 5/27/2026 (30 days, starts 11am EST)
+const DEFAULT_START = "2026-04-27";
+const DEFAULT_END = "2026-05-27";
 
 function updateDefaultDates() {
   // No-op: dates are hardcoded for this leaderboard cycle
@@ -136,33 +136,99 @@ function makeCacheKey({ start_at, end_at, prev }) {
 
 async function computeLeaderboard({ start_at, end_at, token }) {
   // The Acebet API /affiliates/detailed-summary/v2/:date returns cumulative totals
-  // from that date onwards. Calling it with start_at gives us the leaderboard window totals.
-  console.log(`[v0] computeLeaderboard: fetching from start_at=${start_at}`);
+  // from that date onwards to present. To get stats for a WINDOW (start_at to end_at),
+  // we need to fetch the cumulative at start_at and subtract the cumulative at end_at+1.
+  // For the CURRENT cycle (end_at is today or future), we just use start_at totals directly.
+  
+  const todayISO = toISODateUTC(new Date());
+  const isCurrentCycle = end_at >= todayISO;
+  
+  console.log(`[v0] computeLeaderboard: start=${start_at} end=${end_at} isCurrentCycle=${isCurrentCycle}`);
 
-  const rows = await fetchDayAcebet(start_at, token);
-  console.log(`[v0] computeLeaderboard: got ${rows.length} rows from API`);
+  // Fetch cumulative totals at start_at
+  const startRows = await fetchDayAcebet(start_at, token);
+  console.log(`[v0] computeLeaderboard: got ${startRows.length} rows from start_at API`);
 
-  const data = rows
+  if (isCurrentCycle) {
+    // For current/ongoing cycle, start_at totals are the window totals
+    const data = startRows
+      .filter((r) => r?.userId != null)
+      .map((r) => ({
+        userId: r.userId,
+        name: r.name ?? null,
+        avatar: r.avatar ?? null,
+        badge: r.badge ?? null,
+        role: r.role ?? null,
+        active: Boolean(r.active),
+        isPrivate: Boolean(r.isPrivate),
+        premiumUntil: r.premiumUntil ?? null,
+        wagered: Number(r.wagered ?? 0),
+        deposited: Number(r.deposited ?? 0),
+        earned: Number(r.earned ?? 0),
+        xp: Number(r.xp ?? 0),
+        firstSeen: start_at,
+        lastSeen: start_at,
+      }));
+
+    data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
+    console.log(`[v0] computeLeaderboard: returning ${data.length} users (current cycle)`);
+
+    return {
+      ok: true,
+      range: { start_at, end_at },
+      count: data.length,
+      data,
+    };
+  }
+
+  // For HISTORICAL cycles, we need to subtract: window_total = cumulative_at_start - cumulative_at_end+1
+  // The day AFTER end_at gives us what was accumulated AFTER the window closed
+  const dayAfterEnd = new Date(`${end_at}T00:00:00Z`);
+  dayAfterEnd.setUTCDate(dayAfterEnd.getUTCDate() + 1);
+  const dayAfterEndISO = toISODateUTC(dayAfterEnd);
+  
+  console.log(`[v0] computeLeaderboard: fetching end boundary at ${dayAfterEndISO}`);
+  const endRows = await fetchDayAcebet(dayAfterEndISO, token);
+  console.log(`[v0] computeLeaderboard: got ${endRows.length} rows from end boundary API`);
+
+  // Build lookup map for end totals
+  const endMap = new Map();
+  for (const r of endRows) {
+    if (r?.userId != null) {
+      endMap.set(r.userId, {
+        wagered: Number(r.wagered ?? 0),
+        deposited: Number(r.deposited ?? 0),
+        earned: Number(r.earned ?? 0),
+      });
+    }
+  }
+
+  // Compute window totals by subtraction
+  const data = startRows
     .filter((r) => r?.userId != null)
-    .map((r) => ({
-      userId: r.userId,
-      name: r.name ?? null,
-      avatar: r.avatar ?? null,
-      badge: r.badge ?? null,
-      role: r.role ?? null,
-      active: Boolean(r.active),
-      isPrivate: Boolean(r.isPrivate),
-      premiumUntil: r.premiumUntil ?? null,
-      wagered: Number(r.wagered ?? 0),
-      deposited: Number(r.deposited ?? 0),
-      earned: Number(r.earned ?? 0),
-      xp: Number(r.xp ?? 0),
-      firstSeen: start_at,
-      lastSeen: start_at,
-    }));
+    .map((r) => {
+      const endTotals = endMap.get(r.userId) || { wagered: 0, deposited: 0, earned: 0 };
+      return {
+        userId: r.userId,
+        name: r.name ?? null,
+        avatar: r.avatar ?? null,
+        badge: r.badge ?? null,
+        role: r.role ?? null,
+        active: Boolean(r.active),
+        isPrivate: Boolean(r.isPrivate),
+        premiumUntil: r.premiumUntil ?? null,
+        wagered: Math.max(0, Number(r.wagered ?? 0) - endTotals.wagered),
+        deposited: Math.max(0, Number(r.deposited ?? 0) - endTotals.deposited),
+        earned: Math.max(0, Number(r.earned ?? 0) - endTotals.earned),
+        xp: Number(r.xp ?? 0),
+        firstSeen: start_at,
+        lastSeen: end_at,
+      };
+    })
+    .filter((r) => r.wagered > 0); // Only include users who wagered in this window
 
   data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
-  console.log(`[v0] computeLeaderboard: returning ${data.length} users`);
+  console.log(`[v0] computeLeaderboard: returning ${data.length} users (historical window)`);
 
   return {
     ok: true,
