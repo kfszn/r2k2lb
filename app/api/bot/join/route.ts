@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       console.log("[v0] Validation failed:", validationError);
       return NextResponse.json({
         success: false,
-        message: `@${kickUsername} Entry DENIED - ${validationError || "Not under code R2K2. Sign up at acebet.com with code R2K2!"}`,
+        message: `@${kickUsername} Entry DENIED - ${validationError || "Not under code R2K2. Sign up at acebet.co with code R2K2!"}`,
       });
     }
 

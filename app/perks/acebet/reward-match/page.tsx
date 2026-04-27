@@ -259,7 +259,7 @@ export default function RewardMatchPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" className="font-bold">
-                <a href="https://acebet.co/affiliates/creator/r2k2?leaderboardId=306" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.acebet.co/welcome/r/r2k2" target="_blank" rel="noopener noreferrer">
                   Sign Up on Acebet
                 </a>
               </Button>

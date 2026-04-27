@@ -54,7 +54,7 @@ export default function HomePage() {
                 name="Acebet"
                 logo="/assets/rainbet.png"
                 href="/leaderboard/acebet"
-                signupUrl="https://acebet.com/welcome/r/r2k2"
+                signupUrl="https://www.acebet.co/welcome/r/r2k2"
                 rewards={[
                   "$10,000 Monthly Leaderboard",
                   "$15,000+ Total Monthly Rewards",

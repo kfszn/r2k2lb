@@ -255,7 +255,7 @@ export default function FirstDepositBonusPage() {
           {/* CTA */}
           <div className="text-center space-y-4">
             <p className="text-lg text-muted-foreground">Claim your welcome bonus today!</p>
-            <a href="https://acebet.co/affiliates/creator/r2k2?leaderboardId=306" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.acebet.co/welcome/r/r2k2" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">
                 <Zap className="h-5 w-5" />
                 Sign Up with Code R2K2
