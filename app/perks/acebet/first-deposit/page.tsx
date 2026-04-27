@@ -206,7 +206,7 @@ export default function FirstDepositBonusPage() {
                   </div>
                   <div>
                     <p className="font-medium">Sign Up with Code R2K2</p>
-                    <p className="text-sm text-muted-foreground">Visit acebet.co and use code R2K2 during registration</p>
+                    <p className="text-sm text-muted-foreground">Visit acebet.co and use code R2K2 during registration to join AceBet</p>
                   </div>
                 </div>
                 <div className="flex gap-4">

@@ -144,7 +144,7 @@ export default function AcebetLeaderboard() {
               <span className="text-3xl font-bold text-primary">$10,000</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
-              Acebet <span className="text-primary">$10,000</span> Monthly Leaderboard
+              AceBet <span className="text-primary">$10,000</span> Monthly Leaderboard
             </h1>
             <div className="flex justify-center">
               <a
@@ -154,7 +154,7 @@ export default function AcebetLeaderboard() {
                 className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors font-semibold"
               >
                 <Trophy className="h-4 w-4" />
-                View on Acebet
+                View on AceBet
               </a>
             </div>
             <div className="mt-4 p-4 rounded-lg bg-muted/40 border border-border">
@@ -163,7 +163,7 @@ export default function AcebetLeaderboard() {
               </p>
             </div>
             <p className="text-lg text-muted-foreground">
-              Every <strong>BET</strong> on Acebet under Code <strong>R2K2</strong> counts towards your score.
+              Every <strong>BET</strong> on AceBet under Code <strong>R2K2</strong> counts towards your score.
               <br />
               <em className="text-sm">{dateRange}</em>
             </p>

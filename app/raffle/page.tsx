@@ -130,7 +130,7 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-5">
               <Trophy className="w-4 h-4 text-primary" />
               <span className="text-xs uppercase tracking-widest text-primary font-semibold">
-                Acebet Raffle
+                AceBet Raffle
               </span>
             </div>
             <p className="text-sm text-muted-foreground mb-2">Total Prize Pool</p>

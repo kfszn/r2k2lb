@@ -129,7 +129,7 @@ export default function LossBackPage() {
                   </div>
                   <div>
                     <p className="font-medium">Request Your Monthly PnL</p>
-                    <p className="text-sm text-muted-foreground">Contact Acebet support and request your Profit & Loss statement for the calendar month</p>
+                    <p className="text-sm text-muted-foreground">Contact AceBet support and request your Profit & Loss statement for the calendar month</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -251,7 +251,7 @@ export default function LossBackPage() {
               </div>
               <div>
                 <p className="font-semibold mb-1">Tier Calculation</p>
-                <p className="text-muted-foreground">Your tier is determined by your total monthly wagers with Acebet. Each month resets for tier calculation.</p>
+                <p className="text-muted-foreground">Your tier is determined by your total monthly wagers with AceBet. Each month resets for tier calculation.</p>
               </div>
               <div>
                 <p className="font-semibold mb-1">Progressive Claims</p>

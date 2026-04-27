@@ -18,7 +18,7 @@ import {
 export const metadata: Metadata = {
   title: 'Reward Match | R2K2',
   description:
-    'R2K2 personally matches 100% of every Acebet reward you earn — weekly, pre-monthly, and monthly. Play under code R2K2 and double every payout.',
+    'R2K2 personally matches 100% of every AceBet reward you earn — weekly, pre-monthly, and monthly. Play under code R2K2 and double every payout.',
 }
 
 export default function RewardMatchPage() {
@@ -39,13 +39,13 @@ export default function RewardMatchPage() {
             </div>
             <div className="relative p-8 md:p-12 space-y-6">
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-purple-400 uppercase tracking-widest">Acebet — Code R2K2</p>
+                <p className="text-sm font-semibold text-purple-400 uppercase tracking-widest">AceBet — Code R2K2</p>
                 <h1 className="text-4xl md:text-6xl font-black text-foreground leading-tight text-balance">
                   Reward<br />
                   <span className="text-purple-400">Match.</span>
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                  Whatever Acebet rewards you — I&apos;ll match it. Every time. Weekly, pre-monthly, and monthly payouts all doubled, personally by me.
+                  Whatever AceBet rewards you — I&apos;ll match it. Every time. Weekly, pre-monthly, and monthly payouts all doubled, personally by me.
                 </p>
               </div>
 
@@ -54,7 +54,7 @@ export default function RewardMatchPage() {
                 <div className="flex items-center gap-2.5 rounded-xl bg-card/70 border border-border/60 px-4 py-3">
                   <BadgeCheck className="h-5 w-5 text-green-400 flex-shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground leading-none mb-0.5">Acebet Pays</p>
+                    <p className="text-xs text-muted-foreground leading-none mb-0.5">AceBet Pays</p>
                     <p className="text-xl font-black text-foreground">$X</p>
                   </div>
                 </div>
@@ -83,7 +83,7 @@ export default function RewardMatchPage() {
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-bold">Three Payout Cycles</h2>
               <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-                Acebet rewards you across three cycles. R2K2 doubles every single one.
+                AceBet rewards you across three cycles. R2K2 doubles every single one.
               </p>
             </div>
 
@@ -102,7 +102,7 @@ export default function RewardMatchPage() {
                   <div className="flex-1">
                     <h3 className="text-lg font-bold">Weekly Reward</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Paid out by Acebet every week. Earn consistently just by playing under code R2K2.
+                      Paid out by AceBet every week. Earn consistently just by playing under code R2K2.
                     </p>
                   </div>
                   <div className="flex items-center gap-2 pt-1">
@@ -132,7 +132,7 @@ export default function RewardMatchPage() {
                   <div className="flex-1">
                     <h3 className="text-lg font-bold">Pre-Monthly Reward</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      A mid-cycle bonus from Acebet before the monthly closes out.
+                      A mid-cycle bonus from AceBet before the monthly closes out.
                     </p>
                   </div>
                   <div className="flex items-center gap-2 pt-1">
@@ -162,7 +162,7 @@ export default function RewardMatchPage() {
                   <div className="flex-1">
                     <h3 className="text-lg font-bold">Monthly Reward</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      The biggest cycle. Acebet&apos;s largest payout of the month — matched cent for cent.
+                      The biggest cycle. AceBet&apos;s largest payout of the month — matched cent for cent.
                     </p>
                   </div>
                   <div className="flex items-center gap-2 pt-1">
@@ -188,7 +188,7 @@ export default function RewardMatchPage() {
                 How to Claim Your Match
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Three steps to collect R2K2&apos;s match on top of your Acebet reward.
+                Three steps to collect R2K2&apos;s match on top of your AceBet reward.
               </p>
             </CardHeader>
             <CardContent>
@@ -199,9 +199,9 @@ export default function RewardMatchPage() {
                     1
                   </div>
                   <div className="space-y-1">
-                    <p className="font-bold">Receive Your Acebet Reward</p>
+                    <p className="font-bold">Receive Your AceBet Reward</p>
                     <p className="text-sm text-muted-foreground">
-                      Acebet pays your weekly, pre-monthly, or monthly reward automatically to your account.
+                      AceBet pays your weekly, pre-monthly, or monthly reward automatically to your account.
                     </p>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ export default function RewardMatchPage() {
                   <div className="space-y-1">
                     <p className="font-bold text-purple-400">R2K2 Doubles It</p>
                     <p className="text-sm text-muted-foreground">
-                      Once verified, R2K2 pays you the exact same amount Acebet rewarded you. Doubled. Done.
+                      Once verified, R2K2 pays you the exact same amount AceBet rewarded you. Doubled. Done.
                     </p>
                   </div>
                 </div>
@@ -255,12 +255,12 @@ export default function RewardMatchPage() {
           {/* CTA */}
           <div className="text-center space-y-4 pb-4">
             <p className="text-muted-foreground text-sm">
-              Not on Acebet yet? Sign up and use code <span className="font-bold text-foreground">R2K2</span> to qualify.
+              Not on AceBet yet? Sign up and use code <span className="font-bold text-foreground">R2K2</span> to qualify.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" className="font-bold">
                 <a href="https://www.acebet.co/welcome/r/r2k2" target="_blank" rel="noopener noreferrer">
-                  Sign Up on Acebet
+                  Sign Up on AceBet
                 </a>
               </Button>
               <Button asChild size="lg" variant="outline">

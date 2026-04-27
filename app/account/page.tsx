@@ -180,12 +180,12 @@ export default function AccountPage() {
               )}
             </div>
 
-            {/* Acebet */}
+            {/* AceBet */}
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">A</div>
                 <div>
-                  <p className="text-sm font-medium">Acebet</p>
+                  <p className="text-sm font-medium">AceBet</p>
                   {profile.acebet_username ? (
                     <p className="text-sm text-muted-foreground">{profile.acebet_username}</p>
                   ) : (

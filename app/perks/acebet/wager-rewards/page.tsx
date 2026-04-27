@@ -23,7 +23,7 @@ export default function WagerRewardsPage() {
               <h1 className="text-4xl font-bold">Wager Rewards</h1>
             </div>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Earn cash rewards based on your wager milestones on Acebet using code R2K2. Rewards reset monthly.
+              Earn cash rewards based on your wager milestones on AceBet using code R2K2. Rewards reset monthly.
             </p>
           </div>
 
@@ -107,7 +107,7 @@ export default function WagerRewardsPage() {
                     </div>
                     <div>
                       <p className="font-medium">Sign Up with Code R2K2</p>
-                      <p className="text-sm text-muted-foreground">Create your Acebet account using the affiliate code R2K2</p>
+                      <p className="text-sm text-muted-foreground">Create your AceBet account using the affiliate code R2K2</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
@@ -171,7 +171,7 @@ export default function WagerRewardsPage() {
             <a href="https://www.acebet.co/welcome/r/r2k2" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">
                 <Trophy className="h-5 w-5" />
-                Visit Acebet with Code R2K2
+                Visit AceBet with Code R2K2
               </Button>
             </a>
           </div>
