@@ -95,11 +95,22 @@ export default function AcebetLeaderboard() {
   useEffect(() => {
     if (!leaderboard) return
 
-    // Hardcoded cycle: Apr 27 - May 27, 2026
-    setDateRange(`Apr 27 - May 27, 2026 • 11am EST End`)
+    // Show the correct date range label for whichever period is selected
+    if (selectedMonth !== 'current') {
+      const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
+      if (found) setDateRange(`${found.display}`)
+    } else {
+      setDateRange(`Apr 27 - May 27, 2026 • 11am EST End`)
+    }
 
     const interval = setInterval(() => {
-      // Countdown ends May 27, 2026 at 11am EST (3pm UTC / EDT)
+      // Countdown only applies to current cycle — May 27, 2026 at 11am EST (3pm UTC/EDT)
+      // Previous months are always ended
+      if (selectedMonth !== 'current') {
+        setTimeRemaining('Ended')
+        return
+      }
+
       const endTime = new Date('2026-05-27T15:00:00Z').getTime()
       const diff = endTime - Date.now()
 
@@ -125,7 +136,7 @@ export default function AcebetLeaderboard() {
     }, 1000)
     
     return () => clearInterval(interval)
-  }, [leaderboard])
+  }, [leaderboard, selectedMonth])
 
   const formatMoney = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
