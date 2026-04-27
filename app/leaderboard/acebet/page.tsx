@@ -25,8 +25,8 @@ interface LeaderboardData {
   data: LeaderboardEntry[]
 }
 
-// Prize pool: $10,000 total - proper descending order 1-10
-const REWARDS = [4000, 2000, 1250, 1000, 650, 450, 300, 200, 100, 50]
+// Prize pool: $20,000 total - top 15 paid spots
+const REWARDS = [6000, 4000, 2500, 2000, 1500, 1250, 1000, 500, 400, 300, 200, 150, 100, 50, 50]
 
 export default function AcebetLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
@@ -64,12 +64,12 @@ export default function AcebetLeaderboard() {
   useEffect(() => {
     if (!leaderboard) return
 
-    // Hardcoded cycle: Mar 28 - Apr 27, 2026
-    setDateRange(`Mar 28 - Apr 27, 2026 • 11am EST End`)
+    // Hardcoded cycle: Apr 27 - May 27, 2026
+    setDateRange(`Apr 27 - May 27, 2026 • 11am EST End`)
 
     const interval = setInterval(() => {
-      // Countdown ends Apr 27, 2026 at 11am EST (4pm UTC)
-      const endTime = new Date('2026-04-27T16:00:00Z').getTime()
+      // Countdown ends May 27, 2026 at 11am EST (3pm UTC / EDT)
+      const endTime = new Date('2026-05-27T15:00:00Z').getTime()
       const diff = endTime - Date.now()
 
       if (diff <= 0) {
@@ -141,10 +141,10 @@ export default function AcebetLeaderboard() {
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40">
               <Trophy className="h-6 w-6 text-primary" />
-              <span className="text-3xl font-bold text-primary">$10,000</span>
+              <span className="text-3xl font-bold text-primary">$20,000</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
-              AceBet <span className="text-primary">$10,000</span> Monthly Leaderboard
+              AceBet <span className="text-primary">$20,000</span> Monthly Leaderboard
             </h1>
             <div className="flex justify-center">
               <a
@@ -168,17 +168,22 @@ export default function AcebetLeaderboard() {
               <em className="text-sm">{dateRange}</em>
             </p>
             
-            <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
-              <span className="px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">1st — $4,000</span>
-              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $2,000</span>
-              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $1,250</span>
-              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $1,000</span>
-              <span className="px-3 py-1 rounded-full bg-green-600/20 border border-green-600/40 text-green-600">5th — $650</span>
-              <span className="px-3 py-1 rounded-full bg-blue-400/20 border border-blue-400/40 text-blue-300">6th — $450</span>
-              <span className="px-3 py-1 rounded-full bg-purple-400/20 border border-purple-400/40 text-purple-300">7th — $300</span>
-              <span className="px-3 py-1 rounded-full bg-pink-400/20 border border-pink-400/40 text-pink-300">8th — $200</span>
-              <span className="px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300">9th — $100</span>
-              <span className="px-3 py-1 rounded-full bg-lime-400/20 border border-lime-400/40 text-lime-300">10th — $50</span>
+            <div className="flex flex-wrap justify-center gap-2 text-sm font-semibold">
+              <span className="px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">1st — $6,000</span>
+              <span className="px-3 py-1 rounded-full bg-slate-400/20 border border-slate-400/40 text-slate-300">2nd — $4,000</span>
+              <span className="px-3 py-1 rounded-full bg-amber-700/20 border border-amber-700/40 text-amber-500">3rd — $2,500</span>
+              <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary">4th — $2,000</span>
+              <span className="px-3 py-1 rounded-full bg-green-600/20 border border-green-600/40 text-green-500">5th — $1,500</span>
+              <span className="px-3 py-1 rounded-full bg-blue-400/20 border border-blue-400/40 text-blue-300">6th — $1,250</span>
+              <span className="px-3 py-1 rounded-full bg-purple-400/20 border border-purple-400/40 text-purple-300">7th — $1,000</span>
+              <span className="px-3 py-1 rounded-full bg-pink-400/20 border border-pink-400/40 text-pink-300">8th — $500</span>
+              <span className="px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300">9th — $400</span>
+              <span className="px-3 py-1 rounded-full bg-lime-400/20 border border-lime-400/40 text-lime-300">10th — $300</span>
+              <span className="px-3 py-1 rounded-full bg-orange-400/20 border border-orange-400/40 text-orange-300">11th — $200</span>
+              <span className="px-3 py-1 rounded-full bg-rose-400/20 border border-rose-400/40 text-rose-300">12th — $150</span>
+              <span className="px-3 py-1 rounded-full bg-teal-400/20 border border-teal-400/40 text-teal-300">13th — $100</span>
+              <span className="px-3 py-1 rounded-full bg-indigo-400/20 border border-indigo-400/40 text-indigo-300">14th — $50</span>
+              <span className="px-3 py-1 rounded-full bg-indigo-400/20 border border-indigo-400/40 text-indigo-300">15th — $50</span>
             </div>
           </div>
         </div>
@@ -488,7 +493,7 @@ export default function AcebetLeaderboard() {
                                     <p className="text-xs text-muted-foreground">Wagered</p>
                                     <p className="font-bold text-foreground">{formatMoney(entry.wagered)}</p>
                                   </div>
-                                  {rank <= 10 && REWARDS[rank - 1] && (
+                                  {rank <= 15 && REWARDS[rank - 1] && (
                                     <div className="text-right">
                                       <p className="text-xs text-muted-foreground">Prize</p>
                                       <p className="font-bold text-green-600">${REWARDS[rank - 1].toLocaleString()}</p>
@@ -513,7 +518,7 @@ export default function AcebetLeaderboard() {
                       </div>
                       {/* Rows */}
                       <div className="divide-y divide-border/30">
-                        {leaderboard.data.slice(3, 10).map((entry, idx) => (
+                        {leaderboard.data.slice(3, 15).map((entry, idx) => (
                           <LeaderboardRow
                             key={entry.userId}
                             rank={idx + 4}
