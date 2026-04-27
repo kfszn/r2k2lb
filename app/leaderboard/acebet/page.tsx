@@ -314,7 +314,6 @@ export default function AcebetLeaderboard() {
               goal={180000000}
               formatMoney={formatMoney}
               label="Wager Goal"
-              prizePool={showPrevious ? activeTotal : undefined}
             />
             
             {!showPrevious && (
