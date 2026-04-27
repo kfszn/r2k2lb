@@ -62,7 +62,7 @@ function Header() {
             height={32}
             className="w-8 h-8 object-contain"
           />
-          <span className="font-bold text-base md:text-lg">R2K2</span>
+          <span className="font-bold text-base md:text-lg" style={{ textShadow: '0 0 8px rgba(59,130,246,0.9), 0 0 20px rgba(59,130,246,0.5)' }}>R2K2</span>
         </Link>
 
         {/* Desktop Nav */}
