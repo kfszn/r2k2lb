@@ -29,12 +29,12 @@ export default function WagerRewardsPage() {
 
           {/* Single reward box */}
           <div className="relative">
-            <Card className="bg-gradient-to-r from-purple-500/10 via-card to-purple-500/5 border border-purple-500/30 overflow-hidden">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/5 rounded-full -mr-24 -mt-24 blur-3xl" />
+            <Card className="bg-gradient-to-r from-blue-500/10 via-card to-blue-500/5 border border-blue-500/30 overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full -mr-24 -mt-24 blur-3xl" />
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/20 text-purple-500">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/20 text-blue-500">
                       <Trophy className="h-6 w-6" />
                     </div>
                     <div>
@@ -43,7 +43,7 @@ export default function WagerRewardsPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-purple-500">$1</div>
+                    <div className="text-3xl font-bold text-blue-500">$1</div>
                     <p className="text-xs text-muted-foreground">per 1,000 wagered</p>
                   </div>
                 </div>
@@ -57,7 +57,7 @@ export default function WagerRewardsPage() {
                   </div>
                   <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
                     <p className="text-sm font-medium text-muted-foreground">Rate</p>
-                    <p className="text-2xl font-bold text-purple-500">$1 / 1k</p>
+                    <p className="text-2xl font-bold text-blue-500">$1 / 1k</p>
                     <p className="text-xs text-muted-foreground">wagered</p>
                   </div>
                   <div className="space-y-2 p-3 rounded-lg bg-card/50 border border-border/50">
@@ -68,8 +68,8 @@ export default function WagerRewardsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                  <span className="text-purple-500 mt-0.5">✓</span>
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                  <span className="text-blue-500 mt-0.5">✓</span>
                   <p className="text-sm text-muted-foreground">Claim any time you have wagered at least $25,000 — the math is simple, $1 for every $1,000 wagered</p>
                 </div>
                 <div className="pt-4 space-y-3 border-t border-border/30">
