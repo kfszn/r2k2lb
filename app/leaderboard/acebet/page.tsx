@@ -60,16 +60,16 @@ const PREVIOUS_MONTHS: MonthConfig[] = [
     start_at: '2026-02-24',
     end_at: '2026-03-25',
     display: 'Feb 24 – Mar 25, 2026',
-    rewards: [1100, 650, 400, 250, 200, 150, 100, 75, 50, 25],
-    total: 3000,
+    rewards: [3200, 1650, 1000, 550, 250, 150, 95, 75, 30],
+    total: 7000,
   },
   {
     label: 'April',
     start_at: '2026-03-26',
     end_at: '2026-04-24',
     display: 'Mar 26 – Apr 24, 2026',
-    rewards: [3200, 1650, 1000, 550, 250, 150, 95, 75, 30],
-    total: 7000,
+    rewards: [1100, 650, 400, 250, 200, 150, 100, 75, 50, 25],
+    total: 3000,
   },
 ]
 
