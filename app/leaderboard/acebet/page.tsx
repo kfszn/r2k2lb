@@ -379,20 +379,20 @@ export default function AcebetLeaderboard() {
                       </div>
                     </div>
 
-                {/* Rest */}
-                <div className="space-y-3">
-                  {leaderboard.data.slice(3, 10).map((entry, idx) => (
-                    <LeaderboardRow
-                      key={entry.userId}
-                      rank={idx + 4}
-                      entry={entry}
-                      reward={REWARDS[idx + 3]}
-                      formatMoney={formatMoney}
-                      maskName={maskName}
-                      getAvatarUrl={getAvatarUrl}
-                    />
-                  ))}
-                </div>
+                    {/* Rest of leaderboard */}
+                    <div className="space-y-3">
+                      {leaderboard.data.slice(3, 10).map((entry, idx) => (
+                        <LeaderboardRow
+                          key={entry.userId}
+                          rank={idx + 4}
+                          entry={entry}
+                          reward={REWARDS[idx + 3]}
+                          formatMoney={formatMoney}
+                          maskName={maskName}
+                          getAvatarUrl={getAvatarUrl}
+                        />
+                      ))}
+                    </div>
                   </>
                 )}
               </>
