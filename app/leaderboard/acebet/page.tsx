@@ -290,22 +290,92 @@ export default function AcebetLeaderboard() {
                     {/* Podium Top 3 */}
                     <div className="mb-10">
                       <h2 className="text-2xl font-bold text-center mb-8">Top Performers</h2>
-                      <div className="flex items-end justify-center gap-3">
+                      {/* Mobile: 1st on top, 2nd+3rd side by side. Desktop: all three side by side with 1st in center */}
+                      <div className="flex flex-col gap-3 md:hidden">
+                        {/* 1st Place — full width on mobile */}
+                        {leaderboard.data[0] && (
+                          <div className="relative rounded-2xl border border-yellow-400/50 bg-card overflow-hidden" style={{ boxShadow: '0 0 40px rgba(250,204,21,0.2)' }}>
+                            <div className="absolute top-0 left-0 right-0 h-1.5 bg-yellow-400" />
+                            <div className="p-5 flex flex-col items-center text-center gap-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold uppercase tracking-widest text-yellow-400">1st Place</span>
+                                <Trophy className="h-4 w-4 text-yellow-400" />
+                              </div>
+                              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400/70" style={{ boxShadow: '0 0 20px rgba(250,204,21,0.3)' }}>
+                                <img src={getAvatarUrl(leaderboard.data[0].avatar)} alt={leaderboard.data[0].name} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                              </div>
+                              <p className="font-bold text-lg text-foreground truncate w-full">{maskName(leaderboard.data[0].name)}</p>
+                              <div className="w-full space-y-2">
+                                <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
+                                  <span className="text-muted-foreground">Wagered</span>
+                                  <span className="font-semibold text-foreground">{formatMoney(leaderboard.data[0].wagered)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
+                                  <span className="text-yellow-400/80">Prize</span>
+                                  <span className="font-bold text-yellow-400">${REWARDS[0].toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {/* 2nd + 3rd side by side on mobile */}
+                        <div className="grid grid-cols-2 gap-3">
+                          {leaderboard.data[1] && (
+                            <div className="relative rounded-2xl border border-slate-400/40 bg-card overflow-hidden" style={{ boxShadow: '0 0 20px rgba(148,163,184,0.1)' }}>
+                              <div className="absolute top-0 left-0 right-0 h-1 bg-slate-400" />
+                              <div className="p-4 flex flex-col items-center text-center gap-2">
+                                <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd</span>
+                                <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-slate-400/60">
+                                  <img src={getAvatarUrl(leaderboard.data[1].avatar)} alt={leaderboard.data[1].name} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                                </div>
+                                <p className="font-bold text-xs text-foreground truncate w-full">{maskName(leaderboard.data[1].name)}</p>
+                                <div className="w-full space-y-1">
+                                  <div className="rounded-lg bg-muted/40 px-2 py-1.5 text-center">
+                                    <p className="text-xs text-muted-foreground">Wagered</p>
+                                    <p className="text-xs font-semibold text-foreground">{formatMoney(leaderboard.data[1].wagered)}</p>
+                                  </div>
+                                  <div className="rounded-lg bg-slate-400/10 border border-slate-400/20 px-2 py-1.5 text-center">
+                                    <p className="text-xs text-slate-400/80">Prize</p>
+                                    <p className="text-xs font-bold text-slate-300">${REWARDS[1].toLocaleString()}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {leaderboard.data[2] && (
+                            <div className="relative rounded-2xl border border-amber-700/40 bg-card overflow-hidden" style={{ boxShadow: '0 0 20px rgba(180,83,9,0.1)' }}>
+                              <div className="absolute top-0 left-0 right-0 h-1 bg-amber-600" />
+                              <div className="p-4 flex flex-col items-center text-center gap-2">
+                                <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd</span>
+                                <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-amber-600/60">
+                                  <img src={getAvatarUrl(leaderboard.data[2].avatar)} alt={leaderboard.data[2].name} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                                </div>
+                                <p className="font-bold text-xs text-foreground truncate w-full">{maskName(leaderboard.data[2].name)}</p>
+                                <div className="w-full space-y-1">
+                                  <div className="rounded-lg bg-muted/40 px-2 py-1.5 text-center">
+                                    <p className="text-xs text-muted-foreground">Wagered</p>
+                                    <p className="text-xs font-semibold text-foreground">{formatMoney(leaderboard.data[2].wagered)}</p>
+                                  </div>
+                                  <div className="rounded-lg bg-amber-600/10 border border-amber-600/20 px-2 py-1.5 text-center">
+                                    <p className="text-xs text-amber-500/80">Prize</p>
+                                    <p className="text-xs font-bold text-amber-500">${REWARDS[2].toLocaleString()}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
-                        {/* 2nd Place — left */}
+                      {/* Desktop: 2nd | 1st | 3rd */}
+                      <div className="hidden md:flex items-end justify-center gap-3">
                         {leaderboard.data[1] && (
                           <div className="relative rounded-2xl border border-slate-400/40 bg-card overflow-hidden flex-1 max-w-[220px]" style={{ boxShadow: '0 0 20px rgba(148,163,184,0.1)' }}>
                             <div className="absolute top-0 left-0 right-0 h-1 bg-slate-400" />
                             <div className="p-5 flex flex-col items-center text-center gap-3">
                               <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd Place</span>
                               <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-400/60">
-                                <img
-                                  src={getAvatarUrl(leaderboard.data[1].avatar)}
-                                  alt={leaderboard.data[1].name}
-                                  className="absolute inset-0 w-full h-full object-cover"
-                                  crossOrigin="anonymous"
-                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
-                                />
+                                <img src={getAvatarUrl(leaderboard.data[1].avatar)} alt={leaderboard.data[1].name} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
                               </div>
                               <p className="font-bold text-sm text-foreground truncate w-full">{maskName(leaderboard.data[1].name)}</p>
                               <div className="w-full space-y-1.5">
@@ -321,8 +391,6 @@ export default function AcebetLeaderboard() {
                             </div>
                           </div>
                         )}
-
-                        {/* 1st Place — center, tallest */}
                         {leaderboard.data[0] && (
                           <div className="relative rounded-2xl border border-yellow-400/50 bg-card overflow-hidden flex-1 max-w-[280px]" style={{ boxShadow: '0 0 40px rgba(250,204,21,0.2)' }}>
                             <div className="absolute top-0 left-0 right-0 h-1.5 bg-yellow-400" />
@@ -332,13 +400,7 @@ export default function AcebetLeaderboard() {
                                 <Trophy className="h-4 w-4 text-yellow-400" />
                               </div>
                               <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-yellow-400/70" style={{ boxShadow: '0 0 20px rgba(250,204,21,0.3)' }}>
-                                <img
-                                  src={getAvatarUrl(leaderboard.data[0].avatar)}
-                                  alt={leaderboard.data[0].name}
-                                  className="absolute inset-0 w-full h-full object-cover"
-                                  crossOrigin="anonymous"
-                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
-                                />
+                                <img src={getAvatarUrl(leaderboard.data[0].avatar)} alt={leaderboard.data[0].name} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
                               </div>
                               <p className="font-bold text-xl text-foreground truncate w-full">{maskName(leaderboard.data[0].name)}</p>
                               <div className="w-full space-y-2">
@@ -354,21 +416,13 @@ export default function AcebetLeaderboard() {
                             </div>
                           </div>
                         )}
-
-                        {/* 3rd Place — right */}
                         {leaderboard.data[2] && (
                           <div className="relative rounded-2xl border border-amber-700/40 bg-card overflow-hidden flex-1 max-w-[220px]" style={{ boxShadow: '0 0 20px rgba(180,83,9,0.1)' }}>
                             <div className="absolute top-0 left-0 right-0 h-1 bg-amber-600" />
                             <div className="p-5 flex flex-col items-center text-center gap-3">
                               <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd Place</span>
                               <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-600/60">
-                                <img
-                                  src={getAvatarUrl(leaderboard.data[2].avatar)}
-                                  alt={leaderboard.data[2].name}
-                                  className="absolute inset-0 w-full h-full object-cover"
-                                  crossOrigin="anonymous"
-                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
-                                />
+                                <img src={getAvatarUrl(leaderboard.data[2].avatar)} alt={leaderboard.data[2].name} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
                               </div>
                               <p className="font-bold text-sm text-foreground truncate w-full">{maskName(leaderboard.data[2].name)}</p>
                               <div className="w-full space-y-1.5">
@@ -384,7 +438,6 @@ export default function AcebetLeaderboard() {
                             </div>
                           </div>
                         )}
-
                       </div>
                     </div>
 
