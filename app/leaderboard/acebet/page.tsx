@@ -277,50 +277,15 @@ export default function AcebetLeaderboard() {
                     {/* Podium Top 3 */}
                     <div className="mb-10">
                       <h2 className="text-2xl font-bold text-center mb-8">Top Performers</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex items-end justify-center gap-3">
 
-                        {/* 1st Place */}
-                        {leaderboard.data[0] && (
-                          <div className="relative rounded-2xl border border-yellow-400/50 bg-card overflow-hidden" style={{ boxShadow: '0 0 32px rgba(250,204,21,0.15)' }}>
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-yellow-400" />
-                            <div className="p-6 flex flex-col items-center text-center gap-4">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold uppercase tracking-widest text-yellow-400">1st Place</span>
-                                <Trophy className="h-4 w-4 text-yellow-400" />
-                              </div>
-                              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400/60">
-                                <img
-                                  src={getAvatarUrl(leaderboard.data[0].avatar)}
-                                  alt={leaderboard.data[0].name}
-                                  className="absolute inset-0 w-full h-full object-cover"
-                                  crossOrigin="anonymous"
-                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
-                                />
-                              </div>
-                              <p className="font-bold text-lg text-foreground truncate w-full">{maskName(leaderboard.data[0].name)}</p>
-                              <div className="w-full space-y-2">
-                                <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
-                                  <span className="text-muted-foreground">Wagered</span>
-                                  <span className="font-semibold text-foreground">{formatMoney(leaderboard.data[0].wagered)}</span>
-                                </div>
-                                <div className="flex items-center justify-between text-sm bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
-                                  <span className="text-yellow-400/80">Prize</span>
-                                  <span className="font-bold text-yellow-400 text-base">${REWARDS[0].toLocaleString()}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* 2nd Place */}
+                        {/* 2nd Place — left */}
                         {leaderboard.data[1] && (
-                          <div className="relative rounded-2xl border border-slate-400/40 bg-card overflow-hidden" style={{ boxShadow: '0 0 24px rgba(148,163,184,0.1)' }}>
+                          <div className="relative rounded-2xl border border-slate-400/40 bg-card overflow-hidden flex-1 max-w-[220px]" style={{ boxShadow: '0 0 20px rgba(148,163,184,0.1)' }}>
                             <div className="absolute top-0 left-0 right-0 h-1 bg-slate-400" />
-                            <div className="p-6 flex flex-col items-center text-center gap-4">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd Place</span>
-                              </div>
-                              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-slate-400/60">
+                            <div className="p-5 flex flex-col items-center text-center gap-3">
+                              <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd Place</span>
+                              <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-400/60">
                                 <img
                                   src={getAvatarUrl(leaderboard.data[1].avatar)}
                                   alt={leaderboard.data[1].name}
@@ -329,30 +294,61 @@ export default function AcebetLeaderboard() {
                                   onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
                                 />
                               </div>
-                              <p className="font-bold text-lg text-foreground truncate w-full">{maskName(leaderboard.data[1].name)}</p>
-                              <div className="w-full space-y-2">
-                                <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
+                              <p className="font-bold text-sm text-foreground truncate w-full">{maskName(leaderboard.data[1].name)}</p>
+                              <div className="w-full space-y-1.5">
+                                <div className="flex items-center justify-between text-xs bg-muted/40 rounded-lg px-3 py-1.5">
                                   <span className="text-muted-foreground">Wagered</span>
                                   <span className="font-semibold text-foreground">{formatMoney(leaderboard.data[1].wagered)}</span>
                                 </div>
-                                <div className="flex items-center justify-between text-sm bg-slate-400/10 border border-slate-400/20 rounded-lg px-3 py-2">
+                                <div className="flex items-center justify-between text-xs bg-slate-400/10 border border-slate-400/20 rounded-lg px-3 py-1.5">
                                   <span className="text-slate-400/80">Prize</span>
-                                  <span className="font-bold text-slate-300 text-base">${REWARDS[1].toLocaleString()}</span>
+                                  <span className="font-bold text-slate-300">${REWARDS[1].toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>
                           </div>
                         )}
 
-                        {/* 3rd Place */}
-                        {leaderboard.data[2] && (
-                          <div className="relative rounded-2xl border border-amber-700/40 bg-card overflow-hidden" style={{ boxShadow: '0 0 24px rgba(180,83,9,0.1)' }}>
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-amber-600" />
-                            <div className="p-6 flex flex-col items-center text-center gap-4">
+                        {/* 1st Place — center, tallest */}
+                        {leaderboard.data[0] && (
+                          <div className="relative rounded-2xl border border-yellow-400/50 bg-card overflow-hidden flex-1 max-w-[280px]" style={{ boxShadow: '0 0 40px rgba(250,204,21,0.2)' }}>
+                            <div className="absolute top-0 left-0 right-0 h-1.5 bg-yellow-400" />
+                            <div className="p-7 flex flex-col items-center text-center gap-4">
                               <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd Place</span>
+                                <span className="text-sm font-bold uppercase tracking-widest text-yellow-400">1st Place</span>
+                                <Trophy className="h-4 w-4 text-yellow-400" />
                               </div>
-                              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-amber-600/60">
+                              <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-yellow-400/70" style={{ boxShadow: '0 0 20px rgba(250,204,21,0.3)' }}>
+                                <img
+                                  src={getAvatarUrl(leaderboard.data[0].avatar)}
+                                  alt={leaderboard.data[0].name}
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                  crossOrigin="anonymous"
+                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
+                                />
+                              </div>
+                              <p className="font-bold text-xl text-foreground truncate w-full">{maskName(leaderboard.data[0].name)}</p>
+                              <div className="w-full space-y-2">
+                                <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
+                                  <span className="text-muted-foreground">Wagered</span>
+                                  <span className="font-semibold text-foreground">{formatMoney(leaderboard.data[0].wagered)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
+                                  <span className="text-yellow-400/80">Prize</span>
+                                  <span className="font-bold text-yellow-400 text-lg">${REWARDS[0].toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 3rd Place — right */}
+                        {leaderboard.data[2] && (
+                          <div className="relative rounded-2xl border border-amber-700/40 bg-card overflow-hidden flex-1 max-w-[220px]" style={{ boxShadow: '0 0 20px rgba(180,83,9,0.1)' }}>
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-amber-600" />
+                            <div className="p-5 flex flex-col items-center text-center gap-3">
+                              <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd Place</span>
+                              <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-600/60">
                                 <img
                                   src={getAvatarUrl(leaderboard.data[2].avatar)}
                                   alt={leaderboard.data[2].name}
@@ -361,15 +357,15 @@ export default function AcebetLeaderboard() {
                                   onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }}
                                 />
                               </div>
-                              <p className="font-bold text-lg text-foreground truncate w-full">{maskName(leaderboard.data[2].name)}</p>
-                              <div className="w-full space-y-2">
-                                <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
+                              <p className="font-bold text-sm text-foreground truncate w-full">{maskName(leaderboard.data[2].name)}</p>
+                              <div className="w-full space-y-1.5">
+                                <div className="flex items-center justify-between text-xs bg-muted/40 rounded-lg px-3 py-1.5">
                                   <span className="text-muted-foreground">Wagered</span>
                                   <span className="font-semibold text-foreground">{formatMoney(leaderboard.data[2].wagered)}</span>
                                 </div>
-                                <div className="flex items-center justify-between text-sm bg-amber-600/10 border border-amber-600/20 rounded-lg px-3 py-2">
+                                <div className="flex items-center justify-between text-xs bg-amber-600/10 border border-amber-600/20 rounded-lg px-3 py-1.5">
                                   <span className="text-amber-500/80">Prize</span>
-                                  <span className="font-bold text-amber-500 text-base">${REWARDS[2].toLocaleString()}</span>
+                                  <span className="font-bold text-amber-500">${REWARDS[2].toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>
