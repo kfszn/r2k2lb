@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+// Updated April 2026: $20,000 monthly leaderboard, $30,000+ total rewards
 const baseUrl = 'https://r2k2.gg'
 const brandName = 'R2K2'
 const tagline = 'Exclusive Rewards & Leaderboards'
@@ -7,11 +8,11 @@ const tagline = 'Exclusive Rewards & Leaderboards'
 export const defaultMetadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: `${brandName} — $15,000+ in Monthly Rewards`,
+    default: `${brandName} — $30,000+ in Monthly Rewards`,
     template: `%s | ${brandName}`,
   },
   description:
-    '$15,000+ in monthly rewards including a $10,000 monthly leaderboard. Use code R2K2 on Acebet for bonuses, loss back, tournaments, and more.',
+    '$30,000+ in monthly rewards including a $20,000 monthly leaderboard. Use code R2K2 on Acebet for bonuses, loss back, tournaments, and more.',
   keywords: [
     'R2K2',
     'leaderboards',
@@ -28,16 +29,16 @@ export const defaultMetadata: Metadata = {
     locale: 'en_US',
     url: baseUrl,
     siteName: brandName,
-    title: `${brandName} — $15,000+ in Monthly Rewards`,
+    title: `${brandName} — $30,000+ in Monthly Rewards`,
     description:
-      '$15,000+ in monthly rewards including a $10,000 monthly leaderboard. Use code R2K2 on Acebet.',
+      '$30,000+ in monthly rewards including a $20,000 monthly leaderboard. Use code R2K2 on Acebet.',
   },
   twitter: {
     card: 'summary_large_image',
     site: '@r2ktwo',
     creator: '@r2ktwo',
-    title: `${brandName} — $15,000+ in Monthly Rewards`,
-    description: '$15,000+ in monthly rewards including a $10,000 leaderboard with code R2K2.',
+    title: `${brandName} — $30,000+ in Monthly Rewards`,
+    description: '$30,000+ in monthly rewards including a $20,000 leaderboard with code R2K2.',
   },
   icons: {
     icon: '/assets/logo.png',
@@ -55,15 +56,15 @@ export const defaultMetadata: Metadata = {
 // Page-specific metadata
 export const pageMetadata = {
   home: {
-    title: 'R2K2 — $15,000+ in Monthly Rewards on Acebet',
+    title: 'R2K2 — $30,000+ in Monthly Rewards on Acebet',
     description:
-      'Compete on R2K2 leaderboards for a $10,000 monthly prize pool plus $15,000+ in total monthly rewards on Acebet. Use code R2K2 for exclusive bonuses, loss back, and tournaments.',
+      'Compete on R2K2 leaderboards for a $20,000 monthly prize pool plus $30,000+ in total monthly rewards on Acebet. Use code R2K2 for exclusive bonuses, loss back, and tournaments.',
     keywords: [
       'R2K2',
       'leaderboard',
       'Acebet leaderboard',
-      '$10000 monthly leaderboard',
-      '$15000 monthly rewards',
+      '$20000 monthly leaderboard',
+      '$30000 monthly rewards',
       'exclusive code R2K2',
       'gambling rewards',
       'wager competition',
@@ -71,14 +72,14 @@ export const pageMetadata = {
     canonical: baseUrl,
   },
   acebet: {
-    title: 'Acebet Leaderboard — $10,000 Monthly with Code R2K2',
+    title: 'Acebet Leaderboard — $20,000 Monthly with Code R2K2',
     description:
-      'Compete on the R2K2 Acebet leaderboard for a share of $10,000 monthly. $5,000 bi-weekly leaderboards, VIP rewards, loss back, and more. Sign up with code R2K2.',
+      'Compete on the R2K2 Acebet leaderboard for a share of $20,000 monthly. $10,000 bi-weekly leaderboards, VIP rewards, loss back, and more. Sign up with code R2K2.',
     keywords: [
       'Acebet leaderboard',
       'Acebet R2K2',
       'Acebet code R2K2',
-      '$10000 monthly Acebet',
+      '$20000 monthly Acebet',
       'bi-weekly leaderboard',
       'Acebet wager rewards',
       'Acebet VIP',

@@ -30,7 +30,7 @@ export default function HomePage() {
               Compete on Our <span className="text-primary">Leaderboards</span>
             </h1>
             <p className="text-2xl font-bold text-primary mt-2">
-              $15,000+ in Monthly Rewards Including $10,000 Monthly Leaderboard
+              $30,000+ in Monthly Rewards Including $20,000 Monthly Leaderboard
             </p>
             <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
               Compete on the AceBet leaderboard, earn wager bonuses, loss back, and more with code R2K2.
@@ -56,8 +56,8 @@ export default function HomePage() {
                 href="/leaderboard/acebet"
                 signupUrl="https://www.acebet.co/welcome/r/r2k2"
                 rewards={[
-                  "$10,000 Monthly Leaderboard",
-                  "$15,000+ Total Monthly Rewards",
+                  "$20,000 Monthly Leaderboard",
+                  "$30,000+ Total Monthly Rewards",
                   "First Time Deposit Bonus",
                   "Monthly Wager Bonuses",
                   "VIP Rewards",
