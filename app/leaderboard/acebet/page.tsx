@@ -450,18 +450,28 @@ export default function AcebetLeaderboard() {
                     })()}
 
                     {/* Rest of leaderboard */}
-                    <div className="space-y-3">
-                      {leaderboard.data.slice(3, 10).map((entry, idx) => (
-                        <LeaderboardRow
-                          key={entry.userId}
-                          rank={idx + 4}
-                          entry={entry}
-                          reward={REWARDS[idx + 3]}
-                          formatMoney={formatMoney}
-                          maskName={maskName}
-                          getAvatarUrl={getAvatarUrl}
-                        />
-                      ))}
+                    <div className="rounded-xl overflow-hidden border border-border/50">
+                      {/* Column headers */}
+                      <div className="grid grid-cols-[64px_1fr_140px_100px] px-4 py-3 bg-muted/40 border-b border-border/50">
+                        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Rank</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Player</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-right">Wagered</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-right">Prize</span>
+                      </div>
+                      {/* Rows */}
+                      <div className="divide-y divide-border/30">
+                        {leaderboard.data.slice(3, 10).map((entry, idx) => (
+                          <LeaderboardRow
+                            key={entry.userId}
+                            rank={idx + 4}
+                            entry={entry}
+                            reward={REWARDS[idx + 3]}
+                            formatMoney={formatMoney}
+                            maskName={maskName}
+                            getAvatarUrl={getAvatarUrl}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </>
                 )}
@@ -511,37 +521,28 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
   const [imgError, setImgError] = useState(false)
   
   return (
-    <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:shadow-xl hover:shadow-primary/10 transition-all">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          <div className="text-2xl font-bold text-muted-foreground w-12">#{rank}</div>
-          
-          <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
-            <img
-              src={imgError ? '/placeholder-user.jpg' : getAvatarUrl(entry.avatar)}
-              alt={entry.name}
-              className="absolute inset-0 w-full h-full object-cover"
-              crossOrigin="anonymous"
-              onError={() => setImgError(true)}
-            />
-          </div>
-          
-          <div className="flex-1">
-            <p className="font-bold">{maskName(entry.name)}</p>
-          </div>
-          
-          <div className="flex gap-8 items-center">
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground uppercase">Wagered</p>
-              <p className="text-lg font-bold text-foreground">{formatMoney(entry.wagered)}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground uppercase">Prize</p>
-              <p className="text-lg font-bold" style={{ color: '#39ff93' }}>${reward}</p>
-            </div>
-          </div>
+    <div className="grid grid-cols-[64px_1fr_140px_100px] items-center px-4 py-3 bg-card/50 hover:bg-muted/20 transition-colors">
+      {/* Rank */}
+      <span className="text-sm font-bold text-muted-foreground">#{rank}</span>
+
+      {/* Player */}
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary/40 flex-shrink-0">
+          <img
+            src={imgError ? '/placeholder-user.jpg' : getAvatarUrl(entry.avatar)}
+            alt={entry.name}
+            className="absolute inset-0 w-full h-full object-cover"
+            crossOrigin="anonymous"
+            onError={() => setImgError(true)}
+          />
         </div>
-      </CardContent>
-    </Card>
+        <p className="font-semibold text-sm truncate">{maskName(entry.name)}</p>
+      </div>
+
+      {/* Wagered */}
+      <p className="text-sm font-semibold text-foreground text-right">{formatMoney(entry.wagered)}</p>
+
+      {/* Prize */}
+      <p className="text-sm font-bold text-right" style={{ color: '#39ff93' }}>${reward?.toLocaleString() ?? '—'}</p>
   )
 }
