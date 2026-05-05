@@ -37,6 +37,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
   const [selectedWinner, setSelectedWinner] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [spinComplete, setSpinComplete] = useState(false);
+  const [spinKey, setSpinKey] = useState(0); // increment to re-trigger spin animation
 
   useEffect(() => {
     fetchConfig();
@@ -127,11 +128,13 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
       alert('No eligible entries to draw from');
       return;
     }
-    // Pick random winner
+    // Pick a random winner from the weighted ticket pool
     const winner = eligible[Math.floor(Math.random() * eligible.length)];
     setSelectedWinner(winner);
-    setIsSpinning(true);
     setSpinComplete(false);
+    setIsSpinning(true);
+    // Increment spinKey to force a fresh animation (handles re-spins too)
+    setSpinKey((k) => k + 1);
   };
 
   const handleConfirmWinner = async () => {
@@ -169,9 +172,13 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
   };
 
   const handleResetSpin = () => {
-    setIsSpinning(false);
-    setSelectedWinner(null);
+    // Re-spin: pick a new winner and trigger a fresh animation immediately
+    if (eligible.length === 0) return;
+    const winner = eligible[Math.floor(Math.random() * eligible.length)];
+    setSelectedWinner(winner);
     setSpinComplete(false);
+    setIsSpinning(true);
+    setSpinKey((k) => k + 1);
   };
 
   return (
@@ -296,15 +303,24 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
             winner={selectedWinner}
             prizeAmount={config?.prize_amount || 0}
             isSpinning={isSpinning}
+            spinKey={spinKey}
             onSpinComplete={() => setSpinComplete(true)}
           />
 
           <div className="flex gap-3">
-            {!isSpinning && !spinComplete && (
+            {/* Initial state: no spin yet */}
+            {!isSpinning && !spinComplete && !selectedWinner && (
               <Button onClick={handleSpin} disabled={eligible.length === 0} className="flex-1">
                 Spin Raffle
               </Button>
             )}
+            {/* Actively spinning */}
+            {isSpinning && !spinComplete && (
+              <Button disabled className="flex-1 opacity-60">
+                Spinning...
+              </Button>
+            )}
+            {/* Spin complete — show confirm + re-spin */}
             {spinComplete && selectedWinner && (
               <>
                 <Button
@@ -314,7 +330,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
                 >
                   {isConfirming ? 'Confirming...' : `Confirm ${selectedWinner} as Winner`}
                 </Button>
-                <Button variant="outline" onClick={handleResetSpin}>
+                <Button variant="outline" onClick={handleResetSpin} disabled={isConfirming}>
                   Re-spin
                 </Button>
               </>
