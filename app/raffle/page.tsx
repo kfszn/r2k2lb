@@ -86,19 +86,13 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
 
           // Determine if there's a winner for the CURRENT raffle period.
           // won_date may be a full ISO string or a plain date string — normalise both ways.
+          // Only match a winner if their week_start equals the current period's start_date.
+          // This is the only reliable field — won_date is the clock time of confirmation
+          // which can fall inside a different period's date range.
           const periodStart = cfgData.start_date; // e.g. "2026-05-04"
-          // Match by week_start (the period's start date stored at confirm time).
-          // Fall back to won_date range only if week_start is absent.
-          const winnerEntry = newWinners.find((w) => {
-            if (w.week_start) {
-              // week_start is stored as the config start_date at the time of confirm
-              return w.week_start.substring(0, 10) === periodStart;
-            }
-            // Legacy fallback: check won_date falls within period
-            const wonDay = w.won_date.substring(0, 10);
-            const periodEnd = cfgData.end_date;
-            return wonDay >= periodStart && wonDay <= periodEnd;
-          });
+          const winnerEntry = newWinners.find(
+            (w) => w.week_start && w.week_start.substring(0, 10) === periodStart
+          );
 
           setCurrentPeriodWinner(winnerEntry ? winnerEntry.username : null);
           setWinners(newWinners);
