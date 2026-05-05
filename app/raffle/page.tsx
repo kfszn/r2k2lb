@@ -35,6 +35,7 @@ interface Winner {
   username: string;
   prize_amount: number;
   won_date: string;
+  week_start: string | null;
   raffle_type: string;
 }
 
@@ -43,8 +44,8 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
   const [eligible, setEligible] = useState<EligibleUser[]>([]);
   const [winners, setWinners] = useState<Winner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [spinnerActive, setSpinnerActive] = useState(false);
-  const [spinnerWinner, setSpinnerWinner] = useState<string | null>(null);
+  // currentPeriodWinner: username of the winner for the active raffle period, or null if none yet
+  const [currentPeriodWinner, setCurrentPeriodWinner] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -82,14 +83,18 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
         if (winnersRes.ok) {
           const winnersData = await winnersRes.json();
           const newWinners: Winner[] = winnersData.winners || [];
-          // If a new winner appeared since last check, trigger the spinner
-          if (newWinners.length > 0 && newWinners.length > winners.length) {
-            const latest = newWinners[0]; // most recent
-            if (!spinnerActive && !spinnerWinner) {
-              setSpinnerWinner(latest.username);
-              setSpinnerActive(true);
-            }
-          }
+
+          // Determine if there's a winner for the CURRENT raffle period.
+          // won_date may be a full ISO string or a plain date string — normalise both ways.
+          // Only match a winner if their week_start equals the current period's start_date.
+          // This is the only reliable field — won_date is the clock time of confirmation
+          // which can fall inside a different period's date range.
+          const periodStart = cfgData.start_date; // e.g. "2026-05-04"
+          const winnerEntry = newWinners.find(
+            (w) => w.week_start && w.week_start.substring(0, 10) === periodStart
+          );
+
+          setCurrentPeriodWinner(winnerEntry ? winnerEntry.username : null);
           setWinners(newWinners);
         }
       } catch {}
@@ -202,16 +207,10 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
       {/* Winner Spinner */}
       <RaffleSpinner
         entries={eligible.map(u => u.username)}
-        winner={spinnerWinner}
+        winner={currentPeriodWinner}
         prizeAmount={config?.prize_amount || 0}
-        isSpinning={spinnerActive}
-        onSpinComplete={() => {
-          // Keep spinner visible for 30s then reset
-          setTimeout(() => {
-            setSpinnerActive(false);
-            setSpinnerWinner(null);
-          }, 30000);
-        }}
+        isSpinning={false}
+        hasWinnerForPeriod={!!currentPeriodWinner}
       />
 
       {/* Entries Grid */}
