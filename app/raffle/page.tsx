@@ -19,6 +19,7 @@ interface RaffleConfig {
   min_wager: number;
   prize_amount: number;
   max_entries: number;
+  tickets_per_wager: number;
   start_date: string;
   end_date: string;
 }
@@ -26,6 +27,7 @@ interface RaffleConfig {
 interface EligibleUser {
   username: string;
   wager_amount: number;
+  tickets: number;
 }
 
 interface Winner {
@@ -52,6 +54,7 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
       setConfig(cfgData);
 
       let users: EligibleUser[] = [];
+      const ticketsPerWager = cfgData.tickets_per_wager || 2500;
 
       if (platform === 'acebet') {
         const lbRes = await fetch(`/api/leaderboard?start_at=${cfgData.start_date}&end_at=${cfgData.end_date}`);
@@ -59,7 +62,14 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
           const lbData = await lbRes.json();
           users = (lbData.data || [])
             .filter((u: any) => ((u.wagered || 0) / 100) >= cfgData.min_wager)
-            .map((u: any) => ({ username: u.name || '', wager_amount: (u.wagered || 0) / 100 }))
+            .map((u: any) => {
+              const wager_amount = (u.wagered || 0) / 100;
+              return {
+                username: u.name || '',
+                wager_amount,
+                tickets: Math.max(1, Math.floor(wager_amount / ticketsPerWager)),
+              };
+            })
             .filter((u: EligibleUser) => u.username);
         }
       }
@@ -149,7 +159,7 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
                 <Users className="w-4 h-4 text-muted-foreground" />
               </div>
               <p className="text-2xl font-bold text-foreground">{eligible.length}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Entries</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Participants</p>
             </div>
             <div className="text-center p-3 rounded-xl bg-background/40 border border-border/40">
               <div className="flex justify-center mb-2">
@@ -162,8 +172,8 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
               <div className="flex justify-center mb-2">
                 <Ticket className="w-4 h-4 text-muted-foreground" />
               </div>
-              <p className="text-2xl font-bold text-foreground">1</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{'Entry / User'}</p>
+              <p className="text-2xl font-bold text-foreground">${(config?.tickets_per_wager || 2500).toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Per Ticket</p>
             </div>
           </div>
         </div>
@@ -229,7 +239,7 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
               </div>
               <p className="text-muted-foreground text-sm">No entries yet.</p>
               <p className="text-muted-foreground/60 text-xs mt-1">
-                Wager at least ${(config?.min_wager || 0).toLocaleString()} to enter.
+                Wager at least ${(config?.min_wager || 0).toLocaleString()} to enter. 1 ticket per ${(config?.tickets_per_wager || 2500).toLocaleString()} wagered.
               </p>
             </div>
           ) : (
@@ -248,6 +258,9 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       ${user.wager_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-xs text-primary font-medium">
+                      {user.tickets} {user.tickets === 1 ? 'ticket' : 'tickets'}
                     </p>
                   </div>
                 </div>

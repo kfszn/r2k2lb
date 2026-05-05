@@ -14,6 +14,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   ...defaultMetadata,
   generator: 'Next.js',
+  applicationName: 'R2K2',
 }
 
 export default function RootLayout({
