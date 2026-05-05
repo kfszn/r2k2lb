@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   ...defaultMetadata,
   generator: 'Next.js',
   applicationName: 'R2K2',
+  keywords: ['r2k2', 'raffle', 'slots', 'giveaway', 'wager', 'tournament'],
 }
 
 export default function RootLayout({
