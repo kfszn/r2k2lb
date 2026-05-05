@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Trophy } from 'lucide-react';
+import { Trophy, Sparkles } from 'lucide-react';
 
 interface RaffleSpinnerProps {
   entries: string[]; // weighted pool (names repeated by ticket count)
   winner: string | null;
   prizeAmount: number;
   isSpinning: boolean;
-  spinKey: number; // increment to force a new spin animation
+  spinKey?: number; // increment to force a new spin animation
+  hasWinnerForPeriod?: boolean; // true if winner already picked for current period
   onSpinComplete?: () => void;
 }
 
@@ -45,7 +46,8 @@ export function RaffleSpinner({
   winner,
   prizeAmount,
   isSpinning,
-  spinKey,
+  spinKey = 0,
+  hasWinnerForPeriod = false,
   onSpinComplete,
 }: RaffleSpinnerProps) {
   const VISIBLE = 5;
@@ -53,10 +55,11 @@ export function RaffleSpinner({
 
   const [reel, setReel] = useState<string[]>([]);
   const [reelPos, setReelPos] = useState(0); // current index into reel[]
-  const [phase, setPhase] = useState<'idle' | 'fast' | 'slowing' | 'landed'>('idle');
+  const [phase, setPhase] = useState<'idle' | 'preview' | 'fast' | 'slowing' | 'landed'>('idle');
   const [glowIntensity, setGlowIntensity] = useState(0);
 
   const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const tickRef = useRef(0);
   const reelRef = useRef<string[]>([]);
 
@@ -64,6 +67,13 @@ export function RaffleSpinner({
     if (intervalRef.current) {
       clearTimeout(intervalRef.current);
       intervalRef.current = null;
+    }
+  };
+
+  const clearPreview = () => {
+    if (previewIntervalRef.current) {
+      clearInterval(previewIntervalRef.current);
+      previewIntervalRef.current = null;
     }
   };
 
@@ -88,6 +98,7 @@ export function RaffleSpinner({
     if (!isSpinning || !winner || entries.length === 0) return;
 
     clearTimer();
+    clearPreview(); // stop the preview animation
 
     // Build a fresh shuffled reel
     const newReel = buildReel(entries, winner);
@@ -159,13 +170,44 @@ export function RaffleSpinner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spinKey]);
 
-  // Reset display when idle
+  // Idle preview animation: slowly rotate through names when not spinning and no winner for period
   useEffect(() => {
-    if (!isSpinning && phase === 'idle') {
+    // Don't run preview if spinning, or if there's a winner shown, or no entries
+    if (isSpinning || hasWinnerForPeriod || entries.length === 0) {
+      clearPreview();
+      if (!isSpinning && phase !== 'landed') {
+        setPhase('idle');
+        setDisplayedNames(Array(VISIBLE).fill('---'));
+        setGlowIntensity(0);
+      }
+      return;
+    }
+
+    // Build a shuffled preview reel
+    const previewReel = shuffle([...entries]);
+    // Extend it to loop smoothly
+    const extendedReel = [...previewReel, ...previewReel, ...previewReel];
+    let pos = 0;
+
+    setPhase('preview');
+    setDisplayedNames(getWindow(pos, extendedReel));
+
+    // Slowly rotate through names
+    previewIntervalRef.current = setInterval(() => {
+      pos = (pos + 1) % previewReel.length;
+      setDisplayedNames(getWindow(pos, extendedReel));
+    }, 800); // Change name every 800ms for smooth rotation
+
+    return () => clearPreview();
+  }, [isSpinning, hasWinnerForPeriod, entries, getWindow]);
+
+  // Reset display when idle with no entries
+  useEffect(() => {
+    if (!isSpinning && phase === 'idle' && entries.length === 0) {
       setDisplayedNames(Array(VISIBLE).fill('---'));
       setGlowIntensity(0);
     }
-  }, [isSpinning, phase]);
+  }, [isSpinning, phase, entries.length]);
 
   const maskName = (name: string): string => {
     if (!name || name === '---') return '---';
@@ -188,7 +230,13 @@ export function RaffleSpinner({
         <div className="text-center mb-6">
           <h3 className="text-lg font-semibold text-foreground">Winner Draw</h3>
           <p className="text-sm text-muted-foreground">
-            {phase === 'idle' && 'Waiting for draw...'}
+            {phase === 'idle' && 'Waiting for entries...'}
+            {phase === 'preview' && (
+              <span className="inline-flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
+                Entries rolling in...
+              </span>
+            )}
             {phase === 'fast' && 'Drawing winner...'}
             {phase === 'slowing' && 'Almost there...'}
             {phase === 'landed' && 'Winner selected!'}
@@ -208,12 +256,16 @@ export function RaffleSpinner({
               borderColor:
                 phase === 'landed'
                   ? 'oklch(0.7 0.15 140)'
+                  : phase === 'preview'
+                  ? 'oklch(0.55 0.12 250)' // subtle primary glow for preview
                   : phase === 'idle'
                   ? 'oklch(0.25 0.04 260)'
                   : 'oklch(0.65 0.2 250)',
               boxShadow:
                 phase === 'landed'
                   ? '0 0 30px oklch(0.7 0.15 140 / 0.3), inset 0 0 20px oklch(0.7 0.15 140 / 0.1)'
+                  : phase === 'preview'
+                  ? '0 0 15px oklch(0.55 0.12 250 / 0.15)'
                   : phase !== 'idle'
                   ? `0 0 ${20 * glowIntensity}px oklch(0.65 0.2 250 / ${0.2 * glowIntensity})`
                   : 'none',

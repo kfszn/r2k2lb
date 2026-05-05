@@ -45,6 +45,7 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
   const [isLoading, setIsLoading] = useState(true);
   const [spinnerActive, setSpinnerActive] = useState(false);
   const [spinnerWinner, setSpinnerWinner] = useState<string | null>(null);
+  const [hasWinnerForPeriod, setHasWinnerForPeriod] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -82,6 +83,16 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
         if (winnersRes.ok) {
           const winnersData = await winnersRes.json();
           const newWinners: Winner[] = winnersData.winners || [];
+          
+          // Check if there's already a winner for the current raffle period
+          const currentPeriodStart = cfgData.start_date;
+          const currentPeriodEnd = cfgData.end_date;
+          const winnerForCurrentPeriod = newWinners.find((w) => {
+            const wonDate = new Date(w.won_date).toISOString().split('T')[0];
+            return wonDate >= currentPeriodStart && wonDate <= currentPeriodEnd;
+          });
+          setHasWinnerForPeriod(!!winnerForCurrentPeriod);
+          
           // If a new winner appeared since last check, trigger the spinner
           if (newWinners.length > 0 && newWinners.length > winners.length) {
             const latest = newWinners[0]; // most recent
@@ -205,6 +216,7 @@ function RaffleTab({ platform }: { platform: 'acebet' }) {
         winner={spinnerWinner}
         prizeAmount={config?.prize_amount || 0}
         isSpinning={spinnerActive}
+        hasWinnerForPeriod={hasWinnerForPeriod}
         onSpinComplete={() => {
           // Keep spinner visible for 30s then reset
           setTimeout(() => {
