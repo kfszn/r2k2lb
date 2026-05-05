@@ -170,44 +170,45 @@ export function RaffleSpinner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spinKey]);
 
-  // Idle preview animation: slowly rotate through names when not spinning and no winner for period
+  // Control display state when not actively spinning
   useEffect(() => {
-    // Don't run preview if spinning, or if there's a winner shown, or no entries
-    if (isSpinning || hasWinnerForPeriod || entries.length === 0) {
-      clearPreview();
-      if (!isSpinning && phase !== 'landed') {
-        setPhase('idle');
-        setDisplayedNames(Array(VISIBLE).fill('---'));
-        setGlowIntensity(0);
-      }
+    if (isSpinning) return; // the spin effect handles this
+
+    clearPreview();
+
+    // Case 1: there is a winner for the current period → show landed state
+    if (hasWinnerForPeriod && winner) {
+      // Build a reel of all winner entries so getWindow(CENTER) centres on the winner
+      const winnerReel = Array(VISIBLE).fill(winner);
+      setPhase('landed');
+      setGlowIntensity(1);
+      setDisplayedNames(winnerReel);
       return;
     }
 
-    // Build a shuffled preview reel
-    const previewReel = shuffle([...entries]);
-    // Extend it to loop smoothly
-    const extendedReel = [...previewReel, ...previewReel, ...previewReel];
-    let pos = 0;
+    // Case 2: no winner yet, but we have entries → run the preview rotation
+    if (entries.length > 0) {
+      const previewReel = shuffle([...entries]);
+      const extendedReel = [...previewReel, ...previewReel, ...previewReel];
+      let pos = 0;
 
-    setPhase('preview');
-    setDisplayedNames(getWindow(pos, extendedReel));
-
-    // Slowly rotate through names
-    previewIntervalRef.current = setInterval(() => {
-      pos = (pos + 1) % previewReel.length;
-      setDisplayedNames(getWindow(pos, extendedReel));
-    }, 800); // Change name every 800ms for smooth rotation
-
-    return () => clearPreview();
-  }, [isSpinning, hasWinnerForPeriod, entries, getWindow]);
-
-  // Reset display when idle with no entries
-  useEffect(() => {
-    if (!isSpinning && phase === 'idle' && entries.length === 0) {
-      setDisplayedNames(Array(VISIBLE).fill('---'));
+      setPhase('preview');
       setGlowIntensity(0);
+      setDisplayedNames(getWindow(pos, extendedReel));
+
+      previewIntervalRef.current = setInterval(() => {
+        pos = (pos + 1) % previewReel.length;
+        setDisplayedNames(getWindow(pos, extendedReel));
+      }, 800);
+
+      return () => clearPreview();
     }
-  }, [isSpinning, phase, entries.length]);
+
+    // Case 3: no entries yet
+    setPhase('idle');
+    setGlowIntensity(0);
+    setDisplayedNames(Array(VISIBLE).fill('---'));
+  }, [isSpinning, hasWinnerForPeriod, winner, entries, getWindow]);
 
   const maskName = (name: string): string => {
     if (!name || name === '---') return '---';
@@ -228,13 +229,15 @@ export function RaffleSpinner({
 
       <div className="relative px-6 py-8 sm:px-10">
         <div className="text-center mb-6">
-          <h3 className="text-lg font-semibold text-foreground">Winner Draw</h3>
+          <h3 className="text-lg font-semibold text-foreground">
+            {phase === 'landed' ? 'This Period\'s Winner' : 'Live Draw'}
+          </h3>
           <p className="text-sm text-muted-foreground">
             {phase === 'idle' && 'Waiting for entries...'}
             {phase === 'preview' && (
               <span className="inline-flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
-                Entries rolling in...
+                Draw pending — entries rotating
               </span>
             )}
             {phase === 'fast' && 'Drawing winner...'}
