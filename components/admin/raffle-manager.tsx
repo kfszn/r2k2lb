@@ -13,6 +13,7 @@ interface RaffleConfig {
   min_wager: number;
   prize_amount: number;
   max_entries: number;
+  tickets_per_wager: number;
   start_date: string;
   end_date: string;
 }
@@ -23,6 +24,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
     min_wager: 50,
     prize_amount: 1000,
     max_entries: 10000,
+    tickets_per_wager: 2500,
     start_date: '2026-02-14',
     end_date: '2026-02-21',
   });
@@ -54,6 +56,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
         min_wager: data.min_wager || 50,
         prize_amount: data.prize_amount || 1000,
         max_entries: data.max_entries || 10000,
+        tickets_per_wager: data.tickets_per_wager || 2500,
         start_date: data.start_date || '2026-02-14',
         end_date: data.end_date || '2026-02-21',
       });
@@ -66,20 +69,29 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
     if (!config) return;
     setIsLoadingEntries(true);
     try {
-      let users: string[] = [];
+      // Build weighted ticket pool: 1 ticket per tickets_per_wager wagered
+      const ticketsPerWager = config.tickets_per_wager || 2500;
+      let ticketPool: string[] = [];
+
       if (platform === 'acebet') {
         const lbRes = await fetch(
           `/api/leaderboard?start_at=${config.start_date}&end_at=${config.end_date}`,
         );
         if (lbRes.ok) {
           const lbData = await lbRes.json();
-          users = (lbData.data || [])
-            .filter((u: any) => (u.wagered || 0) / 100 >= config.min_wager)
-            .map((u: any) => u.name || '')
-            .filter(Boolean);
+          (lbData.data || []).forEach((u: any) => {
+            const wagerAmount = (u.wagered || 0) / 100;
+            if (wagerAmount < config.min_wager) return;
+            const name = u.name || '';
+            if (!name) return;
+            const tickets = Math.max(1, Math.floor(wagerAmount / ticketsPerWager));
+            for (let i = 0; i < tickets; i++) {
+              ticketPool.push(name);
+            }
+          });
         }
       }
-      setEligible(users);
+      setEligible(ticketPool);
     } catch (err) {
       console.error('Error fetching eligible:', err);
     } finally {
@@ -136,6 +148,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
           weekStart: config.start_date,
         }),
       });
+      const data = await response.json();
       if (response.ok) {
         alert(`Winner confirmed: ${selectedWinner} wins $${config.prize_amount.toLocaleString()}`);
         // Reset
@@ -143,11 +156,13 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
         setSelectedWinner(null);
         setSpinComplete(false);
       } else {
-        alert('Error confirming winner');
+        const errMsg = data?.error || 'Unknown error';
+        console.error('Error confirming winner:', errMsg);
+        alert(`Error confirming winner: ${errMsg}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error confirming winner:', error);
-      alert('Error confirming winner');
+      alert(`Error confirming winner: ${error?.message || 'Network error'}`);
     } finally {
       setIsConfirming(false);
     }
@@ -167,7 +182,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
           <CardTitle>Raffle Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Minimum Wager ($)</label>
               <Input
@@ -187,6 +202,17 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
                   setConfigForm({ ...configForm, prize_amount: parseFloat(e.target.value) || 0 })
                 }
               />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Wager per Ticket ($)</label>
+              <Input
+                type="number"
+                value={configForm.tickets_per_wager || 2500}
+                onChange={(e) =>
+                  setConfigForm({ ...configForm, tickets_per_wager: parseFloat(e.target.value) || 2500 })
+                }
+              />
+              <p className="text-xs text-muted-foreground mt-1">1 ticket earned per ${(configForm.tickets_per_wager || 2500).toLocaleString()} wagered</p>
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Max Entries</label>
@@ -229,7 +255,8 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
           <div className="flex items-center justify-between">
             <CardTitle>Eligible Entries</CardTitle>
             <div className="flex items-center gap-2">
-              <Badge variant="outline">{eligible.length} entries</Badge>
+              <Badge variant="outline">{new Set(eligible).size} users</Badge>
+              <Badge variant="secondary">{eligible.length} tickets</Badge>
               <Button variant="outline" size="sm" onClick={fetchEligible} disabled={isLoadingEntries}>
                 {isLoadingEntries ? 'Loading...' : 'Refresh'}
               </Button>
@@ -239,13 +266,18 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
         <CardContent>
           {eligible.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No eligible entries found. Users need to wager at least ${configForm.min_wager.toLocaleString()} to qualify.
+              No eligible entries found. Users need to wager at least ${configForm.min_wager.toLocaleString()} to qualify. Each ${(configForm.tickets_per_wager || 2500).toLocaleString()} wagered earns 1 ticket.
             </p>
           ) : (
             <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-              {eligible.map((name, i) => (
-                <Badge key={`${name}-${i}`} variant="secondary" className="text-xs">
-                  {name}
+              {Array.from(
+                eligible.reduce((acc, name) => {
+                  acc.set(name, (acc.get(name) || 0) + 1);
+                  return acc;
+                }, new Map<string, number>()),
+              ).map(([name, count]) => (
+                <Badge key={name} variant="secondary" className="text-xs">
+                  {name} &times; {count}
                 </Badge>
               ))}
             </div>

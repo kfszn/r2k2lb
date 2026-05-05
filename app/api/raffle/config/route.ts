@@ -32,8 +32,9 @@ export async function GET(request: NextRequest) {
           min_wager: 50,
           prize_amount: 1000,
           max_entries: 10000,
+          tickets_per_wager: 2500,
           start_date: '2026-02-14',
-          end_date: '2026-02-21'
+          end_date: '2026-02-21',
         });
       }
       
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { platform, min_wager, prize_amount, max_entries, start_date, end_date } = await request.json();
+    const { platform, min_wager, prize_amount, max_entries, tickets_per_wager, start_date, end_date } = await request.json();
 
     if (!platform) {
       return NextResponse.json(
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
         min_wager: min_wager || 50,
         prize_amount: prize_amount || 1000,
         max_entries: max_entries || 10000,
+        tickets_per_wager: tickets_per_wager || 2500,
         start_date: start_date || '2026-02-14',
         end_date: end_date || '2026-02-21',
         updated_at: new Date().toISOString(),
