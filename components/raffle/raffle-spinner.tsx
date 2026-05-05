@@ -4,11 +4,40 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Trophy } from 'lucide-react';
 
 interface RaffleSpinnerProps {
-  entries: string[];
+  entries: string[]; // weighted pool (names repeated by ticket count)
   winner: string | null;
   prizeAmount: number;
   isSpinning: boolean;
+  spinKey: number; // increment to force a new spin animation
   onSpinComplete?: () => void;
+}
+
+// Fisher-Yates shuffle — returns a new shuffled array
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Build a display reel: shuffle the pool, then append enough copies so the
+// reel is at least MIN_REEL_LENGTH entries long and ends on the winner.
+const MIN_REEL_LENGTH = 60;
+
+function buildReel(pool: string[], winner: string): string[] {
+  if (pool.length === 0) return [winner];
+
+  // Shuffle so consecutive same-name tickets are scattered
+  let reel: string[] = [];
+  while (reel.length < MIN_REEL_LENGTH) {
+    reel = reel.concat(shuffle(pool));
+  }
+
+  // Make the last entry the winner so the reel always lands correctly
+  reel.push(winner);
+  return reel;
 }
 
 export function RaffleSpinner({
@@ -16,117 +45,127 @@ export function RaffleSpinner({
   winner,
   prizeAmount,
   isSpinning,
+  spinKey,
   onSpinComplete,
 }: RaffleSpinnerProps) {
-  const [displayedNames, setDisplayedNames] = useState<string[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const VISIBLE = 5;
+  const CENTER = 2; // index of the centre slot
+
+  const [reel, setReel] = useState<string[]>([]);
+  const [reelPos, setReelPos] = useState(0); // current index into reel[]
   const [phase, setPhase] = useState<'idle' | 'fast' | 'slowing' | 'landed'>('idle');
   const [glowIntensity, setGlowIntensity] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const tickCountRef = useRef(0);
 
-  // Build the visible slot reel (5 names visible at a time)
-  const VISIBLE = 5;
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tickRef = useRef(0);
+  const reelRef = useRef<string[]>([]);
 
-  const getVisibleNames = useCallback(
-    (idx: number) => {
-      if (entries.length === 0) return Array(VISIBLE).fill('---');
+  const clearTimer = () => {
+    if (intervalRef.current) {
+      clearTimeout(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  // Derive 5 visible names from current reel position
+  const getWindow = useCallback(
+    (pos: number, r: string[]): string[] => {
+      if (r.length === 0) return Array(VISIBLE).fill('---');
       const names: string[] = [];
-      for (let i = -2; i <= 2; i++) {
-        const mod = ((idx + i) % entries.length + entries.length) % entries.length;
-        names.push(entries[mod]);
+      for (let i = -CENTER; i <= CENTER; i++) {
+        const idx = Math.max(0, Math.min(r.length - 1, pos + i));
+        names.push(r[idx]);
       }
       return names;
     },
-    [entries],
+    [],
   );
 
-  // Start the spin animation when isSpinning becomes true
+  const [displayedNames, setDisplayedNames] = useState<string[]>(Array(VISIBLE).fill('---'));
+
+  // Kick off a new spin whenever spinKey changes (covers re-spins too)
   useEffect(() => {
-    if (isSpinning && entries.length > 0 && phase === 'idle') {
-      setPhase('fast');
-      setGlowIntensity(0);
-      tickCountRef.current = 0;
+    if (!isSpinning || !winner || entries.length === 0) return;
 
-      let idx = 0;
-      let speed = 50; // ms between ticks
-      const totalFastTicks = 40;
-      const totalSlowTicks = 25;
+    clearTimer();
 
-      const winnerIdx = winner ? entries.indexOf(winner) : Math.floor(Math.random() * entries.length);
-      const targetIdx = winnerIdx >= 0 ? winnerIdx : 0;
+    // Build a fresh shuffled reel
+    const newReel = buildReel(entries, winner);
+    reelRef.current = newReel;
+    setReel(newReel);
 
-      const tick = () => {
-        tickCountRef.current += 1;
-        const t = tickCountRef.current;
+    const winnerPos = newReel.length - 1; // winner always at the end
+    const FAST_TICKS = 50;
+    const SLOW_TICKS = 30;
+    const TOTAL = FAST_TICKS + SLOW_TICKS;
 
-        if (t < totalFastTicks) {
-          // Fast phase: random rapid cycling
-          idx = (idx + 1) % entries.length;
-          setCurrentIndex(idx);
-          setDisplayedNames(getVisibleNames(idx));
-          intervalRef.current = setTimeout(tick, speed);
-        } else if (t < totalFastTicks + totalSlowTicks) {
-          // Slowing phase: decelerate toward winner
-          setPhase('slowing');
-          const progress = (t - totalFastTicks) / totalSlowTicks;
-          setGlowIntensity(progress);
-          speed = 50 + progress * 350; // slow from 50ms to 400ms
+    tickRef.current = 0;
+    setPhase('fast');
+    setGlowIntensity(0);
 
-          // Steer toward winner in the last few ticks
-          const remaining = totalFastTicks + totalSlowTicks - t;
-          if (remaining <= 3) {
-            const stepsToTarget = ((targetIdx - idx) % entries.length + entries.length) % entries.length;
-            if (stepsToTarget > 0 && stepsToTarget <= 3) {
-              idx = (idx + 1) % entries.length;
-            } else {
-              idx = (targetIdx - remaining + entries.length) % entries.length;
-            }
-          } else {
-            idx = (idx + 1) % entries.length;
-          }
-          setCurrentIndex(idx);
-          setDisplayedNames(getVisibleNames(idx));
-          intervalRef.current = setTimeout(tick, speed);
-        } else {
-          // Land on winner
-          setCurrentIndex(targetIdx);
-          setDisplayedNames(getVisibleNames(targetIdx));
+    // Start position near the beginning so there's plenty of reel to scroll
+    let pos = 2;
+    setReelPos(pos);
+    setDisplayedNames(getWindow(pos, newReel));
+
+    const doTick = () => {
+      tickRef.current += 1;
+      const t = tickRef.current;
+
+      if (t <= FAST_TICKS) {
+        // Fast phase: advance 2-3 slots per tick
+        pos = Math.min(pos + 2, winnerPos - (TOTAL - t) - 2);
+        pos = Math.max(pos, 2);
+        const delay = 40 + (t / FAST_TICKS) * 20; // 40 → 60ms
+        setPhase('fast');
+        setReelPos(pos);
+        setDisplayedNames(getWindow(pos, newReel));
+        intervalRef.current = setTimeout(doTick, delay);
+      } else if (t <= TOTAL) {
+        // Slowing phase
+        const progress = (t - FAST_TICKS) / SLOW_TICKS;
+        setGlowIntensity(progress);
+        setPhase('slowing');
+
+        // Step 1 slot at a time, decelerating
+        pos = Math.min(pos + 1, winnerPos);
+        const delay = 60 + progress * 360; // 60ms → 420ms
+        setReelPos(pos);
+        setDisplayedNames(getWindow(pos, newReel));
+
+        if (pos >= winnerPos) {
+          // Landed early
+          setReelPos(winnerPos);
+          setDisplayedNames(getWindow(winnerPos, newReel));
           setPhase('landed');
           setGlowIntensity(1);
           onSpinComplete?.();
+          return;
         }
-      };
-
-      setDisplayedNames(getVisibleNames(0));
-      intervalRef.current = setTimeout(tick, speed);
-    }
-
-    return () => {
-      if (intervalRef.current) clearTimeout(intervalRef.current);
+        intervalRef.current = setTimeout(doTick, delay);
+      } else {
+        // Ensure we land exactly on winner
+        setReelPos(winnerPos);
+        setDisplayedNames(getWindow(winnerPos, newReel));
+        setPhase('landed');
+        setGlowIntensity(1);
+        onSpinComplete?.();
+      }
     };
-  }, [isSpinning]);
 
-  // Reset when not spinning
+    intervalRef.current = setTimeout(doTick, 40);
+
+    return () => clearTimer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinKey]);
+
+  // Reset display when idle
   useEffect(() => {
-    if (!isSpinning && phase !== 'idle') {
-      // Keep landed state for a while, then reset
-      const timer = setTimeout(() => {
-        if (!isSpinning) {
-          setPhase('idle');
-          setGlowIntensity(0);
-        }
-      }, 30000);
-      return () => clearTimeout(timer);
+    if (!isSpinning && phase === 'idle') {
+      setDisplayedNames(Array(VISIBLE).fill('---'));
+      setGlowIntensity(0);
     }
   }, [isSpinning, phase]);
-
-  // Initialize display
-  useEffect(() => {
-    if (entries.length > 0 && phase === 'idle') {
-      setDisplayedNames(getVisibleNames(0));
-    }
-  }, [entries, phase, getVisibleNames]);
 
   const maskName = (name: string): string => {
     if (!name || name === '---') return '---';
@@ -138,7 +177,7 @@ export function RaffleSpinner({
     <div className="relative rounded-2xl border border-border/60 bg-secondary/30 overflow-hidden">
       {/* Background glow */}
       <div
-        className="absolute inset-0 transition-opacity duration-1000"
+        className="absolute inset-0 transition-opacity duration-1000 pointer-events-none"
         style={{
           background: `radial-gradient(ellipse at center, oklch(0.65 0.2 250 / ${glowIntensity * 0.15}) 0%, transparent 70%)`,
           opacity: glowIntensity,
@@ -162,18 +201,20 @@ export function RaffleSpinner({
           <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-secondary/90 to-transparent z-10 pointer-events-none rounded-t-xl" />
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-secondary/90 to-transparent z-10 pointer-events-none rounded-b-xl" />
 
-          {/* Center highlight bar */}
+          {/* Centre highlight bar */}
           <div
             className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-14 border-y-2 z-10 pointer-events-none transition-all duration-500"
             style={{
-              borderColor: phase === 'landed'
-                ? 'oklch(0.7 0.15 140)'
-                : phase === 'idle'
+              borderColor:
+                phase === 'landed'
+                  ? 'oklch(0.7 0.15 140)'
+                  : phase === 'idle'
                   ? 'oklch(0.25 0.04 260)'
                   : 'oklch(0.65 0.2 250)',
-              boxShadow: phase === 'landed'
-                ? '0 0 30px oklch(0.7 0.15 140 / 0.3), inset 0 0 20px oklch(0.7 0.15 140 / 0.1)'
-                : phase !== 'idle'
+              boxShadow:
+                phase === 'landed'
+                  ? '0 0 30px oklch(0.7 0.15 140 / 0.3), inset 0 0 20px oklch(0.7 0.15 140 / 0.1)'
+                  : phase !== 'idle'
                   ? `0 0 ${20 * glowIntensity}px oklch(0.65 0.2 250 / ${0.2 * glowIntensity})`
                   : 'none',
             }}
@@ -183,15 +224,17 @@ export function RaffleSpinner({
           <div className="rounded-xl bg-background/60 border border-border/40 overflow-hidden">
             <div className="divide-y divide-border/20">
               {displayedNames.map((name, i) => {
-                const isCenter = i === 2;
+                const isCenter = i === CENTER;
                 const isLanded = phase === 'landed' && isCenter;
                 return (
                   <div
-                    key={`${name}-${i}-${currentIndex}`}
-                    className="flex items-center justify-center h-14 transition-all duration-200"
+                    key={i}
+                    className="flex items-center justify-center h-14 transition-all duration-150"
                     style={{
-                      opacity: isCenter ? 1 : 0.3 + (1 - Math.abs(i - 2) * 0.2),
-                      transform: isCenter ? 'scale(1.05)' : `scale(${1 - Math.abs(i - 2) * 0.05})`,
+                      opacity: isCenter ? 1 : Math.max(0.2, 1 - Math.abs(i - CENTER) * 0.25),
+                      transform: isCenter
+                        ? 'scale(1.05)'
+                        : `scale(${1 - Math.abs(i - CENTER) * 0.04})`,
                       background: isLanded ? 'oklch(0.7 0.15 140 / 0.1)' : 'transparent',
                     }}
                   >
@@ -200,8 +243,8 @@ export function RaffleSpinner({
                         isLanded
                           ? 'text-chart-3'
                           : isCenter
-                            ? 'text-foreground'
-                            : 'text-muted-foreground'
+                          ? 'text-foreground'
+                          : 'text-muted-foreground'
                       }`}
                     >
                       {maskName(name)}
