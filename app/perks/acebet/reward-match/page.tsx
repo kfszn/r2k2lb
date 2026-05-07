@@ -8,7 +8,6 @@ import {
   Flame,
   Trophy,
   Calendar,
-  CalendarDays,
   Crown,
   BadgeCheck,
   MessageCircle,
@@ -18,7 +17,7 @@ import {
 export const metadata: Metadata = {
   title: 'Reward Match | R2K2',
   description:
-    'R2K2 personally matches 100% of every AceBet reward you earn — weekly, pre-monthly, and monthly. Play under code R2K2 and double every payout.',
+    'R2K2 personally matches 100% of every AceBet reward you earn — weekly and monthly. Play under code R2K2 and double every payout.',
 }
 
 export default function RewardMatchPage() {
@@ -45,7 +44,7 @@ export default function RewardMatchPage() {
                   <span className="text-purple-400">Match.</span>
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                  Whatever AceBet rewards you — I&apos;ll match it. Every time. Weekly, pre-monthly, and monthly payouts all doubled, personally by me.
+                  Whatever AceBet rewards you — I&apos;ll match it. Every time. Weekly and monthly payouts all doubled, personally by me.
                 </p>
               </div>
 
@@ -78,16 +77,16 @@ export default function RewardMatchPage() {
             </div>
           </div>
 
-          {/* Three Reward Cycles */}
+          {/* Reward Cycles */}
           <div className="space-y-5">
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold">Three Payout Cycles</h2>
+              <h2 className="text-2xl font-bold">Two Payout Cycles</h2>
               <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-                AceBet rewards you across three cycles. R2K2 doubles every single one.
+                AceBet rewards you across two cycles. R2K2 doubles every single one.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               {/* Weekly */}
               <Card className="border-blue-500/30 bg-gradient-to-b from-blue-500/10 to-card relative overflow-hidden flex flex-col">
                 <div className="absolute top-3 right-3">
@@ -110,36 +109,6 @@ export default function RewardMatchPage() {
                     <p className="text-xs text-blue-400 font-medium">R2K2 doubles this payout</p>
                   </div>
                   <Button asChild size="sm" variant="outline" className="w-full mt-2 border-blue-500/30 hover:bg-blue-500/10 hover:border-blue-500/50">
-                    <a href="https://discord.gg/RsjSPzGKTR" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                      <MessageCircle className="h-4 w-4" />
-                      Claim Via Discord
-                    </a>
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Pre-Monthly */}
-              <Card className="border-purple-500/30 bg-gradient-to-b from-purple-500/10 to-card relative overflow-hidden flex flex-col">
-                <div className="absolute top-3 right-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 bg-purple-500/10 border border-purple-500/20 rounded-full px-2 py-0.5">
-                    Mid-Cycle
-                  </span>
-                </div>
-                <CardContent className="pt-6 pb-5 space-y-3 flex-1 flex flex-col">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-500/15 border border-purple-500/20">
-                    <CalendarDays className="h-5 w-5 text-purple-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold">Pre-Monthly Reward</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      A mid-cycle bonus from AceBet before the monthly closes out.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 pt-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-purple-400 flex-shrink-0" />
-                    <p className="text-xs text-purple-400 font-medium">R2K2 doubles this payout</p>
-                  </div>
-                  <Button asChild size="sm" variant="outline" className="w-full mt-2 border-purple-500/30 hover:bg-purple-500/10 hover:border-purple-500/50">
                     <a href="https://discord.gg/RsjSPzGKTR" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
                       <MessageCircle className="h-4 w-4" />
                       Claim Via Discord
@@ -201,7 +170,7 @@ export default function RewardMatchPage() {
                   <div className="space-y-1">
                     <p className="font-bold">Receive Your AceBet Reward</p>
                     <p className="text-sm text-muted-foreground">
-                      AceBet pays your weekly, pre-monthly, or monthly reward automatically to your account.
+                      AceBet pays your weekly or monthly reward automatically to your account.
                     </p>
                   </div>
                 </div>
