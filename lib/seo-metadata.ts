@@ -86,6 +86,20 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/leaderboard/acebet`,
   },
+  packdraw: {
+    title: 'Packdraw Leaderboard — $2,000 Monthly with Code R2K2',
+    description:
+      'Compete on the R2K2 Packdraw leaderboard for a share of $2,000 monthly. Use code R2K2 on Packdraw for exclusive rewards and leaderboard eligibility.',
+    keywords: [
+      'Packdraw leaderboard',
+      'Packdraw R2K2',
+      'Packdraw code R2K2',
+      '$2000 monthly Packdraw',
+      'Packdraw rewards',
+      'Packdraw affiliate',
+    ],
+    canonical: `${baseUrl}/leaderboard/packdraw`,
+  },
   tournament: {
     title: 'Live Slot Bracket Tournaments — R2K2',
     description:
