@@ -123,15 +123,14 @@ export default function PackdrawLeaderboard() {
       const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
       if (found) setDateRange(`${found.display}`)
     } else {
-      // Dynamic date range: tomorrow to 30 days from now
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
+      // Dynamic date range: today to 31 days from now
+      const today = new Date()
       const endDate = new Date()
-      endDate.setDate(endDate.getDate() + 30)
+      endDate.setDate(endDate.getDate() + 31)
       
       const formatDisplay = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       const year = endDate.getFullYear()
-      setDateRange(`${formatDisplay(tomorrow)} - ${formatDisplay(endDate)}, ${year} • 11:59pm EST End`)
+      setDateRange(`${formatDisplay(today)} - ${formatDisplay(endDate)}, ${year} • 11:59pm EST End`)
     }
 
     const interval = setInterval(() => {
