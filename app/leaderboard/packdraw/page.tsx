@@ -78,17 +78,26 @@ export default function PackdrawLeaderboard() {
     setError(null)
     setSearchQuery('')
     try {
-      let url = '/api/leaderboard'
+      const apiKey = process.env.NEXT_PUBLIC_PACKDRAW_API_KEY
+      if (!apiKey) {
+        setError('Packdraw API key not configured')
+        setLoading(false)
+        return
+      }
+
+      let url = `https://packdraw.com/api/v1/affiliates/leaderboard?apiKey=${apiKey}`
+      
       if (month !== 'current') {
         const found = PREVIOUS_MONTHS.find(m => m.label === month)
         if (found && found.start_at !== 'TBD') {
-          url = `/api/leaderboard?start_at=${found.start_at}&end_at=${found.end_at}`
+          url += `&after=${found.start_at}`
         } else {
           setLeaderboard({ ok: true, range: { start_at: 'TBD', end_at: 'TBD', days: 0 }, count: 0, data: [] })
           setLoading(false)
           return
         }
       }
+      
       const res = await fetch(url)
       const data = await res.json()
       if (data.ok) {
