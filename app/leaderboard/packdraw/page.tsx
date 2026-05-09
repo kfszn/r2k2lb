@@ -25,8 +25,8 @@ interface LeaderboardData {
   data: LeaderboardEntry[]
 }
 
-// Prize pool: $10,000 total - top 10 paid spots
-const REWARDS = [2000, 1500, 1000, 800, 600, 500, 350, 200, 50, 0]
+// Prize pool: $2,000 total - top 10 paid spots
+const REWARDS = [400, 300, 250, 200, 150, 100, 75, 50, 25, 0]
 
 interface MonthConfig {
   label: string
@@ -71,7 +71,7 @@ export default function PackdrawLeaderboard() {
 
   const activeMonthConfig = PREVIOUS_MONTHS.find(m => m.label === selectedMonth) ?? null
   const activeRewards = showPrevious ? (activeMonthConfig?.rewards ?? []) : REWARDS
-  const activeTotal = showPrevious ? (activeMonthConfig?.total ?? 0) : 10000
+  const activeTotal = showPrevious ? (activeMonthConfig?.total ?? 0) : 2000
 
   const loadLeaderboard = async (month: string) => {
     setLoading(true)
