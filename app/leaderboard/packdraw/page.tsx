@@ -579,7 +579,7 @@ export default function PackdrawLeaderboard() {
               </>
             )}
           </div>
-        </section>
+        </div>
       </section>
     </div>
   )
