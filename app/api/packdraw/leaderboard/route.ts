@@ -20,12 +20,33 @@ export async function GET(request: Request) {
     
     console.log('[v0] Packdraw API response:', JSON.stringify(data).substring(0, 200))
     
-    // Transform data to match expected format
-    if (Array.isArray(data)) {
-      // API returns array of users directly
-      const transformedData = data.map((user: { name?: string; wagered?: number }, index: number) => ({
-        name: user.name || `User ${index + 1}`,
+    // Packdraw API returns: { after, before, asOf, leaderboard: [...] }
+    if (data.leaderboard && Array.isArray(data.leaderboard)) {
+      const transformedData = data.leaderboard.map((user: { username?: string; name?: string; wagered?: number; image?: string }, index: number) => ({
+        name: user.username || user.name || `User ${index + 1}`,
         wagered: user.wagered || 0,
+        avatar: user.image || null,
+        ...user
+      }))
+      
+      return NextResponse.json({
+        ok: true,
+        count: transformedData.length,
+        data: transformedData,
+        range: {
+          start_at: data.after || after || new Date().toISOString().split('T')[0],
+          end_at: data.before || new Date().toISOString().split('T')[0],
+          days: 30
+        }
+      })
+    }
+    
+    // If it returns array directly
+    if (Array.isArray(data)) {
+      const transformedData = data.map((user: { username?: string; name?: string; wagered?: number; image?: string }, index: number) => ({
+        name: user.username || user.name || `User ${index + 1}`,
+        wagered: user.wagered || 0,
+        avatar: user.image || null,
         ...user
       }))
       
@@ -46,7 +67,8 @@ export async function GET(request: Request) {
       return NextResponse.json(data)
     }
     
-    // Unknown format
+    // Unknown format - log it for debugging
+    console.log('[v0] Unknown Packdraw response format:', JSON.stringify(data))
     return NextResponse.json({
       ok: false,
       error: 'Unexpected API response format'

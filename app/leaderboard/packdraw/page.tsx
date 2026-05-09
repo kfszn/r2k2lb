@@ -25,8 +25,8 @@ interface LeaderboardData {
   data: LeaderboardEntry[]
 }
 
-// Prize pool: $2,000 total - top 10 paid spots
-const REWARDS = [400, 300, 250, 200, 150, 100, 75, 50, 25, 0]
+// Prize pool: $2,000 total - top 5 paid spots
+const REWARDS = [1000, 400, 300, 200, 100]
 
 interface MonthConfig {
   label: string
