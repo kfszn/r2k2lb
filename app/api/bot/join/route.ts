@@ -52,19 +52,18 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Find active tournament in registration
+    // Find the current tournament that is explicitly set to registration
     const { data: tournament, error: tournamentError } = await supabase
       .from("tournaments")
       .select("*")
       .eq("status", "registration")
-      .order("created_at", { ascending: false })
-      .limit(1)
+      .eq("is_current", true)
       .single();
 
     if (tournamentError || !tournament) {
       return NextResponse.json({
         success: false,
-        message: "No tournament is currently accepting registrations.",
+        message: "No tournament is currently open for registration.",
       });
     }
 

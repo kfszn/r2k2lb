@@ -20,6 +20,20 @@ export async function POST(req: Request) {
 
     const supabase = await createClient()
 
+    // Check if slot calls are open
+    const { data: config } = await supabase
+      .from('stream_games_config')
+      .select('is_open')
+      .eq('game_name', 'slot_calls')
+      .single()
+
+    if (!config?.is_open) {
+      return NextResponse.json({
+        success: false,
+        message: '❌ Slot calls are currently closed.',
+      })
+    }
+
     const { error } = await supabase.from('slot_calls').insert({
       username: kickUsername,
       slot_name: slotName,

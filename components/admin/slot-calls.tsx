@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
+import { Switch } from '@/components/ui/switch';
 import { Plus, Check, Trash2 } from 'lucide-react';
 
 interface SlotCall {
@@ -28,14 +29,16 @@ export function SlotCalls() {
     type: 'call',
     buy_amount: '',
   });
+  const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, { buy_amount: string; buy_result: string }>>({});
 
   const supabase = createClient();
 
-  // Fetch slot calls
+  // Fetch slot calls and toggle status on mount
   useEffect(() => {
     fetchSlotCalls();
+    fetchGameStatus();
   }, []);
 
   const fetchSlotCalls = async () => {
@@ -169,7 +172,22 @@ export function SlotCalls() {
     <div className="space-y-6">
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Slot Calls</CardTitle>
+          <div className="flex items-center gap-3">
+            <CardTitle>Slot Calls</CardTitle>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={isOpen}
+                onCheckedChange={toggleGameStatus}
+                id="slot-calls-toggle"
+              />
+              <label
+                htmlFor="slot-calls-toggle"
+                className={`text-xs font-semibold cursor-pointer ${isOpen ? 'text-green-400' : 'text-muted-foreground'}`}
+              >
+                {isOpen ? 'Accepting Requests' : 'Closed'}
+              </label>
+            </div>
+          </div>
           <Button
             size="sm"
             onClick={() => setShowNewForm(!showNewForm)}
