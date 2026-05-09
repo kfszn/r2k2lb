@@ -107,9 +107,9 @@ export default function RewardMatchPage() {
                   <div className="space-y-1.5 pt-1">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Match Limits</p>
                     {[
-                      { range: '$1 — $100k wagered', cap: '$100 max' },
-                      { range: '$100k — $500k wagered', cap: '$200 max' },
-                      { range: '$500k+ wagered', cap: '$400 max' },
+                      { range: '$1 — $100k wagered', cap: '$50 max' },
+                      { range: '$100k — $500k wagered', cap: '$100 max' },
+                      { range: '$500k+ wagered', cap: '$250 max' },
                     ].map((tier, i) => (
                       <div key={i} className="flex items-center justify-between rounded-md bg-blue-500/5 border border-blue-500/10 px-3 py-2">
                         <span className="text-xs text-muted-foreground">{tier.range}</span>
