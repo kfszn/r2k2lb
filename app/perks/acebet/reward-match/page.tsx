@@ -77,6 +77,78 @@ export default function RewardMatchPage() {
             </div>
           </div>
 
+          {/* Match Limits by Wager Tier */}
+          <div className="space-y-5">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold">Match Limits</h2>
+              <p className="text-muted-foreground text-sm max-w-lg mx-auto">
+                Your match cap is determined by your wager volume for that cycle. Higher volume unlocks a higher limit.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Weekly Limits */}
+              <Card className="border-blue-500/30 bg-gradient-to-b from-blue-500/5 to-card overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/15 border border-blue-500/20">
+                      <Calendar className="h-4 w-4 text-blue-400" />
+                    </div>
+                    <CardTitle className="text-base text-blue-400">Weekly Limits</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-5 space-y-2">
+                  {[
+                    { range: '$1 — $100,000', cap: '$100' },
+                    { range: '$100,001 — $500,000', cap: '$200' },
+                    { range: '$500,000+', cap: '$400' },
+                  ].map((tier, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-lg bg-blue-500/5 border border-blue-500/10 px-4 py-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                        <span className="text-sm text-muted-foreground font-medium">{tier.range} wagered</span>
+                      </div>
+                      <span className="text-sm font-black text-blue-400">{tier.cap} max</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Monthly Limits */}
+              <Card className="border-green-500/30 bg-gradient-to-b from-green-500/5 to-card overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-500/15 border border-green-500/20">
+                      <Crown className="h-4 w-4 text-green-400" />
+                    </div>
+                    <CardTitle className="text-base text-green-400">Monthly Limits</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-5 space-y-2">
+                  {[
+                    { range: '$1 — $100,000', cap: '$100' },
+                    { range: '$100,001 — $500,000', cap: '$200' },
+                    { range: '$500,000+', cap: '$400' },
+                  ].map((tier, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-lg bg-green-500/5 border border-green-500/10 px-4 py-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                        <span className="text-sm text-muted-foreground font-medium">{tier.range} wagered</span>
+                      </div>
+                      <span className="text-sm font-black text-green-400">{tier.cap} max</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
           {/* Reward Cycles */}
           <div className="space-y-5">
             <div className="text-center space-y-2">
