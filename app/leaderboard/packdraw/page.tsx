@@ -79,12 +79,21 @@ export default function PackdrawLeaderboard() {
     setSearchQuery('')
     try {
       const apiKey = 'edadb58b-ea99-4c27-9b91-60b84c095ee9'
-      let url = `https://packdraw.com/api/v1/affiliates/leaderboard?apiKey=${apiKey}`
+      
+      // Calculate date range: tomorrow to 30 days from now
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const endDate = new Date()
+      endDate.setDate(endDate.getDate() + 30)
+      
+      const formatDate = (d: Date) => `${d.getMonth() + 1}-${d.getDate()}-${d.getFullYear()}`
+      
+      let url = `https://packdraw.com/api/v1/affiliates/leaderboard?apiKey=${apiKey}&after=${formatDate(tomorrow)}`
       
       if (month !== 'current') {
         const found = PREVIOUS_MONTHS.find(m => m.label === month)
         if (found && found.start_at !== 'TBD') {
-          url += `&after=${found.start_at}`
+          url = `https://packdraw.com/api/v1/affiliates/leaderboard?apiKey=${apiKey}&after=${found.start_at}`
         } else {
           setLeaderboard({ ok: true, range: { start_at: 'TBD', end_at: 'TBD', days: 0 }, count: 0, data: [] })
           setLoading(false)
@@ -124,7 +133,15 @@ export default function PackdrawLeaderboard() {
       const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
       if (found) setDateRange(`${found.display}`)
     } else {
-      setDateRange(`May 1 - May 31, 2026 • 11:59pm EST End`)
+      // Dynamic date range: tomorrow to 30 days from now
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const endDate = new Date()
+      endDate.setDate(endDate.getDate() + 30)
+      
+      const formatDisplay = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      const year = endDate.getFullYear()
+      setDateRange(`${formatDisplay(tomorrow)} - ${formatDisplay(endDate)}, ${year} • 11:59pm EST End`)
     }
 
     const interval = setInterval(() => {
