@@ -104,6 +104,19 @@ export default function RewardMatchPage() {
                       Paid out by AceBet every week. Earn consistently just by playing under code R2K2.
                     </p>
                   </div>
+                  <div className="space-y-1.5 pt-1">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Match Limits</p>
+                    {[
+                      { range: '$1 — $100k wagered', cap: '$50 max' },
+                      { range: '$100k — $500k wagered', cap: '$100 max' },
+                      { range: '$500k+ wagered', cap: '$250 max' },
+                    ].map((tier, i) => (
+                      <div key={i} className="flex items-center justify-between rounded-md bg-blue-500/5 border border-blue-500/10 px-3 py-2">
+                        <span className="text-xs text-muted-foreground">{tier.range}</span>
+                        <span className="text-xs font-bold text-blue-400">{tier.cap}</span>
+                      </div>
+                    ))}
+                  </div>
                   <div className="flex items-center gap-2 pt-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-blue-400 flex-shrink-0" />
                     <p className="text-xs text-blue-400 font-medium">R2K2 doubles this payout</p>
@@ -133,6 +146,19 @@ export default function RewardMatchPage() {
                     <p className="text-sm text-muted-foreground mt-1">
                       The biggest cycle. AceBet&apos;s largest payout of the month — matched cent for cent.
                     </p>
+                  </div>
+                  <div className="space-y-1.5 pt-1">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Match Limits</p>
+                    {[
+                      { range: '$1 — $100k wagered', cap: '$100 max' },
+                      { range: '$100k — $500k wagered', cap: '$200 max' },
+                      { range: '$500k+ wagered', cap: '$400 max' },
+                    ].map((tier, i) => (
+                      <div key={i} className="flex items-center justify-between rounded-md bg-green-500/5 border border-green-500/10 px-3 py-2">
+                        <span className="text-xs text-muted-foreground">{tier.range}</span>
+                        <span className="text-xs font-bold text-green-400">{tier.cap}</span>
+                      </div>
+                    ))}
                   </div>
                   <div className="flex items-center gap-2 pt-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-green-400 flex-shrink-0" />
