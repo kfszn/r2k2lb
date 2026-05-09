@@ -78,13 +78,7 @@ export default function PackdrawLeaderboard() {
     setError(null)
     setSearchQuery('')
     try {
-      const apiKey = process.env.NEXT_PUBLIC_PACKDRAW_API_KEY
-      if (!apiKey) {
-        setError('Packdraw API key not configured')
-        setLoading(false)
-        return
-      }
-
+      const apiKey = 'edadb58b-ea99-4c27-9b91-60b84c095ee9'
       let url = `https://packdraw.com/api/v1/affiliates/leaderboard?apiKey=${apiKey}`
       
       if (month !== 'current') {
