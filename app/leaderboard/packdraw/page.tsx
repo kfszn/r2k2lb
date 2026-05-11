@@ -38,6 +38,9 @@ interface MonthConfig {
 }
 
 // Previous leaderboard months
+// Current leaderboard period start date — update this each month
+const CURRENT_PERIOD_START = '2026-04-25'
+
 const PREVIOUS_MONTHS: MonthConfig[] = [
   {
     label: 'March',
@@ -80,7 +83,9 @@ export default function PackdrawLeaderboard() {
     try {
       let url = '/api/packdraw/leaderboard'
       
-      if (month !== 'current') {
+      if (month === 'current') {
+        url += `?after=${CURRENT_PERIOD_START}`
+      } else {
         const found = PREVIOUS_MONTHS.find(m => m.label === month)
         if (found && found.start_at !== 'TBD') {
           url += `?after=${found.start_at}`
