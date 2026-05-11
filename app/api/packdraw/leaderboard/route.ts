@@ -18,9 +18,9 @@ export async function GET(request: Request) {
     
     // Packdraw API returns: { after, before, asOf, leaderboard: [...] }
     if (data.leaderboard && Array.isArray(data.leaderboard)) {
-      const transformedData = data.leaderboard.map((user: { username?: string; name?: string; wagered?: number; image?: string }, index: number) => ({
+      const transformedData = data.leaderboard.map((user: { username?: string; name?: string; wagered?: number; wagerAmount?: number; image?: string }, index: number) => ({
         name: user.username || user.name || `User ${index + 1}`,
-        wagered: user.wagered || 0,
+        wagered: user.wagerAmount ?? user.wagered ?? 0,
         avatar: user.image || null,
         ...user
       }))
@@ -39,9 +39,9 @@ export async function GET(request: Request) {
     
     // If it returns array directly
     if (Array.isArray(data)) {
-      const transformedData = data.map((user: { username?: string; name?: string; wagered?: number; image?: string }, index: number) => ({
+      const transformedData = data.map((user: { username?: string; name?: string; wagered?: number; wagerAmount?: number; image?: string }, index: number) => ({
         name: user.username || user.name || `User ${index + 1}`,
-        wagered: user.wagered || 0,
+        wagered: user.wagerAmount ?? user.wagered ?? 0,
         avatar: user.image || null,
         ...user
       }))
