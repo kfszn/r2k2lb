@@ -189,8 +189,6 @@ export function SlotCalls() {
 
       setCompleteModalOpen(false);
       setCompletingCall(null);
-      // Fetch to ensure we're synced with server
-      setTimeout(() => fetchSlotCalls(), 500);
     } catch (error) {
       console.error('Error completing slot call:', error);
       alert('Error completing slot call: ' + (error instanceof Error ? error.message : 'Unknown error'));
