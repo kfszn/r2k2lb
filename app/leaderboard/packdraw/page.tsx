@@ -38,8 +38,9 @@ interface MonthConfig {
 }
 
 // Previous leaderboard months
-// Current leaderboard period start date — update this each month
-const CURRENT_PERIOD_START = '2026-04-25'
+// Current leaderboard period: May 9 – Jun 8, 2026
+const CURRENT_PERIOD_START = '2026-05-09'
+const CURRENT_PERIOD_END = '2026-06-08'
 
 const PREVIOUS_MONTHS: MonthConfig[] = [
   {
@@ -128,14 +129,7 @@ export default function PackdrawLeaderboard() {
       const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
       if (found) setDateRange(`${found.display}`)
     } else {
-      // Dynamic date range: today to 31 days from now
-      const today = new Date()
-      const endDate = new Date()
-      endDate.setDate(endDate.getDate() + 31)
-      
-      const formatDisplay = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      const year = endDate.getFullYear()
-      setDateRange(`${formatDisplay(today)} - ${formatDisplay(endDate)}, ${year} • 11:59pm EST End`)
+      setDateRange('May 9 – Jun 8, 2026 • 11:59pm EST End')
     }
 
     const interval = setInterval(() => {
@@ -144,7 +138,7 @@ export default function PackdrawLeaderboard() {
         return
       }
 
-      const endTime = new Date('2026-05-31T23:59:59Z').getTime()
+      const endTime = new Date(`${CURRENT_PERIOD_END}T23:59:59-05:00`).getTime()
       const diff = endTime - Date.now()
 
       if (diff <= 0) {
