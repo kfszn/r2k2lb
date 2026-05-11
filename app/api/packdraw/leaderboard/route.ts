@@ -18,7 +18,8 @@ export async function GET(request: Request) {
     const res = await fetch(url)
     const data = await res.json()
     
-    console.log('[v0] Packdraw API response:', JSON.stringify(data).substring(0, 200))
+    console.log('[v0] Packdraw API response keys:', Object.keys(data))
+    console.log('[v0] Packdraw first entry sample:', JSON.stringify(data?.leaderboard?.[0] ?? data?.[0] ?? data).substring(0, 300))
     
     // Packdraw API returns: { after, before, asOf, leaderboard: [...] }
     if (data.leaderboard && Array.isArray(data.leaderboard)) {

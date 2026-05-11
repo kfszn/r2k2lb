@@ -166,12 +166,12 @@ export default function PackdrawLeaderboard() {
     return () => clearInterval(interval)
   }, [leaderboard, selectedMonth])
 
-  const formatMoney = (cents: number) => {
+  const formatMoney = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format(cents / 100)
+    }).format(amount)
   }
 
   const maskName = (name: string) => {
