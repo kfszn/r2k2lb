@@ -13,18 +13,14 @@ export async function GET(request: Request) {
       url += `&after=${after}`
     }
     
-    console.log('[v0] Packdraw API call:', url.replace(PACKDRAW_API_KEY, '***'))
-    
     const res = await fetch(url)
     const data = await res.json()
     
-    console.log('[v0] Packdraw API response:', JSON.stringify(data).substring(0, 200))
-    
     // Packdraw API returns: { after, before, asOf, leaderboard: [...] }
     if (data.leaderboard && Array.isArray(data.leaderboard)) {
-      const transformedData = data.leaderboard.map((user: { username?: string; name?: string; wagered?: number; image?: string }, index: number) => ({
+      const transformedData = data.leaderboard.map((user: { username?: string; name?: string; wagered?: number; wagerAmount?: number; image?: string }, index: number) => ({
         name: user.username || user.name || `User ${index + 1}`,
-        wagered: user.wagered || 0,
+        wagered: user.wagerAmount ?? user.wagered ?? 0,
         avatar: user.image || null,
         ...user
       }))
@@ -43,9 +39,9 @@ export async function GET(request: Request) {
     
     // If it returns array directly
     if (Array.isArray(data)) {
-      const transformedData = data.map((user: { username?: string; name?: string; wagered?: number; image?: string }, index: number) => ({
+      const transformedData = data.map((user: { username?: string; name?: string; wagered?: number; wagerAmount?: number; image?: string }, index: number) => ({
         name: user.username || user.name || `User ${index + 1}`,
-        wagered: user.wagered || 0,
+        wagered: user.wagerAmount ?? user.wagered ?? 0,
         avatar: user.image || null,
         ...user
       }))
@@ -67,8 +63,6 @@ export async function GET(request: Request) {
       return NextResponse.json(data)
     }
     
-    // Unknown format - log it for debugging
-    console.log('[v0] Unknown Packdraw response format:', JSON.stringify(data))
     return NextResponse.json({
       ok: false,
       error: 'Unexpected API response format'
