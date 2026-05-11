@@ -133,6 +133,11 @@ export function SlotCalls() {
   };
 
   const addNewSlotCall = async () => {
+    if (!isOpen) {
+      alert('Slot calls are currently closed. Please enable them with the toggle.');
+      return;
+    }
+
     if (!formData.username || !formData.slot_name) {
       alert('Please fill in username and slot name');
       return;
@@ -345,6 +350,7 @@ export function SlotCalls() {
               size="sm"
               onClick={() => setShowNewForm(!showNewForm)}
               className="gap-2"
+              disabled={!isOpen}
             >
               <Plus className="h-4 w-4" />
               New Slot Call
