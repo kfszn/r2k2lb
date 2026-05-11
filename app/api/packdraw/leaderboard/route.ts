@@ -13,13 +13,8 @@ export async function GET(request: Request) {
       url += `&after=${after}`
     }
     
-    console.log('[v0] Packdraw API call:', url.replace(PACKDRAW_API_KEY, '***'))
-    
     const res = await fetch(url)
     const data = await res.json()
-    
-    console.log('[v0] Packdraw API response keys:', Object.keys(data))
-    console.log('[v0] Packdraw first entry sample:', JSON.stringify(data?.leaderboard?.[0] ?? data?.[0] ?? data).substring(0, 300))
     
     // Packdraw API returns: { after, before, asOf, leaderboard: [...] }
     if (data.leaderboard && Array.isArray(data.leaderboard)) {
@@ -68,8 +63,6 @@ export async function GET(request: Request) {
       return NextResponse.json(data)
     }
     
-    // Unknown format - log it for debugging
-    console.log('[v0] Unknown Packdraw response format:', JSON.stringify(data))
     return NextResponse.json({
       ok: false,
       error: 'Unexpected API response format'
