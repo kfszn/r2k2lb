@@ -176,9 +176,21 @@ export function SlotCalls() {
 
       if (error) throw error;
 
+      // Directly update state for immediate UI feedback
+      setPendingCalls(prev => prev.filter(call => call.id !== completingCall.id));
+      const completedCall = {
+        ...completingCall,
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        buy_amount: buyAmount,
+        buy_result: buyResult,
+      };
+      setCompletedCalls(prev => [completedCall, ...prev]);
+
       setCompleteModalOpen(false);
       setCompletingCall(null);
-      fetchSlotCalls();
+      // Fetch to ensure we're synced with server
+      setTimeout(() => fetchSlotCalls(), 500);
     } catch (error) {
       console.error('Error completing slot call:', error);
       alert('Error completing slot call: ' + (error instanceof Error ? error.message : 'Unknown error'));
