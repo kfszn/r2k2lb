@@ -14,7 +14,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, CheckCircle, Trash2, Clock, Trophy } from 'lucide-react';
+import { Plus, CheckCircle, Trash2, Clock, Trophy, Settings } from 'lucide-react';
+
+interface RequestLimit {
+  id: string;
+  username: string;
+  max_requests_per_hour: number;
+  max_requests_per_day: number;
+}
 
 interface SlotCall {
   id: string;
@@ -50,6 +57,16 @@ export function SlotCalls() {
     buy_result: '',
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  // Settings modal state
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [requestLimits, setRequestLimits] = useState<RequestLimit[]>([]);
+  const [newLimitForm, setNewLimitForm] = useState({
+    username: '',
+    max_requests_per_hour: '10',
+    max_requests_per_day: '50',
+  });
+  const [isLoadingLimits, setIsLoadingLimits] = useState(false);
 
   const supabase = createClient();
 
@@ -209,6 +226,67 @@ export function SlotCalls() {
     }
   };
 
+  // Request Limits Functions
+  const fetchRequestLimits = async () => {
+    setIsLoadingLimits(true);
+    try {
+      const { data, error } = await supabase
+        .from('slot_call_request_limits')
+        .select('*')
+        .order('username', { ascending: true });
+
+      if (error) throw error;
+      setRequestLimits(data || []);
+    } catch (error) {
+      console.error('Error fetching request limits:', error);
+    } finally {
+      setIsLoadingLimits(false);
+    }
+  };
+
+  const openSettingsModal = () => {
+    fetchRequestLimits();
+    setSettingsModalOpen(true);
+  };
+
+  const addRequestLimit = async () => {
+    if (!newLimitForm.username) {
+      alert('Please enter a username');
+      return;
+    }
+
+    try {
+      const hourlyLimit = parseInt(newLimitForm.max_requests_per_hour) || 10;
+      const dailyLimit = parseInt(newLimitForm.max_requests_per_day) || 50;
+
+      const { error } = await supabase.from('slot_call_request_limits').upsert({
+        username: newLimitForm.username.toLowerCase(),
+        max_requests_per_hour: hourlyLimit,
+        max_requests_per_day: dailyLimit,
+      });
+
+      if (error) throw error;
+
+      setNewLimitForm({ username: '', max_requests_per_hour: '10', max_requests_per_day: '50' });
+      await fetchRequestLimits();
+    } catch (error) {
+      console.error('Error adding request limit:', error);
+      alert('Error saving request limit: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
+  const deleteRequestLimit = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this request limit?')) return;
+
+    try {
+      const { error } = await supabase.from('slot_call_request_limits').delete().eq('id', id);
+      if (error) throw error;
+      await fetchRequestLimits();
+    } catch (error) {
+      console.error('Error deleting request limit:', error);
+    }
+  };
+
   const formatMultiplier = (buyAmount: number | null, buyResult: number | null) => {
     if (!buyAmount || !buyResult || buyAmount === 0) return null;
     return (buyResult / buyAmount).toFixed(2);
@@ -247,14 +325,25 @@ export function SlotCalls() {
               </label>
             </div>
           </div>
-          <Button
-            size="sm"
-            onClick={() => setShowNewForm(!showNewForm)}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            New Slot Call
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={openSettingsModal}
+              className="gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Settings
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setShowNewForm(!showNewForm)}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              New Slot Call
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* New Slot Call Form */}
@@ -491,6 +580,109 @@ export function SlotCalls() {
               <CheckCircle className="h-4 w-4" />
               {isSaving ? 'Saving...' : 'Mark Complete'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Settings Modal - Request Limits */}
+      <Dialog open={settingsModalOpen} onOpenChange={setSettingsModalOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Settings - Request Limits</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Add New Limit */}
+            <div className="p-4 border border-primary/20 rounded-lg bg-background/50 space-y-3">
+              <h3 className="text-sm font-semibold">Add Request Limit</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Username</label>
+                  <Input
+                    placeholder="Enter username"
+                    value={newLimitForm.username}
+                    onChange={(e) => setNewLimitForm({ ...newLimitForm, username: e.target.value })}
+                    className="h-8"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Per Hour</label>
+                  <Input
+                    type="number"
+                    placeholder="10"
+                    value={newLimitForm.max_requests_per_hour}
+                    onChange={(e) => setNewLimitForm({ ...newLimitForm, max_requests_per_hour: e.target.value })}
+                    min="1"
+                    className="h-8"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Per Day</label>
+                  <Input
+                    type="number"
+                    placeholder="50"
+                    value={newLimitForm.max_requests_per_day}
+                    onChange={(e) => setNewLimitForm({ ...newLimitForm, max_requests_per_day: e.target.value })}
+                    min="1"
+                    className="h-8"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button size="sm" onClick={addRequestLimit} className="w-full">
+                    Add Limit
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* List of Limits */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                User Request Limits
+                <Badge variant="outline" className="text-xs">{requestLimits.length}</Badge>
+              </h3>
+
+              {isLoadingLimits ? (
+                <p className="text-muted-foreground text-sm py-4 text-center">Loading...</p>
+              ) : requestLimits.length === 0 ? (
+                <p className="text-muted-foreground text-sm py-4 text-center border border-dashed border-primary/10 rounded-lg">
+                  No request limits set
+                </p>
+              ) : (
+                <div className="space-y-1">
+                  {/* Header */}
+                  <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-3 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                    <div>Username</div>
+                    <div>Per Hour</div>
+                    <div>Per Day</div>
+                    <div className="w-16"></div>
+                  </div>
+
+                  {requestLimits.map((limit) => (
+                    <div
+                      key={limit.id}
+                      className="grid grid-cols-[1fr_1fr_1fr_auto] gap-3 px-3 py-3 items-center bg-background/50 border border-primary/20 rounded-lg"
+                    >
+                      <div className="font-medium text-sm">{limit.username}</div>
+                      <div className="text-sm text-muted-foreground">{limit.max_requests_per_hour}</div>
+                      <div className="text-sm text-muted-foreground">{limit.max_requests_per_day}</div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => deleteRequestLimit(limit.id)}
+                        className="h-7 w-7 p-0 text-destructive hover:text-destructive ml-auto"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setSettingsModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
