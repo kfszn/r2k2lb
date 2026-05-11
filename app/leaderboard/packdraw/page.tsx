@@ -295,7 +295,7 @@ export default function PackdrawLeaderboard() {
             
             <GoalTracker
               current={totalWagered}
-              goal={10000000}
+              goal={100000}
               formatMoney={formatMoney}
               label="Wager Goal"
             />
