@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       slot_name: slotName,
       type: 'call',
       timestamp: new Date().toISOString(),
-      buy_amount: null,
+      buy_amount: 0,
       buy_result: null,
     })
 
