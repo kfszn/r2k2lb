@@ -223,13 +223,8 @@ export function SlotCalls() {
     if (!confirm('Are you sure you want to delete this slot call?')) return;
 
     try {
-      console.log("[v0] Deleting slot call:", id);
       const { error } = await supabase.from('slot_calls').delete().eq('id', id);
-      console.log("[v0] Delete response:", { error });
-      
       if (error) throw error;
-      
-      console.log("[v0] Delete successful, fetching calls");
       await fetchSlotCalls();
     } catch (error) {
       console.error('Error deleting slot call:', error);
