@@ -73,6 +73,17 @@ export function SlotCalls() {
   useEffect(() => {
     fetchSlotCalls();
     fetchGameStatus();
+
+    const channel = supabase
+      .channel('slot_calls_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'slot_calls' }, () => {
+        fetchSlotCalls();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchSlotCalls = async () => {
