@@ -94,7 +94,8 @@ export function SlotCalls() {
           .from('slot_calls')
           .select('*')
           .eq('status', 'pending')
-          .order('created_at', { ascending: true }),
+          .order('username', { ascending: true })
+          .order('created_at', { ascending: false }),
         supabase
           .from('slot_calls')
           .select('*')
@@ -102,7 +103,16 @@ export function SlotCalls() {
           .order('completed_at', { ascending: false }),
       ]);
 
-      if (pendingRes.data) setPendingCalls(pendingRes.data);
+      if (pendingRes.data) {
+        // Keep only the most recent pending call per user
+        const seen = new Set<string>();
+        const deduped = pendingRes.data.filter((call) => {
+          if (seen.has(call.username)) return false;
+          seen.add(call.username);
+          return true;
+        });
+        setPendingCalls(deduped);
+      }
       if (completedRes.data) setCompletedCalls(completedRes.data);
     } catch (error) {
       console.error('Error fetching slot calls:', error);
