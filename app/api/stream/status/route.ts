@@ -1,31 +1,28 @@
+import { createClient } from '@supabase/supabase-js';
+
 export const runtime = 'nodejs';
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function GET() {
   try {
-    const res = await fetch('https://kick.com/api/v2/channels/r2ktwo', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'application/json',
-      },
-      next: { revalidate: 0 }, // never cache — always fetch live
-    });
+    const { data, error } = await supabaseAdmin
+      .from('stream_games_config')
+      .select('value')
+      .eq('key', 'stream_is_live')
+      .single();
 
-    if (!res.ok) {
-      return Response.json(
-        { isLive: false, error: `Kick API returned ${res.status}` },
-        { status: 200 }
-      );
+    if (error) {
+      console.error('[stream/status] DB read error:', error);
+      return Response.json({ isLive: false, error: 'Failed to read stream status' }, { status: 200 });
     }
 
-    const data = await res.json();
-    const isLive = data?.livestream !== null && data?.livestream !== undefined;
-
-    return Response.json({ isLive });
+    return Response.json({ isLive: data?.value === 'true' });
   } catch (error) {
-    console.error('[stream/status] Failed to fetch Kick channel:', error);
-    return Response.json(
-      { isLive: false, error: 'Failed to reach Kick API' },
-      { status: 200 }
-    );
+    console.error('[stream/status] Unexpected error:', error);
+    return Response.json({ isLive: false, error: 'Internal error' }, { status: 200 });
   }
 }
