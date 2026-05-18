@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Trophy, Clock, Users, MessageSquare, TrendingUp, ExternalLink } from 'lucide-react'
+import { Trophy, Clock, Users, MessageSquare, TrendingUp, ExternalLink, ChevronDown } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 
@@ -71,7 +71,8 @@ export default function KickLeaderboard() {
   const [activeConfig, setActiveConfig] = useState<LeaderboardConfig | null>(null)
   const [pastConfigs, setPastConfigs] = useState<LeaderboardConfig[]>([])
   const [selectedId, setSelectedId] = useState<string>('current')
-  const [tab, setTab] = useState<'current' | 'past'>('current')
+  const [selectedMonth, setSelectedMonth] = useState<string>('current')
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('Loading...')
 
   // Load leaderboard configs from DB
@@ -116,15 +117,15 @@ export default function KickLeaderboard() {
 
   // Load current leaderboard when active config is fetched
   useEffect(() => {
-    if (tab === 'current') {
+    if (!showPrevious) {
       loadEntries(activeConfig)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeConfig, tab])
+  }, [activeConfig, showPrevious])
 
   // Countdown timer
   useEffect(() => {
-    if (!activeConfig || tab !== 'current') {
+    if (!activeConfig || showPrevious) {
       setTimeRemaining('Ended')
       return
     }
@@ -145,8 +146,9 @@ export default function KickLeaderboard() {
 
   const [selectedPastId, setSelectedPastId] = useState<string | null>(null)
 
+  const showPrevious = selectedMonth !== 'current'
   const selectedPastConfig = pastConfigs.find(c => c.id === selectedPastId) ?? null
-  const currentConfig = tab === 'current' ? activeConfig : selectedPastConfig
+  const currentConfig = !showPrevious ? activeConfig : selectedPastConfig
 
   const prizes = currentConfig?.prize_positions ?? []
   const totalPayout = prizes.reduce((s, p) => s + p.amount, 0)
@@ -257,7 +259,7 @@ export default function KickLeaderboard() {
             </CardContent>
           </Card>
 
-          {tab === 'current' && activeConfig && (
+          {!showPrevious && activeConfig && (
             <Card className="bg-card/50 backdrop-blur border-destructive/20">
               <CardContent className="px-4 py-3">
                 <div className="flex items-center justify-between gap-2">
@@ -273,85 +275,85 @@ export default function KickLeaderboard() {
         </div>
       </section>
 
-      {/* Period switcher — always visible */}
-      <section className="sticky top-[57px] z-40 bg-background/95 backdrop-blur border-b border-border/40">
+      {/* Controls — matches acebet style */}
+      <section className="py-6 border-b border-border/40">
         <div className="container mx-auto px-4">
-          <div className="flex gap-0 max-w-xs">
-            <button
-              onClick={() => setTab('current')}
-              className={`flex-1 py-3.5 text-sm font-semibold border-b-2 transition-colors ${
-                tab === 'current'
-                  ? 'border-[#53fc18] text-[#53fc18]'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
+          <div className="flex flex-wrap gap-3 justify-center items-center">
+            {/* Current button */}
+            <Button
+              variant={!showPrevious ? 'default' : 'outline'}
+              onClick={() => {
+                setSelectedMonth('current')
+                setSelectedPastId(null)
+                loadEntries(activeConfig)
+              }}
+              className={!showPrevious ? '' : 'bg-transparent'}
             >
-              Current
-            </button>
-            <button
-              onClick={() => setTab('past')}
-              className={`flex-1 py-3.5 text-sm font-semibold border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
-                tab === 'past'
-                  ? 'border-[#53fc18] text-[#53fc18]'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Past
-              {pastConfigs.length > 0 && (
-                <span className="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-bold w-5 h-5">
-                  {pastConfigs.length}
-                </span>
+              Current Leaderboard
+            </Button>
+
+            {/* Previous dropdown */}
+            <div className="relative">
+              <Button
+                variant={showPrevious ? 'default' : 'outline'}
+                className={`flex items-center gap-2 ${showPrevious ? '' : 'bg-transparent'}`}
+                onClick={() => setDropdownOpen(o => !o)}
+              >
+                {showPrevious && selectedPastConfig ? selectedPastConfig.name : 'Previous Leaderboards'}
+                <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </Button>
+              {dropdownOpen && (
+                <div className="absolute top-full mt-1 left-0 z-50 min-w-[220px] rounded-xl border border-border bg-card shadow-xl overflow-hidden">
+                  {pastConfigs.length === 0 ? (
+                    <p className="px-4 py-3 text-sm text-muted-foreground">No past leaderboards yet.</p>
+                  ) : (
+                    pastConfigs.map(cfg => {
+                      const cfgPayout = (cfg.prize_positions as { position: number; amount: number }[])
+                        .reduce((s, p) => s + p.amount, 0)
+                      return (
+                        <button
+                          key={cfg.id}
+                          className={`w-full text-left px-4 py-3 text-sm hover:bg-muted/60 transition-colors ${selectedPastId === cfg.id ? 'bg-primary/10' : ''}`}
+                          onClick={() => {
+                            setSelectedMonth(cfg.id)
+                            setSelectedPastId(cfg.id)
+                            setDropdownOpen(false)
+                            loadEntries(cfg)
+                          }}
+                        >
+                          <p className={`font-semibold ${selectedPastId === cfg.id ? 'text-primary' : 'text-foreground'}`}>{cfg.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(cfg.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            {' – '}
+                            {new Date(cfg.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
+                          {cfgPayout > 0 && (
+                            <p className="text-xs font-semibold mt-0.5" style={{ color: KICK_GREEN }}>
+                              ${cfgPayout.toLocaleString()} prize pool
+                            </p>
+                          )}
+                        </button>
+                      )
+                    })
+                  )}
+                </div>
               )}
-            </button>
+            </div>
           </div>
+
+          {/* Selected period label */}
+          {showPrevious && selectedPastConfig && (
+            <p className="text-center text-sm text-muted-foreground mt-3">
+              Viewing: <span className="text-foreground font-semibold">{selectedPastConfig.name}</span>
+              <span className="ml-2 text-muted-foreground">
+                ({new Date(selectedPastConfig.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {' – '}
+                {new Date(selectedPastConfig.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+              </span>
+            </p>
+          )}
         </div>
       </section>
-
-      {/* Past leaderboard selector */}
-      {tab === 'past' && (
-        <section className="py-6 border-b border-border/40 bg-muted/20">
-          <div className="container mx-auto px-4 max-w-3xl">
-            {pastConfigs.length === 0 ? (
-              <p className="text-center text-muted-foreground text-sm py-4">No past leaderboards yet.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {pastConfigs.map(cfg => {
-                  const isSelected = selectedPastId === cfg.id
-                  const cfgPayout = (cfg.prize_positions as { position: number; amount: number }[])
-                    .reduce((s, p) => s + p.amount, 0)
-                  return (
-                    <button
-                      key={cfg.id}
-                      onClick={() => {
-                        setSelectedPastId(cfg.id)
-                        loadEntries(cfg)
-                      }}
-                      className={`text-left px-4 py-3 rounded-xl border transition-all ${
-                        isSelected
-                          ? 'border-[#53fc18]/60 bg-[#53fc18]/5'
-                          : 'border-border/50 bg-card/60 hover:border-border hover:bg-card'
-                      }`}
-                    >
-                      <p className={`font-semibold text-sm ${isSelected ? 'text-[#53fc18]' : 'text-foreground'}`}>
-                        {cfg.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {new Date(cfg.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        {' – '}
-                        {new Date(cfg.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </p>
-                      {cfgPayout > 0 && (
-                        <p className="text-xs font-semibold mt-1" style={{ color: KICK_GREEN }}>
-                          ${cfgPayout.toLocaleString()} prize pool
-                        </p>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
 
       {/* Leaderboard */}
       <section className="py-12 pb-24">
@@ -379,16 +381,16 @@ export default function KickLeaderboard() {
               <div className="text-center py-20 bg-muted/20 rounded-2xl border border-border p-8">
                 <MessageSquare className="h-12 w-12 mx-auto mb-4" style={{ color: `${KICK_GREEN}40` }} />
                 <p className="text-xl font-bold text-foreground mb-1">
-                  {tab === 'past' && !selectedPastId
+                  {showPrevious && !selectedPastId
                     ? 'Select a past leaderboard above'
-                    : tab === 'current' && !activeConfig
+                    : !showPrevious && !activeConfig
                     ? 'No active leaderboard'
                     : 'No points recorded yet'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {tab === 'past' && !selectedPastId
+                  {showPrevious && !selectedPastId
                     ? 'Choose a previous leaderboard period to view its results.'
-                    : tab === 'current' && !activeConfig
+                    : !showPrevious && !activeConfig
                     ? 'A leaderboard will appear here once the admin creates one.'
                     : 'Points will appear here as chatters earn them during the stream.'}
                 </p>
