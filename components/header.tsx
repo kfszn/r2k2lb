@@ -20,6 +20,7 @@ function Header() {
   const [mobileAcebet, setMobileAcebet] = useState(false)
   const [mobilePackdraw, setMobilePackdraw] = useState(false)
   const [mobilePoints, setMobilePoints] = useState(false)
+  const [mobileKick, setMobileKick] = useState(false)
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -51,6 +52,7 @@ function Header() {
     setMobileAcebet(false)
     setMobilePackdraw(false)
     setMobilePoints(false)
+    setMobileKick(false)
   }
 
   return (
@@ -143,6 +145,30 @@ function Header() {
               >
                 Leaderboard
               </Link>
+            </div>
+          </div>
+
+          {/* Kick Dropdown */}
+          <div className="relative group">
+            <button className="text-sm font-medium hover:text-[#53fc18] transition-colors flex items-center gap-1 py-2">
+              Kick
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[180px] z-50 py-1">
+              <Link
+                href="/leaderboard/kick"
+                className="block px-4 py-2 text-sm font-medium hover:text-[#53fc18] hover:bg-secondary/50 transition-colors"
+              >
+                Chatter Leaderboard
+              </Link>
+              <a
+                href="https://kick.com/r2ktwo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-2 text-sm font-medium hover:text-[#53fc18] hover:bg-secondary/50 transition-colors"
+              >
+                Watch Live
+              </a>
             </div>
           </div>
 
@@ -277,7 +303,7 @@ function Header() {
                 {/* Mobile Packdraw */}
                 <div className="space-y-1">
                   <button 
-                    onClick={() => { setMobilePackdraw(!mobilePackdraw); setMobileAcebet(false); setMobilePoints(false) }}
+                    onClick={() => { setMobilePackdraw(!mobilePackdraw); setMobileAcebet(false); setMobilePoints(false); setMobileKick(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Packdraw
@@ -288,6 +314,33 @@ function Header() {
                       <Link href="/leaderboard/packdraw" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Leaderboard
                       </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile Kick */}
+                <div className="space-y-1">
+                  <button
+                    onClick={() => { setMobileKick(!mobileKick); setMobileAcebet(false); setMobilePackdraw(false); setMobilePoints(false) }}
+                    className="text-base font-medium hover:text-[#53fc18] transition-colors py-2 flex items-center justify-center gap-1 w-full"
+                  >
+                    Kick
+                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileKick ? 'rotate-180' : ''}`} />
+                  </button>
+                  {mobileKick && (
+                    <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
+                      <Link href="/leaderboard/kick" className="text-sm font-medium hover:text-[#53fc18] transition-colors py-2 text-center" onClick={closeMobile}>
+                        Chatter Leaderboard
+                      </Link>
+                      <a
+                        href="https://kick.com/r2ktwo"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium hover:text-[#53fc18] transition-colors py-2 text-center"
+                        onClick={closeMobile}
+                      >
+                        Watch Live
+                      </a>
                     </div>
                   )}
                 </div>
