@@ -1,12 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Trophy, Clock, Users, MessageSquare, TrendingUp, ExternalLink } from 'lucide-react'
+import { Trophy, Clock, Users, MessageSquare, TrendingUp } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
+import { Header } from '@/components/header'
 
 interface KickEntry {
   rank: number
@@ -162,54 +161,7 @@ export default function KickLeaderboard() {
     <div className="min-h-screen bg-background text-foreground">
       <GiveawayCounter />
 
-      {/* Kick-branded header */}
-      <header className="border-b border-[#53fc18]/20 bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          {/* Left: R2K2 home link */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image
-              src="/assets/logo.png"
-              alt="R2K2 Logo"
-              width={32}
-              height={32}
-              className="w-8 h-8 object-contain"
-            />
-            <span
-              className="font-bold text-base md:text-lg"
-              style={{ textShadow: '0 0 8px rgba(83,252,24,0.8), 0 0 20px rgba(83,252,24,0.4)' }}
-            >
-              R2K2
-            </span>
-          </Link>
-
-          {/* Center: Kick branding */}
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" style={{ color: KICK_GREEN }} />
-            <span
-              className="font-bold text-sm md:text-base tracking-wide"
-              style={{ color: KICK_GREEN }}
-            >
-              Kick Chatter Leaderboard
-            </span>
-          </div>
-
-          {/* Right: Watch live CTA */}
-          <a
-            href="https://kick.com/r2ktwo"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
-            style={{
-              color: KICK_GREEN,
-              borderColor: `${KICK_GREEN}40`,
-              backgroundColor: `${KICK_GREEN}10`,
-            }}
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Watch Live
-          </a>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero */}
       <section className="relative overflow-hidden py-16" style={{ background: `linear-gradient(to bottom, ${KICK_GREEN}0d, transparent)` }}>
