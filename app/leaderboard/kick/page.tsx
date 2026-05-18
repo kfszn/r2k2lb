@@ -144,7 +144,7 @@ export default function KickLeaderboard() {
       else setTimeRemaining(`${minutes}m ${seconds}s`)
     }, 1000)
     return () => clearInterval(interval)
-  }, [activeConfig, showPrevious])
+  }, [activeConfig, selectedMonth])
 
   const selectedPastConfig = pastConfigs.find(c => c.id === selectedPastId) ?? null
   const currentConfig = !showPrevious ? activeConfig : selectedPastConfig
