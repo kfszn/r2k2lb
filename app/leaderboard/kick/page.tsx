@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Trophy, Clock, Users, MessageSquare, TrendingUp } from 'lucide-react'
+import { Trophy, Clock, Users, MessageSquare, TrendingUp, ExternalLink } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 
