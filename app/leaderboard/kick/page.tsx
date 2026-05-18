@@ -119,15 +119,15 @@ export default function KickLeaderboard() {
 
   // Load current leaderboard when active config is fetched
   useEffect(() => {
-    if (!showPrevious) {
+    if (selectedMonth === 'current') {
       loadEntries(activeConfig)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeConfig, showPrevious])
+  }, [activeConfig, selectedMonth])
 
   // Countdown timer
   useEffect(() => {
-    if (!activeConfig || showPrevious) {
+    if (!activeConfig || selectedMonth !== 'current') {
       setTimeRemaining('Ended')
       return
     }
