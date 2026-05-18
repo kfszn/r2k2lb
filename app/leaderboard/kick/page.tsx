@@ -163,7 +163,7 @@ export default function KickLeaderboard() {
       <GiveawayCounter />
 
       {/* Kick-branded header */}
-      <header className="border-b border-[#53fc18]/20 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
+      <header className="border-b border-[#53fc18]/20 bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Left: R2K2 home link */}
           <Link href="/" className="flex items-center gap-2.5">
