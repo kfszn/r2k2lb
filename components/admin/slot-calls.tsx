@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Plus, CheckCircle, Trash2, Clock, Trophy, Settings } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface RequestLimit {
   id: string;
@@ -69,6 +70,7 @@ export function SlotCalls() {
   const [isLoadingLimits, setIsLoadingLimits] = useState(false);
 
   const supabase = createClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchSlotCalls();
@@ -137,19 +139,33 @@ export function SlotCalls() {
     }
   };
 
-  const toggleGameStatus = async () => {
+  const toggleGameStatus = async (checked: boolean) => {
     try {
-      const newStatus = !isOpen;
       const { error } = await supabase
         .from('stream_games_config')
-        .update({ is_open: newStatus })
-        .eq('game_name', 'slot_calls');
+        .upsert(
+          { game_name: 'slot_calls', is_open: checked, updated_at: new Date().toISOString() },
+          { onConflict: 'game_name' }
+        );
 
       if (error) throw error;
-      setIsOpen(newStatus);
+
+      setIsOpen(checked);
+      toast({
+        title: checked ? 'Slot Calls Open' : 'Slot Calls Closed',
+        description: checked
+          ? 'Users can now submit slot call requests.'
+          : 'No new requests will be accepted.',
+        duration: 3000,
+      });
     } catch (error) {
       console.error('Error toggling game status:', error);
-      alert('Error toggling status');
+      toast({
+        title: 'Error',
+        description: 'Failed to save toggle state. Please try again.',
+        variant: 'destructive',
+        duration: 4000,
+      });
     }
   };
 
@@ -341,7 +357,7 @@ export function SlotCalls() {
             <div className="flex items-center gap-2">
               <Switch
                 checked={isOpen}
-                onCheckedChange={toggleGameStatus}
+                onCheckedChange={(checked) => toggleGameStatus(checked)}
                 id="slot-calls-toggle"
               />
               <label
