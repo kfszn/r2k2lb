@@ -188,6 +188,19 @@ export default function KickLeaderboard() {
               Earn points by chatting in the stream while it&apos;s live. Every message and emote adds to your score.
             </p>
 
+            <div className="flex justify-center">
+              <a
+                href="https://kick.com/r2ktwo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all hover:opacity-90 active:scale-95"
+                style={{ backgroundColor: KICK_GREEN, color: '#000' }}
+              >
+                <TrendingUp className="h-4 w-4" />
+                Watch Live on Kick
+              </a>
+            </div>
+
             {currentConfig && (
               <p className="text-sm text-muted-foreground">
                 <span className="font-semibold text-foreground">Period:</span>{' '}
