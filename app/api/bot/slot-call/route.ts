@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
 const supabaseAdmin = createAdminClient(
@@ -24,33 +23,60 @@ export async function POST(req: Request) {
       )
     }
 
-    const supabase = await createClient()
-
-    // Check if slot calls are open
-    const { data: config } = await supabase
+    // Check if slot calls are open — use admin client so it always reads regardless of auth session
+    const { data: config, error: configError } = await supabaseAdmin
       .from('stream_games_config')
       .select('is_open')
       .eq('game_name', 'slot_calls')
       .single()
 
+    console.log('[slot-call] config read:', { config, configError })
+
     if (!config?.is_open) {
+      console.log('[slot-call] Slot calls are closed, rejecting request')
       return NextResponse.json({
         success: false,
         message: '❌ Slot calls are currently closed.',
       })
     }
 
-    const { error } = await supabaseAdmin.from('slot_calls').insert({
-      username: kickUsername,
-      slot_name: slotName,
-      type: 'call',
-      timestamp: new Date().toISOString(),
-      buy_amount: 0,
-      buy_result: null,
-    })
+    // Check if user already has a pending call — update it instead of inserting a new one
+    const { data: existing } = await supabaseAdmin
+      .from('slot_calls')
+      .select('id')
+      .eq('username', kickUsername)
+      .eq('status', 'pending')
+      .maybeSingle()
+
+    let error
+
+    if (existing) {
+      // Update existing pending row with new slot name and fresh timestamp
+      const { error: updateError } = await supabaseAdmin
+        .from('slot_calls')
+        .update({
+          slot_name: slotName,
+          created_at: new Date().toISOString(),
+          timestamp: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+      error = updateError
+    } else {
+      // No pending call — insert a fresh row
+      const { error: insertError } = await supabaseAdmin.from('slot_calls').insert({
+        username: kickUsername,
+        slot_name: slotName,
+        type: 'call',
+        timestamp: new Date().toISOString(),
+        buy_amount: null,
+        buy_result: null,
+        status: 'pending',
+      })
+      error = insertError
+    }
 
     if (error) {
-      console.error('[slot-call] Supabase insert error:', error)
+      console.error('[slot-call] Supabase error:', error)
       return NextResponse.json(
         { success: false, message: `❌ Failed to add slot call: ${error.message}` },
         { status: 500 }
