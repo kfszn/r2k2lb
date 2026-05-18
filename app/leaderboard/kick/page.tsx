@@ -70,10 +70,12 @@ export default function KickLeaderboard() {
   const [error, setError] = useState<string | null>(null)
   const [activeConfig, setActiveConfig] = useState<LeaderboardConfig | null>(null)
   const [pastConfigs, setPastConfigs] = useState<LeaderboardConfig[]>([])
-  const [selectedId, setSelectedId] = useState<string>('current')
   const [selectedMonth, setSelectedMonth] = useState<string>('current')
+  const [selectedPastId, setSelectedPastId] = useState<string | null>(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('Loading...')
+
+  const showPrevious = selectedMonth !== 'current'
 
   // Load leaderboard configs from DB
   useEffect(() => {
@@ -142,11 +144,8 @@ export default function KickLeaderboard() {
       else setTimeRemaining(`${minutes}m ${seconds}s`)
     }, 1000)
     return () => clearInterval(interval)
-  }, [activeConfig, selectedId])
+  }, [activeConfig, showPrevious])
 
-  const [selectedPastId, setSelectedPastId] = useState<string | null>(null)
-
-  const showPrevious = selectedMonth !== 'current'
   const selectedPastConfig = pastConfigs.find(c => c.id === selectedPastId) ?? null
   const currentConfig = !showPrevious ? activeConfig : selectedPastConfig
 
