@@ -29,10 +29,11 @@ import { ShopManager } from "@/components/admin/shop-manager";
 import { UsersManager } from "@/components/admin/users-manager";
 import { RewardsSettings } from "@/components/admin/rewards-settings";
 import { GamesManager } from "@/components/admin/games-manager";
+import { LeaderboardManager } from "@/components/admin/leaderboard-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -190,6 +191,18 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko</p>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("leaderboards")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-8 w-8 text-primary" />
+                  <CardTitle>Leaderboard Manager</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Create and manage leaderboards for AceBet, Packdraw, and Kick with custom prize structures</p>
               </CardContent>
             </Card>
 
@@ -413,6 +426,26 @@ export default function AdminPage() {
             <h1 className="text-3xl font-bold">Games Analytics</h1>
           </div>
           <GamesManager />
+        </div>
+      </main>
+    );
+  }
+
+  // Leaderboard Manager View
+  if (currentView === "leaderboards") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">Leaderboard Manager</h1>
+          </div>
+          <LeaderboardManager />
         </div>
       </main>
     );
