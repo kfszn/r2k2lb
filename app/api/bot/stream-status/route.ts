@@ -26,8 +26,8 @@ export async function POST(req: Request) {
     const { error } = await supabaseAdmin
       .from('stream_games_config')
       .upsert(
-        { key: 'stream_is_live', value: isLive ? 'true' : 'false' },
-        { onConflict: 'key' }
+        { game_name: 'stream_is_live', is_open: isLive },
+        { onConflict: 'game_name' }
       );
 
     if (error) {

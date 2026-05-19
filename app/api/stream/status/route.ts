@@ -11,8 +11,8 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from('stream_games_config')
-      .select('value')
-      .eq('key', 'stream_is_live')
+      .select('is_open')
+      .eq('game_name', 'stream_is_live')
       .single();
 
     if (error) {
@@ -20,7 +20,7 @@ export async function GET() {
       return Response.json({ isLive: false, error: 'Failed to read stream status' }, { status: 200 });
     }
 
-    return Response.json({ isLive: data?.value === 'true' });
+    return Response.json({ isLive: data?.is_open === true });
   } catch (error) {
     console.error('[stream/status] Unexpected error:', error);
     return Response.json({ isLive: false, error: 'Internal error' }, { status: 200 });
