@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? 'admin123'
-
-function adminGuard(req: NextRequest): boolean {
-  const pw = req.headers.get('x-admin-password')
-  // Also allow requests from the same origin (server-side) with no password header
-  // since /admin pages handle auth via NEXT_PUBLIC_ADMIN_PASSWORD client-side
-  return !pw || pw === ADMIN_PASSWORD
-}
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
   const body = await req.json()
   const { action, round_id } = body
 
@@ -21,7 +16,7 @@ export async function POST(req: NextRequest) {
     const serverSeed = crypto.randomBytes(32).toString('hex')
     const serverSeedHash = crypto.createHash('sha256').update(serverSeed).digest('hex')
 
-    const { data: round, error } = await supabase
+    const { data: round, error } = await supabaseAdmin
       .from('fifty_fifty_rounds')
       .insert({
         status: 'open',
@@ -47,7 +42,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'round_id required' }, { status: 400 })
     }
 
-    const { data: existing } = await supabase
+    const { data: existing } = await supabaseAdmin
       .from('fifty_fifty_rounds')
       .select('status')
       .eq('id', round_id)
@@ -60,7 +55,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Round is not open' }, { status: 400 })
     }
 
-    const { data: round, error } = await supabase
+    const { data: round, error } = await supabaseAdmin
       .from('fifty_fifty_rounds')
       .update({ status: 'closed' })
       .eq('id', round_id)
