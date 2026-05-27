@@ -43,7 +43,9 @@ export async function GET(request: Request) {
       type: type as 'signup' | 'recovery' | 'invite' | 'magiclink' | 'email_change' | 'phone_change',
     })
     if (!error) {
-      return NextResponse.redirect(new URL(next, requestUrl.origin))
+      // For signup/email confirmations, land on the verified page
+      const verifiedDest = type === 'signup' ? '/auth/verified' : next
+      return NextResponse.redirect(new URL(verifiedDest, requestUrl.origin))
     }
   }
 
