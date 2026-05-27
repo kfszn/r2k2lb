@@ -161,6 +161,12 @@ function Header() {
               >
                 Chatter Leaderboard
               </Link>
+              <Link
+                href="/fifty-fifty"
+                className="block px-4 py-2 text-sm font-medium hover:text-[#53fc18] hover:bg-secondary/50 transition-colors"
+              >
+                50/50 Raffle
+              </Link>
               <a
                 href="https://kick.com/r2ktwo"
                 target="_blank"
@@ -331,6 +337,9 @@ function Header() {
                     <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
                       <Link href="/leaderboard/kick" className="text-sm font-medium hover:text-[#53fc18] transition-colors py-2 text-center" onClick={closeMobile}>
                         Chatter Leaderboard
+                      </Link>
+                      <Link href="/fifty-fifty" className="text-sm font-medium hover:text-[#53fc18] transition-colors py-2 text-center" onClick={closeMobile}>
+                        50/50 Raffle
                       </Link>
                       <a
                         href="https://kick.com/r2ktwo"

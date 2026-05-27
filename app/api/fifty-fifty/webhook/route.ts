@@ -9,46 +9,39 @@ function createServiceClient() {
   )
 }
 
-/**
- * Verify the NOWPayments IPN HMAC-SHA512 signature.
- * NOWPayments signs the sorted JSON payload with the IPN secret.
- */
 function verifyIpnSignature(rawBody: string, signature: string): boolean {
   const secret = process.env.NOWPAYMENTS_IPN_SECRET
-  if (!secret) {
-    console.error('[fifty-fifty/webhook] NOWPAYMENTS_IPN_SECRET is not set')
-    return false
-  }
-
-  // NOWPayments signs a deterministically-sorted JSON representation
+  if (!secret) return false
   let parsed: Record<string, unknown>
   try {
     parsed = JSON.parse(rawBody)
   } catch {
     return false
   }
-
   const sortedJson = JSON.stringify(parsed, Object.keys(parsed).sort())
   const hmac = crypto.createHmac('sha512', secret).update(sortedJson).digest('hex')
-  return crypto.timingSafeEqual(Buffer.from(hmac, 'hex'), Buffer.from(signature, 'hex'))
+  try {
+    return crypto.timingSafeEqual(Buffer.from(hmac, 'hex'), Buffer.from(signature, 'hex'))
+  } catch {
+    return false
+  }
 }
 
-/** Generate `count` unique ticket numbers that don't collide with existing ones. */
-async function generateUniqueTickets(
-  supabase: ReturnType<typeof createServiceClient>,
-  roundId: string,
-  count: number
-): Promise<number[]> {
-  // Fetch highest existing ticket number for this round
-  const { data: existing } = await supabase
-    .from('fifty_fifty_tickets')
-    .select('ticket_number')
-    .eq('round_id', roundId)
-    .order('ticket_number', { ascending: false })
-    .limit(1)
-
-  const startFrom = existing && existing.length > 0 ? existing[0].ticket_number + 1 : 1
-  return Array.from({ length: count }, (_, i) => startFrom + i)
+/** Generate `count` truly random unique integers in [1, 999999] not already in `existingSet`. */
+function generateUniqueRandomTickets(existingSet: Set<number>, count: number): number[] {
+  const tickets: number[] = []
+  const MAX = 999_999
+  let attempts = 0
+  while (tickets.length < count && attempts < count * 100) {
+    attempts++
+    // crypto.randomInt is uniform and cryptographically random
+    const n = crypto.randomInt(1, MAX + 1)
+    if (!existingSet.has(n)) {
+      existingSet.add(n)
+      tickets.push(n)
+    }
+  }
+  return tickets
 }
 
 export async function POST(request: NextRequest) {
@@ -64,14 +57,14 @@ export async function POST(request: NextRequest) {
     const payload = JSON.parse(rawBody)
     const { payment_id, payment_status } = payload
 
-    // Acknowledge all statuses but only act on finished
+    // Acknowledge all statuses — only act on finished
     if (payment_status !== 'finished') {
       return NextResponse.json({ received: true, action: 'noop' })
     }
 
     const supabase = createServiceClient()
 
-    // Find the matching checkout
+    // Find matching checkout
     const { data: checkout, error: checkoutError } = await supabase
       .from('fifty_fifty_checkouts')
       .select('*')
@@ -83,17 +76,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Checkout not found' }, { status: 404 })
     }
 
-    // Idempotency — skip if already confirmed
+    // Idempotency
     if (checkout.status === 'confirmed') {
       return NextResponse.json({ received: true, action: 'already_confirmed' })
     }
 
-    // Generate sequential ticket numbers
-    const ticketNumbers = await generateUniqueTickets(
-      supabase,
-      checkout.round_id,
-      checkout.ticket_quantity
+    // Fetch all existing ticket numbers in this round to avoid duplicates
+    const { data: existingTickets } = await supabase
+      .from('fifty_fifty_tickets')
+      .select('ticket_number')
+      .eq('round_id', checkout.round_id)
+
+    const existingSet = new Set<number>(
+      (existingTickets ?? []).map((t: { ticket_number: number }) => t.ticket_number)
     )
+
+    const ticketNumbers = generateUniqueRandomTickets(existingSet, checkout.ticket_quantity)
+
+    if (ticketNumbers.length < checkout.ticket_quantity) {
+      console.error('[fifty-fifty/webhook] Could not generate enough unique ticket numbers')
+      return NextResponse.json({ error: 'Ticket number exhaustion' }, { status: 500 })
+    }
 
     const ticketRows = ticketNumbers.map((ticket_number) => ({
       round_id: checkout.round_id,
@@ -111,17 +114,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to insert tickets' }, { status: 500 })
     }
 
-    // Mark checkout as confirmed
-    const { error: checkoutUpdateError } = await supabase
+    // Mark checkout confirmed
+    await supabase
       .from('fifty_fifty_checkouts')
       .update({ status: 'confirmed' })
       .eq('id', checkout.id)
 
-    if (checkoutUpdateError) {
-      console.error('[fifty-fifty/webhook] Failed to update checkout status:', checkoutUpdateError)
-    }
-
-    // Update round totals
+    // Increment round totals
     const { data: round } = await supabase
       .from('fifty_fifty_rounds')
       .select('total_pot, total_tickets')
@@ -129,17 +128,13 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (round) {
-      const { error: roundUpdateError } = await supabase
+      await supabase
         .from('fifty_fifty_rounds')
         .update({
           total_pot: (round.total_pot ?? 0) + checkout.usd_amount,
           total_tickets: (round.total_tickets ?? 0) + checkout.ticket_quantity,
         })
         .eq('id', checkout.round_id)
-
-      if (roundUpdateError) {
-        console.error('[fifty-fifty/webhook] Failed to update round totals:', roundUpdateError)
-      }
     }
 
     return NextResponse.json({ received: true, action: 'tickets_issued', tickets: ticketNumbers })

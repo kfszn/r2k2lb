@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { generateServerSeed, hashServerSeed } from '@/lib/games/provably-fair'
+import crypto from 'crypto'
 
 function createServiceClient() {
   return createSupabaseClient(
@@ -11,12 +11,6 @@ function createServiceClient() {
 
 export async function POST(request: NextRequest) {
   try {
-    // Admin-only: verify the shared admin secret
-    const adminSecret = request.headers.get('x-admin-secret')
-    if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await request.json()
     const { round_id } = body
 
@@ -26,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServiceClient()
 
-    // Fetch the round and make sure it is still open
+    // Fetch the round — must be closed (not open, not drawn)
     const { data: round, error: roundError } = await supabase
       .from('fifty_fifty_rounds')
       .select('*')
@@ -37,21 +31,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Round not found' }, { status: 404 })
     }
 
-    if (round.status !== 'open') {
+    if (round.status !== 'closed') {
       return NextResponse.json(
-        { error: `Round cannot be drawn (status: ${round.status})` },
+        { error: `Round must be closed before drawing (current status: ${round.status})` },
         { status: 400 }
       )
     }
 
-    // Fetch all confirmed tickets for this round
+    // Fetch all tickets for this round
     const { data: tickets, error: ticketsError } = await supabase
       .from('fifty_fifty_tickets')
       .select('id, ticket_number, user_id')
       .eq('round_id', round_id)
 
     if (ticketsError) {
-      console.error('[fifty-fifty/draw] Failed to fetch tickets:', ticketsError)
       return NextResponse.json({ error: 'Failed to fetch tickets' }, { status: 500 })
     }
 
@@ -59,15 +52,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No tickets in this round' }, { status: 400 })
     }
 
-    // Provably fair draw
-    const serverSeed = generateServerSeed()
-    const serverSeedHash = hashServerSeed(serverSeed)
+    // Provably fair: use the server seed that was pre-committed at round open
+    const serverSeed = round.server_seed as string
+    if (!serverSeed) {
+      return NextResponse.json({ error: 'Round is missing server seed' }, { status: 500 })
+    }
 
-    // Use the round_id as the public client seed
+    // Use round_id as client seed
     const clientSeed = String(round_id)
 
-    // Derive an index into the ticket array using HMAC-SHA256
-    const crypto = (await import('crypto')).default
     const hmac = crypto.createHmac('sha256', serverSeed)
     hmac.update(`${clientSeed}:0`)
     const hex = hmac.digest('hex')
@@ -75,19 +68,20 @@ export async function POST(request: NextRequest) {
 
     const winningTicket = tickets[randomIndex]
 
-    // Close the round and record the winner atomically
-    const { error: updateError } = await supabase
+    // Record winner and reveal seed
+    const { data: updatedRound, error: updateError } = await supabase
       .from('fifty_fifty_rounds')
       .update({
         status: 'drawn',
         winner_user_id: winningTicket.user_id,
         winner_ticket_number: winningTicket.ticket_number,
         drawn_at: new Date().toISOString(),
-        server_seed: serverSeed,
-        server_seed_hash: serverSeedHash,
         client_seed: clientSeed,
+        // server_seed_hash was already stored at open — keep it, just expose seed now
       })
       .eq('id', round_id)
+      .select()
+      .single()
 
     if (updateError) {
       console.error('[fifty-fifty/draw] Failed to update round:', updateError)
@@ -95,14 +89,13 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      round_id,
+      round: updatedRound,
       winner_user_id: winningTicket.user_id,
       winner_ticket_number: winningTicket.ticket_number,
       total_tickets: tickets.length,
-      server_seed_hash: serverSeedHash,
-      client_seed: clientSeed,
-      // server_seed is revealed so players can verify fairness
       server_seed: serverSeed,
+      server_seed_hash: round.server_seed_hash,
+      client_seed: clientSeed,
     })
   } catch (error) {
     console.error('[fifty-fifty/draw] Unexpected error:', error)
