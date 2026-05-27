@@ -14,7 +14,8 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, Lock, ShieldAlert, ArrowLeft, LayoutList, Gamepad2 } from "lucide-react";
+import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, Lock, ShieldAlert, ArrowLeft, LayoutList, Gamepad2, Ticket } from "lucide-react";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { ClaimsManager } from "@/components/admin/claims-manager";
 import { EmailVerificationTool } from "@/components/admin/email-verification-tool";
@@ -205,6 +206,20 @@ export default function AdminPage() {
                 <p className="text-muted-foreground">Create and manage leaderboards for AceBet, Packdraw, and Kick with custom prize structures</p>
               </CardContent>
             </Card>
+
+            <Link href="/admin/fifty-fifty" className="block">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow h-full">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <Ticket className="h-8 w-8 text-primary" />
+                    <CardTitle>50/50 Raffle</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">Open rounds, view live stats, trigger draws, and review round history</p>
+                </CardContent>
+              </Card>
+            </Link>
 
             <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("website")}>
               <CardHeader>

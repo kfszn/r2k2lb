@@ -22,6 +22,7 @@ export default function SiteHeader() {
           <Link href="/#platforms" className="text-sm font-medium hover:text-primary transition-colors">Leaderboards</Link>
           <Link href="/wager-races" className="text-sm font-medium hover:text-primary transition-colors">Wager Races</Link>
           <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors">Raffle</Link>
+          <Link href="/fifty-fifty" className="text-sm font-medium hover:text-primary transition-colors">50/50</Link>
         </nav>
         <div className="flex items-center gap-3">
           <Link href="/auth/login" className="hidden md:block">
@@ -65,6 +66,13 @@ export default function SiteHeader() {
                   onClick={() => setOpen(false)}
                 >
                   Raffle
+                </Link>
+                <Link 
+                  href="/fifty-fifty" 
+                  className="text-base font-medium hover:text-primary transition-colors py-2"
+                  onClick={() => setOpen(false)}
+                >
+                  50/50
                 </Link>
                 <div className="pt-4 border-t border-border">
                   <Link href="/auth/login" onClick={() => setOpen(false)}>
