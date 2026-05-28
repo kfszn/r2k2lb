@@ -25,15 +25,16 @@ interface LeaderboardData {
   data: LeaderboardEntry[]
 }
 
-// Prize pool: $20,000 total - top 15 paid spots
-const REWARDS = [6000, 4000, 2500, 2000, 1500, 1250, 1000, 500, 400, 300, 200, 150, 100, 50, 50]
+// Prize pool: $20,000 total — top 15 paid spots (11th–15th = $40 Bonus Buy)
+const REWARDS = [7000, 3500, 2750, 2000, 1500, 1250, 1000, 645, 250, 100, 1, 1, 1, 1, 1]
+const REWARD_LABELS: (string | null)[] = [null, null, null, null, null, null, null, null, null, null, '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy']
 
 interface MonthConfig {
   label: string
   start_at: string
   end_at: string
   display: string
-  rewards: number[]
+  rewards: (number | string)[]
   total: number
 }
 
@@ -71,6 +72,14 @@ const PREVIOUS_MONTHS: MonthConfig[] = [
     rewards: [4000, 2000, 1250, 1000, 650, 450, 300, 200, 100, 50],
     total: 10000,
   },
+  {
+    label: 'May',
+    start_at: '2026-04-27',
+    end_at: '2026-05-27',
+    display: 'Apr 27 – May 27, 2026',
+    rewards: [6000, 4000, 2500, 2000, 1500, 1250, 1000, 500, 400, 300, 200, 150, 100, 50, 50],
+    total: 20000,
+  },
 ]
 
 export default function AcebetLeaderboard() {
@@ -87,6 +96,7 @@ export default function AcebetLeaderboard() {
 
   const activeMonthConfig = PREVIOUS_MONTHS.find(m => m.label === selectedMonth) ?? null
   const activeRewards = showPrevious ? (activeMonthConfig?.rewards ?? []) : REWARDS
+  const activeLabels = showPrevious ? null : REWARD_LABELS
   const activeTotal = showPrevious ? (activeMonthConfig?.total ?? 0) : 20000
 
   const loadLeaderboard = async (month: string) => {
@@ -140,18 +150,18 @@ export default function AcebetLeaderboard() {
       const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
       if (found) setDateRange(`${found.display}`)
     } else {
-      setDateRange(`Apr 27 - May 27, 2026 • 11am EST End`)
+      setDateRange(`May 27 – Jun 27, 2026`)
     }
 
     const interval = setInterval(() => {
-      // Countdown only applies to current cycle — May 27, 2026 at 11am EST (3pm UTC/EDT)
+      // Countdown only applies to current cycle — Jun 27, 2026 at 3pm EST (7pm UTC)
       // Previous months are always ended
       if (selectedMonth !== 'current') {
         setTimeRemaining('Ended')
         return
       }
 
-      const endTime = new Date('2026-05-27T15:00:00Z').getTime()
+      const endTime = new Date('2026-06-27T19:00:00Z').getTime()
       const diff = endTime - Date.now()
 
       if (diff <= 0) {
@@ -270,9 +280,11 @@ export default function AcebetLeaderboard() {
                   'bg-indigo-400/20 border-indigo-400/40 text-indigo-300',
                   'bg-indigo-400/20 border-indigo-400/40 text-indigo-300',
                 ]
+                const customLabel = activeLabels?.[i]
+                const displayValue = customLabel ?? `$${typeof prize === 'number' ? prize.toLocaleString() : prize}`
                 return (
                   <span key={i} className={`px-3 py-1 rounded-full border ${colors[i] ?? colors[colors.length - 1]}`}>
-                    {ordinals[i]} — ${prize.toLocaleString()}
+                    {ordinals[i]} — {displayValue}
                   </span>
                 )
               })}
@@ -624,10 +636,12 @@ export default function AcebetLeaderboard() {
                                     <p className="text-xs text-muted-foreground">Wagered</p>
                                     <p className="font-bold text-foreground">{formatMoney(entry.wagered)}</p>
                                   </div>
-                                  {rank <= activeRewards.length && activeRewards[rank - 1] && (
+                                  {rank <= activeRewards.length && activeRewards[rank - 1] != null && (
                                     <div className="text-right">
                                       <p className="text-xs text-muted-foreground">Prize</p>
-                                      <p className="font-bold text-green-600">${activeRewards[rank - 1].toLocaleString()}</p>
+                                      <p className="font-bold text-green-600">
+                                        {activeLabels?.[rank - 1] ?? `$${(activeRewards[rank - 1] as number).toLocaleString()}`}
+                                      </p>
                                     </div>
                                   )}
                                 </div>
@@ -654,7 +668,8 @@ export default function AcebetLeaderboard() {
                             key={entry.userId}
                             rank={idx + 4}
                             entry={entry}
-                            reward={activeRewards[idx + 3]}
+                            reward={activeRewards[idx + 3] as number}
+                            rewardLabel={activeLabels?.[idx + 3]}
                             formatMoney={formatMoney}
                             maskName={maskName}
                             getAvatarUrl={getAvatarUrl}
@@ -699,10 +714,11 @@ export default function AcebetLeaderboard() {
 }
 
 
-function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarUrl }: {
+function LeaderboardRow({ rank, entry, reward, rewardLabel, formatMoney, maskName, getAvatarUrl }: {
   rank: number
   entry: LeaderboardEntry
   reward: number
+  rewardLabel?: string | null
   formatMoney: (n: number) => string
   maskName: (s: string) => string
   getAvatarUrl: (a: string | null) => string
@@ -732,7 +748,9 @@ function LeaderboardRow({ rank, entry, reward, formatMoney, maskName, getAvatarU
       <p className="text-sm font-semibold text-foreground text-right">{formatMoney(entry.wagered)}</p>
 
       {/* Prize */}
-      <p className="text-sm font-bold text-right text-green-600">${reward?.toLocaleString() ?? '—'}</p>
+      <p className="text-sm font-bold text-right text-green-600">
+        {rewardLabel ?? (reward != null ? `$${reward.toLocaleString()}` : '—')}
+      </p>
     </div>
   )
 }
