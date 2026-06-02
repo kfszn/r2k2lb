@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -33,9 +33,45 @@ type Profile = {
   discord_linked_at: string | null
 }
 
-export default function AccountPage() {
-  const router = useRouter()
+function KickOAuthFeedback() {
   const searchParams = useSearchParams()
+  const kickSuccess = searchParams.get('kick_success')
+  const kickError = searchParams.get('kick_error')
+
+  if (!kickSuccess && !kickError) return null
+
+  return (
+    <>
+      {kickSuccess && (
+        <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-sm text-green-400">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          Your Kick account was linked successfully.
+        </div>
+      )}
+      {kickError && (
+        <div className="flex items-center gap-3 bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          Failed to link Kick account: {kickError.replace(/_/g, ' ')}
+        </div>
+      )}
+    </>
+  )
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground text-sm">Loading your profile...</div>
+      </div>
+    }>
+      <AccountPageContent />
+    </Suspense>
+  )
+}
+
+function AccountPageContent() {
+  const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
@@ -48,10 +84,6 @@ export default function AccountPage() {
 
   // Unlink state
   const [unlinkLoading, setUnlinkLoading] = useState<string | null>(null)
-
-  // Kick OAuth feedback from URL params
-  const kickSuccess = searchParams.get('kick_success')
-  const kickError = searchParams.get('kick_error')
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -155,18 +187,9 @@ export default function AccountPage() {
       <main className="container mx-auto px-4 py-12 max-w-2xl space-y-6">
 
         {/* Kick OAuth feedback banners */}
-        {kickSuccess && (
-          <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-sm text-green-400">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            Your Kick account was linked successfully.
-          </div>
-        )}
-        {kickError && (
-          <div className="flex items-center gap-3 bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            Failed to link Kick account: {kickError.replace(/_/g, ' ')}
-          </div>
-        )}
+        <Suspense fallback={null}>
+          <KickOAuthFeedback />
+        </Suspense>
 
         {/* Account ID */}
         <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
