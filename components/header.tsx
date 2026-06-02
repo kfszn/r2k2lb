@@ -161,12 +161,10 @@ function Header() {
               >
                 Chatter Leaderboard
               </Link>
-              <Link
-                href="/fifty-fifty"
-                className="block px-4 py-2 text-sm font-medium hover:text-[#53fc18] hover:bg-secondary/50 transition-colors"
-              >
-                50/50 Raffle
-              </Link>
+              <div className="flex items-center justify-between px-4 py-2 cursor-default">
+                <span className="text-sm font-medium text-muted-foreground/50 select-none">50/50 Raffle</span>
+                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">Soon</span>
+              </div>
               <a
                 href="https://kick.com/r2ktwo"
                 target="_blank"
@@ -338,9 +336,10 @@ function Header() {
                       <Link href="/leaderboard/kick" className="text-sm font-medium hover:text-[#53fc18] transition-colors py-2 text-center" onClick={closeMobile}>
                         Chatter Leaderboard
                       </Link>
-                      <Link href="/fifty-fifty" className="text-sm font-medium hover:text-[#53fc18] transition-colors py-2 text-center" onClick={closeMobile}>
-                        50/50 Raffle
-                      </Link>
+                      <div className="flex items-center justify-center gap-2 py-2 cursor-default select-none">
+                        <span className="text-sm font-medium text-muted-foreground/40">50/50 Raffle</span>
+                        <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-wider">Coming Soon</span>
+                      </div>
                       <a
                         href="https://kick.com/r2ktwo"
                         target="_blank"

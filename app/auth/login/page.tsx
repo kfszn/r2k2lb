@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { createBrowserClient } from '@supabase/ssr'
 import Image from 'next/image'
 import { Eye, EyeOff } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -19,6 +20,18 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Show feedback from Kick OAuth redirect
+  React.useEffect(() => {
+    const kickError = searchParams.get('kick_error')
+    const kickUser = searchParams.get('kick_user')
+    if (kickError === 'login_failed' && kickUser) {
+      setError(`No account found linked to Kick user "${kickUser}". Please log in with email and link your Kick account from Account Settings.`)
+    } else if (kickError) {
+      setError(`Kick login failed (${kickError}). Please try again or use email/password.`)
+    }
+  }, [searchParams])
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -134,6 +147,26 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">or continue with</span>
+            </div>
+          </div>
+
+          <a href="/api/auth/kick?mode=login" className="block">
+            <Button type="button" variant="outline" className="w-full gap-2 border-[#53FC18]/30 hover:border-[#53FC18]/60 hover:bg-[#53FC18]/5" disabled={loading}>
+              <svg viewBox="0 0 24 24" className="h-4 w-4 fill-[#53FC18]" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 2h4v8l4-4h4l-6 6 6 6h-4l-4-4v4H2V2z"/>
+                <path d="M14 2h4v8h4V2h-4v6h-4V2z" opacity="0"/>
+                <path d="M13 2h3v20h-3V2zM16 9h3l3 3-3 3h-3v-3h2l1-1-1-1h-2V9z"/>
+              </svg>
+              Sign in with Kick
+            </Button>
+          </a>
 
           <div className="text-center text-sm">
             <span className="text-muted-foreground">{"Don't have an account? "}</span>

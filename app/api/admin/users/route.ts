@@ -13,7 +13,12 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, account_id, email, kick_username, acebet_username, points, created_at')
+    .select(`
+      id, account_id, email, points, created_at,
+      kick_id, kick_username, kick_avatar, kick_linked_at,
+      acebet_id, acebet_id_suffix, acebet_username, acebet_linked_at,
+      discord_id, discord_username, discord_linked_at
+    `)
     .order('created_at', { ascending: false })
 
   if (error) {
