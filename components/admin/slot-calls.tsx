@@ -270,29 +270,32 @@ export function SlotCalls() {
   };
 
   const clearAllPendingCalls = async () => {
-    if (pendingCalls.length === 0) {
+    const totalCalls = pendingCalls.length + completedCalls.length;
+    
+    if (totalCalls === 0) {
       toast({
         title: 'No calls to clear',
-        description: 'There are no pending slot calls.',
+        description: 'There are no slot calls to clear.',
         duration: 3000,
       });
       return;
     }
 
-    if (!confirm(`Are you sure you want to clear all ${pendingCalls.length} pending slot calls? This cannot be undone.`)) return;
+    if (!confirm(`Are you sure you want to clear all ${totalCalls} slot calls (${pendingCalls.length} pending, ${completedCalls.length} completed)? This cannot be undone.`)) return;
 
     try {
       const { error } = await supabase
         .from('slot_calls')
         .delete()
-        .eq('status', 'pending');
+        .in('status', ['pending', 'completed']);
 
       if (error) throw error;
 
       setPendingCalls([]);
+      setCompletedCalls([]);
       toast({
         title: 'Cleared All',
-        description: `Successfully cleared ${pendingCalls.length} pending slot calls.`,
+        description: `Successfully cleared ${totalCalls} slot calls.`,
         duration: 3000,
       });
     } catch (error) {
@@ -485,7 +488,7 @@ export function SlotCalls() {
                 <h3 className="text-sm font-semibold text-foreground">Open Calls</h3>
                 <Badge variant="outline" className="text-xs">{pendingCalls.length}</Badge>
               </div>
-              {pendingCalls.length > 0 && (
+              {(pendingCalls.length > 0 || completedCalls.length > 0) && (
                 <Button
                   size="sm"
                   variant="outline"
