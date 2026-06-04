@@ -1,6 +1,6 @@
 'use client'
 
-import React from "react"
+import React, { Suspense } from "react"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -13,7 +13,7 @@ import Image from 'next/image'
 import { Eye, EyeOff } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -183,5 +183,17 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-muted-foreground text-sm">Loading...</div>
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   )
 }
