@@ -269,6 +269,43 @@ export function SlotCalls() {
     }
   };
 
+  const clearAllPendingCalls = async () => {
+    if (pendingCalls.length === 0) {
+      toast({
+        title: 'No calls to clear',
+        description: 'There are no pending slot calls.',
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to clear all ${pendingCalls.length} pending slot calls? This cannot be undone.`)) return;
+
+    try {
+      const { error } = await supabase
+        .from('slot_calls')
+        .delete()
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
+      setPendingCalls([]);
+      toast({
+        title: 'Cleared All',
+        description: `Successfully cleared ${pendingCalls.length} pending slot calls.`,
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Error clearing slot calls:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to clear slot calls. Please try again.',
+        variant: 'destructive',
+        duration: 4000,
+      });
+    }
+  };
+
   // Request Limits Functions
   const fetchRequestLimits = async () => {
     setIsLoadingLimits(true);
@@ -442,10 +479,23 @@ export function SlotCalls() {
 
           {/* Open Calls Section */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-yellow-500" />
-              <h3 className="text-sm font-semibold text-foreground">Open Calls</h3>
-              <Badge variant="outline" className="text-xs">{pendingCalls.length}</Badge>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-yellow-500" />
+                <h3 className="text-sm font-semibold text-foreground">Open Calls</h3>
+                <Badge variant="outline" className="text-xs">{pendingCalls.length}</Badge>
+              </div>
+              {pendingCalls.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={clearAllPendingCalls}
+                  className="h-7 gap-1 text-xs text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/60 hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Clear All
+                </Button>
+              )}
             </div>
 
             {isLoading ? (
