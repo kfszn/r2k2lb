@@ -14,11 +14,10 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, UserCheck, Lock, ShieldAlert, ArrowLeft, LayoutList, Gamepad2, Ticket } from "lucide-react";
+import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, Lock, ShieldAlert, ArrowLeft, LayoutList, Gamepad2, Ticket } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { ClaimsManager } from "@/components/admin/claims-manager";
-import { EmailVerificationTool } from "@/components/admin/email-verification-tool";
 import { WagerVerification } from "@/components/admin/wager-verification";
 import { AllTournamentsManager } from "@/components/admin/all-tournaments-manager";
 import { TournamentSelector } from "@/components/admin/tournament-selector";
@@ -31,6 +30,7 @@ import { UsersManager } from "@/components/admin/users-manager";
 import { RewardsSettings } from "@/components/admin/rewards-settings";
 import { GamesManager } from "@/components/admin/games-manager";
 import { LeaderboardManager } from "@/components/admin/leaderboard-manager";
+import { AcebetUserLookup } from "@/components/admin/acebet-user-lookup";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
@@ -225,11 +225,11 @@ export default function AdminPage() {
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <Settings className="h-8 w-8 text-primary" />
-                  <CardTitle>Website Management</CardTitle>
+                  <CardTitle>Affiliate Analytics</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Manage user accounts, email verification, and website settings</p>
+                <p className="text-muted-foreground">Verify individual wagers and view total affiliate statistics</p>
               </CardContent>
             </Card>
           </div>
@@ -323,38 +323,24 @@ export default function AdminPage() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
-            <h1 className="text-3xl font-bold">Website Management</h1>
+            <h1 className="text-3xl font-bold">Affiliate Analytics</h1>
           </div>
 
-          <Tabs defaultValue="email" className="w-full">
+          <Tabs defaultValue="wager" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="email" className="gap-2">
-                <UserCheck className="h-4 w-4" />
-                Email Verification
-              </TabsTrigger>
               <TabsTrigger value="wager" className="gap-2">
                 <Zap className="h-4 w-4" />
-                Wager Verification
+                Individual Wager Verification
               </TabsTrigger>
               <TabsTrigger value="total-wager" className="gap-2">
                 <Trophy className="h-4 w-4" />
-                Total Wager
+                Total Statistics
+              </TabsTrigger>
+              <TabsTrigger value="user-info" className="gap-2">
+                <Users className="h-4 w-4" />
+                User Info
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="email" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserCheck className="h-5 w-5 text-primary" />
-                    Email Verification
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <EmailVerificationTool />
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             <TabsContent value="wager" className="mt-6">
               <WagerVerification />
@@ -365,13 +351,17 @@ export default function AdminPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-primary" />
-                    Wager Statistics
+                    Total Statistics
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <TotalWagerStats />
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="user-info" className="mt-6">
+              <AcebetUserLookup />
             </TabsContent>
           </Tabs>
         </div>

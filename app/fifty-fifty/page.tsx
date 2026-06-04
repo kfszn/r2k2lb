@@ -13,6 +13,9 @@ import {
   X, ChevronDown, ChevronUp, ExternalLink, Copy, Check,
 } from 'lucide-react'
 
+// ─── Coming Soon Gate ─────────────────────────────────────────────────────────
+const COMING_SOON = true
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Round {
@@ -518,6 +521,32 @@ export default function FiftyFiftyPage() {
     open:   { label: 'Open',   color: 'bg-chart-3/20 text-chart-3 border-chart-3/30' },
     closed: { label: 'Closed', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
     drawn:  { label: 'Complete', color: 'bg-muted text-muted-foreground border-border' },
+  }
+
+  if (COMING_SOON) {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
+          <div className="flex flex-col items-center gap-6 max-w-md">
+            <div className="relative flex items-center justify-center w-24 h-24 rounded-full bg-muted/40 border border-border/40">
+              <Lock className="h-10 w-10 text-muted-foreground/60" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight">Coming Soon</h1>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                The 50/50 Raffle is almost ready. Buy a ticket, win half the pot — check back soon.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/30 border border-border/30">
+              <span className="h-2 w-2 rounded-full bg-yellow-500/80 animate-pulse" />
+              <span className="text-xs font-medium text-muted-foreground/70 uppercase tracking-widest">Under Construction</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   if (loading) {

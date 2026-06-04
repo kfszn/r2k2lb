@@ -2,10 +2,9 @@
 
 import useSWR from 'swr'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { ShieldCheck, Spade, Grid3X3, Gamepad2 } from 'lucide-react'
+import { ShieldCheck } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 
@@ -15,29 +14,23 @@ const GAMES = [
   {
     id: 'blackjack',
     name: 'Blackjack',
-    description: 'Classic card game — beat the dealer to 21. Blackjack pays 2x, dealer stands on soft 17.',
+    description: 'Beat the dealer to 21. Blackjack pays 2x, dealer stands on soft 17.',
     href: '/games/blackjack',
-    icon: Spade,
-    maxPayout: '20,000 pts',
-    badge: 'Cards',
+    image: '/images/games/blackjack.png',
   },
   {
     id: 'keno',
     name: 'Keno',
-    description: 'Pick 1–6 numbers from a 30-number grid. Match more numbers to win bigger. Choose your risk level.',
+    description: 'Pick 1–6 numbers from a 30-number grid. Match more to win bigger.',
     href: '/games/keno',
-    icon: Grid3X3,
-    maxPayout: '20,000 pts',
-    badge: 'Numbers',
+    image: '/images/games/keno.png',
   },
   {
     id: 'plinko',
     name: 'Plinko',
-    description: 'Drop a ball through 16 rows of pegs. Watch it bounce to your multiplier. Low, Medium or High risk.',
+    description: 'Drop a ball through 16 rows of pegs. Land on the biggest multiplier.',
     href: '/games/plinko',
-    icon: Gamepad2,
-    maxPayout: '20,000 pts',
-    badge: 'Plinko',
+    image: '/images/games/plinko.png',
   },
 ]
 
@@ -51,19 +44,19 @@ export default function GamesPage() {
       <Header />
 
       <div className="container mx-auto px-4 py-10">
-        {/* Header */}
+
+        {/* Page heading */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-3">R2K2 Games</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Wager your points in provably fair games. Every result is verifiable — no trust required.
+            Wager your points in provably fair games. Every result is independently verifiable.
           </p>
-          {isLoggedIn && (
+          {isLoggedIn ? (
             <div className="mt-4 inline-flex items-center gap-2 bg-card border border-border/40 rounded-full px-4 py-2 text-sm">
               <span className="text-muted-foreground">Your balance:</span>
               <span className="font-bold text-primary">{(profile.points ?? 0).toLocaleString()} pts</span>
             </div>
-          )}
-          {!isLoggedIn && (
+          ) : (
             <div className="mt-4">
               <Link href="/auth/login">
                 <Button variant="outline">Log in to play</Button>
@@ -72,39 +65,49 @@ export default function GamesPage() {
           )}
         </div>
 
-        {/* Game cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto mb-12">
-          {GAMES.map(game => {
-            const Icon = game.icon
-            return (
-              <Card key={game.id} className="border-border/40 bg-card/60 hover:border-primary/30 transition-all duration-300 group hover:shadow-lg hover:shadow-primary/5">
-                <CardHeader>
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <Icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <Badge variant="outline" className="text-xs">{game.badge}</Badge>
-                  </div>
-                  <CardTitle className="text-xl">{game.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground leading-relaxed">{game.description}</p>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Max payout: <span className="text-foreground font-medium">{game.maxPayout}</span></span>
-                    <div className="flex items-center gap-1 text-green-400">
-                      <ShieldCheck className="h-3 w-3" />
-                      <span>Provably Fair</span>
-                    </div>
-                  </div>
-                  <Link href={isLoggedIn ? game.href : '/auth/login'}>
-                    <Button className="w-full" variant={isLoggedIn ? 'default' : 'outline'}>
-                      {isLoggedIn ? `Play ${game.name}` : 'Log in to play'}
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )
-          })}
+        {/* Game image grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto mb-14">
+          {GAMES.map(game => (
+            <Link
+              key={game.id}
+              href={isLoggedIn ? game.href : '/auth/login'}
+              className="group relative block rounded-2xl overflow-hidden border border-border/30 bg-card/40 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 cursor-pointer"
+            >
+              {/* Game image */}
+              <div className="relative aspect-square w-full overflow-hidden">
+                <Image
+                  src={game.image}
+                  alt={game.name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+
+                {/* Provably fair badge */}
+                <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-sm border border-green-500/30 rounded-full px-2.5 py-1">
+                  <ShieldCheck className="h-3 w-3 text-green-400" />
+                  <span className="text-[10px] font-semibold text-green-400 uppercase tracking-wider">Provably Fair</span>
+                </div>
+
+                {/* Game info overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <p className="text-xs text-white/60 leading-snug">{game.description}</p>
+                </div>
+              </div>
+
+              {/* Play button footer */}
+              <div className="px-4 py-3 flex items-center justify-between bg-card/80 backdrop-blur-sm">
+                <span className="text-sm font-semibold text-foreground">
+                  {isLoggedIn ? `Play ${game.name}` : 'Log in to play'}
+                </span>
+                <span className="text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
+                  Play &rarr;
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
 
         {/* Provably fair callout */}
@@ -117,9 +120,10 @@ export default function GamesPage() {
             Every game result is generated using HMAC-SHA256 with server and client seeds. The server seed is hashed before your bet and revealed after — you can independently verify any result.
           </p>
           <Link href="/games/fairness">
-            <Button variant="outline" size="sm">Learn how it works & verify results</Button>
+            <Button variant="outline" size="sm">Learn how it works &amp; verify results</Button>
           </Link>
         </div>
+
       </div>
     </main>
   )

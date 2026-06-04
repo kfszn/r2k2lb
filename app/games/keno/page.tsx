@@ -6,60 +6,25 @@ import { Input } from '@/components/ui/input'
 import { Loader2, ChevronDown, SlidersHorizontal, X } from 'lucide-react'
 import { GameLayout } from '@/components/games/game-layout'
 import { cn } from '@/lib/utils'
+import { KENO_MULTIPLIERS, type KenoRisk } from '@/lib/games/keno-config'
 
-type Risk = 'classic' | 'low' | 'high'
-
-const TOTAL = 30
-const COLS  = 6
+const TOTAL = 40
+const COLS  = 8
 const DRAWN = 10
+const MAX_PICKS = 10
 
-const MULTIPLIERS: Record<Risk, Record<number, Record<number, number>>> = {
-  classic: {
-    1: { 1: 3 },
-    2: { 2: 7,   1: 0 },
-    3: { 3: 27,  2: 2,  1: 0 },
-    4: { 4: 90,  3: 3,  2: 1 },
-    5: { 5: 250, 4: 7,  3: 2,  2: 0 },
-    6: { 6: 750, 5: 18, 4: 4,  3: 1 },
-  },
-  low: {
-    1: { 1: 2 },
-    2: { 2: 4,   1: 1 },
-    3: { 3: 8,   2: 2,  1: 0.5 },
-    4: { 4: 15,  3: 3,  2: 1 },
-    5: { 5: 30,  4: 6,  3: 2,  2: 0.5 },
-    6: { 6: 60,  5: 12, 4: 4,  3: 1 },
-  },
-  high: {
-    1: { 1: 3 },
-    2: { 2: 10 },
-    3: { 3: 30,  2: 1 },
-    4: { 4: 100, 3: 5 },
-    5: { 5: 300, 4: 15, 3: 2 },
-    6: { 6: 1000,5: 50, 4: 8,  3: 2 },
-  },
-}
-
-function DiamondIcon({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const cls = size === 'lg' ? 'w-8 h-8' : size === 'sm' ? 'w-4 h-4' : 'w-5 h-5'
-  return (
-    <svg viewBox="0 0 32 32" className={cls} fill="none">
-      <polygon points="16,2 30,11 16,30 2,11" fill="#3b82f6" stroke="#93c5fd" strokeWidth="1.2" strokeLinejoin="round" />
-      <polygon points="16,2 30,11 16,16"  fill="#60a5fa" opacity="0.7" />
-      <polygon points="2,11 16,16 16,30"  fill="#1d4ed8" opacity="0.6" />
-      <line x1="2" y1="11" x2="30" y2="11" stroke="#93c5fd" strokeWidth="0.8" opacity="0.5" />
-      <circle cx="25" cy="7"  r="1"   fill="#bfdbfe" opacity="0.9" />
-      <circle cx="7"  cy="8"  r="0.7" fill="#bfdbfe" opacity="0.7" />
-    </svg>
-  )
-}
+// ── Tile state colours ──────────────────────────────────────────────────────
+// selected (not yet drawn)  → blue glow
+// hit (selected + drawn)    → green glow
+// drawn only (not selected) → subtle red/dark
+// miss (selected, not drawn, result shown) → faded blue
 
 export default function KenoPage() {
   const [mode, setMode]             = useState<'manual' | 'auto'>('manual')
   const [wager, setWager]           = useState(100)
-  const [risk, setRisk]             = useState<Risk>('classic')
+  const [risk, setRisk]             = useState<KenoRisk>('classic')
   const [picks, setPicks]           = useState<Set<number>>(new Set())
-  const [drawnNumbers, setDrawnNumbers] = useState<number[]>([])
+  const [drawnNumbers, setDrawnNumbers]   = useState<number[]>([])
   const [revealedDrawn, setRevealedDrawn] = useState<Set<number>>(new Set())
   const [matched, setMatched]       = useState(0)
   const [multiplier, setMultiplier] = useState(0)
@@ -87,14 +52,14 @@ export default function KenoPage() {
     setPicks(prev => {
       const next = new Set(prev)
       if (next.has(n)) { next.delete(n); return next }
-      if (next.size >= 6) return prev
+      if (next.size >= MAX_PICKS) return prev
       next.add(n); return next
     })
   }, [isPlaying, loading, autoRunning])
 
   const autoPick = () => {
     const nums = Array.from({ length: TOTAL }, (_, i) => i + 1).sort(() => Math.random() - 0.5)
-    setPicks(new Set(nums.slice(0, 6)))
+    setPicks(new Set(nums.slice(0, MAX_PICKS)))
   }
 
   const clearTable = () => {
@@ -166,14 +131,16 @@ export default function KenoPage() {
 
   const stopAuto = () => { autoRef.current = false; setAutoRunning(false) }
 
-  const payoutTable   = picks.size > 0 ? MULTIPLIERS[risk]?.[picks.size] : null
+  const payoutTable   = picks.size > 0 ? KENO_MULTIPLIERS[risk]?.[picks.size] : null
   const payoutEntries = payoutTable
-    ? Object.entries(payoutTable).map(([h, m]) => ({ hits: parseInt(h), mult: m })).sort((a, b) => a.hits - b.hits)
+    ? Object.entries(payoutTable).map(([h, m]) => ({ hits: parseInt(h), mult: m as number }))
+        .filter(e => e.mult > 0)
+        .sort((a, b) => b.hits - a.hits)
     : []
 
   const isDisabled = isPlaying || loading || autoRunning
 
-  // ── Controls Panel (shared between desktop sidebar + mobile drawer) ──────
+  // ── Controls panel ────────────────────────────────────────────────────────
   const ControlsPanel = () => (
     <div className="flex flex-col gap-3 p-4">
       {/* Manual / Auto tabs */}
@@ -189,24 +156,23 @@ export default function KenoPage() {
 
       {/* Bet Amount */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5">Bet Amount <span className="text-red-400 text-[10px]">(Max: 5000)</span></p>
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5">Bet Amount</p>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">pts</span>
-          <Input type="number" min={1} max={5000} value={wager}
-            onChange={e => setWager(Math.max(1, Math.min(5000, parseInt(e.target.value) || 1)))}
+          <Input type="number" min={1} value={wager}
+            onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 1))}
             disabled={isDisabled} className="pl-10 h-10 text-sm font-mono" />
         </div>
         <div className="flex gap-1 mt-1.5">
-          {[['1/2', () => setWager(v => Math.max(1, Math.floor(v / 2)))], ['x2', () => setWager(v => Math.min(5000, v * 2))], ['Max', () => setWager(5000)]].map(([label, fn]) => (
-            <button key={label as string} onClick={fn as () => void} disabled={isDisabled}
+          {(['1/2', 'x2'] as const).map((label) => (
+            <button key={label} onClick={() => {
+              if (label === '1/2') setWager(v => Math.max(1, Math.floor(v / 2)))
+              if (label === 'x2')  setWager(v => v * 2)
+            }} disabled={isDisabled}
               className="flex-1 h-9 rounded-md bg-muted border border-border text-muted-foreground text-xs hover:text-foreground transition-colors disabled:opacity-40">
-              {label as string}
+              {label}
             </button>
           ))}
-            <button onClick={() => setWager(5000)} disabled={isDisabled}
-            className="flex-1 h-9 rounded-md bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 disabled:opacity-40">
-            Max
-          </button>
         </div>
       </div>
 
@@ -214,14 +180,23 @@ export default function KenoPage() {
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5">Risk</p>
         <div className="relative">
-          <select value={risk} onChange={e => setRisk(e.target.value as Risk)} disabled={isDisabled}
+          <select value={risk} onChange={e => setRisk(e.target.value as KenoRisk)} disabled={isDisabled}
             className="w-full h-10 rounded-lg bg-input border border-border text-foreground text-sm px-3 appearance-none cursor-pointer disabled:opacity-40 focus:outline-none focus:border-primary/50">
             <option value="classic">Classic</option>
             <option value="low">Low</option>
+            <option value="medium">Medium</option>
             <option value="high">High</option>
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         </div>
+      </div>
+
+      {/* Pick counter */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+        <span>Selected</span>
+        <span className={cn('font-bold tabular-nums', picks.size === MAX_PICKS ? 'text-primary' : 'text-foreground')}>
+          {picks.size} / {MAX_PICKS}
+        </span>
       </div>
 
       {/* Auto options */}
@@ -272,34 +247,39 @@ export default function KenoPage() {
       <div className="flex flex-col md:flex-row h-full min-h-[calc(100vh-56px)] bg-background">
 
         {/* ── Desktop Sidebar ── */}
-        <aside className="hidden md:flex w-[260px] shrink-0 bg-card border-r border-border flex-col">
+        <aside className="hidden md:flex w-[240px] shrink-0 bg-card border-r border-border flex-col">
           <ControlsPanel />
 
-          {/* Result banner — desktop */}
+          {/* Result banner */}
           {hasResult && (
             <div className={cn('mx-4 mb-3 rounded-xl border p-3 text-center',
-              multiplier > 0 ? 'border-primary/40 bg-primary/10' : 'border-destructive/30 bg-destructive/10')}>
-              <p className="text-[11px] text-muted-foreground mb-0.5">{matched}/{picks.size} matched</p>
-              <p className={cn('text-2xl font-extrabold tracking-tight', multiplier > 0 ? 'text-primary' : 'text-destructive')}>
+              multiplier > 0 ? 'border-green-500/40 bg-green-500/10' : 'border-red-500/20 bg-red-500/5')}>
+              <p className="text-[11px] text-muted-foreground mb-0.5">{matched} of {picks.size} hit</p>
+              <p className={cn('text-2xl font-extrabold tracking-tight', multiplier > 0 ? 'text-green-400' : 'text-red-400')}>
                 {multiplier > 0 ? `${multiplier}x` : 'No win'}
               </p>
-              <p className={cn('text-sm font-mono font-semibold', profit > 0 ? 'text-primary' : 'text-destructive')}>
+              <p className={cn('text-sm font-mono font-semibold mt-0.5', profit > 0 ? 'text-green-400' : 'text-red-400')}>
                 {profit > 0 ? `+${profit.toLocaleString()}` : profit.toLocaleString()} pts
               </p>
             </div>
           )}
 
-          {/* Bet button — desktop */}
+          {/* Bet button */}
           <div className="px-4 pb-4 mt-auto">
             {mode === 'manual' ? (
               <button onClick={hasResult ? resetResult : placeBet}
                 disabled={loading || isPlaying || picks.size === 0}
-                className={cn('w-full h-11 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed',
-                  hasResult ? 'bg-secondary border border-border text-foreground hover:bg-muted' : 'bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/25')}>
+                className={cn(
+                  'w-full h-11 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed',
+                  hasResult
+                    ? 'bg-secondary border border-border text-foreground hover:bg-muted'
+                    : 'bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/25'
+                )}>
                 {(loading || isPlaying) ? <Loader2 className="h-5 w-5 animate-spin" /> : hasResult ? 'Bet Again' : 'Place Bet'}
               </button>
             ) : autoRunning ? (
-              <button onClick={stopAuto} className="w-full h-11 rounded-xl font-bold text-sm bg-destructive text-destructive-foreground hover:opacity-90 transition-all">
+              <button onClick={stopAuto}
+                className="w-full h-11 rounded-xl font-bold text-sm bg-red-600 text-white hover:opacity-90 transition-all">
                 Stop Auto ({autoCount}/{autoBets})
               </button>
             ) : (
@@ -312,26 +292,41 @@ export default function KenoPage() {
         </aside>
 
         {/* ── Game Board ── */}
-        <div className="flex-1 flex flex-col p-3 md:p-5 gap-3 pb-32 md:pb-5">
+        <div className="flex-1 flex flex-col p-3 md:p-5 gap-4 pb-32 md:pb-5">
 
-          {/* Result banner — mobile (inline above grid) */}
+          {/* Header row */}
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Select <span className="font-semibold text-foreground">1 – {MAX_PICKS}</span> numbers to play
+            </p>
+            {picks.size > 0 && !hasResult && (
+              <span className="text-xs font-semibold text-primary">
+                {picks.size} selected
+              </span>
+            )}
+          </div>
+
+          {/* Result banner — mobile */}
           {hasResult && (
             <div className={cn('md:hidden rounded-xl border p-3 flex items-center justify-between',
-              multiplier > 0 ? 'border-primary/40 bg-primary/10' : 'border-destructive/30 bg-destructive/10')}>
+              multiplier > 0 ? 'border-green-500/40 bg-green-500/10' : 'border-red-500/20 bg-red-500/5')}>
               <div>
-                <p className="text-[11px] text-muted-foreground">{matched}/{picks.size} matched</p>
-                <p className={cn('text-xl font-extrabold', multiplier > 0 ? 'text-primary' : 'text-destructive')}>
+                <p className="text-[11px] text-muted-foreground">{matched} of {picks.size} hit</p>
+                <p className={cn('text-xl font-extrabold', multiplier > 0 ? 'text-green-400' : 'text-red-400')}>
                   {multiplier > 0 ? `${multiplier}x` : 'No win'}
                 </p>
               </div>
-              <p className={cn('text-lg font-mono font-bold', profit > 0 ? 'text-primary' : 'text-destructive')}>
+              <p className={cn('text-lg font-mono font-bold', profit > 0 ? 'text-green-400' : 'text-red-400')}>
                 {profit > 0 ? `+${profit.toLocaleString()}` : profit.toLocaleString()} pts
               </p>
             </div>
           )}
 
-          {/* 30-number grid — 6×5, scales on mobile */}
-          <div className="grid gap-1.5 md:gap-2" style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))` }}>
+          {/* 8×5 number grid (1–40) */}
+          <div
+            className="grid gap-1.5 md:gap-2 w-full"
+            style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))` }}
+          >
             {Array.from({ length: TOTAL }, (_, i) => i + 1).map(n => {
               const isPicked        = picks.has(n)
               const isRevealedDrawn = activeDrawnSet.has(n)
@@ -340,23 +335,31 @@ export default function KenoPage() {
               const isDrawnOnly     = !isPicked && isRevealedDrawn
 
               return (
-                <button key={n} onClick={() => togglePick(n)} disabled={isDisabled}
-                  // min 44px touch target via min-h
+                <button
+                  key={n}
+                  onClick={() => togglePick(n)}
+                  disabled={isDisabled}
                   className={cn(
-                    'min-h-[44px] md:min-h-[60px] lg:min-h-[72px] w-full rounded-xl font-bold text-sm md:text-base',
-                    'flex items-center justify-center border relative select-none transition-all duration-150 disabled:cursor-default',
+                    'aspect-square w-full rounded-lg md:rounded-xl font-bold text-sm md:text-base',
+                    'flex items-center justify-center border select-none transition-all duration-150 disabled:cursor-default',
+                    // default
                     !isPicked && !isRevealedDrawn &&
                       'bg-card border-border text-muted-foreground hover:bg-secondary hover:border-primary/30 hover:text-foreground',
+                    // selected, not yet result
                     isPicked && !isHit && !isMiss &&
-                      'bg-primary/20 border-primary text-primary shadow-lg shadow-primary/20',
+                      'bg-blue-500/20 border-blue-500 text-blue-300 shadow-[0_0_10px_2px_rgba(59,130,246,0.25)]',
+                    // drawn only (not picked) — red tint
                     isDrawnOnly &&
-                      'bg-card border-border text-destructive',
+                      'bg-red-900/25 border-red-800/40 text-red-400/70',
+                    // hit — green glow
                     isHit &&
-                      'bg-primary/25 border-primary text-primary shadow-xl shadow-primary/30 scale-[1.04] z-10 animate-pulse-once',
+                      'bg-green-500/20 border-green-400 text-green-300 shadow-[0_0_12px_3px_rgba(74,222,128,0.3)] scale-[1.05] z-10',
+                    // miss — faded blue
                     isMiss &&
-                      'bg-primary/5 border-primary/20 text-primary/25',
-                  )}>
-                  {isHit ? <DiamondIcon size="sm" /> : <span className={cn('font-bold', isDrawnOnly && 'text-destructive')}>{n}</span>}
+                      'bg-blue-500/5 border-blue-500/15 text-blue-500/25',
+                  )}
+                >
+                  {n}
                 </button>
               )
             })}
@@ -364,18 +367,18 @@ export default function KenoPage() {
 
           {/* Payout multiplier strip */}
           {payoutEntries.length > 0 && (
-            <div className="flex items-center gap-1 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {payoutEntries.map(({ hits, mult }) => {
                 const isWin = hasResult && hits === matched && mult > 0
                 return (
                   <div key={hits} className={cn(
-                    'flex flex-col items-center min-w-[50px] px-2 py-1 rounded-xl border text-center transition-all',
-                    isWin ? 'border-primary bg-primary/20 text-foreground shadow-md shadow-primary/20'
-                      : mult > 0 ? 'border-dashed border-border bg-transparent text-muted-foreground'
-                      : 'border-transparent bg-transparent text-muted-foreground/30'
+                    'flex flex-col items-center min-w-[52px] px-2 py-1.5 rounded-lg border text-center transition-all',
+                    isWin
+                      ? 'border-green-400 bg-green-500/15 text-foreground shadow shadow-green-500/20'
+                      : 'border-dashed border-border bg-transparent text-muted-foreground'
                   )}>
-                    <span className={cn('text-xs font-bold', isWin && 'text-primary')}>{mult > 0 ? `${mult}x` : '0x'}</span>
-                    <span className="text-[10px] opacity-60">{hits} hit</span>
+                    <span className={cn('text-xs font-bold tabular-nums', isWin && 'text-green-400')}>{mult}x</span>
+                    <span className="text-[10px] opacity-60">{hits} hit{hits !== 1 ? 's' : ''}</span>
                   </div>
                 )
               })}
@@ -385,7 +388,6 @@ export default function KenoPage() {
 
         {/* ── Mobile Bottom Bar ── */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border">
-          {/* Drawer: controls panel */}
           {showControls && (
             <div className="max-h-[60vh] overflow-y-auto border-b border-border">
               <div className="flex items-center justify-between px-4 pt-3 pb-1">
@@ -398,54 +400,44 @@ export default function KenoPage() {
             </div>
           )}
 
-          {/* Bottom action row */}
           <div className="flex items-center gap-2 p-3">
-            {/* Settings toggle */}
             <button onClick={() => setShowControls(v => !v)}
               className={cn('h-12 w-12 shrink-0 rounded-xl border flex items-center justify-center transition-all',
                 showControls ? 'bg-primary/20 border-primary text-primary' : 'bg-muted border-border text-muted-foreground hover:text-foreground')}>
               <SlidersHorizontal className="h-5 w-5" />
             </button>
 
-            {/* Wager quick-input */}
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">pts</span>
-              <Input type="number" min={1} max={5000} value={wager}
-                onChange={e => setWager(Math.max(1, Math.min(5000, parseInt(e.target.value) || 1)))}
+              <Input type="number" min={1} value={wager}
+                onChange={e => setWager(Math.max(1, parseInt(e.target.value) || 1))}
                 disabled={isDisabled} className="pl-10 h-12 text-sm font-mono" />
             </div>
 
-            {/* Place Bet / Auto button */}
             {mode === 'manual' ? (
               <button onClick={hasResult ? resetResult : placeBet}
                 disabled={loading || isPlaying || picks.size === 0}
-                className={cn('h-12 px-5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-40 shrink-0',
-                  hasResult ? 'bg-secondary border border-border text-foreground' : 'bg-primary text-primary-foreground shadow-lg shadow-primary/25')}>
+                className={cn(
+                  'h-12 px-5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shrink-0',
+                  hasResult ? 'bg-secondary border border-border text-foreground' : 'bg-primary text-primary-foreground'
+                )}>
                 {(loading || isPlaying) ? <Loader2 className="h-5 w-5 animate-spin" /> : hasResult ? 'Again' : 'Bet'}
               </button>
             ) : autoRunning ? (
               <button onClick={stopAuto}
-                className="h-12 px-5 rounded-xl font-bold text-sm bg-destructive text-destructive-foreground shrink-0">
+                className="h-12 px-4 rounded-xl font-bold text-sm bg-red-600 text-white shrink-0">
                 Stop
               </button>
             ) : (
               <button onClick={startAuto} disabled={picks.size === 0 || isPlaying || loading}
-                className="h-12 px-5 rounded-xl font-bold text-sm bg-primary text-primary-foreground disabled:opacity-40 flex items-center justify-center shrink-0">
-                {(loading || isPlaying) ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Auto'}
+                className="h-12 px-4 rounded-xl font-bold text-sm bg-primary text-primary-foreground shrink-0 disabled:opacity-40">
+                Auto
               </button>
             )}
           </div>
         </div>
-      </div>
 
-      <style>{`
-        @keyframes pulse-once {
-          0%   { transform: scale(1.04); box-shadow: 0 0 0 0 rgba(99,140,255,0.5); }
-          50%  { transform: scale(1.10); box-shadow: 0 0 0 8px rgba(99,140,255,0); }
-          100% { transform: scale(1.04); box-shadow: 0 0 0 0 rgba(99,140,255,0); }
-        }
-        .animate-pulse-once { animation: pulse-once 0.6s ease-out; }
-      `}</style>
+      </div>
     </GameLayout>
   )
 }

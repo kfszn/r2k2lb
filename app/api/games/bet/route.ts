@@ -8,7 +8,9 @@ import {
   fairKenoDraw, fairPlinkoSlot, fairBlackjackDeck,
   handValue
 } from '@/lib/games/provably-fair'
+import { KENO_MULTIPLIERS } from '@/lib/games/keno-config'
 
+// Max payout applies to blackjack and plinko only — keno has no cap
 const MAX_PAYOUT = 10000
 
 function getAdmin() {
@@ -32,41 +34,7 @@ async function getProfile() {
   return data
 }
 
-// Keno multiplier tables (30-number grid, 10 drawn, pick 1–6)
-const KENO_MULTIPLIERS: Record<string, Record<number, Record<number, number>>> = {
-  classic: {
-    1: { 1: 3 },
-    2: { 2: 7,   1: 0 },
-    3: { 3: 27,  2: 2,  1: 0 },
-    4: { 4: 90,  3: 3,  2: 1 },
-    5: { 5: 250, 4: 7,  3: 2, 2: 0 },
-    6: { 6: 750, 5: 18, 4: 4, 3: 1 },
-  },
-  low: {
-    1: { 1: 2 },
-    2: { 2: 4, 1: 1 },
-    3: { 3: 8, 2: 2, 1: 0.5 },
-    4: { 4: 15, 3: 3, 2: 1 },
-    5: { 5: 30, 4: 6, 3: 2, 2: 0.5 },
-    6: { 6: 60, 5: 12, 4: 4, 3: 1 },
-  },
-  medium: {
-    1: { 1: 2.5 },
-    2: { 2: 6, 1: 0.5 },
-    3: { 3: 15, 2: 2 },
-    4: { 4: 40, 3: 4, 2: 1 },
-    5: { 5: 100, 4: 10, 3: 2 },
-    6: { 6: 300, 5: 20, 4: 5, 3: 2 },
-  },
-  high: {
-    1: { 1: 3 },
-    2: { 2: 10 },
-    3: { 3: 30, 2: 1 },
-    4: { 4: 100, 3: 5 },
-    5: { 5: 300, 4: 15, 3: 2 },
-    6: { 6: 1000, 5: 50, 4: 8, 3: 2 },
-  },
-}
+
 
 // 17 slots (0-16) for 16 rows — must match client PLINKO_MULTIPLIERS exactly
 const PLINKO_MULTIPLIERS: Record<string, number[]> = {
@@ -178,12 +146,22 @@ export async function POST(req: NextRequest) {
   if (game === 'keno') {
     const picks = (gameData?.picks as number[]) ?? []
     const risk = (gameData?.risk as string) ?? 'medium'
-    if (picks.length < 1 || picks.length > 6) return NextResponse.json({ error: 'pick 1-6 numbers' }, { status: 400 })
-    const drawn = fairKenoDraw(30, 10, serverSeed, clientSeed, nonce)
+
+    // Validate picks
+    if (!Array.isArray(picks) || picks.length < 1 || picks.length > 10)
+      return NextResponse.json({ error: 'Pick 1–10 numbers' }, { status: 400 })
+    if (new Set(picks).size !== picks.length)
+      return NextResponse.json({ error: 'Picks must be unique' }, { status: 400 })
+    if (picks.some(p => !Number.isInteger(p) || p < 1 || p > 40))
+      return NextResponse.json({ error: 'Each pick must be an integer from 1–40' }, { status: 400 })
+    if (!['classic', 'low', 'medium', 'high'].includes(risk))
+      return NextResponse.json({ error: 'Invalid risk level' }, { status: 400 })
+
+    const drawn = fairKenoDraw(40, 10, serverSeed, clientSeed, nonce)
     const matched = picks.filter(p => drawn.includes(p)).length
-    const multiplierTable = KENO_MULTIPLIERS[risk]?.[picks.length] ?? {}
+    const multiplierTable = KENO_MULTIPLIERS[risk as keyof typeof KENO_MULTIPLIERS]?.[picks.length] ?? {}
     const multiplier = multiplierTable[matched] ?? 0
-    rawPayout = Math.floor(wager * multiplier)
+    rawPayout = Math.floor(wager * multiplier)   // no cap for keno
     resultData = { picks, drawn, matched, multiplier, risk }
   }
 
@@ -197,8 +175,8 @@ export async function POST(req: NextRequest) {
     resultData = { slot, multiplier, risk, rows }
   }
 
-  // Hard cap
-  const payout = Math.min(rawPayout, MAX_PAYOUT)
+  // Cap applies to blackjack and plinko only; keno has no cap
+  const payout = game === 'keno' ? rawPayout : Math.min(rawPayout, MAX_PAYOUT)
   const profit = payout - wager
   const newPoints = Math.max(0, profile.points - wager + payout)
 
