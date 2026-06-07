@@ -6,6 +6,7 @@ import { BracketProvider } from '@/lib/bracket-context'
 import { defaultMetadata } from '@/lib/seo-metadata'
 import Footer from '@/components/footer'
 import FloatingBackground from '@/components/floating-background'
+import PageLoader from '@/components/page-loader'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -26,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background">
       <body className="font-sans antialiased flex flex-col min-h-screen relative">
+        <PageLoader />
         <FloatingBackground />
         <BracketProvider>
           {children}
