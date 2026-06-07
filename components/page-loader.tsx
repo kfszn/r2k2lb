@@ -54,15 +54,15 @@ export default function PageLoader() {
       aria-label="Loading"
       aria-live="polite"
     >
-      <div className="flex flex-col items-center gap-5">
-        <div className="logo-bounce">
-          {/* Use a plain img so it renders instantly without Next image optimization delay */}
+      <div className="flex flex-col items-center gap-6">
+        <div className="logo-bounce flex h-24 w-24 items-center justify-center">
+          {/* Plain img so it renders instantly without Next image optimization delay */}
           <img
             src="/assets/logo.png"
             alt="R2K2 Logo"
-            width={96}
-            height={96}
-            className="rounded-xl"
+            loading="eager"
+            decoding="async"
+            className="h-24 w-24 object-contain drop-shadow-[0_0_25px_rgba(59,130,246,0.45)]"
           />
         </div>
         <div className="flex gap-1.5">
