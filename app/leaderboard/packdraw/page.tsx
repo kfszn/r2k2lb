@@ -27,9 +27,10 @@ interface LeaderboardData {
 // Prize pool: $2,000 total - top 5 paid spots
 const REWARDS = [1000, 400, 300, 200, 100]
 
-// Current leaderboard period: May 9 – Jun 8, 2026
+// Leaderboard period: May 9 – Jun 8, 2026 (ENDED)
 const CURRENT_PERIOD_START = '2026-05-09'
 const CURRENT_PERIOD_END = '2026-06-08'
+
 
 export default function PackdrawLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null)
@@ -42,7 +43,7 @@ export default function PackdrawLeaderboard() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/packdraw/leaderboard?after=${CURRENT_PERIOD_START}`)
+      const res = await fetch(`/api/packdraw/leaderboard?after=${CURRENT_PERIOD_START}&before=${CURRENT_PERIOD_END}`)
       const data = await res.json()
       if (data.ok) {
         setLeaderboard(data)
@@ -62,33 +63,7 @@ export default function PackdrawLeaderboard() {
 
   useEffect(() => {
     if (!leaderboard) return
-
-    const interval = setInterval(() => {
-      const endTime = new Date(`${CURRENT_PERIOD_END}T23:59:59-05:00`).getTime()
-      const diff = endTime - Date.now()
-
-      if (diff <= 0) {
-        setTimeRemaining('Ended')
-        return
-      }
-
-      const days = Math.floor(diff / 86400000)
-      const hours = Math.floor((diff % 86400000) / 3600000)
-      const minutes = Math.floor((diff % 3600000) / 60000)
-      const seconds = Math.floor((diff % 60000) / 1000)
-
-      if (days > 0) {
-        setTimeRemaining(`${days}d ${hours}h ${minutes}m`)
-      } else if (hours > 0) {
-        setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`)
-      } else if (minutes > 0) {
-        setTimeRemaining(`${minutes}m ${seconds}s`)
-      } else {
-        setTimeRemaining(`${seconds}s`)
-      }
-    }, 1000)
-
-    return () => clearInterval(interval)
+    setTimeRemaining('Ended')
   }, [leaderboard])
 
   const formatMoney = (amount: number) => {
@@ -151,7 +126,7 @@ export default function PackdrawLeaderboard() {
             <p className="text-lg text-muted-foreground">
               Every <strong>BET</strong> on Packdraw counts towards your score.
               <br />
-              <em className="text-sm">May 9 – Jun 8, 2026 • 11:59pm EST End</em>
+              <em className="text-sm">May 9 – Jun 8, 2026 • Ended</em>
             </p>
             
             <div className="flex flex-wrap justify-center gap-2 text-sm font-semibold">
