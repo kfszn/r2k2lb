@@ -11,7 +11,6 @@ import crypto from 'crypto'
 export async function GET(req: NextRequest) {
   const cookieStore = await cookies()
   const mode = req.nextUrl.searchParams.get('mode') ?? 'login'
-
   const clientId = process.env.KICK_CLIENT_ID
   const redirectUri = process.env.KICK_REDIRECT_URI ?? `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/kick/callback`
 
@@ -24,6 +23,7 @@ export async function GET(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { cookies: { getAll: () => cookieStore.getAll(), setAll: (cs) => cs.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } }
   )
+
   const { data: { session } } = await supabase.auth.getSession()
 
   // In link mode the user must already be logged in
@@ -49,10 +49,12 @@ export async function GET(req: NextRequest) {
     }).toString()
   )
 
-  const cookieOpts = { httpOnly: true, secure: true, sameSite: 'lax' as const, maxAge: 600 }
+  // sameSite: 'none' required so cookies survive the cross-site redirect back from Kick
+  const cookieOpts = { httpOnly: true, secure: true, sameSite: 'none' as const, maxAge: 600 }
   res.cookies.set('kick_oauth_state', state, cookieOpts)
   res.cookies.set('kick_oauth_verifier', codeVerifier, cookieOpts)
   res.cookies.set('kick_oauth_mode', mode, cookieOpts)
+
   // Only store the user id when linking an existing account
   if (session) {
     res.cookies.set('kick_oauth_user_id', session.user.id, cookieOpts)
