@@ -244,8 +244,8 @@ function AccountPageContent() {
                   <Image src="/assets/kick.png" alt="Kick" width={24} height={24} className="rounded" />
                   <div>
                     <p className="text-sm font-medium">Kick</p>
-                    {profile.kick_username ? (
-                      <p className="text-sm text-muted-foreground">@{profile.kick_username}</p>
+                    {profile.kick_id ? (
+                      <p className="text-sm text-muted-foreground">@{profile.kick_username ?? profile.kick_id}</p>
                     ) : (
                       <p className="text-sm text-muted-foreground">Not linked</p>
                     )}
