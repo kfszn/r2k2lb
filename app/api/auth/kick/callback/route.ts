@@ -136,22 +136,26 @@ export async function GET(req: NextRequest) {
   }
 
   if (existingProfile) {
-    // User already has a linked account — generate a magic link that auto-confirms
-    // and logs the user in immediately when followed (no email check required).
+    // User already has a linked account — generate a one-time magic link token,
+    // then exchange it server-side at /auth/kick-login so the session cookie is
+    // set without the user ever seeing an email or an error page.
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: existingProfile.email,
-      options: { redirectTo: `${siteUrl}/auth/callback?next=/account` },
+      options: { redirectTo: `${siteUrl}/account` },
     })
 
-    if (linkError || !linkData?.properties?.action_link) {
+    if (linkError || !linkData?.properties?.hashed_token) {
       console.error('[kick/callback] generate link error:', linkError)
       return clearCookies(NextResponse.redirect(`${siteUrl}/auth/login?kick_error=login_failed&kick_user=${encodeURIComponent(kickUsername)}`))
     }
 
-    // Redirect the browser directly to the action_link — Supabase will verify the
-    // OTP token, set the session cookies, then forward to the redirectTo URL.
-    return clearCookies(NextResponse.redirect(linkData.properties.action_link))
+    // Send the token_hash to our dedicated server-side exchange route.
+    // That route calls verifyOtp, sets the session cookie, and redirects to /account.
+    const kickLoginUrl = new URL(`${siteUrl}/auth/kick-login`)
+    kickLoginUrl.searchParams.set('token_hash', linkData.properties.hashed_token)
+
+    return clearCookies(NextResponse.redirect(kickLoginUrl.toString()))
   }
 
   // No linked account — redirect to signup, pre-filling kick identity info

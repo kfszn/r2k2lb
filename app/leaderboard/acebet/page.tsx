@@ -88,7 +88,7 @@ export default function AcebetLeaderboard() {
   const [error, setError] = useState<string | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<string>('current') // 'current' | month label
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [timeRemaining, setTimeRemaining] = useState<string>('Loading...')
+  const [timeRemaining, setTimeRemaining] = useState<string>('')
   const [dateRange, setDateRange] = useState<string>('Loading...')
   const [searchQuery, setSearchQuery] = useState<string>('')
 
@@ -142,9 +142,23 @@ export default function AcebetLeaderboard() {
     return () => document.removeEventListener('click', handler)
   }, [dropdownOpen])
 
-  useEffect(() => {
-    if (!leaderboard) return
+  // Compute time remaining immediately (not just inside setInterval)
+  const computeTimeRemaining = (month: string) => {
+    if (month !== 'current') return 'Ended'
+    const endTime = new Date('2026-06-27T19:00:00Z').getTime()
+    const diff = endTime - Date.now()
+    if (diff <= 0) return 'Ended'
+    const days = Math.floor(diff / 86400000)
+    const hours = Math.floor((diff % 86400000) / 3600000)
+    const minutes = Math.floor((diff % 3600000) / 60000)
+    const seconds = Math.floor((diff % 60000) / 1000)
+    if (days > 0) return `${days}d ${hours}h ${minutes}m`
+    if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`
+    if (minutes > 0) return `${minutes}m ${seconds}s`
+    return `${seconds}s`
+  }
 
+  useEffect(() => {
     // Show the correct date range label for whichever period is selected
     if (selectedMonth !== 'current') {
       const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
@@ -153,40 +167,15 @@ export default function AcebetLeaderboard() {
       setDateRange(`May 27 – Jun 27, 2026`)
     }
 
+    // Set immediately so there's no blank flash
+    setTimeRemaining(computeTimeRemaining(selectedMonth))
+
     const interval = setInterval(() => {
-      // Countdown only applies to current cycle — Jun 27, 2026 at 3pm EST (7pm UTC)
-      // Previous months are always ended
-      if (selectedMonth !== 'current') {
-        setTimeRemaining('Ended')
-        return
-      }
-
-      const endTime = new Date('2026-06-27T19:00:00Z').getTime()
-      const diff = endTime - Date.now()
-
-      if (diff <= 0) {
-        setTimeRemaining('Ended')
-        return
-      }
-
-      const days = Math.floor(diff / 86400000)
-      const hours = Math.floor((diff % 86400000) / 3600000)
-      const minutes = Math.floor((diff % 3600000) / 60000)
-      const seconds = Math.floor((diff % 60000) / 1000)
-      
-      if (days > 0) {
-        setTimeRemaining(`${days}d ${hours}h ${minutes}m`)
-      } else if (hours > 0) {
-        setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`)
-      } else if (minutes > 0) {
-        setTimeRemaining(`${minutes}m ${seconds}s`)
-      } else {
-        setTimeRemaining(`${seconds}s`)
-      }
+      setTimeRemaining(computeTimeRemaining(selectedMonth))
     }, 1000)
     
     return () => clearInterval(interval)
-  }, [leaderboard, selectedMonth])
+  }, [selectedMonth])
 
   const formatMoney = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -323,7 +312,7 @@ export default function AcebetLeaderboard() {
             
             <GoalTracker
               current={totalWagered}
-              goal={4000000}
+              goal={400000000}
               formatMoney={formatMoney}
               label="Wager Goal"
             />
@@ -334,7 +323,7 @@ export default function AcebetLeaderboard() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-xs text-muted-foreground uppercase font-medium mb-0.5 tracking-wider">Time Remaining</p>
-                      <p className="text-xl font-bold text-destructive truncate">{timeRemaining || 'Loading...'}</p>
+                      <p className="text-xl font-bold text-destructive truncate">{timeRemaining || '...'}</p>
                     </div>
                     <Clock className="h-5 w-5 text-destructive/40 flex-shrink-0" />
                   </div>
