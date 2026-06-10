@@ -70,7 +70,10 @@ export async function GET(req: NextRequest) {
     const profileBodyText = await profileRes.text()
     if (!profileRes.ok) throw new Error(`Profile fetch failed: ${profileRes.status} — ${profileBodyText}`)
     const profileData = JSON.parse(profileBodyText)
-    kickUser = profileData?.data ?? profileData
+    console.log('[kick] raw profile response:', JSON.stringify(profileData))
+    // Kick API returns { data: [ { user_id, name, profile_picture, ... } ] }
+    const dataPayload = profileData?.data
+    kickUser = Array.isArray(dataPayload) ? dataPayload[0] : (dataPayload ?? profileData)
   } catch (err) {
     console.error('[kick/callback] profile fetch error:', err)
     const dest = mode === 'link' ? '/account' : '/auth/login'
