@@ -70,18 +70,25 @@ export async function GET(req: NextRequest) {
     const profileBodyText = await profileRes.text()
     if (!profileRes.ok) throw new Error(`Profile fetch failed: ${profileRes.status} — ${profileBodyText}`)
     const profileData = JSON.parse(profileBodyText)
-    kickUser = profileData?.data ?? profileData
+    console.log('[kick] raw profile response:', JSON.stringify(profileData))
+    // Kick API returns { data: [ { user_id, name, profile_picture, ... } ] }
+    const dataPayload = profileData?.data
+    kickUser = Array.isArray(dataPayload) ? dataPayload[0] : (dataPayload ?? profileData)
   } catch (err) {
     console.error('[kick/callback] profile fetch error:', err)
     const dest = mode === 'link' ? '/account' : '/auth/login'
     return clearCookies(NextResponse.redirect(`${siteUrl}${dest}?kick_error=profile_fetch_failed`))
   }
 
-  const kickId       = String(kickUser.user_id)
-  const kickUsername = kickUser.name
-  const kickAvatar   = kickUser.profile_picture ?? null
+  console.log('[kick] kickUser object keys:', Object.keys(kickUser ?? {}))
+  console.log('[kick] kickUser raw:', JSON.stringify(kickUser))
 
-  console.log('[kick] parsed:', kickId, kickUsername, kickAvatar)
+  // Kick API may use "user_id" or "id" depending on endpoint version
+  const kickId       = String((kickUser as any).user_id ?? (kickUser as any).id ?? '')
+  const kickUsername = (kickUser as any).name ?? (kickUser as any).username ?? null
+  const kickAvatar   = (kickUser as any).profile_picture ?? (kickUser as any).avatar ?? null
+
+  console.log('[kick] parsed:', { kickId, kickUsername, kickAvatar })
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
