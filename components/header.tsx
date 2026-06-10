@@ -22,18 +22,37 @@ function Header() {
   const [mobilePoints, setMobilePoints] = useState(false)
   const [mobileKick, setMobileKick] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [kickAvatar, setKickAvatar] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch('/api/account/connections')
+      if (res.ok) {
+        const data = await res.json()
+        setKickAvatar(data.profile?.kick_avatar ?? null)
+      }
+    } catch {
+      // silently ignore
+    }
+  }
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      if (user) fetchProfile()
     }
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      if (session?.user) {
+        fetchProfile()
+      } else {
+        setKickAvatar(null)
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -221,9 +240,19 @@ function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="ghost" className="rounded-full h-10 w-10 p-0">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold">
-                    {user.email?.charAt(0).toUpperCase() || 'U'}
-                  </div>
+                  {kickAvatar ? (
+                    <Image
+                      src={kickAvatar}
+                      alt="Profile"
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold">
+                      {user.email?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
