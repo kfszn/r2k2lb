@@ -22,6 +22,7 @@ export default function SignUpPage() {
   const [accountId, setAccountId] = useState<string | null>(null)
   const [resending, setResending] = useState(false)
   const [resendSuccess, setResendSuccess] = useState(false)
+  const [resendError, setResendError] = useState('')
   const router = useRouter()
 
   const supabase = createBrowserClient(
@@ -85,7 +86,10 @@ export default function SignUpPage() {
   const handleResendEmail = async () => {
     setResending(true)
     setResendSuccess(false)
-    
+    setResendError('')
+
+    console.log('[v0] Resend confirmation email called for:', email)
+
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: email,
@@ -95,8 +99,10 @@ export default function SignUpPage() {
     })
 
     if (error) {
-      setError(error.message)
+      console.log('[v0] Resend error:', error.message, error)
+      setResendError(error.message)
     } else {
+      console.log('[v0] Resend email sent successfully to:', email)
       setResendSuccess(true)
     }
     setResending(false)
@@ -145,6 +151,12 @@ export default function SignUpPage() {
                   Your Account ID will be shown after you confirm your email and log in. Find it on your{' '}
                   <Link href="/account" className="text-primary hover:underline">Account page</Link>.
                 </p>
+              </div>
+            )}
+
+            {resendError && (
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm text-center">
+                {resendError}
               </div>
             )}
 
