@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
   // 2. Fetch Kick user profile
   let kickUser: { id: string | number; username: string; profile_pic?: string }
   try {
-    const profileRes = await fetch('https://api.kick.com/public/v1/users/me', {
+    const profileRes = await fetch('https://api.kick.com/public/v1/users', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
     const profileBodyText = await profileRes.text()
