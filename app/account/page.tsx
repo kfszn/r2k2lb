@@ -245,7 +245,11 @@ function AccountPageContent() {
                   <div>
                     <p className="text-sm font-medium">Kick</p>
                     {profile.kick_id ? (
-                      <p className="text-sm text-muted-foreground">@{profile.kick_username ?? profile.kick_id}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {profile.kick_username
+                          ? `@${profile.kick_username}`
+                          : `ID: ${profile.kick_id}`}
+                      </p>
                     ) : (
                       <p className="text-sm text-muted-foreground">Not linked</p>
                     )}
