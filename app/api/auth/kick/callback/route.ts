@@ -136,31 +136,22 @@ export async function GET(req: NextRequest) {
   }
 
   if (existingProfile) {
-    // User already has a linked account — create a session directly (no email required)
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
-      user_id: existingProfile.id,
+    // User already has a linked account — generate a magic link that auto-confirms
+    // and logs the user in immediately when followed (no email check required).
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: existingProfile.email,
+      options: { redirectTo: `${siteUrl}/account` },
     })
 
-    if (sessionError || !sessionData?.session) {
-      console.error('[kick/callback] create session error:', sessionError)
+    if (linkError || !linkData?.properties?.action_link) {
+      console.error('[kick/callback] generate link error:', linkError)
       return clearCookies(NextResponse.redirect(`${siteUrl}/auth/login?kick_error=login_failed&kick_user=${encodeURIComponent(kickUsername)}`))
     }
 
-    const { access_token, refresh_token } = sessionData.session
-    const redirectRes = clearCookies(NextResponse.redirect(`${siteUrl}/account`))
-
-    // Write the Supabase session cookies so the browser is immediately authenticated
-    const cookieOpts = {
-      path: '/',
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax' as const,
-      maxAge: 60 * 60 * 24 * 365, // 1 year (Supabase will rotate via refresh)
-    }
-    redirectRes.cookies.set('sb-access-token', access_token, cookieOpts)
-    redirectRes.cookies.set('sb-refresh-token', refresh_token ?? '', cookieOpts)
-
-    return redirectRes
+    // Redirect the browser directly to the action_link — Supabase will verify the
+    // OTP token, set the session cookies, then forward to the redirectTo URL.
+    return clearCookies(NextResponse.redirect(linkData.properties.action_link))
   }
 
   // No linked account — redirect to signup, pre-filling kick identity info
