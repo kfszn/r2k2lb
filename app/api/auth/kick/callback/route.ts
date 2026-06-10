@@ -67,8 +67,11 @@ export async function GET(req: NextRequest) {
     const profileRes = await fetch('https://api.kick.com/public/v1/user', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
-    if (!profileRes.ok) throw new Error(`Profile fetch failed: ${profileRes.status}`)
-    const profileData = await profileRes.json()
+    const profileBodyText = await profileRes.text()
+    console.log('[v0] profile fetch status:', profileRes.status)
+    console.log('[v0] profile fetch body:', profileBodyText)
+    if (!profileRes.ok) throw new Error(`Profile fetch failed: ${profileRes.status} — ${profileBodyText}`)
+    const profileData = JSON.parse(profileBodyText)
     kickUser = profileData?.data ?? profileData
   } catch (err) {
     console.error('[kick/callback] profile fetch error:', err)
