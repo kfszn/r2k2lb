@@ -90,20 +90,25 @@ export default function SignUpPage() {
 
     console.log('[v0] Resend confirmation email called for:', email)
 
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/account`,
-      },
-    })
+    try {
+      const res = await fetch('/api/auth/resend-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
 
-    if (error) {
-      console.log('[v0] Resend error:', error.message, error)
-      setResendError(error.message)
-    } else {
-      console.log('[v0] Resend email sent successfully to:', email)
-      setResendSuccess(true)
+      const data = await res.json()
+
+      if (!res.ok) {
+        console.log('[v0] Resend error:', data.error)
+        setResendError(data.error || 'Failed to resend confirmation email.')
+      } else {
+        console.log('[v0] Resend email sent successfully to:', email)
+        setResendSuccess(true)
+      }
+    } catch (err) {
+      console.log('[v0] Resend network error:', err)
+      setResendError('Network error. Please check your connection and try again.')
     }
     setResending(false)
   }
