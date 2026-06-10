@@ -141,7 +141,7 @@ export async function GET(req: NextRequest) {
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: existingProfile.email,
-      options: { redirectTo: `${siteUrl}/account` },
+      options: { redirectTo: `${siteUrl}/auth/callback?next=/account` },
     })
 
     if (linkError || !linkData?.properties?.action_link) {
