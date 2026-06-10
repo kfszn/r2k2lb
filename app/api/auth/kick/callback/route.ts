@@ -136,19 +136,31 @@ export async function GET(req: NextRequest) {
   }
 
   if (existingProfile) {
-    // User already has a linked account — generate a magic link OTP and redirect
-    const { data: otpData, error: otpError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: existingProfile.email,
-      options: { redirectTo: `${siteUrl}/auth/callback?next=/account` },
+    // User already has a linked account — create a session directly (no email required)
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
+      user_id: existingProfile.id,
     })
 
-    if (otpError || !otpData?.properties?.action_link) {
-      console.error('[kick/callback] magic link error:', otpError)
+    if (sessionError || !sessionData?.session) {
+      console.error('[kick/callback] create session error:', sessionError)
       return clearCookies(NextResponse.redirect(`${siteUrl}/auth/login?kick_error=login_failed&kick_user=${encodeURIComponent(kickUsername)}`))
     }
 
-    return clearCookies(NextResponse.redirect(otpData.properties.action_link))
+    const { access_token, refresh_token } = sessionData.session
+    const redirectRes = clearCookies(NextResponse.redirect(`${siteUrl}/account`))
+
+    // Write the Supabase session cookies so the browser is immediately authenticated
+    const cookieOpts = {
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax' as const,
+      maxAge: 60 * 60 * 24 * 365, // 1 year (Supabase will rotate via refresh)
+    }
+    redirectRes.cookies.set('sb-access-token', access_token, cookieOpts)
+    redirectRes.cookies.set('sb-refresh-token', refresh_token ?? '', cookieOpts)
+
+    return redirectRes
   }
 
   // No linked account — redirect to signup, pre-filling kick identity info
