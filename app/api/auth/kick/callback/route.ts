@@ -62,14 +62,12 @@ export async function GET(req: NextRequest) {
   }
 
   // 2. Fetch Kick user profile
-  let kickUser: { id: string | number; username: string; profile_pic?: string }
+  let kickUser: { user_id: string | number; name: string; profile_picture?: string }
   try {
     const profileRes = await fetch('https://api.kick.com/public/v1/users', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
     const profileBodyText = await profileRes.text()
-    console.log('[v0] profile fetch status:', profileRes.status)
-    console.log('[v0] profile fetch body:', profileBodyText)
     if (!profileRes.ok) throw new Error(`Profile fetch failed: ${profileRes.status} — ${profileBodyText}`)
     const profileData = JSON.parse(profileBodyText)
     kickUser = profileData?.data ?? profileData
@@ -79,9 +77,9 @@ export async function GET(req: NextRequest) {
     return clearCookies(NextResponse.redirect(`${siteUrl}${dest}?kick_error=profile_fetch_failed`))
   }
 
-  const kickId       = String(kickUser.id)
-  const kickUsername = kickUser.username
-  const kickAvatar   = kickUser.profile_pic ?? null
+  const kickId       = String(kickUser.user_id)
+  const kickUsername = kickUser.name
+  const kickAvatar   = kickUser.profile_picture ?? null
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
