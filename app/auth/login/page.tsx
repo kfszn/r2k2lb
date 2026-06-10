@@ -159,11 +159,14 @@ function LoginPageContent() {
 
           <a href="/api/auth/kick?mode=login" className="block">
             <Button type="button" variant="outline" className="w-full gap-2 border-[#53FC18]/30 hover:border-[#53FC18]/60 hover:bg-[#53FC18]/5" disabled={loading}>
-              <svg viewBox="0 0 24 24" className="h-4 w-4 fill-[#53FC18]" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 2h4v8l4-4h4l-6 6 6 6h-4l-4-4v4H2V2z"/>
-                <path d="M14 2h4v8h4V2h-4v6h-4V2z" opacity="0"/>
-                <path d="M13 2h3v20h-3V2zM16 9h3l3 3-3 3h-3v-3h2l1-1-1-1h-2V9z"/>
-              </svg>
+              {/* Kick logo from theSVG.org — please review kick.com trademark guidelines */}
+              <img
+                src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/kick/default.svg"
+                alt="Kick"
+                width={18}
+                height={18}
+                className="shrink-0"
+              />
               Sign in with Kick
             </Button>
           </a>
