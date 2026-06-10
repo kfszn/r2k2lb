@@ -81,6 +81,8 @@ export async function GET(req: NextRequest) {
   const kickUsername = kickUser.name
   const kickAvatar   = kickUser.profile_picture ?? null
 
+  console.log('[kick] parsed:', kickId, kickUsername, kickAvatar)
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
