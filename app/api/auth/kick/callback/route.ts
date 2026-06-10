@@ -94,6 +94,8 @@ export async function GET(req: NextRequest) {
       return clearCookies(NextResponse.redirect(`${siteUrl}/account?kick_error=missing_params`))
     }
 
+    console.log('[kick] writing to DB:', { kick_id: kickId, kick_username: kickUsername, kick_avatar: kickAvatar })
+
     const { error } = await supabase
       .from('profiles')
       .update({
