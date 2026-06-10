@@ -80,11 +80,15 @@ export async function GET(req: NextRequest) {
     return clearCookies(NextResponse.redirect(`${siteUrl}${dest}?kick_error=profile_fetch_failed`))
   }
 
-  const kickId       = String(kickUser.user_id)
-  const kickUsername = kickUser.name
-  const kickAvatar   = kickUser.profile_picture ?? null
+  console.log('[kick] kickUser object keys:', Object.keys(kickUser ?? {}))
+  console.log('[kick] kickUser raw:', JSON.stringify(kickUser))
 
-  console.log('[kick] parsed:', kickId, kickUsername, kickAvatar)
+  // Kick API may use "user_id" or "id" depending on endpoint version
+  const kickId       = String((kickUser as any).user_id ?? (kickUser as any).id ?? '')
+  const kickUsername = (kickUser as any).name ?? (kickUser as any).username ?? null
+  const kickAvatar   = (kickUser as any).profile_picture ?? (kickUser as any).avatar ?? null
+
+  console.log('[kick] parsed:', { kickId, kickUsername, kickAvatar })
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
