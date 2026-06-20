@@ -38,7 +38,7 @@ export default function LossBackPage() {
                   <h3 className="font-semibold text-lg">Loss-back Percentage</h3>
                   <p className="text-3xl font-bold text-primary">10%</p>
                   <p className="text-sm text-muted-foreground">
-                    Earn a flat 10% loss-back on every claim. Monthly caps scale with your tier: Tier 1 ($200), Tier 2 ($400), Tier 3 ($600).
+                    Earn a flat 10% loss-back on every claim. Monthly caps scale with your tier: Tier 1 ($200), Tier 2 ($400), Tier 3 ($700).
                   </p>
                   <div className="pt-4 space-y-2 text-sm">
                     <p className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export default function LossBackPage() {
                     </li>
                     <li>
                       <span className="font-medium">Monthly Cap:</span>
-                      <span className="text-primary font-bold ml-2">$100 (Tier 1), $200 (Tier 2), $300 (Tier 3)</span>
+                      <span className="text-primary font-bold ml-2">$200 (Tier 1), $400 (Tier 2), $700 (Tier 3)</span>
                     </li>
                     <li>
                       <span className="font-medium">Code Required:</span>
@@ -113,7 +113,7 @@ export default function LossBackPage() {
                   <p className="text-sm font-medium mb-1">$300,000+ wagered</p>
                   <p className="text-sm font-medium mb-2">or $30,000 deposited</p>
                   <p className="text-xs text-muted-foreground mb-3">Monthly qualification</p>
-                  <p className="text-xs font-medium text-primary">Max: $600/month</p>
+                  <p className="text-xs font-medium text-primary">Max: $700/month</p>
                 </div>
                 </div>
               </div>
@@ -179,7 +179,7 @@ export default function LossBackPage() {
                   </div>
                   <div>
                     <p className="font-medium">Receive Your Loss-back Credit</p>
-                    <p className="text-sm text-muted-foreground">Credits are paid out at a flat 10%, capped by your tier — $200/month (Tier 1), $400/month (Tier 2), $600/month (Tier 3)</p>
+                    <p className="text-sm text-muted-foreground">Credits are paid out at a flat 10%, capped by your tier — $200/month (Tier 1), $400/month (Tier 2), $700/month (Tier 3)</p>
                   </div>
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function LossBackPage() {
               </div>
               <div>
                 <p className="font-semibold mb-1">Monthly Caps by Tier</p>
-                <p className="text-muted-foreground">Tier 1: $100/month, Tier 2: $200/month, Tier 3: $300/month. This amount comes from R2K2's pocket, not the casino.</p>
+                <p className="text-muted-foreground">Tier 1: $200/month, Tier 2: $400/month, Tier 3: $700/month. This amount comes from R2K2's pocket, not the casino.</p>
               </div>
               <div>
                 <p className="font-semibold mb-1">Flat Loss-back Rate</p>
