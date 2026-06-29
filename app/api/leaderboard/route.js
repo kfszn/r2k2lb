@@ -5,7 +5,7 @@
 //   - ?prev=1  (previous window same length)
 //   - ?fresh=1 (force recompute; bypass cache)
 // Adds CORS and returns JSON sorted by wagered desc.
-// Cycle: 2026-05-27 → 2026-06-27 | Prize pool: $20,000
+// Cycle: 2026-06-29 → 2026-07-30 | Prize pool: $20,000
 
 // ===============================
 // 🔥 PROXY + FETCH SETUP FOR CLOUDFLARE BYPASS
@@ -52,9 +52,9 @@ function shiftRangeBack(startISO, endISO) {
   return { start_at: toISODateUTC(s), end_at: toISODateUTC(e) };
 }
 
-// ✅ LEADERBOARD TIMING: 5/27/2026 → 6/27/2026 (31 days, starts 3pm EST)
-const DEFAULT_START = "2026-05-27";
-const DEFAULT_END = "2026-06-27";
+// ✅ LEADERBOARD TIMING: 6/29/2026 → 7/30/2026 (31 days, starts 3pm EST)
+const DEFAULT_START = "2026-06-29";
+const DEFAULT_END = "2026-07-30";
 
 function updateDefaultDates() {
   // No-op: dates are hardcoded for this leaderboard cycle
