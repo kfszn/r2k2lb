@@ -35,6 +35,7 @@ interface MonthConfig {
   end_at: string
   display: string
   rewards: (number | string)[]
+  labels?: (string | null)[]
   total: number
 }
 
@@ -80,6 +81,15 @@ const PREVIOUS_MONTHS: MonthConfig[] = [
     rewards: [6000, 4000, 2500, 2000, 1500, 1250, 1000, 500, 400, 300, 200, 150, 100, 50, 50],
     total: 20000,
   },
+  {
+    label: 'June',
+    start_at: '2026-05-27',
+    end_at: '2026-06-27',
+    display: 'May 27 – Jun 27, 2026',
+    rewards: [7000, 3500, 2750, 2000, 1500, 1250, 1000, 645, 250, 100, 1, 1, 1, 1, 1],
+    labels: [null, null, null, null, null, null, null, null, null, null, '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy'],
+    total: 20000,
+  },
 ]
 
 export default function AcebetLeaderboard() {
@@ -96,7 +106,7 @@ export default function AcebetLeaderboard() {
 
   const activeMonthConfig = PREVIOUS_MONTHS.find(m => m.label === selectedMonth) ?? null
   const activeRewards = showPrevious ? (activeMonthConfig?.rewards ?? []) : REWARDS
-  const activeLabels = showPrevious ? null : REWARD_LABELS
+  const activeLabels = showPrevious ? (activeMonthConfig?.labels ?? null) : REWARD_LABELS
   const activeTotal = showPrevious ? (activeMonthConfig?.total ?? 0) : 20000
 
   const loadLeaderboard = async (month: string) => {
@@ -145,7 +155,7 @@ export default function AcebetLeaderboard() {
   // Compute time remaining immediately (not just inside setInterval)
   const computeTimeRemaining = (month: string) => {
     if (month !== 'current') return 'Ended'
-    const endTime = new Date('2026-06-27T19:00:00Z').getTime()
+    const endTime = new Date('2026-07-30T19:00:00Z').getTime()
     const diff = endTime - Date.now()
     if (diff <= 0) return 'Ended'
     const days = Math.floor(diff / 86400000)
@@ -164,7 +174,7 @@ export default function AcebetLeaderboard() {
       const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
       if (found) setDateRange(`${found.display}`)
     } else {
-      setDateRange(`May 27 – Jun 27, 2026`)
+      setDateRange(`Jun 29 – Jul 30, 2026`)
     }
 
     // Set immediately so there's no blank flash
@@ -229,7 +239,7 @@ export default function AcebetLeaderboard() {
             </h1>
             <div className="flex justify-center">
               <a
-                href="https://acebet.co/affiliates/creator/r2k2?leaderboardId=306"
+                href="https://acebet.co/affiliates/creator/r2k2?leaderboardId=427"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors font-semibold"
