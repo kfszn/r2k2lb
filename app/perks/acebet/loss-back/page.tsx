@@ -23,7 +23,7 @@ export default function LossBackPage() {
               <h1 className="text-4xl font-bold">Loss-back</h1>
             </div>
             <p className="text-lg text-muted-foreground">
-              Get up to 15% of your monthly losses back—manually claimed via ticket with verified PnL
+              Get a flat 10% of your monthly losses back—manually claimed via ticket with verified PnL
             </p>
           </div>
 
@@ -36,14 +36,14 @@ export default function LossBackPage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <h3 className="font-semibold text-lg">Loss-back Percentage</h3>
-                  <p className="text-3xl font-bold text-primary">5%</p>
+                  <p className="text-3xl font-bold text-primary">10%</p>
                   <p className="text-sm text-muted-foreground">
-                    Earn loss-back credits based on your tier. Monthly caps: Tier 1 ($100), Tier 2 ($200), Tier 3 ($300).
+                    Earn a flat 10% loss-back on every claim. Monthly caps scale with your tier: Tier 1 ($200), Tier 2 ($400), Tier 3 ($700).
                   </p>
                   <div className="pt-4 space-y-2 text-sm">
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      Tier-based percentages
+                      Flat 10% loss-back rate
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
@@ -68,7 +68,7 @@ export default function LossBackPage() {
                     </li>
                     <li>
                       <span className="font-medium">Monthly Cap:</span>
-                      <span className="text-primary font-bold ml-2">$100 (Tier 1), $200 (Tier 2), $300 (Tier 3)</span>
+                      <span className="text-primary font-bold ml-2">$200 (Tier 1), $400 (Tier 2), $700 (Tier 3)</span>
                     </li>
                     <li>
                       <span className="font-medium">Code Required:</span>
@@ -83,31 +83,37 @@ export default function LossBackPage() {
           {/* Tier Benefits */}
           <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle>Loss-back by Monthly Wager Tier</CardTitle>
+              <CardTitle>Monthly Caps by Tier</CardTitle>
+              <p className="text-sm text-muted-foreground pt-1">
+                Everyone earns a flat 10% loss-back. Qualify for a tier by hitting either the monthly wager range or the monthly deposit threshold — whichever you reach first.
+              </p>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="grid md:grid-cols-3 gap-4">
                 <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
                   <p className="font-semibold mb-2">Tier 1</p>
-                  <p className="text-2xl font-bold text-primary mb-2">5%</p>
-                  <p className="text-sm font-medium mb-2">$1.00 - $100,000</p>
-                  <p className="text-xs text-muted-foreground mb-3">Monthly wager range</p>
-                  <p className="text-xs font-medium text-primary">Max: $100/month</p>
+                  <p className="text-2xl font-bold text-primary mb-2">10%</p>
+                  <p className="text-sm font-medium mb-1">$1.00 - $100,000 wagered</p>
+                  <p className="text-sm font-medium mb-2">or $7,500 or less deposited</p>
+                  <p className="text-xs text-muted-foreground mb-3">Monthly qualification</p>
+                  <p className="text-xs font-medium text-primary">Max: $200/month</p>
                 </div>
                 <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
                   <p className="font-semibold mb-2">Tier 2</p>
                   <p className="text-2xl font-bold text-primary mb-2">10%</p>
-                  <p className="text-sm font-medium mb-2">$100,001 - $299,999</p>
-                  <p className="text-xs text-muted-foreground mb-3">Monthly wager range</p>
-                  <p className="text-xs font-medium text-primary">Max: $200/month</p>
+                  <p className="text-sm font-medium mb-1">$100,001 - $299,999 wagered</p>
+                  <p className="text-sm font-medium mb-2">or $10,000 deposited</p>
+                  <p className="text-xs text-muted-foreground mb-3">Monthly qualification</p>
+                  <p className="text-xs font-medium text-primary">Max: $400/month</p>
                 </div>
                 <div className="p-4 rounded-lg border border-border/50 bg-secondary/20">
                   <p className="font-semibold mb-2">Tier 3 (Max)</p>
-                  <p className="text-2xl font-bold text-primary mb-2">15%</p>
-                  <p className="text-sm font-medium mb-2">$300,000+</p>
-                  <p className="text-xs text-muted-foreground mb-3">Monthly wager range</p>
-                  <p className="text-xs font-medium text-primary">Max: $300/month</p>
+                  <p className="text-2xl font-bold text-primary mb-2">10%</p>
+                  <p className="text-sm font-medium mb-1">$300,000+ wagered</p>
+                  <p className="text-sm font-medium mb-2">or $30,000 deposited</p>
+                  <p className="text-xs text-muted-foreground mb-3">Monthly qualification</p>
+                  <p className="text-xs font-medium text-primary">Max: $700/month</p>
                 </div>
                 </div>
               </div>
@@ -162,7 +168,7 @@ export default function LossBackPage() {
                   </div>
                   <div>
                     <p className="font-medium">Verification & Processing</p>
-                    <p className="text-sm text-muted-foreground">Staff verifies your monthly wager tier and calculates your Loss-back percentage</p>
+                    <p className="text-sm text-muted-foreground">Staff applies the flat 10% loss-back and confirms your monthly wager tier to determine your cap</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -173,7 +179,7 @@ export default function LossBackPage() {
                   </div>
                   <div>
                     <p className="font-medium">Receive Your Loss-back Credit</p>
-                    <p className="text-sm text-muted-foreground">Credits are paid out based on your tier percentage — $100/month (Tier 1), $200/month (Tier 2), $300/month (Tier 3)</p>
+                    <p className="text-sm text-muted-foreground">Credits are paid out at a flat 10%, capped by your tier — $200/month (Tier 1), $400/month (Tier 2), $700/month (Tier 3)</p>
                   </div>
                 </div>
               </div>
@@ -193,7 +199,7 @@ export default function LossBackPage() {
               </div>
               <div className="p-3 bg-secondary/20 rounded-lg">
                 <p className="text-sm">
-                  <span className="font-medium">Tier:</span> Tier 1 (5% loss-back, $100 max)
+                  <span className="font-medium">Tier:</span> Tier 1 (flat 10% loss-back, $200 cap)
                 </p>
               </div>
               <div className="p-3 bg-secondary/20 rounded-lg">
@@ -203,7 +209,7 @@ export default function LossBackPage() {
               </div>
               <div className="p-3 bg-primary/20 rounded-lg border border-primary/30">
                 <p className="text-sm">
-                  <span className="font-medium">Loss-back Credit:</span> $2,500 × 5% = $125 <span className="text-muted-foreground ml-2">(capped at $100 max)</span>
+                  <span className="font-medium">Loss-back Credit:</span> $2,500 × 10% = $250 <span className="text-muted-foreground ml-2">(capped at $200 max)</span>
                 </p>
               </div>
             </CardContent>
@@ -223,7 +229,7 @@ export default function LossBackPage() {
                   <p className="text-sm font-medium">Example Timeline</p>
                 </div>
                 <div className="p-3 bg-secondary/10 rounded-lg">
-                  <p className="text-sm"><span className="font-medium">Claim 1:</span> Net loss -$500 → Receives $50 (10% tier)</p>
+                  <p className="text-sm"><span className="font-medium">Claim 1:</span> Net loss -$500 → Receives $50 (flat 10%)</p>
                 </div>
                 <div className="p-3 bg-secondary/10 rounded-lg">
                   <p className="text-sm"><span className="font-medium">Claim 2 Minimum:</span> Must reach -$800 cumulative loss ($500 + $300)</p>
@@ -247,11 +253,15 @@ export default function LossBackPage() {
               </div>
               <div>
                 <p className="font-semibold mb-1">Monthly Caps by Tier</p>
-                <p className="text-muted-foreground">Tier 1: $100/month, Tier 2: $200/month, Tier 3: $300/month. This amount comes from R2K2's pocket, not the casino.</p>
+                <p className="text-muted-foreground">Tier 1: $200/month, Tier 2: $400/month, Tier 3: $700/month. This amount comes from R2K2's pocket, not the casino.</p>
+              </div>
+              <div>
+                <p className="font-semibold mb-1">Flat Loss-back Rate</p>
+                <p className="text-muted-foreground">All claims earn a flat 10% loss-back regardless of tier. Your tier only sets the maximum amount you can claim each month.</p>
               </div>
               <div>
                 <p className="font-semibold mb-1">Tier Calculation</p>
-                <p className="text-muted-foreground">Your tier is determined by your total monthly wagers with AceBet. Each month resets for tier calculation.</p>
+                <p className="text-muted-foreground">Your tier is determined by either your total monthly wagers or your total monthly deposits with AceBet — whichever qualifies you for the higher tier. Each month resets for tier calculation.</p>
               </div>
               <div>
                 <p className="font-semibold mb-1">Progressive Claims</p>
