@@ -13,10 +13,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'acebet.co',
       },
-      {
-        protocol: 'https',
-        hostname: 'packdraw.com',
-      },
+
     ],
   },
 }

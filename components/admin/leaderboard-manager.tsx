@@ -32,7 +32,7 @@ interface PrizePosition {
 interface LeaderboardConfig {
   id: string
   name: string
-  platform: 'acebet' | 'packdraw' | 'kick'
+  platform: 'acebet' | 'kick'
   start_date: string
   end_date: string
   is_active: boolean
@@ -42,13 +42,11 @@ interface LeaderboardConfig {
 
 const PLATFORM_LABELS: Record<string, string> = {
   acebet: 'AceBet',
-  packdraw: 'Packdraw',
   kick: 'Kick',
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
   acebet: 'bg-primary/20 border-primary/40 text-primary',
-  packdraw: 'bg-blue-500/20 border-blue-500/40 text-blue-400',
   kick: 'bg-green-500/20 border-green-500/40 text-green-400',
 }
 
@@ -64,7 +62,7 @@ export function LeaderboardManager() {
   const [createOpen, setCreateOpen] = useState(false)
   const [form, setForm] = useState({
     name: '',
-    platform: 'kick' as 'acebet' | 'packdraw' | 'kick',
+    platform: 'kick' as 'acebet' | 'kick',
     start_date: '',
     end_date: '',
     is_active: false,
@@ -194,7 +192,7 @@ export function LeaderboardManager() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold">Leaderboard Manager</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Manage leaderboards for AceBet, Packdraw, and Kick</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage leaderboards for AceBet and Kick</p>
         </div>
         <Button onClick={() => setCreateOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
@@ -207,7 +205,6 @@ export function LeaderboardManager() {
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="kick">Kick</TabsTrigger>
           <TabsTrigger value="acebet">AceBet</TabsTrigger>
-          <TabsTrigger value="packdraw">Packdraw</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
@@ -315,7 +312,6 @@ export function LeaderboardManager() {
                   <SelectContent>
                     <SelectItem value="kick">Kick</SelectItem>
                     <SelectItem value="acebet">AceBet</SelectItem>
-                    <SelectItem value="packdraw">Packdraw</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

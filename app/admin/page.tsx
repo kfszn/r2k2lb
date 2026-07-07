@@ -203,7 +203,7 @@ export default function AdminPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Create and manage leaderboards for AceBet, Packdraw, and Kick with custom prize structures</p>
+                <p className="text-muted-foreground">Create and manage leaderboards for AceBet and Kick with custom prize structures</p>
               </CardContent>
             </Card>
 
