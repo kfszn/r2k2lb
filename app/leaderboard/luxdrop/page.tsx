@@ -137,11 +137,11 @@ export default function LuxdropLeaderboard() {
   }
 
   const getAvatarUrl = (avatar: string | null): string => {
-    if (!avatar) return '/assets/r2k2-circular-avatar.png'
+    if (!avatar) return '/assets/luxdrop-icon.png'
     if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
       return avatar.split('#')[0]
     }
-    return '/assets/r2k2-circular-avatar.png'
+    return '/assets/luxdrop-icon.png'
   }
 
   const totalWagered = entries.reduce((sum, e) => sum + getEntryWagered(e), 0)
@@ -316,7 +316,7 @@ export default function LuxdropLeaderboard() {
                             <Trophy className="h-4 w-4 text-yellow-400" />
                           </div>
                           <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400/70" style={{ boxShadow: '0 0 20px rgba(250,204,21,0.3)' }}>
-                            <img src={getAvatarUrl(getEntryAvatar(entries[0]))} alt={getEntryName(entries[0])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                            <img src={getAvatarUrl(getEntryAvatar(entries[0]))} alt={getEntryName(entries[0])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
                           </div>
                           <p className="font-bold text-lg text-foreground truncate w-full">{maskName(getEntryName(entries[0]))}</p>
                           <div className="w-full space-y-2">
@@ -339,7 +339,7 @@ export default function LuxdropLeaderboard() {
                           <div className="p-4 flex flex-col items-center text-center gap-2">
                             <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd</span>
                             <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-slate-400/60">
-                              <img src={getAvatarUrl(getEntryAvatar(entries[1]))} alt={getEntryName(entries[1])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                              <img src={getAvatarUrl(getEntryAvatar(entries[1]))} alt={getEntryName(entries[1])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
                             </div>
                             <p className="font-bold text-xs text-foreground truncate w-full">{maskName(getEntryName(entries[1]))}</p>
                             <div className="w-full space-y-1">
@@ -361,7 +361,7 @@ export default function LuxdropLeaderboard() {
                           <div className="p-4 flex flex-col items-center text-center gap-2">
                             <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd</span>
                             <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-amber-600/60">
-                              <img src={getAvatarUrl(getEntryAvatar(entries[2]))} alt={getEntryName(entries[2])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                              <img src={getAvatarUrl(getEntryAvatar(entries[2]))} alt={getEntryName(entries[2])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
                             </div>
                             <p className="font-bold text-xs text-foreground truncate w-full">{maskName(getEntryName(entries[2]))}</p>
                             <div className="w-full space-y-1">
@@ -388,7 +388,7 @@ export default function LuxdropLeaderboard() {
                         <div className="p-5 flex flex-col items-center text-center gap-3">
                           <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd Place</span>
                           <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-400/60">
-                            <img src={getAvatarUrl(getEntryAvatar(entries[1]))} alt={getEntryName(entries[1])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                            <img src={getAvatarUrl(getEntryAvatar(entries[1]))} alt={getEntryName(entries[1])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
                           </div>
                           <p className="font-bold text-sm text-foreground truncate w-full">{maskName(getEntryName(entries[1]))}</p>
                           <div className="w-full space-y-1.5">
@@ -413,7 +413,7 @@ export default function LuxdropLeaderboard() {
                             <Trophy className="h-4 w-4 text-yellow-400" />
                           </div>
                           <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-yellow-400/70" style={{ boxShadow: '0 0 20px rgba(250,204,21,0.3)' }}>
-                            <img src={getAvatarUrl(getEntryAvatar(entries[0]))} alt={getEntryName(entries[0])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                            <img src={getAvatarUrl(getEntryAvatar(entries[0]))} alt={getEntryName(entries[0])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
                           </div>
                           <p className="font-bold text-xl text-foreground truncate w-full">{maskName(getEntryName(entries[0]))}</p>
                           <div className="w-full space-y-2">
@@ -435,7 +435,7 @@ export default function LuxdropLeaderboard() {
                         <div className="p-5 flex flex-col items-center text-center gap-3">
                           <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd Place</span>
                           <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-600/60">
-                            <img src={getAvatarUrl(getEntryAvatar(entries[2]))} alt={getEntryName(entries[2])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                            <img src={getAvatarUrl(getEntryAvatar(entries[2]))} alt={getEntryName(entries[2])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
                           </div>
                           <p className="font-bold text-sm text-foreground truncate w-full">{maskName(getEntryName(entries[2]))}</p>
                           <div className="w-full space-y-1.5">
@@ -486,7 +486,7 @@ export default function LuxdropLeaderboard() {
                             <div className="flex items-center gap-3">
                               <span className="text-sm font-bold text-primary">#{rank}</span>
                               <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary/30">
-                                <img src={getAvatarUrl(getEntryAvatar(entry))} alt={getEntryName(entry)} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-user.jpg' }} />
+                                <img src={getAvatarUrl(getEntryAvatar(entry))} alt={getEntryName(entry)} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
                               </div>
                               <span className="font-semibold text-sm text-foreground">{maskName(getEntryName(entry))}</span>
                             </div>
@@ -592,7 +592,7 @@ function LuxDropRow({
       <div className="flex items-center gap-3 min-w-0">
         <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary/40 flex-shrink-0">
           <img
-            src={imgError ? '/placeholder-user.jpg' : getAvatarUrl(getEntryAvatar(entry))}
+            src={imgError ? '/assets/luxdrop-icon.png' : getAvatarUrl(getEntryAvatar(entry))}
             alt={getEntryName(entry)}
             className="absolute inset-0 w-full h-full object-cover"
             crossOrigin="anonymous"

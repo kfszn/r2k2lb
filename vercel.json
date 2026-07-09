@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/r2koins-daily-sync",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/r2koins-monthly-reset",
+      "schedule": "5 0 1 * *"
+    }
+  ]
+}
