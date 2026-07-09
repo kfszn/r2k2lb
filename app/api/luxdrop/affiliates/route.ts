@@ -37,12 +37,9 @@ export async function GET(request: NextRequest) {
       headers: {
         "x-api-key": LUXDROP_API_KEY,
         "Accept": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Referer": "https://luxdrop.com/",
       },
       // @ts-ignore — node-fetch agent type vs built-in fetch
       agent: proxyAgent,
-      cache: "no-store",
     });
 
     const text = await response.text();
