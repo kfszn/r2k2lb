@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import fetch from "node-fetch";
 import { HttpsProxyAgent } from "https-proxy-agent";
 
+// Match the same module-level pattern used by the AceBet route
+const proxyAgent = process.env.PROXY_URL
+  ? new HttpsProxyAgent(process.env.PROXY_URL)
+  : undefined;
+
+const LUXDROP_API_KEY = process.env.LUXDROP_API_KEY;
+const LUXDROP_AFFILIATE_CODES = process.env.LUXDROP_AFFILIATE_CODES ?? "R2K2";
+
 export async function GET(request: NextRequest) {
-  // Instantiate inside the handler so env vars are always resolved at
-  // request time rather than at module-load time in the serverless environment.
-  const LUXDROP_API_KEY = process.env.LUXDROP_API_KEY;
-  const LUXDROP_AFFILIATE_CODES = process.env.LUXDROP_AFFILIATE_CODES ?? "R2K2";
-  const proxyAgent = process.env.PROXY_URL
-    ? new HttpsProxyAgent(process.env.PROXY_URL)
-    : undefined;
 
   if (!LUXDROP_API_KEY) {
     return NextResponse.json(
@@ -39,9 +40,11 @@ export async function GET(request: NextRequest) {
         "x-api-key": LUXDROP_API_KEY,
         "Accept": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Referer": "https://luxdrop.com/",
       },
       // @ts-ignore — node-fetch agent type vs built-in fetch
       agent: proxyAgent,
+      cache: "no-store",
     });
 
     console.log("[v0] LuxDrop response status:", response.status);
