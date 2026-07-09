@@ -23,11 +23,19 @@ export async function GET(request: NextRequest) {
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
 
+  // Convert plain YYYY-MM-DD dates to full ISO timestamps expected by the API
+  // startDate → start of day UTC (T00:00:00.000Z)
+  // endDate   → end of day UTC   (T23:59:59.999Z)
+  const isoStart = startDate ? `${startDate}T00:00:00.000Z` : undefined;
+  const isoEnd   = endDate   ? `${endDate}T23:59:59.999Z`   : undefined;
+
+  console.log("[v0] LuxDrop date range:", isoStart, "→", isoEnd);
+
   // Build upstream URL with required + optional query params
   const upstream = new URL("https://api.luxdrop.com/external/affiliates");
   upstream.searchParams.set("codes", LUXDROP_AFFILIATE_CODES);
-  if (startDate) upstream.searchParams.set("startDate", startDate);
-  if (endDate) upstream.searchParams.set("endDate", endDate);
+  if (isoStart) upstream.searchParams.set("startDate", isoStart);
+  if (isoEnd)   upstream.searchParams.set("endDate",   isoEnd);
 
 
 
