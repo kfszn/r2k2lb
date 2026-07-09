@@ -21,6 +21,11 @@ export default function LuxdropLeaderboard() {
       <section className="relative overflow-hidden py-16 bg-gradient-to-b from-primary/10 to-background">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-6">
+            <img
+              src="/assets/luxdrop.png"
+              alt="LuxDrop"
+              className="h-12 md:h-14 w-auto mx-auto object-contain"
+            />
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40">
               <Trophy className="h-6 w-6 text-primary" />
               <span className="text-3xl font-bold text-primary">${PRIZE_TOTAL.toLocaleString()}</span>

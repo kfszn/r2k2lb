@@ -48,7 +48,7 @@ export default function HomePage() {
             <p className="text-base text-muted-foreground">Click a logo to view the leaderboard</p>
           </div>
 
-          <div className="flex justify-center max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto justify-items-center">
             <div className="w-full max-w-sm">
               <PlatformCard
                 name="AceBet"
@@ -63,6 +63,20 @@ export default function HomePage() {
                   "VIP Rewards",
                   "Weekly Slot Tournaments",
                   "Lossback"
+                ]}
+              />
+            </div>
+            <div className="w-full max-w-sm">
+              <PlatformCard
+                name="LuxDrop"
+                logo="/assets/luxdrop.png"
+                href="/leaderboard/luxdrop"
+                signupUrl="https://luxdrop.com/?ref=R2K2"
+                rewards={[
+                  "$2,500 Leaderboard",
+                  "Compete with Code R2K2",
+                  "Every Wager Counts",
+                  "Prize Positions Coming Soon"
                 ]}
               />
             </div>
