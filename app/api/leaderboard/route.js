@@ -87,6 +87,7 @@ let CACHE = {
 
 async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
+  console.log(`[v0] fetchDayAcebet ${dayISO}: proxy=${proxyAgent ? 'enabled' : 'DISABLED'} token=${token ? 'present' : 'MISSING'}`);
   try {
     const r = await fetch(url, {
       headers: {
@@ -97,7 +98,10 @@ async function fetchDayAcebet(dayISO, token) {
       },
       agent: proxyAgent,
     });
+    console.log(`[v0] fetchDayAcebet ${dayISO}: HTTP status ${r.status}`);
     if (!r.ok) {
+      const body = await r.text().catch(() => '');
+      console.log(`[v0] fetchDayAcebet ${dayISO}: error body: ${body.slice(0, 200)}`);
       return [];
     }
     const j = await r.json().catch(() => null);
@@ -114,8 +118,10 @@ async function fetchDayAcebet(dayISO, token) {
       result = j.results;
     }
     
+    console.log(`[v0] fetchDayAcebet ${dayISO}: got ${result.length} rows`);
     return result;
   } catch (err) {
+    console.log(`[v0] fetchDayAcebet ${dayISO}: fetch failed: ${err.message}`);
     return [];
   }
 }
