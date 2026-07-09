@@ -71,7 +71,7 @@ export default function HomePage() {
                 name="LuxDrop"
                 logo="/assets/luxdrop.png"
                 href="/leaderboard/luxdrop"
-                signupUrl="https://luxdrop.com/?ref=R2K2"
+                signupUrl="https://luxdrop.com/r/R2K2"
                 rewards={[
                   "$2,500 Leaderboard",
                   "Compete with Code R2K2",
