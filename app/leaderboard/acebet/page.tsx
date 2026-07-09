@@ -231,9 +231,9 @@ export default function AcebetLeaderboard() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <img
-              src="/assets/logo.png"
+              src="/assets/rainbet.png"
               alt="AceBet"
-              className="h-12 md:h-14 w-auto mx-auto object-contain"
+              className="h-24 md:h-28 w-auto max-w-[180px] mx-auto object-contain rounded-2xl"
             />
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40">
               <Trophy className="h-6 w-6 text-primary" />
