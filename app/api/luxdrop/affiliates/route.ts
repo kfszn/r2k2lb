@@ -2,17 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import fetch from "node-fetch";
 import { HttpsProxyAgent } from "https-proxy-agent";
 
-// Route all outbound requests through the static-IP proxy so LuxDrop's
-// IP whitelist is satisfied — same mechanism used for AceBet API calls.
-const proxyAgent = process.env.PROXY_URL
-  ? new HttpsProxyAgent(process.env.PROXY_URL)
-  : undefined;
-
-const LUXDROP_API_KEY = process.env.LUXDROP_API_KEY;
-const LUXDROP_AFFILIATE_CODES =
-  process.env.LUXDROP_AFFILIATE_CODES ?? "R2K2";
-
 export async function GET(request: NextRequest) {
+  // Instantiate inside the handler so env vars are always resolved at
+  // request time rather than at module-load time in the serverless environment.
+  const LUXDROP_API_KEY = process.env.LUXDROP_API_KEY;
+  const LUXDROP_AFFILIATE_CODES = process.env.LUXDROP_AFFILIATE_CODES ?? "R2K2";
+  const proxyAgent = process.env.PROXY_URL
+    ? new HttpsProxyAgent(process.env.PROXY_URL)
+    : undefined;
+
   if (!LUXDROP_API_KEY) {
     return NextResponse.json(
       { error: "LuxDrop API key is not configured" },
@@ -40,6 +38,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "x-api-key": LUXDROP_API_KEY,
         "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
       },
       // @ts-ignore — node-fetch agent type vs built-in fetch
       agent: proxyAgent,
