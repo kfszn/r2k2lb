@@ -233,13 +233,13 @@ export default function AcebetLeaderboard() {
             <img
               src="/assets/rainbet.png"
               alt="AceBet"
-              className="h-24 md:h-28 w-auto max-w-[180px] mx-auto object-contain rounded-2xl"
+              className="h-24 md:h-28 w-auto max-w-[180px] mx-auto object-contain rounded-2xl animate-fade-in-up"
             />
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40">
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40 animate-fade-in-up animation-delay-100 animate-glow-pulse">
               <Trophy className="h-6 w-6 text-primary" />
               <span className="text-3xl font-bold text-primary">${activeTotal.toLocaleString()}</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight animate-fade-in-up animation-delay-200" suppressHydrationWarning>
               Monthly Leaderboard
             </h1>
             <div className="flex justify-center">
@@ -522,7 +522,7 @@ export default function AcebetLeaderboard() {
                       {/* Desktop: 2nd | 1st | 3rd */}
                       <div className="hidden md:flex items-end justify-center gap-3">
                         {leaderboard.data[1] && (
-                          <div className="relative rounded-2xl border border-slate-400/40 bg-card overflow-hidden flex-1 max-w-[220px]" style={{ boxShadow: '0 0 20px rgba(148,163,184,0.1)' }}>
+                          <div className="relative rounded-2xl border border-slate-400/40 bg-card overflow-hidden flex-1 max-w-[220px] transition-transform duration-300 hover:-translate-y-1" style={{ boxShadow: '0 0 20px rgba(148,163,184,0.1)' }}>
                             <div className="absolute top-0 left-0 right-0 h-1 bg-slate-400" />
                             <div className="p-5 flex flex-col items-center text-center gap-3">
                               <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd Place</span>
@@ -544,7 +544,7 @@ export default function AcebetLeaderboard() {
                           </div>
                         )}
                         {leaderboard.data[0] && (
-                          <div className="relative rounded-2xl border border-yellow-400/50 bg-card overflow-hidden flex-1 max-w-[280px]" style={{ boxShadow: '0 0 40px rgba(250,204,21,0.2)' }}>
+                          <div className="relative rounded-2xl border border-yellow-400/50 bg-card overflow-hidden flex-1 max-w-[280px] transition-transform duration-300 hover:-translate-y-1.5" style={{ boxShadow: '0 0 40px rgba(250,204,21,0.2)' }}>
                             <div className="absolute top-0 left-0 right-0 h-1.5 bg-yellow-400" />
                             <div className="p-7 flex flex-col items-center text-center gap-4">
                               <div className="flex items-center gap-2">
@@ -569,7 +569,7 @@ export default function AcebetLeaderboard() {
                           </div>
                         )}
                         {leaderboard.data[2] && (
-                          <div className="relative rounded-2xl border border-amber-700/40 bg-card overflow-hidden flex-1 max-w-[220px]" style={{ boxShadow: '0 0 20px rgba(180,83,9,0.1)' }}>
+                          <div className="relative rounded-2xl border border-amber-700/40 bg-card overflow-hidden flex-1 max-w-[220px] transition-transform duration-300 hover:-translate-y-1" style={{ boxShadow: '0 0 20px rgba(180,83,9,0.1)' }}>
                             <div className="absolute top-0 left-0 right-0 h-1 bg-amber-600" />
                             <div className="p-5 flex flex-col items-center text-center gap-3">
                               <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd Place</span>
