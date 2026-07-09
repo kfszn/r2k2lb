@@ -81,8 +81,10 @@ let CACHE = {
   inflight: null,
 };
 
-async function fetchDayAcebet(dayISO, token) {
-  const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
+// The AceBet detailed-summary API is cumulative from a start date —
+// one call with start_at returns all wager data from that date to now.
+async function fetchAcebetSince(start_at, token) {
+  const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${start_at}`;
   try {
     const r = await fetch(url, {
       headers: {
@@ -108,50 +110,27 @@ function makeCacheKey({ start_at, end_at, prev }) {
   return `${start_at}|${end_at}|${prev ? "1" : "0"}`;
 }
 
-async function computeLeaderboard({ start_at, end_at, token, delayMs, maxDays }) {
-  const days = [...dateRangeUTC(start_at, end_at)];
+async function computeLeaderboard({ start_at, end_at, token }) {
+  // Single API call — AceBet returns cumulative data from start_at to present
+  const rows = await fetchAcebetSince(start_at, token);
 
-  // Aggregate wagered per userId across all days in the window
-  const map = new Map();
-
-  for (let i = 0; i < days.length; i++) {
-    if (i > 0 && delayMs > 0) await sleep(delayMs);
-    const rows = await fetchDayAcebet(days[i], token);
-    for (const r of rows) {
-      if (r?.userId == null) continue;
-      const prev = map.get(r.userId);
-      if (!prev) {
-        map.set(r.userId, {
-          userId: r.userId,
-          name: r.name ?? null,
-          avatar: r.avatar ?? null,
-          badge: r.badge ?? null,
-          role: r.role ?? null,
-          active: Boolean(r.active),
-          isPrivate: Boolean(r.isPrivate),
-          premiumUntil: r.premiumUntil ?? null,
-          wagered: Number(r.wagered ?? 0),
-          deposited: Number(r.deposited ?? 0),
-          earned: Number(r.earned ?? 0),
-          xp: Number(r.xp ?? 0),
-          firstSeen: days[i],
-          lastSeen: days[i],
-        });
-      } else {
-        prev.wagered += Number(r.wagered ?? 0);
-        prev.deposited += Number(r.deposited ?? 0);
-        prev.earned += Number(r.earned ?? 0);
-        prev.xp += Number(r.xp ?? 0);
-        prev.lastSeen = days[i];
-        // Keep latest non-null metadata
-        if (r.name) prev.name = r.name;
-        if (r.avatar) prev.avatar = r.avatar;
-        if (r.badge) prev.badge = r.badge;
-      }
-    }
-  }
-
-  const data = [...map.values()].sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
+  const data = rows
+    .filter((r) => r?.userId != null)
+    .map((r) => ({
+      userId: r.userId,
+      name: r.name ?? null,
+      avatar: r.avatar ?? null,
+      badge: r.badge ?? null,
+      role: r.role ?? null,
+      active: Boolean(r.active),
+      isPrivate: Boolean(r.isPrivate),
+      premiumUntil: r.premiumUntil ?? null,
+      wagered: Number(r.wagered ?? 0),
+      deposited: Number(r.deposited ?? 0),
+      earned: Number(r.earned ?? 0),
+      xp: Number(r.xp ?? 0),
+    }))
+    .sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
 
   return {
     ok: true,
@@ -255,8 +234,6 @@ export async function GET(req) {
         start_at,
         end_at,
         token,
-        delayMs: DEFAULT_DELAY_MS,
-        maxDays: DEFAULT_MAX_DAYS,
       });
       CACHE.payload = payload;
       CACHE.ts = Date.now();
