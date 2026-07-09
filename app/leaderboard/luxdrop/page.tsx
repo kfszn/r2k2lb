@@ -175,7 +175,7 @@ export default function LuxdropLeaderboard() {
               <span className="text-3xl font-bold text-primary">${PRIZE_TOTAL.toLocaleString()}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight text-balance">
-              LuxDrop <span className="text-primary">${PRIZE_TOTAL.toLocaleString()}</span> Leaderboard
+              LuxDrop Monthly Leaderboard
             </h1>
             <div className="flex justify-center">
               <a

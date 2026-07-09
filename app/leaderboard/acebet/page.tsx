@@ -240,7 +240,7 @@ export default function AcebetLeaderboard() {
               <span className="text-3xl font-bold text-primary">${activeTotal.toLocaleString()}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight" suppressHydrationWarning>
-              AceBet <span className="text-primary">${activeTotal.toLocaleString()}</span> Monthly Leaderboard
+              AceBet Monthly Leaderboard
             </h1>
             <div className="flex justify-center">
               <a
