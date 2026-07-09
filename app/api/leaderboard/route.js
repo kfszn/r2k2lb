@@ -87,8 +87,8 @@ let CACHE = {
 
 async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
-  console.log(`[v0] fetchDayAcebet ${dayISO}: proxy=${proxyAgent ? 'enabled' : 'DISABLED'} token=${token ? 'present' : 'MISSING'}`);
   try {
+    console.log(`[v0] fetchDayAcebet ${dayISO}: calling ${url} with proxy=${proxyAgent ? 'yes' : 'no'}`);
     const r = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -98,13 +98,17 @@ async function fetchDayAcebet(dayISO, token) {
       },
       agent: proxyAgent,
     });
-    console.log(`[v0] fetchDayAcebet ${dayISO}: HTTP status ${r.status}`);
+    console.log(`[v0] fetchDayAcebet ${dayISO}: status ${r.status}`);
     if (!r.ok) {
-      const body = await r.text().catch(() => '');
-      console.log(`[v0] fetchDayAcebet ${dayISO}: error body: ${body.slice(0, 200)}`);
+      const text = await r.text().catch(() => 'no body');
+      console.log(`[v0] fetchDayAcebet ${dayISO}: not ok (${r.status}), body: ${text.slice(0, 200)}`);
       return [];
     }
-    const j = await r.json().catch(() => null);
+    const j = await r.json().catch((err) => {
+      console.log(`[v0] fetchDayAcebet ${dayISO}: json parse error:`, err);
+      return null;
+    });
+    console.log(`[v0] fetchDayAcebet ${dayISO}: raw response:`, JSON.stringify(j).slice(0, 500));
     
     // Handle different response structures
     let result = [];
@@ -118,10 +122,10 @@ async function fetchDayAcebet(dayISO, token) {
       result = j.results;
     }
     
-    console.log(`[v0] fetchDayAcebet ${dayISO}: got ${result.length} rows`);
+    console.log(`[v0] fetchDayAcebet ${dayISO}: returning ${result.length} rows`);
     return result;
   } catch (err) {
-    console.log(`[v0] fetchDayAcebet ${dayISO}: fetch failed: ${err.message}`);
+    console.log(`[v0] fetchDayAcebet ${dayISO}: error:`, err.message, err.stack);
     return [];
   }
 }
@@ -133,14 +137,17 @@ function makeCacheKey({ start_at, end_at, prev }) {
 async function computeLeaderboard({ start_at, end_at, token }) {
   // The Acebet API /affiliates/detailed-summary/v2/:date returns cumulative totals
   // from that date onwards to present. To get stats for a WINDOW (start_at to end_at),
-  // we fetch the cumulative at start_at and subtract the cumulative at end_at+1.
-  // For the CURRENT cycle (end_at is today or future), we use start_at totals directly.
-
+  // we need to fetch the cumulative at start_at and subtract the cumulative at end_at+1.
+  // For the CURRENT cycle (end_at is today or future), we just use start_at totals directly.
+  
   const todayISO = toISODateUTC(new Date());
   const isCurrentCycle = end_at >= todayISO;
+  
+  console.log(`[v0] computeLeaderboard: start=${start_at} end=${end_at} isCurrentCycle=${isCurrentCycle}`);
 
   // Fetch cumulative totals at start_at
   const startRows = await fetchDayAcebet(start_at, token);
+  console.log(`[v0] computeLeaderboard: got ${startRows.length} rows from start_at API`);
 
   if (isCurrentCycle) {
     // For current/ongoing cycle, start_at totals are the window totals
@@ -164,6 +171,7 @@ async function computeLeaderboard({ start_at, end_at, token }) {
       }));
 
     data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
+    console.log(`[v0] computeLeaderboard: returning ${data.length} users (current cycle)`);
 
     return {
       ok: true,
@@ -173,12 +181,15 @@ async function computeLeaderboard({ start_at, end_at, token }) {
     };
   }
 
-  // For HISTORICAL cycles: window_total = cumulative_at_start - cumulative_at_end+1
+  // For HISTORICAL cycles, we need to subtract: window_total = cumulative_at_start - cumulative_at_end+1
+  // The day AFTER end_at gives us what was accumulated AFTER the window closed
   const dayAfterEnd = new Date(`${end_at}T00:00:00Z`);
   dayAfterEnd.setUTCDate(dayAfterEnd.getUTCDate() + 1);
   const dayAfterEndISO = toISODateUTC(dayAfterEnd);
-
+  
+  console.log(`[v0] computeLeaderboard: fetching end boundary at ${dayAfterEndISO}`);
   const endRows = await fetchDayAcebet(dayAfterEndISO, token);
+  console.log(`[v0] computeLeaderboard: got ${endRows.length} rows from end boundary API`);
 
   // Build lookup map for end totals
   const endMap = new Map();
@@ -214,9 +225,10 @@ async function computeLeaderboard({ start_at, end_at, token }) {
         lastSeen: end_at,
       };
     })
-    .filter((r) => r.wagered > 0);
+    .filter((r) => r.wagered > 0); // Only include users who wagered in this window
 
   data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
+  console.log(`[v0] computeLeaderboard: returning ${data.length} users (historical window)`);
 
   return {
     ok: true,
@@ -270,7 +282,7 @@ export async function GET(req) {
     else if (isISODate(DEFAULT_END) && DEFAULT_END !== "") end_at = DEFAULT_END < todayISO ? DEFAULT_END : todayISO;
     else end_at = todayISO;
 
-
+    console.log(`[v0] leaderboard GET: start=${start_at} end=${end_at} today=${todayISO}`);
 
     if (!isISODate(start_at) || !isISODate(end_at)) {
       return Response.json(
@@ -331,6 +343,7 @@ export async function GET(req) {
     const payload = await CACHE.inflight;
     return Response.json(payload, { headers });
   } catch (e) {
+    console.log("[v0] leaderboard GET error:", e.message, e.stack);
     CACHE.inflight = null;
     return Response.json(
       { error: "leaderboard_failed", detail: String(e) },

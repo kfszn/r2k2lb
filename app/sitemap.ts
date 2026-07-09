@@ -17,6 +17,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
+      url: '/leaderboard/luxdrop',
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
+      lastModified: new Date(),
+    },
+    {
       url: '/wager-races',
       changeFrequency: 'weekly' as const,
       priority: 0.8,
