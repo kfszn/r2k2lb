@@ -87,7 +87,6 @@ let CACHE = {
 
 async function fetchDayAcebet(dayISO, token) {
   const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
-  console.log(`[v0] fetchDayAcebet: GET ${url} proxy=${proxyAgent ? 'yes' : 'no'}`);
   try {
     const r = await fetch(url, {
       headers: {
@@ -98,14 +97,10 @@ async function fetchDayAcebet(dayISO, token) {
       },
       agent: proxyAgent,
     });
-    console.log(`[v0] fetchDayAcebet ${dayISO}: status=${r.status}`);
     if (!r.ok) {
-      const errText = await r.text().catch(() => '');
-      console.log(`[v0] fetchDayAcebet ${dayISO}: error body: ${errText.slice(0, 300)}`);
       return [];
     }
-    const j = await r.json().catch((err) => { console.log(`[v0] fetchDayAcebet ${dayISO}: json parse err`, err.message); return null; });
-    console.log(`[v0] fetchDayAcebet ${dayISO}: response type=${Array.isArray(j) ? 'array' : typeof j} preview=${JSON.stringify(j)?.slice(0, 200)}`);
+    const j = await r.json().catch(() => null);
     
     // Handle different response structures
     let result = [];
@@ -119,10 +114,8 @@ async function fetchDayAcebet(dayISO, token) {
       result = j.results;
     }
     
-    console.log(`[v0] fetchDayAcebet ${dayISO}: returning ${result.length} rows`);
     return result;
   } catch (err) {
-    console.log(`[v0] fetchDayAcebet ${dayISO}: caught error: ${err.message}`);
     return [];
   }
 }
@@ -132,47 +125,60 @@ function makeCacheKey({ start_at, end_at, prev }) {
 }
 
 async function computeLeaderboard({ start_at, end_at, token }) {
-  // The Acebet API /affiliates/detailed-summary/v2/:date returns CUMULATIVE totals
-  // from the BEGINNING OF TIME up to (and including) that date.
-  // To get stats for a WINDOW [start_at, end_at]:
-  //   window_total = cumulative_at_end - cumulative_at_day_before_start
-  //
-  // For the CURRENT cycle (end_at is today):
-  //   currentTotal = fetchDay(today)          ← all-time totals right now
-  //   beforeCycle  = fetchDay(start_at - 1)   ← totals before cycle started
-  //   window       = currentTotal - beforeCycle
-  //
-  // For HISTORICAL cycles:
-  //   endTotal     = fetchDay(end_at)
-  //   beforeCycle  = fetchDay(start_at - 1)
-  //   window       = endTotal - beforeCycle
+  // The Acebet API /affiliates/detailed-summary/v2/:date returns cumulative totals
+  // from that date onwards to present. To get stats for a WINDOW (start_at to end_at),
+  // we fetch the cumulative at start_at and subtract the cumulative at end_at+1.
+  // For the CURRENT cycle (end_at is today or future), we use start_at totals directly.
 
   const todayISO = toISODateUTC(new Date());
   const isCurrentCycle = end_at >= todayISO;
 
-  // The "end" snapshot: today for current cycle, end_at for historical
-  const endSnapshotISO = isCurrentCycle ? todayISO : end_at;
+  // Fetch cumulative totals at start_at
+  const startRows = await fetchDayAcebet(start_at, token);
 
-  // The "before start" snapshot: day before start_at
-  const dayBeforeStart = new Date(`${start_at}T00:00:00Z`);
-  dayBeforeStart.setUTCDate(dayBeforeStart.getUTCDate() - 1);
-  const dayBeforeStartISO = toISODateUTC(dayBeforeStart);
+  if (isCurrentCycle) {
+    // For current/ongoing cycle, start_at totals are the window totals
+    const data = startRows
+      .filter((r) => r?.userId != null)
+      .map((r) => ({
+        userId: r.userId,
+        name: r.name ?? null,
+        avatar: r.avatar ?? null,
+        badge: r.badge ?? null,
+        role: r.role ?? null,
+        active: Boolean(r.active),
+        isPrivate: Boolean(r.isPrivate),
+        premiumUntil: r.premiumUntil ?? null,
+        wagered: Number(r.wagered ?? 0),
+        deposited: Number(r.deposited ?? 0),
+        earned: Number(r.earned ?? 0),
+        xp: Number(r.xp ?? 0),
+        firstSeen: start_at,
+        lastSeen: start_at,
+      }));
 
-  console.log(`[v0] computeLeaderboard: isCurrentCycle=${isCurrentCycle} endSnapshot=${endSnapshotISO} beforeStart=${dayBeforeStartISO}`);
+    data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
 
-  // Fetch both snapshots in parallel
-  const [endRows, beforeRows] = await Promise.all([
-    fetchDayAcebet(endSnapshotISO, token),
-    fetchDayAcebet(dayBeforeStartISO, token),
-  ]);
+    return {
+      ok: true,
+      range: { start_at, end_at },
+      count: data.length,
+      data,
+    };
+  }
 
-  console.log(`[v0] computeLeaderboard: endRows=${endRows.length} beforeRows=${beforeRows.length}`);
+  // For HISTORICAL cycles: window_total = cumulative_at_start - cumulative_at_end+1
+  const dayAfterEnd = new Date(`${end_at}T00:00:00Z`);
+  dayAfterEnd.setUTCDate(dayAfterEnd.getUTCDate() + 1);
+  const dayAfterEndISO = toISODateUTC(dayAfterEnd);
 
-  // Build lookup map for "before start" totals
-  const beforeMap = new Map();
-  for (const r of beforeRows) {
+  const endRows = await fetchDayAcebet(dayAfterEndISO, token);
+
+  // Build lookup map for end totals
+  const endMap = new Map();
+  for (const r of endRows) {
     if (r?.userId != null) {
-      beforeMap.set(r.userId, {
+      endMap.set(r.userId, {
         wagered: Number(r.wagered ?? 0),
         deposited: Number(r.deposited ?? 0),
         earned: Number(r.earned ?? 0),
@@ -180,11 +186,11 @@ async function computeLeaderboard({ start_at, end_at, token }) {
     }
   }
 
-  // Compute window totals: end snapshot minus before-start snapshot
-  const data = endRows
+  // Compute window totals by subtraction
+  const data = startRows
     .filter((r) => r?.userId != null)
     .map((r) => {
-      const before = beforeMap.get(r.userId) || { wagered: 0, deposited: 0, earned: 0 };
+      const endTotals = endMap.get(r.userId) || { wagered: 0, deposited: 0, earned: 0 };
       return {
         userId: r.userId,
         name: r.name ?? null,
@@ -194,19 +200,17 @@ async function computeLeaderboard({ start_at, end_at, token }) {
         active: Boolean(r.active),
         isPrivate: Boolean(r.isPrivate),
         premiumUntil: r.premiumUntil ?? null,
-        wagered: Math.max(0, Number(r.wagered ?? 0) - before.wagered),
-        deposited: Math.max(0, Number(r.deposited ?? 0) - before.deposited),
-        earned: Math.max(0, Number(r.earned ?? 0) - before.earned),
+        wagered: Math.max(0, Number(r.wagered ?? 0) - endTotals.wagered),
+        deposited: Math.max(0, Number(r.deposited ?? 0) - endTotals.deposited),
+        earned: Math.max(0, Number(r.earned ?? 0) - endTotals.earned),
         xp: Number(r.xp ?? 0),
         firstSeen: start_at,
-        lastSeen: endSnapshotISO,
+        lastSeen: end_at,
       };
     })
     .filter((r) => r.wagered > 0);
 
   data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
-
-  console.log(`[v0] computeLeaderboard: returning ${data.length} users, top wagered: ${data[0]?.wagered ?? 0}`);
 
   return {
     ok: true,
