@@ -86,6 +86,20 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/leaderboard/acebet`,
   },
+  luxdrop: {
+    title: 'LuxDrop Leaderboard — $2,500 with Code R2K2',
+    description:
+      'Compete on the R2K2 LuxDrop leaderboard for a share of $2,500. Use code R2K2 on LuxDrop and every wager counts toward your placement.',
+    keywords: [
+      'LuxDrop leaderboard',
+      'LuxDrop R2K2',
+      'LuxDrop code R2K2',
+      '$2500 LuxDrop leaderboard',
+      'LuxDrop rewards',
+      'LuxDrop wager competition',
+    ],
+    canonical: `${baseUrl}/leaderboard/luxdrop`,
+  },
   tournament: {
     title: 'Live Slot Bracket Tournaments — R2K2',
     description:
