@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
+import { R2KoinsCard } from '@/components/r2koins-card'
 import { Copy, Check, ExternalLink, Zap, Loader2, Link2, Unlink, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 type Profile = {
@@ -229,6 +230,9 @@ function AccountPageContent() {
             <p className="text-xs text-muted-foreground mt-1">Spend points in the Shop to redeem exclusive rewards</p>
           </CardContent>
         </Card>
+
+        {/* R2Koins */}
+        <R2KoinsCard />
 
         {/* Connections */}
         <Card className="border-border/40 bg-card/50 backdrop-blur-sm">

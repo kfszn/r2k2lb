@@ -31,10 +31,11 @@ import { RewardsSettings } from "@/components/admin/rewards-settings";
 import { GamesManager } from "@/components/admin/games-manager";
 import { LeaderboardManager } from "@/components/admin/leaderboard-manager";
 import { AcebetUserLookup } from "@/components/admin/acebet-user-lookup";
+import { R2KoinsManager } from "@/components/admin/r2koins-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards" | "r2koins";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -220,6 +221,18 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("r2koins")}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Zap className="h-8 w-8 text-primary" />
+                  <CardTitle>R2Koins</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Link platform accounts, manage conversion rates, and monitor wager-based coin awards</p>
+              </CardContent>
+            </Card>
 
             <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("website")}>
               <CardHeader>
@@ -451,6 +464,26 @@ export default function AdminPage() {
             <h1 className="text-3xl font-bold">Leaderboard Manager</h1>
           </div>
           <LeaderboardManager />
+        </div>
+      </main>
+    );
+  }
+
+  // R2Koins Management View
+  if (currentView === "r2koins") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold">R2Koins Management</h1>
+          </div>
+          <R2KoinsManager />
         </div>
       </main>
     );
