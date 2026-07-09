@@ -30,6 +30,10 @@ export async function GET(request: NextRequest) {
   if (startDate) upstream.searchParams.set("startDate", startDate);
   if (endDate) upstream.searchParams.set("endDate", endDate);
 
+  console.log("[v0] LuxDrop fetch URL:", upstream.toString());
+  console.log("[v0] LuxDrop proxy agent active:", !!proxyAgent);
+  console.log("[v0] LuxDrop API key present:", !!LUXDROP_API_KEY);
+
   try {
     const response = await fetch(upstream.toString(), {
       method: "GET",
@@ -41,7 +45,9 @@ export async function GET(request: NextRequest) {
       agent: proxyAgent,
     });
 
+    console.log("[v0] LuxDrop response status:", response.status);
     const text = await response.text();
+    console.log("[v0] LuxDrop response body (first 500):", text.slice(0, 500));
 
     if (!response.ok) {
       return NextResponse.json(
@@ -69,6 +75,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown network error";
+    console.log("[v0] LuxDrop fetch error:", message);
     return NextResponse.json(
       { error: "Failed to reach LuxDrop API", detail: message },
       { status: 503 }

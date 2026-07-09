@@ -81,13 +81,17 @@ export default function LuxdropLeaderboard() {
           `/api/luxdrop/affiliates?startDate=${START_DATE}&endDate=${END_DATE}`
         )
         const json = await res.json()
+        console.log('[v0] LuxDrop page response status:', res.status)
+        console.log('[v0] LuxDrop page response json:', JSON.stringify(json).slice(0, 500))
         if (!res.ok) {
-          setError(json.error ?? 'Failed to load leaderboard')
+          setError(`${json.error ?? 'Failed to load leaderboard'}${json.detail ? ` — ${json.detail}` : ''}`)
           return
         }
         setEntries(normalizeEntries(json))
-      } catch {
-        setError('Failed to fetch leaderboard')
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error'
+        console.log('[v0] LuxDrop page fetch exception:', msg)
+        setError(`Failed to fetch leaderboard — ${msg}`)
       } finally {
         setLoading(false)
       }
