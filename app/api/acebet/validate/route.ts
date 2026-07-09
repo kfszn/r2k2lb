@@ -25,11 +25,11 @@ interface AcebetUser {
 let cachedUsers: AcebetUser[] | null = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 5 * 60 * 1000;
-// Start date for current leaderboard cycle: 2026-06-29
+// Start date for current leaderboard cycle: Jun 29, 2026
 const WAGER_WINDOW_START = "2026-06-29";
-
 async function fetchAcebetUsers(): Promise<AcebetUser[]> {
   const now = Date.now();
+  // Return cached data if still valid
   if (cachedUsers && now - cacheTimestamp < CACHE_DURATION) {
     return cachedUsers;
   }
@@ -37,6 +37,7 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
     return [];
   }
   try {
+    // Use the wager window start date to get cumulative wager data
     const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
     const response = await fetch(url, {
       headers: {
@@ -56,11 +57,10 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
     cachedUsers = Array.isArray(data) ? data : [];
     cacheTimestamp = now;
     return cachedUsers;
-  } catch {
+  } catch (error) {
     return cachedUsers || [];
   }
 }
-
 export async function POST(request: NextRequest) {
   try {
     const { username } = await request.json();

@@ -1,5 +1,5 @@
 // api/leaderboard.js — Vercel Serverless Function (Acebet) + FAST CACHE
-// Builds leaderboard by aggregating day-by-day data from the Acebet detailed-summary API.
+// Builds leaderboard using cumulative totals from the Acebet detailed-summary API.
 // Supports:
 //   - ?start_at=YYYY-MM-DD&end_at=YYYY-MM-DD
 //   - ?prev=1  (previous window same length)
@@ -56,6 +56,10 @@ function shiftRangeBack(startISO, endISO) {
 const DEFAULT_START = "2026-06-29";
 const DEFAULT_END = "2026-07-30";
 
+function updateDefaultDates() {
+  // No-op: dates are hardcoded for this leaderboard cycle
+}
+
 // ===============================
 // ⚡ SPEED / SAFETY KNOBS
 // ===============================
@@ -81,27 +85,37 @@ let CACHE = {
   inflight: null,
 };
 
-// The AceBet detailed-summary API is cumulative from a start date —
-// one call with start_at returns all wager data from that date to now.
-async function fetchAcebetSince(start_at, token) {
-  const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${start_at}`;
+async function fetchDayAcebet(dayISO, token) {
+  const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${dayISO}`;
   try {
     const r = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${token}`,
-        ...CF_HEADERS,
+        'Authorization': `Bearer ${token}`,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Referer': 'https://acebet.co/',
       },
       agent: proxyAgent,
     });
-    if (!r.ok) return [];
+    if (!r.ok) {
+      return [];
+    }
     const j = await r.json().catch(() => null);
-    if (!j) return [];
-    if (Array.isArray(j)) return j;
-    if (Array.isArray(j?.data)) return j.data;
-    if (Array.isArray(j?.records)) return j.records;
-    if (Array.isArray(j?.results)) return j.results;
-    return [];
-  } catch {
+    
+    // Handle different response structures
+    let result = [];
+    if (Array.isArray(j)) {
+      result = j;
+    } else if (j && typeof j === 'object' && Array.isArray(j.data)) {
+      result = j.data;
+    } else if (j && typeof j === 'object' && Array.isArray(j.records)) {
+      result = j.records;
+    } else if (j && typeof j === 'object' && Array.isArray(j.results)) {
+      result = j.results;
+    }
+    
+    return result;
+  } catch (err) {
     return [];
   }
 }
@@ -111,26 +125,93 @@ function makeCacheKey({ start_at, end_at, prev }) {
 }
 
 async function computeLeaderboard({ start_at, end_at, token }) {
-  // Single API call — AceBet returns cumulative data from start_at to present
-  const rows = await fetchAcebetSince(start_at, token);
+  // The Acebet API /affiliates/detailed-summary/v2/:date returns cumulative totals
+  // from that date onwards to present. To get stats for a WINDOW (start_at to end_at),
+  // we need to fetch the cumulative at start_at and subtract the cumulative at end_at+1.
+  // For the CURRENT cycle (end_at is today or future), we just use start_at totals directly.
+  
+  const todayISO = toISODateUTC(new Date());
+  const isCurrentCycle = end_at >= todayISO;
 
-  const data = rows
+  // Fetch cumulative totals at start_at
+  const startRows = await fetchDayAcebet(start_at, token);
+
+  if (isCurrentCycle) {
+    // For current/ongoing cycle, start_at totals are the window totals
+    const data = startRows
+      .filter((r) => r?.userId != null)
+      .map((r) => ({
+        userId: r.userId,
+        name: r.name ?? null,
+        avatar: r.avatar ?? null,
+        badge: r.badge ?? null,
+        role: r.role ?? null,
+        active: Boolean(r.active),
+        isPrivate: Boolean(r.isPrivate),
+        premiumUntil: r.premiumUntil ?? null,
+        wagered: Number(r.wagered ?? 0),
+        deposited: Number(r.deposited ?? 0),
+        earned: Number(r.earned ?? 0),
+        xp: Number(r.xp ?? 0),
+        firstSeen: start_at,
+        lastSeen: start_at,
+      }));
+
+    data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
+
+    return {
+      ok: true,
+      range: { start_at, end_at },
+      count: data.length,
+      data,
+    };
+  }
+
+  // For HISTORICAL cycles, we need to subtract: window_total = cumulative_at_start - cumulative_at_end+1
+  // The day AFTER end_at gives us what was accumulated AFTER the window closed
+  const dayAfterEnd = new Date(`${end_at}T00:00:00Z`);
+  dayAfterEnd.setUTCDate(dayAfterEnd.getUTCDate() + 1);
+  const dayAfterEndISO = toISODateUTC(dayAfterEnd);
+  
+  const endRows = await fetchDayAcebet(dayAfterEndISO, token);
+
+  // Build lookup map for end totals
+  const endMap = new Map();
+  for (const r of endRows) {
+    if (r?.userId != null) {
+      endMap.set(r.userId, {
+        wagered: Number(r.wagered ?? 0),
+        deposited: Number(r.deposited ?? 0),
+        earned: Number(r.earned ?? 0),
+      });
+    }
+  }
+
+  // Compute window totals by subtraction
+  const data = startRows
     .filter((r) => r?.userId != null)
-    .map((r) => ({
-      userId: r.userId,
-      name: r.name ?? null,
-      avatar: r.avatar ?? null,
-      badge: r.badge ?? null,
-      role: r.role ?? null,
-      active: Boolean(r.active),
-      isPrivate: Boolean(r.isPrivate),
-      premiumUntil: r.premiumUntil ?? null,
-      wagered: Number(r.wagered ?? 0),
-      deposited: Number(r.deposited ?? 0),
-      earned: Number(r.earned ?? 0),
-      xp: Number(r.xp ?? 0),
-    }))
-    .sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
+    .map((r) => {
+      const endTotals = endMap.get(r.userId) || { wagered: 0, deposited: 0, earned: 0 };
+      return {
+        userId: r.userId,
+        name: r.name ?? null,
+        avatar: r.avatar ?? null,
+        badge: r.badge ?? null,
+        role: r.role ?? null,
+        active: Boolean(r.active),
+        isPrivate: Boolean(r.isPrivate),
+        premiumUntil: r.premiumUntil ?? null,
+        wagered: Math.max(0, Number(r.wagered ?? 0) - endTotals.wagered),
+        deposited: Math.max(0, Number(r.deposited ?? 0) - endTotals.deposited),
+        earned: Math.max(0, Number(r.earned ?? 0) - endTotals.earned),
+        xp: Number(r.xp ?? 0),
+        firstSeen: start_at,
+        lastSeen: end_at,
+      };
+    })
+    .filter((r) => r.wagered > 0); // Only include users who wagered in this window
+
+    data.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
 
   return {
     ok: true,
@@ -141,6 +222,9 @@ async function computeLeaderboard({ start_at, end_at, token }) {
 }
 
 export async function GET(req) {
+  // Update dynamic dates at request time
+  updateDefaultDates();
+  
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -175,11 +259,13 @@ export async function GET(req) {
 
     let start_at = isISODate(qsStart) ? qsStart : DEFAULT_START;
 
-    // Use the cycle end date as-is — AceBet's API is cumulative from start_at
+    // Always cap end_at to today — future dates return no data from Acebet API
     let end_at;
-    if (isISODate(qsEnd)) end_at = qsEnd;
-    else if (isISODate(DEFAULT_END) && DEFAULT_END !== "") end_at = DEFAULT_END;
+    if (isISODate(qsEnd)) end_at = qsEnd < todayISO ? qsEnd : todayISO;
+    else if (isISODate(DEFAULT_END) && DEFAULT_END !== "") end_at = DEFAULT_END < todayISO ? DEFAULT_END : todayISO;
     else end_at = todayISO;
+
+
 
     if (!isISODate(start_at) || !isISODate(end_at)) {
       return Response.json(
@@ -230,11 +316,7 @@ export async function GET(req) {
 
     CACHE.key = key;
     CACHE.inflight = (async () => {
-      const payload = await computeLeaderboard({
-        start_at,
-        end_at,
-        token,
-      });
+      const payload = await computeLeaderboard({ start_at, end_at, token });
       CACHE.payload = payload;
       CACHE.ts = Date.now();
       CACHE.inflight = null;
