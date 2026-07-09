@@ -175,10 +175,10 @@ export async function GET(req) {
 
     let start_at = isISODate(qsStart) ? qsStart : DEFAULT_START;
 
-    // Always cap end_at to today — future dates return no data from Acebet API
+    // Use the cycle end date as-is — AceBet's API is cumulative from start_at
     let end_at;
-    if (isISODate(qsEnd)) end_at = qsEnd < todayISO ? qsEnd : todayISO;
-    else if (isISODate(DEFAULT_END) && DEFAULT_END !== "") end_at = DEFAULT_END < todayISO ? DEFAULT_END : todayISO;
+    if (isISODate(qsEnd)) end_at = qsEnd;
+    else if (isISODate(DEFAULT_END) && DEFAULT_END !== "") end_at = DEFAULT_END;
     else end_at = todayISO;
 
     if (!isISODate(start_at) || !isISODate(end_at)) {
