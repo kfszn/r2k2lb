@@ -18,6 +18,7 @@ import {
 function Header() {
   const [open, setOpen] = useState(false)
   const [mobileAcebet, setMobileAcebet] = useState(false)
+  const [mobileLuxdrop, setMobileLuxdrop] = useState(false)
   const [mobilePoints, setMobilePoints] = useState(false)
   const [mobileKick, setMobileKick] = useState(false)
   const [user, setUser] = useState<any>(null)
@@ -68,6 +69,7 @@ function Header() {
   const closeMobile = () => {
     setOpen(false)
     setMobileAcebet(false)
+    setMobileLuxdrop(false)
     setMobilePoints(false)
     setMobileKick(false)
   }
@@ -145,6 +147,22 @@ function Header() {
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Loss-back
+              </Link>
+            </div>
+          </div>
+
+          {/* LuxDrop Dropdown */}
+          <div className="relative group">
+            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
+              LuxDrop
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[180px] z-50 py-1">
+              <Link
+                href="/leaderboard/luxdrop"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Leaderboard
               </Link>
             </div>
           </div>
@@ -315,10 +333,28 @@ function Header() {
                   )}
                 </div>
 
+                {/* Mobile LuxDrop */}
+                <div className="space-y-1">
+                  <button
+                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileAcebet(false); setMobileKick(false); setMobilePoints(false) }}
+                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
+                  >
+                    LuxDrop
+                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileLuxdrop ? 'rotate-180' : ''}`} />
+                  </button>
+                  {mobileLuxdrop && (
+                    <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
+                      <Link href="/leaderboard/luxdrop" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Leaderboard
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
                 {/* Mobile Kick */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileKick(!mobileKick); setMobileAcebet(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileKick(!mobileKick); setMobileAcebet(false); setMobileLuxdrop(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-[#53fc18] transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Kick
@@ -349,7 +385,7 @@ function Header() {
                 {/* Mobile Points */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false) }}
+                    onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false); setMobileLuxdrop(false); setMobileKick(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Points
