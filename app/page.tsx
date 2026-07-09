@@ -22,17 +22,17 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background to-background"></div>
         <div className="container mx-auto px-4 py-12 md:py-16 relative">
           <div className="max-w-4xl mx-auto text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 shadow-sm shadow-primary/5">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 shadow-sm shadow-primary/5 animate-fade-in-up animate-glow-pulse">
               <Sparkles className="h-4 w-4 text-primary animate-pulse" />
               <span className="text-sm font-semibold">Exclusive Code: <span className="text-primary">R2K2</span></span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight text-balance">
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight text-balance animate-fade-in-up animation-delay-100">
               Compete on Our <span className="text-primary">Leaderboards</span>
             </h1>
-            <p className="text-2xl font-bold text-primary mt-2">
+            <p className="text-2xl font-bold text-primary mt-2 animate-fade-in-up animation-delay-200">
               $30,000+ in Monthly Rewards Including $20,000 Monthly Leaderboard
             </p>
-            <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto animate-fade-in-up animation-delay-300">
               Compete on the AceBet leaderboard, earn wager bonuses, loss back, and more with code R2K2.
             </p>
 
@@ -73,10 +73,11 @@ export default function HomePage() {
                 href="/leaderboard/luxdrop"
                 signupUrl="https://luxdrop.com/r/R2K2"
                 rewards={[
-                  "$2,500 Leaderboard",
+                  "$2,500 Monthly Leaderboard",
+                  "Top 10 Positions Paid",
+                  "$1,000 First Place Prize",
                   "Compete with Code R2K2",
-                  "Every Wager Counts",
-                  "Prize Positions Coming Soon"
+                  "Every Wager Counts"
                 ]}
               />
             </div>
@@ -187,7 +188,7 @@ function PlatformCard({ name, logo, href, signupUrl, rewards }: { name: string; 
         <CardContent className="p-8 flex flex-col items-center gap-6">
           <div className="flex justify-center">
             <div className="w-40 h-40 rounded-2xl bg-secondary/50 p-6 group-hover:scale-105 transition-transform flex items-center justify-center cursor-pointer">
-              <img src={logo || "/placeholder.svg"} alt={name} className="w-full h-full object-contain" />
+              <img src={logo || "/placeholder.svg"} alt={name} loading="lazy" className="w-full h-full object-contain" />
             </div>
           </div>
         </CardContent>
@@ -234,7 +235,7 @@ function SocialCard({ icon, name, handle, href }: { icon: string; name: string; 
       <Card className="hover:shadow-xl hover:shadow-primary/15 transition-all duration-300 border-border/40 bg-card/60 backdrop-blur-sm hover:border-primary/30 hover:-translate-y-0.5">
         <CardContent className="p-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-lg bg-secondary/50 p-2 group-hover:scale-105 transition-transform flex items-center justify-center">
-            <img src={icon || "/placeholder.svg"} alt={name} className="w-full h-full object-contain" />
+            <img src={icon || "/placeholder.svg"} alt={name} loading="lazy" className="w-full h-full object-contain" />
           </div>
           <div>
             <p className="font-semibold">{name}</p>
