@@ -1,44 +1,51 @@
 import type { Metadata } from 'next'
 
-// Updated April 2026: $20,000 monthly leaderboard, $30,000+ total rewards
+// Updated July 2026: multi-platform leaderboards (Acebet + LuxDrop + Kick), R2Koins, 50/50, raffle, shop, games
 const baseUrl = 'https://r2k2.gg'
 const brandName = 'R2K2'
-const tagline = 'Exclusive Rewards & Leaderboards'
 
 export const defaultMetadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: `${brandName} — $30,000+ in Monthly Rewards`,
+    default: `${brandName} — Leaderboards, Rewards & Exclusive Perks`,
     template: `%s | ${brandName}`,
   },
   description:
-    '$30,000+ in monthly rewards including a $20,000 monthly leaderboard. Use code R2K2 on Acebet for bonuses, loss back, tournaments, and more.',
+    'R2K2 is a multi-platform rewards community. Compete on Acebet, LuxDrop, and Kick leaderboards, earn R2Koins from wagers, play 50/50 draws, enter raffles, and redeem points in the shop.',
   keywords: [
     'R2K2',
     'leaderboards',
     'rewards',
     'Acebet',
+    'LuxDrop',
+    'Kick leaderboard',
     'wager rewards',
+    'R2Koins',
     'tournaments',
+    'raffle',
+    'rewards shop',
+    'fifty fifty',
     'gambling affiliate',
     'code R2K2',
     'monthly prizes',
+    'provably fair games',
   ],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: baseUrl,
     siteName: brandName,
-    title: `${brandName} — $30,000+ in Monthly Rewards`,
+    title: `${brandName} — Leaderboards, Rewards & Exclusive Perks`,
     description:
-      '$30,000+ in monthly rewards including a $20,000 monthly leaderboard. Use code R2K2 on Acebet.',
+      'Compete on Acebet, LuxDrop, and Kick leaderboards, earn R2Koins, play 50/50 draws, enter raffles, and redeem points. Use code R2K2.',
   },
   twitter: {
     card: 'summary_large_image',
     site: '@r2ktwo',
     creator: '@r2ktwo',
-    title: `${brandName} — $30,000+ in Monthly Rewards`,
-    description: '$30,000+ in monthly rewards including a $20,000 leaderboard with code R2K2.',
+    title: `${brandName} — Leaderboards, Rewards & Exclusive Perks`,
+    description:
+      'Compete on Acebet, LuxDrop & Kick leaderboards. Earn R2Koins, play 50/50, enter raffles, redeem points. Code R2K2.',
   },
   icons: {
     icon: '/assets/logo.png',
@@ -56,15 +63,19 @@ export const defaultMetadata: Metadata = {
 // Page-specific metadata
 export const pageMetadata = {
   home: {
-    title: 'R2K2 — $30,000+ in Monthly Rewards on Acebet',
+    title: 'R2K2 — Leaderboards, R2Koins, Raffles & Exclusive Perks',
     description:
-      'Compete on R2K2 leaderboards for a $20,000 monthly prize pool plus $30,000+ in total monthly rewards on Acebet. Use code R2K2 for exclusive bonuses, loss back, and tournaments.',
+      'R2K2 is your hub for multi-platform leaderboard competitions on Acebet, LuxDrop, and Kick. Earn R2Koins from wagers, play 50/50 draws, enter raffles, redeem points, and compete in tournaments. Use code R2K2.',
     keywords: [
       'R2K2',
       'leaderboard',
       'Acebet leaderboard',
-      '$20000 monthly leaderboard',
-      '$30000 monthly rewards',
+      'LuxDrop leaderboard',
+      'Kick leaderboard',
+      'R2Koins',
+      'fifty fifty',
+      'raffle',
+      'rewards shop',
       'exclusive code R2K2',
       'gambling rewards',
       'wager competition',
@@ -72,33 +83,48 @@ export const pageMetadata = {
     canonical: baseUrl,
   },
   acebet: {
-    title: 'Acebet Leaderboard — $20,000 Monthly with Code R2K2',
+    title: 'Acebet Leaderboard — Monthly Prizes with Code R2K2',
     description:
-      'Compete on the R2K2 Acebet leaderboard for a share of $20,000 monthly. $10,000 bi-weekly leaderboards, VIP rewards, loss back, and more. Sign up with code R2K2.',
+      'Compete on the R2K2 Acebet leaderboard for monthly cash prizes. Earn R2Koins on every wager, claim loss back, unlock tier rewards, and more. Sign up with code R2K2.',
     keywords: [
       'Acebet leaderboard',
       'Acebet R2K2',
       'Acebet code R2K2',
-      '$20000 monthly Acebet',
-      'bi-weekly leaderboard',
+      'Acebet monthly prizes',
       'Acebet wager rewards',
       'Acebet VIP',
+      'R2Koins Acebet',
     ],
     canonical: `${baseUrl}/leaderboard/acebet`,
   },
   luxdrop: {
-    title: 'LuxDrop Leaderboard — $2,500 with Code R2K2',
+    title: 'LuxDrop Leaderboard — Monthly Prizes with Code R2K2',
     description:
-      'Compete on the R2K2 LuxDrop leaderboard for a share of $2,500. Use code R2K2 on LuxDrop and every wager counts toward your placement.',
+      'Compete on the R2K2 LuxDrop leaderboard for monthly cash prizes. Use code R2K2 on LuxDrop and every wager counts toward your placement and R2Koins balance.',
     keywords: [
       'LuxDrop leaderboard',
       'LuxDrop R2K2',
       'LuxDrop code R2K2',
-      '$2500 LuxDrop leaderboard',
+      'LuxDrop monthly prizes',
       'LuxDrop rewards',
       'LuxDrop wager competition',
+      'R2Koins LuxDrop',
     ],
     canonical: `${baseUrl}/leaderboard/luxdrop`,
+  },
+  kick: {
+    title: 'Kick Leaderboard — Top Chatters & Subscribers | R2K2',
+    description:
+      'See the top Kick chatters and subscribers on the R2K2 Kick leaderboard. Earn points by watching and chatting live, then redeem them in the rewards shop.',
+    keywords: [
+      'Kick leaderboard',
+      'R2K2 Kick',
+      'Kick chatters',
+      'Kick subscribers',
+      'Kick stream rewards',
+      'R2K2 Kick points',
+    ],
+    canonical: `${baseUrl}/leaderboard/kick`,
   },
   tournament: {
     title: 'Live Slot Bracket Tournaments — R2K2',
@@ -239,6 +265,34 @@ export const pageMetadata = {
       'R2K2 rewards',
     ],
     canonical: `${baseUrl}/auth/signup`,
+  },
+  fiftyFifty: {
+    title: '50/50 Draw — Buy Tickets & Win | R2K2',
+    description:
+      'Enter the R2K2 50/50 draw using your points. Buy tickets for a chance to win half the pot. A new draw runs every round — the more tickets you hold, the better your odds.',
+    keywords: [
+      'R2K2 fifty fifty',
+      '50/50 draw',
+      'R2K2 raffle draw',
+      'win half the pot',
+      'points draw',
+      'R2K2 50 50',
+    ],
+    canonical: `${baseUrl}/fifty-fifty`,
+  },
+  perksAcebetRewardMatch: {
+    title: 'Acebet Reward Match — Double Your Deposit | R2K2',
+    description:
+      'Get your Acebet deposit matched as a bonus with code R2K2. Exclusive reward match offer for R2K2 members. Learn how to claim and the requirements.',
+    keywords: [
+      'Acebet reward match',
+      'Acebet deposit match',
+      'Acebet bonus match',
+      'Acebet code R2K2',
+      'deposit bonus',
+      'reward match offer',
+    ],
+    canonical: `${baseUrl}/perks/acebet/reward-match`,
   },
   wagerBonus: {
     title: 'Wager Bonus Info — R2K2 Rewards Program',

@@ -41,6 +41,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
+      url: '/leaderboard/kick',
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
+      lastModified: new Date(),
+    },
+    {
+      url: '/fifty-fifty',
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+      lastModified: new Date(),
+    },
+    {
+      url: '/shop',
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+      lastModified: new Date(),
+    },
+    {
       url: '/wagerbonus',
       changeFrequency: 'weekly' as const,
       priority: 0.7,
@@ -65,7 +83,49 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
       lastModified: new Date(),
     },
-
+    {
+      url: '/perks/acebet/reward-match',
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+      lastModified: new Date(),
+    },
+    // Games
+    {
+      url: '/games',
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+      lastModified: new Date(),
+    },
+    {
+      url: '/games/blackjack',
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+      lastModified: new Date(),
+    },
+    {
+      url: '/games/keno',
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+      lastModified: new Date(),
+    },
+    {
+      url: '/games/plinko',
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+      lastModified: new Date(),
+    },
+    {
+      url: '/games/fairness',
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+      lastModified: new Date(),
+    },
+    {
+      url: '/how-it-works',
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+      lastModified: new Date(),
+    },
   ]
 
   return routes.map((route) => ({

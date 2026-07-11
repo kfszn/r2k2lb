@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import fetch from "node-fetch";
 import { HttpsProxyAgent } from "https-proxy-agent";
 
+// Never cache — always pull live wager data from LuxDrop on each request
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // Match the same module-level pattern used by the AceBet route
 const proxyAgent = process.env.PROXY_URL
   ? new HttpsProxyAgent(process.env.PROXY_URL)
@@ -76,7 +80,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "no-store, max-age=0" },
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown network error";
