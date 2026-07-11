@@ -56,7 +56,8 @@ export async function GET(request: NextRequest) {
 
     const text = await response.text();
     console.log("[v0] LuxDrop status:", response.status);
-    console.log("[v0] LuxDrop body (first 600):", text.slice(0, 600));
+    // Log the FULL response so we can see every field name returned by the API
+    console.log("[v0] LuxDrop FULL response body:", text);
 
     if (!response.ok) {
       return NextResponse.json(
