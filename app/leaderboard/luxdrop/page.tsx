@@ -32,7 +32,7 @@ interface LuxDropEntry {
   username?: string
   name?: string
   avatar?: string | null
-  wagered?: number        // may be in cents or dollars — treat as cents
+  wagered?: number        // LuxDrop returns this in dollars
   wagerAmount?: number
   totalWagered?: number
   deposited?: number
@@ -80,7 +80,8 @@ export default function LuxdropLeaderboard() {
       setError(null)
       try {
         const res = await fetch(
-          `/api/luxdrop/affiliates?startDate=${START_DATE}&endDate=${END_DATE}`
+          `/api/luxdrop/affiliates?startDate=${START_DATE}&endDate=${END_DATE}`,
+          { cache: 'no-store' }
         )
         const json = await res.json()
         if (!res.ok) {
@@ -124,12 +125,13 @@ export default function LuxdropLeaderboard() {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
-  const formatMoney = (cents: number) =>
+  // LuxDrop returns wager amounts already in dollars (unlike AceBet which uses cents)
+  const formatMoney = (dollars: number) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format(cents / 100)
+    }).format(dollars)
 
   const maskName = (name: string) => {
     if (!name || name.length <= 3) return name
