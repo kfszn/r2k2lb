@@ -10,9 +10,11 @@ import { Header } from '@/components/header'
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const START_DATE = '2026-07-08'
-const END_DATE   = '2026-08-08'
-const DISPLAY_RANGE = 'Jul 8 – Aug 8, 2026'
+  // Query start pulled back 1 day (Jul 7) to make sure wagers near the
+  // boundary/timezone edge are captured. Displayed range stays Jul 8.
+  const START_DATE = '2026-07-07'
+  const END_DATE   = '2026-08-08'
+  const DISPLAY_RANGE = 'Jul 8 – Aug 8, 2026'
 const PRIZE_TOTAL = 2500
 
 // Top 10 prize breakdown — $2,500 total pool
