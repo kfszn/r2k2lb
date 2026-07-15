@@ -3,18 +3,18 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Trophy, Clock, TrendingUp, Users, Search } from 'lucide-react'
+import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, CheckCircle, AlertCircle } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-  // Query start pulled back 1 day (Jul 7) to make sure wagers near the
-  // boundary/timezone edge are captured. Displayed range stays Jul 8.
-  const START_DATE = '2026-07-07'
-  const END_DATE   = '2026-08-08'
-  const DISPLAY_RANGE = 'Jul 8 – Aug 8, 2026'
+// Query start pulled back 1 day (Jul 7) to make sure wagers near the
+// boundary/timezone edge are captured. Displayed range stays Jul 8.
+const START_DATE = '2026-07-07'
+const END_DATE   = '2026-08-08'
+const DISPLAY_RANGE = 'Jul 8 – Aug 8, 2026'
 const PRIZE_TOTAL = 2500
 
 // Top 10 prize breakdown — $2,500 total pool
@@ -67,6 +67,7 @@ function getEntryAvatar(e: LuxDropEntry): string | null {
 }
 
 export default function LuxdropLeaderboard() {
+  const [activeTab, setActiveTab] = useState<'leaderboard' | 'rules'>('leaderboard')
   const [entries, setEntries] = useState<LuxDropEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -261,11 +262,146 @@ export default function LuxdropLeaderboard() {
         </div>
       </section>
 
+      {/* Tab Nav */}
+      <section className="container mx-auto px-4 pb-2">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex gap-1 p-1 rounded-xl bg-card/60 border border-border/40 w-fit">
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === 'leaderboard'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Trophy className="h-4 w-4" />
+              Leaderboard
+            </button>
+            <button
+              onClick={() => setActiveTab('rules')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === 'rules'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <BookOpen className="h-4 w-4" />
+              Rules
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Leaderboard */}
       <section className="py-8 pb-24">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto space-y-6">
 
+            {activeTab === 'rules' && (
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="rounded-2xl border border-primary/20 bg-card/60 p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <BookOpen className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold">Leaderboard Rules</h2>
+                      <p className="text-sm text-muted-foreground">{DISPLAY_RANGE}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    The LuxDrop leaderboard tracks your wagering activity on{' '}
+                    <a href="https://luxdrop.com/r/R2K2" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">luxdrop.com</a>{' '}
+                    using code <strong className="text-primary">R2K2</strong>. Your score is calculated based on the type of game you play — see the breakdown below.
+                  </p>
+                </div>
+
+                {/* Wager contribution table */}
+                <div className="rounded-2xl border border-border/50 overflow-hidden">
+                  <div className="px-5 py-4 bg-muted/40 border-b border-border/50">
+                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Wager Contribution by Game Type</h3>
+                  </div>
+                  <div className="divide-y divide-border/30">
+                    {/* All games row */}
+                    <div className="flex items-center justify-between px-5 py-4 bg-card/50 hover:bg-muted/10 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                        <div>
+                          <p className="font-semibold text-sm">All Games</p>
+                          <p className="text-xs text-muted-foreground">Slots, table games, live casino, and all other LuxDrop games</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-4">
+                        <span className="text-lg font-bold text-green-500">100%</span>
+                        <span className="text-xs text-muted-foreground">of wager counts</span>
+                      </div>
+                    </div>
+
+                    {/* House Blackjack row */}
+                    <div className="flex items-center justify-between px-5 py-4 bg-card/50 hover:bg-muted/10 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+                        <div>
+                          <p className="font-semibold text-sm">House Blackjack</p>
+                          <p className="text-xs text-muted-foreground">LuxDrop&apos;s house blackjack game only</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-4">
+                        <span className="text-lg font-bold text-yellow-500">5%</span>
+                        <span className="text-xs text-muted-foreground">of wager counts</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Example callout */}
+                <div className="rounded-xl bg-muted/30 border border-border/40 px-5 py-4">
+                  <p className="text-sm font-semibold mb-2">Example</p>
+                  <ul className="text-sm text-muted-foreground space-y-1.5">
+                    <li>• A <strong className="text-foreground">$100</strong> wager on any slot → <strong className="text-green-500">$100</strong> added to your leaderboard score.</li>
+                    <li>• A <strong className="text-foreground">$100</strong> wager on House Blackjack → <strong className="text-yellow-500">$5</strong> added to your leaderboard score.</li>
+                  </ul>
+                </div>
+
+                {/* Prize breakdown */}
+                <div className="rounded-2xl border border-border/50 overflow-hidden">
+                  <div className="px-5 py-4 bg-muted/40 border-b border-border/50">
+                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Prize Breakdown — ${PRIZE_TOTAL.toLocaleString()} Pool</h3>
+                  </div>
+                  <div className="divide-y divide-border/30">
+                    {REWARDS.map((amt, i) => {
+                      const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
+                      return (
+                        <div key={i} className="flex items-center justify-between px-5 py-3 bg-card/50">
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm w-8 text-center font-bold text-muted-foreground">{ordinals[i]}</span>
+                            <Trophy className={`h-4 w-4 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-500' : 'text-muted-foreground/40'}`} />
+                          </div>
+                          <span className={`font-bold text-sm ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-500' : 'text-foreground'}`}>
+                            ${amt.toLocaleString()}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Eligibility */}
+                <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-5 py-4 space-y-2">
+                  <h3 className="font-semibold text-sm text-blue-400">Eligibility</h3>
+                  <ul className="text-sm text-muted-foreground space-y-1.5">
+                    <li>• You must be registered on LuxDrop using referral code <strong className="text-primary">R2K2</strong>.</li>
+                    <li>• Wagers must be placed within the leaderboard period: <strong className="text-foreground">{DISPLAY_RANGE}</strong>.</li>
+                    <li>• Prizes are distributed at the end of the leaderboard period.</li>
+                    <li>• R2K2 reserves the right to disqualify accounts suspected of abuse or multi-accounting.</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'leaderboard' && (
+              <>
             {/* Loading */}
             {loading && (
               <div className="text-center py-12">
@@ -538,6 +674,8 @@ export default function LuxdropLeaderboard() {
                     </div>
                   </div>
                 )}
+              </>
+            )}
               </>
             )}
           </div>
