@@ -323,13 +323,13 @@ export default function LuxdropLeaderboard() {
                     <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Wager Contribution by Game Type</h3>
                   </div>
                   <div className="divide-y divide-border/30">
-                    {/* All games row */}
+                    {/* Packs, Battles, Deals, Mines row */}
                     <div className="flex items-center justify-between px-5 py-4 bg-card/50 hover:bg-muted/10 transition-colors">
                       <div className="flex items-center gap-3">
                         <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
                         <div>
-                          <p className="font-semibold text-sm">All Games</p>
-                          <p className="text-xs text-muted-foreground">Slots, table games, live casino, and all other LuxDrop games</p>
+                          <p className="font-semibold text-sm">Packs, Battles, Deals &amp; Mines</p>
+                          <p className="text-xs text-muted-foreground">Full wager value counts toward your leaderboard score</p>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-4">
@@ -338,13 +338,13 @@ export default function LuxdropLeaderboard() {
                       </div>
                     </div>
 
-                    {/* House Blackjack row */}
+                    {/* Blackjack row */}
                     <div className="flex items-center justify-between px-5 py-4 bg-card/50 hover:bg-muted/10 transition-colors">
                       <div className="flex items-center gap-3">
                         <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0" />
                         <div>
-                          <p className="font-semibold text-sm">House Blackjack</p>
-                          <p className="text-xs text-muted-foreground">LuxDrop&apos;s house blackjack game only</p>
+                          <p className="font-semibold text-sm">Blackjack</p>
+                          <p className="text-xs text-muted-foreground">Only 5% of your wager counts toward your leaderboard score</p>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-4">
@@ -359,8 +359,8 @@ export default function LuxdropLeaderboard() {
                 <div className="rounded-xl bg-muted/30 border border-border/40 px-5 py-4">
                   <p className="text-sm font-semibold mb-2">Example</p>
                   <ul className="text-sm text-muted-foreground space-y-1.5">
-                    <li>• A <strong className="text-foreground">$100</strong> wager on any slot → <strong className="text-green-500">$100</strong> added to your leaderboard score.</li>
-                    <li>• A <strong className="text-foreground">$100</strong> wager on House Blackjack → <strong className="text-yellow-500">$5</strong> added to your leaderboard score.</li>
+                    <li>• A <strong className="text-foreground">$100</strong> wager on Packs, Battles, Deals, or Mines → <strong className="text-green-500">$100</strong> added to your leaderboard score.</li>
+                    <li>• A <strong className="text-foreground">$100</strong> wager on Blackjack → <strong className="text-yellow-500">$5</strong> added to your leaderboard score.</li>
                   </ul>
                 </div>
 
