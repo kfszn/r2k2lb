@@ -10,11 +10,11 @@ import { Header } from '@/components/header'
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-  // Query start pulled back 1 day (Jul 7) to make sure wagers near the
-  // boundary/timezone edge are captured. Displayed range stays Jul 8.
-  const START_DATE = '2026-07-07'
-  const END_DATE   = '2026-08-08'
-  const DISPLAY_RANGE = 'Jul 8 – Aug 8, 2026'
+// Query start pulled back 1 day (Jul 7) to make sure wagers near the
+// boundary/timezone edge are captured. Displayed range stays Jul 8.
+const START_DATE = '2026-07-07'
+const END_DATE   = '2026-08-08'
+const DISPLAY_RANGE = 'Jul 8 – Aug 8, 2026'
 const PRIZE_TOTAL = 2500
 
 // Top 10 prize breakdown — $2,500 total pool
@@ -371,7 +371,6 @@ export default function LuxdropLeaderboard() {
                   </div>
                   <div className="divide-y divide-border/30">
                     {REWARDS.map((amt, i) => {
-                      const medals = ['🥇', '🥈', '🥉']
                       const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
                       return (
                         <div key={i} className="flex items-center justify-between px-5 py-3 bg-card/50">
