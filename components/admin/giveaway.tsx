@@ -179,18 +179,19 @@ export function Giveaway() {
     const slice = (2 * Math.PI) / items.length;
     const winnerIndex = Math.floor(Math.random() * items.length);
 
-    // Pointer is at the top (12 o'clock = -π/2 in canvas coords).
-    // Centre of slice i sits at: angle + i*slice + slice/2.
-    // We need finalAngle + winnerIndex*slice + slice/2 = -π/2, so:
-    const finalAngle = -Math.PI / 2 - winnerIndex * slice - slice / 2;
+    // The pointer is at the top of the wheel = -π/2 in canvas arc coords.
+    // Slice i occupies [baseAngle + i*slice, baseAngle + i*slice + slice].
+    // For the centre of winning slice to sit under the pointer:
+    //   baseAngle + winnerIndex*slice + slice/2 ≡ -π/2  (mod 2π)
+    const POINTER_ANGLE = -Math.PI / 2;
+    const targetBaseAngle = POINTER_ANGLE - winnerIndex * slice - slice / 2;
 
-    // Derive a forward-spin delta from the current angle to finalAngle,
-    // then add extra full rotations for drama.
+    // Spin forward (always increasing angle) to reach targetBaseAngle.
+    const TAU = 2 * Math.PI;
     const extraRotations = 6 + Math.random() * 4;
-    let delta = finalAngle - wheelAngleRef.current;
-    delta = ((delta % (2 * Math.PI)) - 2 * Math.PI) % (2 * Math.PI);
-    if (delta === 0) delta = -2 * Math.PI;
-    const targetAngle = -delta + extraRotations * 2 * Math.PI;
+    let forward = (targetBaseAngle - wheelAngleRef.current) % TAU;
+    if (forward <= 0) forward += TAU; // ensure strictly positive (0, 2π]
+    const targetAngle = forward + extraRotations * TAU;
 
     const startAngle = wheelAngleRef.current;
     const startTime = performance.now();

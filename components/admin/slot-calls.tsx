@@ -471,21 +471,26 @@ export function SlotCalls() {
     // Pick a random winner index
     const winnerIndex = Math.floor(Math.random() * calls.length);
 
-    // The pointer sits at the top of the canvas (12 o'clock = -π/2 in canvas coords).
-    // Slice i spans [angle + i*slice, angle + i*slice + slice].
-    // We need: finalAngle + winnerIndex*slice + slice/2 ≡ -π/2  (mod 2π)
-    // so:      finalAngle = -π/2 - winnerIndex*slice - slice/2
-    const finalAngle = -Math.PI / 2 - winnerIndex * slice - slice / 2;
+    // The pointer is at the top of the wheel = -π/2 in canvas arc coords
+    // (arc angle 0 = 3 o'clock, so 12 o'clock = -π/2).
+    // Slice i occupies [baseAngle + i*slice, baseAngle + i*slice + slice].
+    // For the centre of winning slice to sit under the pointer we need:
+    //   baseAngle + winnerIndex*slice + slice/2 ≡ -π/2  (mod 2π)
+    // baseAngle is what wheelAngleRef will equal when the spin ends, so:
+    const POINTER_ANGLE = -Math.PI / 2;
+    const targetBaseAngle = POINTER_ANGLE - winnerIndex * slice - slice / 2;
 
-    // Compute how far we need to rotate FROM the current angle TO finalAngle,
-    // always going forward (positive), adding extra full rotations for drama.
+    // Work out how many radians to ADD to the current angle (always spin forward
+    // = increasing angle) to land exactly on targetBaseAngle.
+    const TAU = 2 * Math.PI;
     const extraRotations = 6 + Math.random() * 4;
-    let delta = finalAngle - wheelAngleRef.current;
-    // Normalise so delta is in (-2π, 0], then make it positive by adding rotations
-    delta = ((delta % (2 * Math.PI)) - 2 * Math.PI) % (2 * Math.PI);
-    if (delta === 0) delta = -2 * Math.PI; // avoid zero-delta edge case
-    // delta is now in (-2π, 0]; flip sign then add extra rotations for a forward spin
-    const targetAngle = -delta + extraRotations * 2 * Math.PI;
+
+    // "shortestForward" = how far forward (0, 2π] we must go from current angle
+    // to reach targetBaseAngle mod 2π.
+    let forward = (targetBaseAngle - wheelAngleRef.current) % TAU;
+    if (forward <= 0) forward += TAU; // ensure strictly positive (0, 2π]
+
+    const targetAngle = forward + extraRotations * TAU;
 
     const startAngle = wheelAngleRef.current;
     const startTime = performance.now();
