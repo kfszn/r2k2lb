@@ -28,7 +28,7 @@ const GAMES = [
   {
     id: 'keno',
     name: 'Keno',
-    description: 'Pick your numbers from an 80-tile grid. Match the draw to win big.',
+    description: 'Pick 1–10 numbers from a 40-tile grid. Match the draw to win big.',
     href: '/games/keno',
     image: '/games/keno-cover.png',
   },
@@ -114,7 +114,7 @@ export default function GamesPage() {
                   {isLoggedIn ? `Play ${game.name}` : 'Log in to play'}
                 </span>
                 <span className="text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
-                  Play &rarr;
+                  {isLoggedIn ? 'Play' : 'Log in'} &rarr;
                 </span>
               </div>
             </Link>
