@@ -471,12 +471,21 @@ export function SlotCalls() {
     // Pick a random winner index
     const winnerIndex = Math.floor(Math.random() * calls.length);
 
-    // Total spin: many full rotations + land exactly on winner
-    const totalRotations = 6 + Math.random() * 4;
-    const targetAngle =
-      totalRotations * 2 * Math.PI +
-      // Position wheel so winner is under the top pointer (angle = -π/2)
-      (-(winnerIndex * slice + slice / 2) - Math.PI / 2 - (wheelAngleRef.current % (2 * Math.PI)));
+    // The pointer sits at the top of the canvas (12 o'clock = -π/2 in canvas coords).
+    // Slice i spans [angle + i*slice, angle + i*slice + slice].
+    // We need: finalAngle + winnerIndex*slice + slice/2 ≡ -π/2  (mod 2π)
+    // so:      finalAngle = -π/2 - winnerIndex*slice - slice/2
+    const finalAngle = -Math.PI / 2 - winnerIndex * slice - slice / 2;
+
+    // Compute how far we need to rotate FROM the current angle TO finalAngle,
+    // always going forward (positive), adding extra full rotations for drama.
+    const extraRotations = 6 + Math.random() * 4;
+    let delta = finalAngle - wheelAngleRef.current;
+    // Normalise so delta is in (-2π, 0], then make it positive by adding rotations
+    delta = ((delta % (2 * Math.PI)) - 2 * Math.PI) % (2 * Math.PI);
+    if (delta === 0) delta = -2 * Math.PI; // avoid zero-delta edge case
+    // delta is now in (-2π, 0]; flip sign then add extra rotations for a forward spin
+    const targetAngle = -delta + extraRotations * 2 * Math.PI;
 
     const startAngle = wheelAngleRef.current;
     const startTime = performance.now();
