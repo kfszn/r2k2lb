@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server'
-import { hashServerSeed, limboMultiplier } from '@/lib/games/provably-fair'
+import {
+  hashServerSeed,
+  limboMultiplier,
+  fairKenoDraw,
+  fairPlinkoSlot,
+} from '@/lib/games/provably-fair'
+import { KENO_GRID, KENO_DRAWN } from '@/lib/games/keno-config'
 
 /**
  * Public, stateless verification. Given the revealed server seed, client seed,
@@ -32,6 +38,17 @@ export async function POST(req: Request) {
     case 'limbo': {
       const multiplier = limboMultiplier(serverSeed, clientSeed, nonce)
       outcome = { multiplier }
+      break
+    }
+    case 'keno': {
+      const drawn = fairKenoDraw(KENO_GRID, KENO_DRAWN, serverSeed, clientSeed, nonce)
+      outcome = { drawn }
+      break
+    }
+    case 'plinko': {
+      const rows = Number(body.params?.rows) || 16
+      const slot = fairPlinkoSlot(rows, serverSeed, clientSeed, nonce)
+      outcome = { slot, rows }
       break
     }
     default:
