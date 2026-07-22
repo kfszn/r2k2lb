@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import useSWR from 'swr'
 import { Input } from '@/components/ui/input'
 import { Loader2, Coins } from 'lucide-react'
@@ -51,7 +51,17 @@ function rankLabel(rank: number) {
   return RANK_CHAR[rank] ?? String(rank)
 }
 
-function PlayingCard({ card, hidden, index }: { card?: Card; hidden?: boolean; index: number }) {
+function PlayingCard({
+  card,
+  hidden,
+  index,
+  delay = 0,
+}: {
+  card?: Card
+  hidden?: boolean
+  index: number
+  delay?: number
+}) {
   const red = card && (card.suit === 'H' || card.suit === 'D')
   return (
     <div
@@ -61,7 +71,7 @@ function PlayingCard({ card, hidden, index }: { card?: Card; hidden?: boolean; i
           ? 'bg-gradient-to-br from-slate-700 to-slate-900 border-slate-600'
           : 'bg-gradient-to-br from-zinc-50 to-zinc-200 border-zinc-300',
       )}
-      style={{ marginLeft: index > 0 ? '-1.5rem' : 0, animationDelay: `${index * 60}ms`, zIndex: index }}
+      style={{ marginLeft: index > 0 ? '-1.5rem' : 0, animationDelay: `${delay}ms`, zIndex: index }}
     >
       {hidden ? (
         <div className="absolute inset-1.5 rounded border border-slate-500/40 bg-[repeating-linear-gradient(45deg,rgba(148,163,184,0.15)_0_6px,transparent_6px_12px)]" />
@@ -113,6 +123,28 @@ export function BlackjackBoard() {
 
   const bet = Number(betAmount)
 
+  // Per-card deal stagger. We only stagger cards that are NEW this render, so
+  // the opening deal cascades one card at a time while a single hit/double card
+  // slides in on its own without waiting behind already-dealt cards.
+  const DEAL_STAGGER = 220 // ms between consecutive cards
+  const shown = useRef<{ dealer: number; hands: number[] }>({ dealer: 0, hands: [] })
+  const dealerDelay = (i: number) => Math.max(0, i - shown.current.dealer) * DEAL_STAGGER
+  const handDelay = (hi: number, i: number) =>
+    Math.max(0, i - (shown.current.hands[hi] ?? 0)) * DEAL_STAGGER
+
+  // Record how many cards are currently visible AFTER each render so the next
+  // state change knows which cards are freshly dealt.
+  useEffect(() => {
+    if (!state) {
+      shown.current = { dealer: 0, hands: [] }
+      return
+    }
+    shown.current = {
+      dealer: state.dealer.length,
+      hands: state.hands.map((h) => h.cards.length),
+    }
+  }, [state])
+
   // Resume an in-progress hand on mount.
   useEffect(() => {
     ;(async () => {
@@ -154,6 +186,8 @@ export function BlackjackBoard() {
         setBusy(false)
         return
       }
+      // Fresh hand: reset the stagger baseline so the opening cards cascade in.
+      shown.current = { dealer: 0, hands: [] }
       setHandId(data.handId)
       setState(data.state)
       setLegal(data.legal ?? [])
@@ -244,9 +278,11 @@ export function BlackjackBoard() {
             {state ? (
               <>
                 {state.dealer.map((c, i) => (
-                  <PlayingCard key={i} card={c} index={i} />
+                  <PlayingCard key={i} card={c} index={i} delay={dealerDelay(i)} />
                 ))}
-                {!state.dealerHoleShown && <PlayingCard hidden index={state.dealer.length} />}
+                {!state.dealerHoleShown && (
+                  <PlayingCard hidden index={state.dealer.length} delay={dealerDelay(state.dealer.length)} />
+                )}
               </>
             ) : (
               <div className="text-emerald-200/40 text-sm">Waiting for bet…</div>
@@ -284,7 +320,7 @@ export function BlackjackBoard() {
               <div key={hi} className="flex flex-col items-center gap-2">
                 <div className="flex items-center h-24">
                   {hand.cards.map((c, i) => (
-                    <PlayingCard key={i} card={c} index={i} />
+                    <PlayingCard key={i} card={c} index={i} delay={handDelay(hi, i)} />
                   ))}
                 </div>
                 <div className="flex items-center gap-2">

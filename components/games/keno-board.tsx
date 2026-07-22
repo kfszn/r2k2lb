@@ -371,17 +371,17 @@ export function KenoBoard() {
                   onClick={() => togglePick(n)}
                   disabled={playing}
                   className={cn(
-                    'aspect-square rounded-xl text-lg md:text-2xl font-bold tabular-nums flex items-center justify-center border transition-all duration-150 select-none disabled:cursor-default',
+                    'aspect-square rounded-xl text-lg md:text-2xl font-bold tabular-nums flex items-center justify-center border-2 transition-[background-color,border-color,box-shadow,color] duration-300 ease-out select-none active:scale-90 disabled:cursor-default',
                     !picked &&
                       !isRevealed &&
                       'bg-[oklch(0.26_0.02_260)] border-transparent text-foreground/90 hover:bg-[oklch(0.31_0.02_260)] hover:-translate-y-0.5',
                     picked &&
                       !isHit &&
                       !isMiss &&
-                      'bg-amber-500/20 border-amber-500 text-amber-300 shadow-[0_0_14px_-2px_rgba(245,158,11,0.6)]',
+                      'animate-tile-pop bg-amber-500 border-amber-300 text-amber-950 shadow-[0_0_26px_-4px_rgba(245,158,11,0.85)] z-10',
                     isHit &&
-                      'bg-emerald-500/25 border-emerald-400 text-emerald-100 shadow-[0_0_18px_-2px_rgba(16,185,129,0.7)] scale-105 z-10',
-                    isMiss && 'bg-amber-500/5 border-amber-500/20 text-amber-500/40',
+                      'bg-emerald-500 border-emerald-300 text-emerald-950 shadow-[0_0_28px_-2px_rgba(16,185,129,0.9)] scale-105 z-20',
+                    isMiss && 'bg-amber-500/10 border-amber-500/25 text-amber-500/40',
                     drawnOnly && 'bg-[oklch(0.22_0.02_260)] border-border/40 text-muted-foreground/60',
                   )}
                 >
