@@ -466,31 +466,36 @@ export function SlotCalls() {
     setWheelSpinning(true);
 
     const calls = pendingCalls;
-    const slice = (2 * Math.PI) / calls.length;
-
-    // Pick a random winner index
-    const winnerIndex = Math.floor(Math.random() * calls.length);
-
-    // The pointer is at the top of the wheel = -π/2 in canvas arc coords
-    // (arc angle 0 = 3 o'clock, so 12 o'clock = -π/2).
-    // Slice i occupies [baseAngle + i*slice, baseAngle + i*slice + slice].
-    // For the centre of winning slice to sit under the pointer we need:
-    //   baseAngle + winnerIndex*slice + slice/2 ≡ -π/2  (mod 2π)
-    // baseAngle is what wheelAngleRef will equal when the spin ends, so:
-    const POINTER_ANGLE = -Math.PI / 2;
-    const targetBaseAngle = POINTER_ANGLE - winnerIndex * slice - slice / 2;
-
-    // Work out how many radians to ADD to the current angle (always spin forward
-    // = increasing angle) to land exactly on targetBaseAngle.
+    const n = calls.length;
+    const slice = (2 * Math.PI) / n;
     const TAU = 2 * Math.PI;
-    const extraRotations = 6 + Math.random() * 4;
 
-    // "shortestForward" = how far forward (0, 2π] we must go from current angle
-    // to reach targetBaseAngle mod 2π.
-    let forward = (targetBaseAngle - wheelAngleRef.current) % TAU;
-    if (forward <= 0) forward += TAU; // ensure strictly positive (0, 2π]
+    // Pick a random winner
+    const winnerIndex = Math.floor(Math.random() * n);
 
-    const targetAngle = forward + extraRotations * TAU;
+    // Pointer is at the top of the canvas (12 o'clock).
+    // In canvas arc coords, 0 = 3 o'clock, so 12 o'clock = -π/2.
+    // drawWheel draws slice i from (angle + i*slice) to (angle + i*slice + slice).
+    // We want the pointer (-π/2) to hit the CENTRE of the winning slice, so we
+    // need the final resting angle to satisfy:
+    //   finalAngle + winnerIndex*slice + slice/2 = -π/2  (mod TAU)
+    // => finalAngle = -π/2 - winnerIndex*slice - slice/2
+    //
+    // To avoid any modulo arithmetic on the current angle, we compute an
+    // ABSOLUTE target angle that is guaranteed to be > currentAngle by spinning
+    // at least `minSpins` full rotations forward.
+    const minSpins = 6;
+    const extraFraction = Math.random(); // 0..1 extra rotation for randomness
+
+    // The ideal resting angle (absolute, ignoring current position):
+    const restAngle = -Math.PI / 2 - winnerIndex * slice - slice / 2;
+
+    // Find the smallest absolute angle >= (currentAngle + minSpins*TAU)
+    // that is congruent to restAngle (mod TAU).
+    const minTarget = wheelAngleRef.current + (minSpins + extraFraction) * TAU;
+    // How many full TAU steps above restAngle do we need?
+    const k = Math.ceil((minTarget - restAngle) / TAU);
+    const absoluteTarget = restAngle + k * TAU;
 
     const startAngle = wheelAngleRef.current;
     const startTime = performance.now();
@@ -503,13 +508,13 @@ export function SlotCalls() {
       const progress = Math.min(elapsed / duration, 1);
       const eased = easeOut(progress);
 
-      wheelAngleRef.current = startAngle + eased * targetAngle;
+      wheelAngleRef.current = startAngle + eased * (absoluteTarget - startAngle);
       drawWheel(wheelAngleRef.current, calls, null);
 
       if (progress < 1) {
         wheelAnimFrameRef.current = requestAnimationFrame(animate);
       } else {
-        wheelAngleRef.current = startAngle + targetAngle;
+        wheelAngleRef.current = absoluteTarget;
         const winner = calls[winnerIndex];
         setWheelWinner(winner);
         setWheelSpinning(false);

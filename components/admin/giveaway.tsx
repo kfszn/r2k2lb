@@ -176,22 +176,24 @@ export function Giveaway() {
     setWheelSpinning(true);
 
     const items = entries;
-    const slice = (2 * Math.PI) / items.length;
-    const winnerIndex = Math.floor(Math.random() * items.length);
-
-    // The pointer is at the top of the wheel = -π/2 in canvas arc coords.
-    // Slice i occupies [baseAngle + i*slice, baseAngle + i*slice + slice].
-    // For the centre of winning slice to sit under the pointer:
-    //   baseAngle + winnerIndex*slice + slice/2 ≡ -π/2  (mod 2π)
-    const POINTER_ANGLE = -Math.PI / 2;
-    const targetBaseAngle = POINTER_ANGLE - winnerIndex * slice - slice / 2;
-
-    // Spin forward (always increasing angle) to reach targetBaseAngle.
+    const n = items.length;
+    const slice = (2 * Math.PI) / n;
     const TAU = 2 * Math.PI;
-    const extraRotations = 6 + Math.random() * 4;
-    let forward = (targetBaseAngle - wheelAngleRef.current) % TAU;
-    if (forward <= 0) forward += TAU; // ensure strictly positive (0, 2π]
-    const targetAngle = forward + extraRotations * TAU;
+    const winnerIndex = Math.floor(Math.random() * n);
+
+    // Pointer is at 12 o'clock = -π/2 in canvas arc coords.
+    // Slice i is drawn from (angle + i*slice) to (angle + i*slice + slice).
+    // We need: finalAngle + winnerIndex*slice + slice/2 = -π/2 (mod TAU)
+    // => restAngle = -π/2 - winnerIndex*slice - slice/2
+    const restAngle = -Math.PI / 2 - winnerIndex * slice - slice / 2;
+
+    // Find the smallest absolute angle >= currentAngle + minSpins*TAU
+    // that is congruent to restAngle (mod TAU).
+    const minSpins = 6;
+    const extraFraction = Math.random();
+    const minTarget = wheelAngleRef.current + (minSpins + extraFraction) * TAU;
+    const k = Math.ceil((minTarget - restAngle) / TAU);
+    const absoluteTarget = restAngle + k * TAU;
 
     const startAngle = wheelAngleRef.current;
     const startTime = performance.now();
@@ -202,13 +204,13 @@ export function Giveaway() {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = easeOut(progress);
-      wheelAngleRef.current = startAngle + eased * targetAngle;
+      wheelAngleRef.current = startAngle + eased * (absoluteTarget - startAngle);
       drawWheel(wheelAngleRef.current, items, null);
 
       if (progress < 1) {
         wheelAnimFrameRef.current = requestAnimationFrame(animate);
       } else {
-        wheelAngleRef.current = startAngle + targetAngle;
+        wheelAngleRef.current = absoluteTarget;
         const w = items[winnerIndex];
         setWheelWinner(w);
         setWheelSpinning(false);
