@@ -208,12 +208,10 @@ function Header() {
               >
                 Shop
               </Link>
-              <Link
-                href="/games"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Games
-              </Link>
+              <div className="flex items-center justify-between px-4 py-2 cursor-default select-none">
+                <span className="text-sm font-medium text-muted-foreground/40">Games</span>
+                <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-wider">Soon</span>
+              </div>
               <div className="h-px bg-border/20 mx-2 my-1" />
               <Link
                 href="/how-it-works"
@@ -396,9 +394,10 @@ function Header() {
                       <Link href="/shop" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Shop
                       </Link>
-                      <Link href="/games" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Games
-                      </Link>
+                      <div className="flex items-center justify-center gap-2 py-2 cursor-default select-none">
+                        <span className="text-sm font-medium text-muted-foreground/40">Games</span>
+                        <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-wider">Soon</span>
+                      </div>
                       <div className="h-px bg-border/20 my-1" />
                       <Link href="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         How It Works

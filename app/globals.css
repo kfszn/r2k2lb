@@ -242,11 +242,49 @@
   animation: glow-pulse 3s ease-in-out infinite;
 }
 
+/* Card dealing animation for table games */
+@keyframes deal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-28px) rotate(-7deg) scale(0.88);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+.animate-deal-in {
+  animation: deal-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Keno tile "light up" pop when a number is selected */
+@keyframes tile-pop {
+  0% {
+    transform: scale(0.86);
+  }
+  55% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: scale(1.04);
+  }
+}
+
+.animate-tile-pop {
+  animation: tile-pop 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-fade-in,
   .animate-glow-pulse,
+  .animate-deal-in,
+  .animate-tile-pop,
   .logo-bounce,
   .dot-pulse {
     animation: none;
