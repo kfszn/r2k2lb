@@ -178,10 +178,19 @@ export function Giveaway() {
     const items = entries;
     const slice = (2 * Math.PI) / items.length;
     const winnerIndex = Math.floor(Math.random() * items.length);
-    const totalRotations = 6 + Math.random() * 4;
-    const targetAngle =
-      totalRotations * 2 * Math.PI +
-      (-(winnerIndex * slice + slice / 2) - Math.PI / 2 - (wheelAngleRef.current % (2 * Math.PI)));
+
+    // Pointer is at the top (12 o'clock = -π/2 in canvas coords).
+    // Centre of slice i sits at: angle + i*slice + slice/2.
+    // We need finalAngle + winnerIndex*slice + slice/2 = -π/2, so:
+    const finalAngle = -Math.PI / 2 - winnerIndex * slice - slice / 2;
+
+    // Derive a forward-spin delta from the current angle to finalAngle,
+    // then add extra full rotations for drama.
+    const extraRotations = 6 + Math.random() * 4;
+    let delta = finalAngle - wheelAngleRef.current;
+    delta = ((delta % (2 * Math.PI)) - 2 * Math.PI) % (2 * Math.PI);
+    if (delta === 0) delta = -2 * Math.PI;
+    const targetAngle = -delta + extraRotations * 2 * Math.PI;
 
     const startAngle = wheelAngleRef.current;
     const startTime = performance.now();
