@@ -258,7 +258,7 @@
 }
 
 .animate-deal-in {
-  animation: deal-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: deal-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Keno tile "light up" pop when a number is selected */

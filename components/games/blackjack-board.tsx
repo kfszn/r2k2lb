@@ -123,24 +123,39 @@ export function BlackjackBoard() {
 
   const bet = Number(betAmount)
 
-  // Per-card deal stagger. We only stagger cards that are NEW this render, so
-  // the opening deal cascades one card at a time while a single hit/double card
-  // slides in on its own without waiting behind already-dealt cards.
-  const DEAL_STAGGER = 220 // ms between consecutive cards
+  // Per-card deal stagger. Only cards that are NEW since the previous render are
+  // staggered, and they're ordered the way a real dealer deals — one card to
+  // each player hand, then the dealer, round by round — so the opening deal
+  // cascades player, dealer, player, dealer instead of appearing in one flash.
+  // A lone card from a hit/double/split slides in on its own with no wait.
+  const DEAL_STAGGER = 320 // ms between consecutive newly-dealt cards
   const shown = useRef<{ dealer: number; hands: number[] }>({ dealer: 0, hands: [] })
-  const dealerDelay = (i: number) => Math.max(0, i - shown.current.dealer) * DEAL_STAGGER
-  const handDelay = (hi: number, i: number) =>
-    Math.max(0, i - (shown.current.hands[hi] ?? 0)) * DEAL_STAGGER
 
-  // Record how many cards are currently visible AFTER each render so the next
-  // state change knows which cards are freshly dealt.
+  const delayMap = new Map<string, number>()
+  if (state) {
+    const dealerCount = state.dealer.length + (state.dealerHoleShown ? 0 : 1)
+    const rounds = Math.max(dealerCount, ...state.hands.map((h) => h.cards.length), 0)
+    let seq = 0
+    for (let r = 0; r < rounds; r++) {
+      state.hands.forEach((h, hi) => {
+        const prev = shown.current.hands[hi] ?? 0
+        if (r < h.cards.length && r >= prev) delayMap.set(`h${hi}-${r}`, seq++ * DEAL_STAGGER)
+      })
+      if (r < dealerCount && r >= shown.current.dealer) delayMap.set(`d-${r}`, seq++ * DEAL_STAGGER)
+    }
+  }
+  const dealerDelay = (i: number) => delayMap.get(`d-${i}`) ?? 0
+  const handDelay = (hi: number, i: number) => delayMap.get(`h${hi}-${i}`) ?? 0
+
+  // Record how many cards are visible AFTER each render so the next state change
+  // knows which cards are freshly dealt. Dealer count includes the hole card.
   useEffect(() => {
     if (!state) {
       shown.current = { dealer: 0, hands: [] }
       return
     }
     shown.current = {
-      dealer: state.dealer.length,
+      dealer: state.dealer.length + (state.dealerHoleShown ? 0 : 1),
       hands: state.hands.map((h) => h.cards.length),
     }
   }, [state])
