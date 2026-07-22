@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, CheckCircle, Trash2, Clock, Trophy, Settings, Dices } from 'lucide-react';
+import { Plus, CheckCircle, Trash2, Clock, Trophy, Settings, Dices, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface RequestLimit {
@@ -58,6 +58,11 @@ export function SlotCalls() {
     buy_result: '',
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  // Completed calls sort state
+  type SortKey = 'result' | 'multi';
+  type SortDir = 'asc' | 'desc';
+  const [completedSort, setCompletedSort] = useState<{ key: SortKey; dir: SortDir } | null>(null);
 
   // Wheel state
   const [wheelModalOpen, setWheelModalOpen] = useState(false);
@@ -539,6 +544,36 @@ export function SlotCalls() {
     return null;
   })();
 
+  const toggleSort = (key: SortKey) => {
+    setCompletedSort((prev) => {
+      if (!prev || prev.key !== key) return { key, dir: 'desc' };
+      if (prev.dir === 'desc') return { key, dir: 'asc' };
+      return null; // third click resets
+    });
+  };
+
+  const sortedCompletedCalls = completedSort
+    ? [...completedCalls].sort((a, b) => {
+        let aVal: number;
+        let bVal: number;
+        if (completedSort.key === 'result') {
+          aVal = a.buy_result ?? -Infinity;
+          bVal = b.buy_result ?? -Infinity;
+        } else {
+          aVal = a.buy_amount && a.buy_result ? a.buy_result / a.buy_amount : -Infinity;
+          bVal = b.buy_amount && b.buy_result ? b.buy_result / b.buy_amount : -Infinity;
+        }
+        return completedSort.dir === 'desc' ? bVal - aVal : aVal - bVal;
+      })
+    : completedCalls;
+
+  const SortIcon = ({ col }: { col: SortKey }) => {
+    if (!completedSort || completedSort.key !== col) return <ArrowUpDown className="h-3 w-3 opacity-40" />;
+    return completedSort.dir === 'desc'
+      ? <ArrowDown className="h-3 w-3" />
+      : <ArrowUp className="h-3 w-3" />;
+  };
+
   return (
     <div className="space-y-4">
       <Card className="border-border/60">
@@ -748,16 +783,26 @@ export function SlotCalls() {
                   <div>Slot</div>
                   <div>Type</div>
                   <div>Buy</div>
-                  <div>Result</div>
-                  <div>Multi</div>
+                  <button
+                    onClick={() => toggleSort('result')}
+                    className={`flex items-center gap-1 hover:text-foreground transition-colors ${completedSort?.key === 'result' ? 'text-foreground' : ''}`}
+                  >
+                    Result <SortIcon col="result" />
+                  </button>
+                  <button
+                    onClick={() => toggleSort('multi')}
+                    className={`flex items-center gap-1 hover:text-foreground transition-colors ${completedSort?.key === 'multi' ? 'text-foreground' : ''}`}
+                  >
+                    Multi <SortIcon col="multi" />
+                  </button>
                   <div className="w-7" />
                 </div>
-                {completedCalls.map((call, idx) => {
+                {sortedCompletedCalls.map((call, idx) => {
                   const multi = formatMultiplier(call.buy_amount, call.buy_result);
                   return (
                     <div
                       key={call.id}
-                      className={`grid grid-cols-[2fr_3fr_1fr_1fr_1fr_2fr_auto] gap-0 px-3 py-2.5 items-center transition-colors hover:bg-muted/20 ${idx < completedCalls.length - 1 ? 'border-b border-border/30' : ''}`}
+                      className={`grid grid-cols-[2fr_3fr_1fr_1fr_1fr_2fr_auto] gap-0 px-3 py-2.5 items-center transition-colors hover:bg-muted/20 ${idx < sortedCompletedCalls.length - 1 ? 'border-b border-border/30' : ''}`}
                     >
                       <div className="text-sm font-medium">{call.username}</div>
                       <div className="text-sm text-muted-foreground truncate pr-2">{call.slot_name}</div>
