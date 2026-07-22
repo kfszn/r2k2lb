@@ -12,31 +12,40 @@ const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 const GAMES = [
   {
+    id: 'limbo',
+    name: 'Limbo',
+    description: 'Set a target multiplier and see how high it climbs. Bigger targets, bigger wins.',
+    href: '/games/limbo',
+    image: '/games/limbo-cover.png',
+  },
+  {
     id: 'blackjack',
     name: 'Blackjack',
-    description: 'Beat the dealer to 21. Blackjack pays 2x, dealer stands on soft 17.',
+    description: 'Beat the dealer to 21. Splits, doubles, insurance and surrender all in play.',
     href: '/games/blackjack',
-    image: '/images/games/blackjack.png',
+    image: '/games/blackjack-cover.png',
   },
   {
     id: 'keno',
     name: 'Keno',
-    description: 'Pick 1–6 numbers from a 30-number grid. Match more to win bigger.',
+    description: 'Pick your numbers from an 80-tile grid. Match the draw to win big.',
     href: '/games/keno',
-    image: '/images/games/keno.png',
+    image: '/games/keno-cover.png',
   },
   {
     id: 'plinko',
     name: 'Plinko',
-    description: 'Drop a ball through 16 rows of pegs. Land on the biggest multiplier.',
+    description: 'Drop the ball through the pins. Pick your rows and risk level.',
     href: '/games/plinko',
-    image: '/images/games/plinko.png',
+    image: '/games/plinko-cover.png',
   },
 ]
 
 export default function GamesPage() {
   const { data: profile } = useSWR('/api/games/profile', fetcher)
+  const { data: balanceData } = useSWR('/api/games/v2/balance', fetcher, { refreshInterval: 8000 })
   const isLoggedIn = !!profile?.id
+  const balance = balanceData?.balance ?? 0
 
   return (
     <main className="min-h-screen bg-background">
@@ -49,12 +58,14 @@ export default function GamesPage() {
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-3">R2K2 Games</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Wager your points in provably fair games. Every result is independently verifiable.
+            Wager your R2Koins in provably fair games. Every result is independently verifiable.
           </p>
           {isLoggedIn ? (
             <div className="mt-4 inline-flex items-center gap-2 bg-card border border-border/40 rounded-full px-4 py-2 text-sm">
               <span className="text-muted-foreground">Your balance:</span>
-              <span className="font-bold text-primary">{(profile.points ?? 0).toLocaleString()} pts</span>
+              <span className="font-bold text-amber-400">
+                {balance.toLocaleString(undefined, { maximumFractionDigits: 2 })} R2K
+              </span>
             </div>
           ) : (
             <div className="mt-4">

@@ -4,8 +4,61 @@ export function generateServerSeed(): string {
   return crypto.randomBytes(32).toString('hex')
 }
 
+export function generateClientSeed(): string {
+  return crypto.randomBytes(8).toString('hex')
+}
+
 export function hashServerSeed(seed: string): string {
   return crypto.createHash('sha256').update(seed).digest('hex')
+}
+
+/**
+ * High-precision uniform float in [0, 1) built from 4 bytes of an HMAC digest,
+ * Stake-style. `cursor` lets a single (seed, nonce) produce a stream of floats.
+ */
+export function randomFloat(
+  serverSeed: string,
+  clientSeed: string,
+  nonce: number,
+  cursor = 0,
+): number {
+  const hmac = crypto.createHmac('sha256', serverSeed)
+  hmac.update(`${clientSeed}:${nonce}:${cursor}`)
+  const hex = hmac.digest('hex')
+  let result = 0
+  for (let i = 0; i < 4; i++) {
+    const byte = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
+    result += byte / 256 ** (i + 1)
+  }
+  return result
+}
+
+export function randomFloats(
+  serverSeed: string,
+  clientSeed: string,
+  nonce: number,
+  count: number,
+): number[] {
+  return Array.from({ length: count }, (_, i) => randomFloat(serverSeed, clientSeed, nonce, i))
+}
+
+/**
+ * Limbo crash multiplier. Fair distribution is P(M >= x) = 1/x; applying the
+ * house edge gives P(win at target T) = edge/T, so RTP = edge exactly.
+ * Returned value is floored to 2 decimals, min 1.00, capped at maxMultiplier.
+ */
+export function limboMultiplier(
+  serverSeed: string,
+  clientSeed: string,
+  nonce: number,
+  houseEdge = 0.99,
+  maxMultiplier = 1_000_000,
+): number {
+  const u = randomFloat(serverSeed, clientSeed, nonce)
+  // Guard against u === 0 (would divide by zero) and u -> 1 (huge multiplier)
+  const raw = houseEdge / (1 - u)
+  const floored = Math.floor(raw * 100) / 100
+  return Math.min(Math.max(1.0, floored), maxMultiplier)
 }
 
 export function getResult(serverSeed: string, clientSeed: string, nonce: number): number {
