@@ -1,10 +1,10 @@
-// One-off generator: calibrated Keno pay tables for an 80-number grid, 20 drawn.
+// One-off generator: calibrated Keno pay tables for a 40-number grid, 10 drawn.
 // For each risk profile and pick count k, we choose which hit-counts pay out and
 // a geometric "shape", then solve for a single scale so expected return = TARGET.
 // Exact hypergeometric probabilities => precise RTP.
 
-const GRID = 80
-const DRAWN = 20
+const GRID = 40
+const DRAWN = 10
 const TARGET = 0.99 // 99% RTP
 
 // log-factorial via lgamma for numerical stability
