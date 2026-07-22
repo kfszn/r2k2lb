@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, CheckCircle, Trash2, Clock, Trophy, Settings } from 'lucide-react';
+import { Plus, CheckCircle, Trash2, Clock, Trophy, Settings, Dices } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface RequestLimit {
@@ -59,6 +59,14 @@ export function SlotCalls() {
   });
   const [isSaving, setIsSaving] = useState(false);
 
+  // Wheel state
+  const [wheelModalOpen, setWheelModalOpen] = useState(false);
+  const [wheelSpinning, setWheelSpinning] = useState(false);
+  const [wheelWinner, setWheelWinner] = useState<SlotCall | null>(null);
+  const wheelCanvasRef = useRef<HTMLCanvasElement>(null);
+  const wheelAngleRef = useRef(0);
+  const wheelAnimFrameRef = useRef<number | null>(null);
+
   // Settings modal state
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [requestLimits, setRequestLimits] = useState<RequestLimit[]>([]);
@@ -96,8 +104,7 @@ export function SlotCalls() {
           .from('slot_calls')
           .select('*')
           .eq('status', 'pending')
-          .order('username', { ascending: true })
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: true }),
         supabase
           .from('slot_calls')
           .select('*')
@@ -370,6 +377,150 @@ export function SlotCalls() {
     }
   };
 
+  // ── Wheel helpers ───────────────────────────────────────────────────────────
+
+  const WHEEL_COLORS = [
+    '#7c3aed', '#2563eb', '#0891b2', '#059669',
+    '#d97706', '#dc2626', '#db2777', '#7c3aed',
+  ];
+
+  const drawWheel = useCallback((angle: number, calls: SlotCall[], winner: SlotCall | null) => {
+    const canvas = wheelCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const cx = W / 2;
+    const cy = H / 2;
+    const radius = Math.min(cx, cy) - 8;
+
+    ctx.clearRect(0, 0, W, H);
+
+    if (calls.length === 0) return;
+
+    const slice = (2 * Math.PI) / calls.length;
+
+    calls.forEach((call, i) => {
+      const start = angle + i * slice;
+      const end = start + slice;
+      const isWinner = winner && call.id === winner.id;
+
+      // Segment
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, start, end);
+      ctx.closePath();
+      ctx.fillStyle = isWinner ? '#f59e0b' : WHEEL_COLORS[i % WHEEL_COLORS.length];
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Label
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start + slice / 2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${Math.min(13, Math.max(9, 200 / calls.length))}px sans-serif`;
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 3;
+      const label = call.slot_name.length > 14 ? call.slot_name.slice(0, 13) + '…' : call.slot_name;
+      ctx.fillText(label, radius - 10, 4);
+      ctx.restore();
+    });
+
+    // Center cap
+    ctx.beginPath();
+    ctx.arc(cx, cy, 18, 0, 2 * Math.PI);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Pointer (top center)
+    ctx.save();
+    ctx.translate(cx, 6);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-10, -18);
+    ctx.lineTo(10, -18);
+    ctx.closePath();
+    ctx.fillStyle = '#f59e0b';
+    ctx.fill();
+    ctx.restore();
+  }, []);
+
+  const spinWheel = useCallback(() => {
+    if (wheelSpinning || pendingCalls.length === 0) return;
+
+    setWheelWinner(null);
+    setWheelSpinning(true);
+
+    const calls = pendingCalls;
+    const slice = (2 * Math.PI) / calls.length;
+
+    // Pick a random winner index
+    const winnerIndex = Math.floor(Math.random() * calls.length);
+
+    // Total spin: many full rotations + land exactly on winner
+    const totalRotations = 6 + Math.random() * 4;
+    const targetAngle =
+      totalRotations * 2 * Math.PI +
+      // Position wheel so winner is under the top pointer (angle = -π/2)
+      (-(winnerIndex * slice + slice / 2) - Math.PI / 2 - (wheelAngleRef.current % (2 * Math.PI)));
+
+    const startAngle = wheelAngleRef.current;
+    const startTime = performance.now();
+    const duration = 4000 + Math.random() * 1500;
+
+    const easeOut = (t: number) => 1 - Math.pow(1 - t, 4);
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeOut(progress);
+
+      wheelAngleRef.current = startAngle + eased * targetAngle;
+      drawWheel(wheelAngleRef.current, calls, null);
+
+      if (progress < 1) {
+        wheelAnimFrameRef.current = requestAnimationFrame(animate);
+      } else {
+        wheelAngleRef.current = startAngle + targetAngle;
+        const winner = calls[winnerIndex];
+        setWheelWinner(winner);
+        setWheelSpinning(false);
+        drawWheel(wheelAngleRef.current, calls, winner);
+      }
+    };
+
+    wheelAnimFrameRef.current = requestAnimationFrame(animate);
+  }, [wheelSpinning, pendingCalls, drawWheel]);
+
+  // Redraw when modal opens or calls change (not spinning)
+  useEffect(() => {
+    if (wheelModalOpen && !wheelSpinning) {
+      // Small delay to let canvas mount
+      const t = setTimeout(() => {
+        drawWheel(wheelAngleRef.current, pendingCalls, wheelWinner);
+      }, 50);
+      return () => clearTimeout(t);
+    }
+  }, [wheelModalOpen, pendingCalls, wheelWinner, wheelSpinning, drawWheel]);
+
+  // Cleanup animation on unmount
+  useEffect(() => {
+    return () => {
+      if (wheelAnimFrameRef.current) cancelAnimationFrame(wheelAnimFrameRef.current);
+    };
+  }, []);
+
+  // ── Format helpers ───────────────────────────────────────────────────────────
+
   const formatMultiplier = (buyAmount: number | null, buyResult: number | null) => {
     if (!buyAmount || !buyResult || buyAmount === 0) return null;
     return (buyResult / buyAmount).toFixed(2);
@@ -488,17 +639,30 @@ export function SlotCalls() {
                 <h3 className="text-sm font-semibold text-foreground">Open Calls</h3>
                 <Badge variant="outline" className="text-xs">{pendingCalls.length}</Badge>
               </div>
-              {(pendingCalls.length > 0 || completedCalls.length > 0) && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={clearAllPendingCalls}
-                  className="h-7 gap-1 text-xs text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/60 hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Clear All
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {pendingCalls.length > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => { setWheelWinner(null); setWheelModalOpen(true); }}
+                    className="h-7 gap-1.5 text-xs border-primary/40 hover:border-primary hover:bg-primary/10 text-primary"
+                  >
+                    <Dices className="h-3.5 w-3.5" />
+                    Roll Random
+                  </Button>
+                )}
+                {(pendingCalls.length > 0 || completedCalls.length > 0) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={clearAllPendingCalls}
+                    className="h-7 gap-1 text-xs text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/60 hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Clear All
+                  </Button>
+                )}
+              </div>
             </div>
 
             {isLoading ? (
@@ -617,6 +781,79 @@ export function SlotCalls() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Wheel Modal */}
+      <Dialog
+        open={wheelModalOpen}
+        onOpenChange={(open) => {
+          if (!wheelSpinning) {
+            setWheelModalOpen(open);
+            if (!open && wheelAnimFrameRef.current) {
+              cancelAnimationFrame(wheelAnimFrameRef.current);
+            }
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Dices className="h-5 w-5 text-primary" />
+              Roll Random Slot Call
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {pendingCalls.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-8">No open calls to spin.</p>
+            ) : (
+              <>
+                {/* Canvas wheel */}
+                <div className="relative flex items-center justify-center">
+                  <canvas
+                    ref={wheelCanvasRef}
+                    width={380}
+                    height={380}
+                    className="rounded-full"
+                    style={{ maxWidth: '100%', height: 'auto' }}
+                  />
+                </div>
+
+                {/* Winner announcement */}
+                {wheelWinner && !wheelSpinning && (
+                  <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 mb-2">
+                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      <span className="text-sm font-semibold text-yellow-500">Selected!</span>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{wheelWinner.slot_name}</p>
+                    <p className="text-sm text-muted-foreground">Requested by {wheelWinner.username}</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setWheelModalOpen(false)}
+              disabled={wheelSpinning}
+            >
+              Close
+            </Button>
+            {pendingCalls.length > 0 && (
+              <Button
+                onClick={spinWheel}
+                disabled={wheelSpinning}
+                className="gap-2"
+              >
+                <Dices className="h-4 w-4" />
+                {wheelSpinning ? 'Spinning...' : wheelWinner ? 'Spin Again' : 'Spin!'}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Complete Modal */}
       <Dialog open={completeModalOpen} onOpenChange={setCompleteModalOpen}>
