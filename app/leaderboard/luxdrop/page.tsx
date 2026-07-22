@@ -1,11 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, CheckCircle, AlertCircle } from 'lucide-react'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
+import {
+  LeaderboardBackdrop,
+  StatCard,
+  PodiumCard,
+  PlayerRow,
+  TableHeader,
+  PrizePool,
+} from '@/components/leaderboard/leaderboard-ui'
 
 // ---------------------------------------------------------------------------
 // Config
@@ -162,32 +168,35 @@ export default function LuxdropLeaderboard() {
   // Render
   // ---------------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="relative min-h-screen bg-background text-foreground">
+      <LeaderboardBackdrop />
       <GiveawayCounter />
       <Header />
 
       {/* Hero */}
-      <section className="relative overflow-hidden py-16 bg-gradient-to-b from-primary/10 to-background">
+      <section className="relative overflow-hidden py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-6">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary animate-fade-in-up">
+              Live Competition
+            </span>
             <img
               src="/assets/luxdrop.png"
               alt="LuxDrop"
-              className="h-12 md:h-14 w-auto mx-auto object-contain animate-fade-in-up"
+              className="h-12 md:h-14 w-auto mx-auto object-contain animate-fade-in-up animation-delay-100 drop-shadow-[0_0_25px_rgba(80,120,255,0.35)]"
             />
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border border-primary/40 animate-fade-in-up animation-delay-100 animate-glow-pulse">
-              <Trophy className="h-6 w-6 text-primary" />
-              <span className="text-3xl font-bold text-primary">${PRIZE_TOTAL.toLocaleString()}</span>
+            <div className="flex justify-center animate-fade-in-up animation-delay-200">
+              <PrizePool total={`$${PRIZE_TOTAL.toLocaleString()}`} />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight text-balance animate-fade-in-up animation-delay-200">
-              Monthly Leaderboard
+            <h1 className="text-4xl md:text-6xl font-black leading-tight text-balance animate-fade-in-up animation-delay-200 tracking-tight">
+              Monthly <span className="neon-text text-primary">Leaderboard</span>
             </h1>
             <div className="flex justify-center">
               <a
                 href="https://luxdrop.com/r/R2K2"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors font-semibold"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-semibold shadow-[0_0_30px_-8px_rgba(80,120,255,0.7)] hover:shadow-[0_0_40px_-6px_rgba(80,120,255,0.9)]"
               >
                 <Trophy className="h-4 w-4" />
                 Sign up on LuxDrop
@@ -224,53 +233,37 @@ export default function LuxdropLeaderboard() {
       {/* Stats cards */}
       <section className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-4xl mx-auto">
-          <Card className="bg-card/50 backdrop-blur border-primary/20">
-            <CardContent className="px-4 py-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground uppercase font-medium mb-0.5 tracking-wider">Total Wagered</p>
-                  <p className="text-xl font-bold text-primary truncate">{formatMoney(totalWagered)}</p>
-                </div>
-                <TrendingUp className="h-5 w-5 text-primary/40 flex-shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card/50 backdrop-blur border-blue-500/20">
-            <CardContent className="px-4 py-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground uppercase font-medium mb-0.5 tracking-wider">Participants</p>
-                  <p className="text-xl font-bold text-blue-400">{entries.length.toLocaleString()}</p>
-                </div>
-                <Users className="h-5 w-5 text-blue-400/40 flex-shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-2 md:col-span-1 bg-card/50 backdrop-blur border-destructive/20">
-            <CardContent className="px-4 py-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground uppercase font-medium mb-0.5 tracking-wider">Time Remaining</p>
-                  <p className="text-xl font-bold text-destructive truncate" suppressHydrationWarning>{timeRemaining || '...'}</p>
-                </div>
-                <Clock className="h-5 w-5 text-destructive/40 flex-shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            label="Total Wagered"
+            value={formatMoney(totalWagered)}
+            icon={<TrendingUp className="h-5 w-5" />}
+            tone="primary"
+          />
+          <StatCard
+            label="Participants"
+            value={entries.length.toLocaleString()}
+            icon={<Users className="h-5 w-5" />}
+            tone="accent"
+          />
+          <StatCard
+            label="Time Remaining"
+            value={<span suppressHydrationWarning>{timeRemaining || '...'}</span>}
+            icon={<Clock className="h-5 w-5" />}
+            tone="destructive"
+            className="col-span-2 md:col-span-1"
+          />
         </div>
       </section>
 
       {/* Tab Nav */}
       <section className="container mx-auto px-4 pb-2">
         <div className="max-w-5xl mx-auto">
-          <div className="flex gap-1 p-1 rounded-xl bg-card/60 border border-border/40 w-fit">
+          <div className="flex gap-1 p-1 rounded-xl bg-card/60 border border-border/40 w-fit backdrop-blur-xl">
             <button
               onClick={() => setActiveTab('leaderboard')}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeTab === 'leaderboard'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  ? 'bg-primary text-primary-foreground shadow-[0_0_20px_-4px_rgba(80,120,255,0.7)]'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -281,7 +274,7 @@ export default function LuxdropLeaderboard() {
               onClick={() => setActiveTab('rules')}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeTab === 'rules'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  ? 'bg-primary text-primary-foreground shadow-[0_0_20px_-4px_rgba(80,120,255,0.7)]'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -443,152 +436,88 @@ export default function LuxdropLeaderboard() {
               <>
                 {/* Podium top 3 */}
                 <div className="mb-10">
-                  <h2 className="text-2xl font-bold text-center mb-8">Top Performers</h2>
+                  <h2 className="mb-8 text-center text-2xl font-bold">
+                    <span className="neon-text text-primary">Top</span> Performers
+                  </h2>
 
                   {/* Mobile: 1st full width, 2nd+3rd side by side */}
                   <div className="flex flex-col gap-3 md:hidden">
                     {entries[0] && (
-                      <div className="relative rounded-2xl border border-yellow-400/50 bg-card overflow-hidden" style={{ boxShadow: '0 0 40px rgba(250,204,21,0.2)' }}>
-                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-yellow-400" />
-                        <div className="p-5 flex flex-col items-center text-center gap-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold uppercase tracking-widest text-yellow-400">1st Place</span>
-                            <Trophy className="h-4 w-4 text-yellow-400" />
-                          </div>
-                          <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400/70" style={{ boxShadow: '0 0 20px rgba(250,204,21,0.3)' }}>
-                            <img src={getAvatarUrl(getEntryAvatar(entries[0]))} alt={getEntryName(entries[0])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
-                          </div>
-                          <p className="font-bold text-lg text-foreground truncate w-full">{maskName(getEntryName(entries[0]))}</p>
-                          <div className="w-full space-y-2">
-                            <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
-                              <span className="text-muted-foreground">Wagered</span>
-                              <span className="font-semibold text-foreground">{formatMoney(getEntryWagered(entries[0]))}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
-                              <span className="text-yellow-400/80">Prize</span>
-                              <span className="font-bold text-yellow-400">{prizeLabel(1)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <PodiumCard
+                        rank={1}
+                        size="md"
+                        name={maskName(getEntryName(entries[0]))}
+                        avatar={getAvatarUrl(getEntryAvatar(entries[0]))}
+                        wagered={formatMoney(getEntryWagered(entries[0]))}
+                        prize={prizeLabel(1)}
+                        fallback="/assets/luxdrop-icon.png"
+                      />
                     )}
                     <div className="grid grid-cols-2 gap-3">
                       {entries[1] && (
-                        <div className="relative rounded-2xl border border-slate-400/40 bg-card overflow-hidden">
-                          <div className="absolute top-0 left-0 right-0 h-1 bg-slate-400" />
-                          <div className="p-4 flex flex-col items-center text-center gap-2">
-                            <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd</span>
-                            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-slate-400/60">
-                              <img src={getAvatarUrl(getEntryAvatar(entries[1]))} alt={getEntryName(entries[1])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
-                            </div>
-                            <p className="font-bold text-xs text-foreground truncate w-full">{maskName(getEntryName(entries[1]))}</p>
-                            <div className="w-full space-y-1">
-                              <div className="rounded-lg bg-muted/40 px-2 py-1.5 text-center">
-                                <p className="text-xs text-muted-foreground">Wagered</p>
-                                <p className="text-xs font-semibold">{formatMoney(getEntryWagered(entries[1]))}</p>
-                              </div>
-                              <div className="rounded-lg bg-slate-400/10 border border-slate-400/20 px-2 py-1.5 text-center">
-                                <p className="text-xs text-slate-400/80">Prize</p>
-                                <p className="text-xs font-bold text-slate-300">{prizeLabel(2)}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                        <PodiumCard
+                          rank={2}
+                          size="sm"
+                          name={maskName(getEntryName(entries[1]))}
+                          avatar={getAvatarUrl(getEntryAvatar(entries[1]))}
+                          wagered={formatMoney(getEntryWagered(entries[1]))}
+                          prize={prizeLabel(2)}
+                          fallback="/assets/luxdrop-icon.png"
+                        />
                       )}
                       {entries[2] && (
-                        <div className="relative rounded-2xl border border-amber-700/40 bg-card overflow-hidden">
-                          <div className="absolute top-0 left-0 right-0 h-1 bg-amber-600" />
-                          <div className="p-4 flex flex-col items-center text-center gap-2">
-                            <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd</span>
-                            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-amber-600/60">
-                              <img src={getAvatarUrl(getEntryAvatar(entries[2]))} alt={getEntryName(entries[2])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
-                            </div>
-                            <p className="font-bold text-xs text-foreground truncate w-full">{maskName(getEntryName(entries[2]))}</p>
-                            <div className="w-full space-y-1">
-                              <div className="rounded-lg bg-muted/40 px-2 py-1.5 text-center">
-                                <p className="text-xs text-muted-foreground">Wagered</p>
-                                <p className="text-xs font-semibold">{formatMoney(getEntryWagered(entries[2]))}</p>
-                              </div>
-                              <div className="rounded-lg bg-amber-600/10 border border-amber-600/20 px-2 py-1.5 text-center">
-                                <p className="text-xs text-amber-500/80">Prize</p>
-                                <p className="text-xs font-bold text-amber-500">{prizeLabel(3)}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                        <PodiumCard
+                          rank={3}
+                          size="sm"
+                          name={maskName(getEntryName(entries[2]))}
+                          avatar={getAvatarUrl(getEntryAvatar(entries[2]))}
+                          wagered={formatMoney(getEntryWagered(entries[2]))}
+                          prize={prizeLabel(3)}
+                          fallback="/assets/luxdrop-icon.png"
+                        />
                       )}
                     </div>
                   </div>
 
                   {/* Desktop: 2nd | 1st | 3rd */}
-                  <div className="hidden md:flex items-end justify-center gap-3">
+                  <div className="hidden md:flex items-end justify-center gap-4">
                     {entries[1] && (
-                      <div className="relative rounded-2xl border border-slate-400/40 bg-card overflow-hidden flex-1 max-w-[220px] transition-transform duration-300 hover:-translate-y-1" style={{ boxShadow: '0 0 20px rgba(148,163,184,0.1)' }}>
-                        <div className="absolute top-0 left-0 right-0 h-1 bg-slate-400" />
-                        <div className="p-5 flex flex-col items-center text-center gap-3">
-                          <span className="text-xs font-bold uppercase tracking-widest text-slate-300">2nd Place</span>
-                          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-400/60">
-                            <img src={getAvatarUrl(getEntryAvatar(entries[1]))} alt={getEntryName(entries[1])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
-                          </div>
-                          <p className="font-bold text-sm text-foreground truncate w-full">{maskName(getEntryName(entries[1]))}</p>
-                          <div className="w-full space-y-1.5">
-                            <div className="flex items-center justify-between text-xs bg-muted/40 rounded-lg px-3 py-1.5">
-                              <span className="text-muted-foreground">Wagered</span>
-                              <span className="font-semibold">{formatMoney(getEntryWagered(entries[1]))}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-xs bg-slate-400/10 border border-slate-400/20 rounded-lg px-3 py-1.5">
-                              <span className="text-slate-400/80">Prize</span>
-                              <span className="font-bold text-slate-300">{prizeLabel(2)}</span>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="flex-1 max-w-[220px]">
+                        <PodiumCard
+                          rank={2}
+                          size="md"
+                          name={maskName(getEntryName(entries[1]))}
+                          avatar={getAvatarUrl(getEntryAvatar(entries[1]))}
+                          wagered={formatMoney(getEntryWagered(entries[1]))}
+                          prize={prizeLabel(2)}
+                          fallback="/assets/luxdrop-icon.png"
+                        />
                       </div>
                     )}
                     {entries[0] && (
-                      <div className="relative rounded-2xl border border-yellow-400/50 bg-card overflow-hidden flex-1 max-w-[280px] transition-transform duration-300 hover:-translate-y-1.5" style={{ boxShadow: '0 0 40px rgba(250,204,21,0.2)' }}>
-                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-yellow-400" />
-                        <div className="p-7 flex flex-col items-center text-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold uppercase tracking-widest text-yellow-400">1st Place</span>
-                            <Trophy className="h-4 w-4 text-yellow-400" />
-                          </div>
-                          <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-yellow-400/70" style={{ boxShadow: '0 0 20px rgba(250,204,21,0.3)' }}>
-                            <img src={getAvatarUrl(getEntryAvatar(entries[0]))} alt={getEntryName(entries[0])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
-                          </div>
-                          <p className="font-bold text-xl text-foreground truncate w-full">{maskName(getEntryName(entries[0]))}</p>
-                          <div className="w-full space-y-2">
-                            <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
-                              <span className="text-muted-foreground">Wagered</span>
-                              <span className="font-semibold">{formatMoney(getEntryWagered(entries[0]))}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
-                              <span className="text-yellow-400/80">Prize</span>
-                              <span className="font-bold text-yellow-400 text-lg">{prizeLabel(1)}</span>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="flex-1 max-w-[280px]">
+                        <PodiumCard
+                          rank={1}
+                          size="lg"
+                          name={maskName(getEntryName(entries[0]))}
+                          avatar={getAvatarUrl(getEntryAvatar(entries[0]))}
+                          wagered={formatMoney(getEntryWagered(entries[0]))}
+                          prize={prizeLabel(1)}
+                          fallback="/assets/luxdrop-icon.png"
+                        />
                       </div>
                     )}
                     {entries[2] && (
-                      <div className="relative rounded-2xl border border-amber-700/40 bg-card overflow-hidden flex-1 max-w-[220px] transition-transform duration-300 hover:-translate-y-1" style={{ boxShadow: '0 0 20px rgba(180,83,9,0.1)' }}>
-                        <div className="absolute top-0 left-0 right-0 h-1 bg-amber-600" />
-                        <div className="p-5 flex flex-col items-center text-center gap-3">
-                          <span className="text-xs font-bold uppercase tracking-widest text-amber-500">3rd Place</span>
-                          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-600/60">
-                            <img src={getAvatarUrl(getEntryAvatar(entries[2]))} alt={getEntryName(entries[2])} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/luxdrop-icon.png' }} />
-                          </div>
-                          <p className="font-bold text-sm text-foreground truncate w-full">{maskName(getEntryName(entries[2]))}</p>
-                          <div className="w-full space-y-1.5">
-                            <div className="flex items-center justify-between text-xs bg-muted/40 rounded-lg px-3 py-1.5">
-                              <span className="text-muted-foreground">Wagered</span>
-                              <span className="font-semibold">{formatMoney(getEntryWagered(entries[2]))}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-xs bg-amber-600/10 border border-amber-600/20 rounded-lg px-3 py-1.5">
-                              <span className="text-amber-500/80">Prize</span>
-                              <span className="font-bold text-amber-500">{prizeLabel(3)}</span>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="flex-1 max-w-[220px]">
+                        <PodiumCard
+                          rank={3}
+                          size="md"
+                          name={maskName(getEntryName(entries[2]))}
+                          avatar={getAvatarUrl(getEntryAvatar(entries[2]))}
+                          wagered={formatMoney(getEntryWagered(entries[2]))}
+                          prize={prizeLabel(3)}
+                          fallback="/assets/luxdrop-icon.png"
+                        />
                       </div>
                     )}
                   </div>
@@ -596,13 +525,13 @@ export default function LuxdropLeaderboard() {
 
                 {/* Search */}
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60" />
                   <input
                     type="text"
                     placeholder="Search your exact username to see your wager amount..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-card/60 backdrop-blur-xl border border-border text-base md:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:shadow-[0_0_25px_-8px_rgba(80,120,255,0.6)] transition-all"
                   />
                 </div>
 
@@ -649,26 +578,18 @@ export default function LuxdropLeaderboard() {
 
                 {/* Table rows 4+ */}
                 {entries.length > 3 && (
-                  <div className="rounded-xl overflow-hidden border border-border/50">
-                    <div className="grid grid-cols-[64px_1fr_140px_100px] px-4 py-3 bg-muted/40 border-b border-border/50">
-                      <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Rank</span>
-                      <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Player</span>
-                      <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-right">Wagered</span>
-                      <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-right">Prize</span>
-                    </div>
+                  <div className="overflow-hidden rounded-xl border border-border/50 bg-card/40 backdrop-blur-xl">
+                    <TableHeader />
                     <div className="divide-y divide-border/30">
                       {entries.slice(3).map((entry, idx) => (
-                        <LuxDropRow
+                        <PlayerRow
                           key={getEntryId(entry)}
                           rank={idx + 4}
-                          entry={entry}
-                          prizeLabel={prizeLabel(idx + 4)}
-                          formatMoney={formatMoney}
-                          maskName={maskName}
-                          getAvatarUrl={getAvatarUrl}
-                          getEntryName={getEntryName}
-                          getEntryWagered={getEntryWagered}
-                          getEntryAvatar={getEntryAvatar}
+                          name={maskName(getEntryName(entry))}
+                          avatar={getAvatarUrl(getEntryAvatar(entry))}
+                          wagered={formatMoney(getEntryWagered(entry))}
+                          prize={prizeLabel(idx + 4)}
+                          fallback="/assets/luxdrop-icon.png"
                         />
                       ))}
                     </div>
@@ -706,45 +627,6 @@ export default function LuxdropLeaderboard() {
           </div>
         </div>
       </footer>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Row component
-// ---------------------------------------------------------------------------
-function LuxDropRow({
-  rank, entry, prizeLabel, formatMoney, maskName, getAvatarUrl,
-  getEntryName, getEntryWagered, getEntryAvatar,
-}: {
-  rank: number
-  entry: LuxDropEntry
-  prizeLabel: string
-  formatMoney: (n: number) => string
-  maskName: (s: string) => string
-  getAvatarUrl: (a: string | null) => string
-  getEntryName: (e: LuxDropEntry) => string
-  getEntryWagered: (e: LuxDropEntry) => number
-  getEntryAvatar: (e: LuxDropEntry) => string | null
-}) {
-  const [imgError, setImgError] = useState(false)
-  return (
-    <div className="grid grid-cols-[64px_1fr_140px_100px] items-center px-4 py-3 bg-card/50 hover:bg-muted/20 transition-colors">
-      <span className="text-sm font-bold text-muted-foreground">#{rank}</span>
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary/40 flex-shrink-0">
-          <img
-            src={imgError ? '/assets/luxdrop-icon.png' : getAvatarUrl(getEntryAvatar(entry))}
-            alt={getEntryName(entry)}
-            className="absolute inset-0 w-full h-full object-cover"
-            crossOrigin="anonymous"
-            onError={() => setImgError(true)}
-          />
-        </div>
-        <p className="font-semibold text-sm truncate">{maskName(getEntryName(entry))}</p>
-      </div>
-      <p className="text-sm font-semibold text-foreground text-right">{formatMoney(getEntryWagered(entry))}</p>
-      <p className="text-sm font-bold text-right text-green-600">{prizeLabel}</p>
     </div>
   )
 }
