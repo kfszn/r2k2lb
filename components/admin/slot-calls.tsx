@@ -540,112 +540,121 @@ export function SlotCalls() {
   })();
 
   return (
-    <div className="space-y-6">
-      <Card className="border-primary/20">
-        <CardHeader className="flex flex-row items-center justify-between">
+    <div className="space-y-4">
+      <Card className="border-border/60">
+        {/* Header */}
+        <CardHeader className="pb-4 flex flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <CardTitle>Slot Calls</CardTitle>
+            <CardTitle className="text-base font-semibold">Slot Calls</CardTitle>
+            <div className="h-4 w-px bg-border" />
             <div className="flex items-center gap-2">
               <Switch
                 checked={isOpen}
-                onCheckedChange={(checked) => toggleGameStatus(checked)}
+                onCheckedChange={toggleGameStatus}
                 id="slot-calls-toggle"
               />
               <label
                 htmlFor="slot-calls-toggle"
-                className={`text-xs font-semibold cursor-pointer ${isOpen ? 'text-green-400' : 'text-muted-foreground'}`}
+                className={`text-xs font-medium cursor-pointer transition-colors ${isOpen ? 'text-green-400' : 'text-muted-foreground'}`}
               >
-                {isOpen ? 'Accepting Requests' : 'Closed'}
+                {isOpen ? 'Open' : 'Closed'}
               </label>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={openSettingsModal}
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
             <Button
               size="sm"
               variant="outline"
-              onClick={openSettingsModal}
-              className="gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </Button>
-            <Button
-              size="sm"
               onClick={() => setShowNewForm(!showNewForm)}
-              className="gap-2"
+              className="h-8 gap-1.5 text-xs"
               disabled={!isOpen}
             >
-              <Plus className="h-4 w-4" />
-              New Slot Call
+              <Plus className="h-3.5 w-3.5" />
+              Add Call
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* New Slot Call Form */}
+
+        <CardContent className="space-y-5 pt-0">
+          {/* Add Call Form */}
           {showNewForm && (
-            <div className="p-4 border border-primary/20 rounded-lg bg-background/50">
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-3 space-y-3">
               <div className="flex gap-2 items-end flex-wrap">
-                <div className="flex-1 min-w-[120px]">
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Username</label>
+                <div className="flex-1 min-w-[110px]">
+                  <label className="text-[11px] font-medium text-muted-foreground mb-1 block uppercase tracking-wide">Username</label>
                   <Input
-                    placeholder="Username"
+                    placeholder="username"
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    className="h-8"
+                    className="h-8 text-sm"
                   />
                 </div>
                 <div className="flex-1 min-w-[140px]">
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Slot Name</label>
+                  <label className="text-[11px] font-medium text-muted-foreground mb-1 block uppercase tracking-wide">Slot Name</label>
                   <Input
-                    placeholder="Slot Name"
+                    placeholder="slot name"
                     value={formData.slot_name}
                     onChange={(e) => setFormData({ ...formData, slot_name: e.target.value })}
-                    className="h-8"
+                    className="h-8 text-sm"
                   />
                 </div>
-                <div className="flex-1 min-w-[100px]">
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Type</label>
+                <div className="w-24">
+                  <label className="text-[11px] font-medium text-muted-foreground mb-1 block uppercase tracking-wide">Type</label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="h-8 px-2 rounded border border-input bg-background text-sm w-full"
+                    className="h-8 px-2 rounded-md border border-input bg-background text-sm w-full"
                   >
                     <option value="call">Call</option>
                     <option value="bonus">Bonus</option>
                     <option value="hunt">Hunt</option>
                   </select>
                 </div>
-                <div className="flex-1 min-w-[120px]">
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Buy Amount (optional)</label>
+                <div className="w-28">
+                  <label className="text-[11px] font-medium text-muted-foreground mb-1 block uppercase tracking-wide">Buy (opt.)</label>
                   <Input
                     placeholder="0.00"
                     type="number"
                     value={formData.buy_amount}
                     onChange={(e) => setFormData({ ...formData, buy_amount: e.target.value })}
-                    className="h-8"
+                    className="h-8 text-sm"
                   />
                 </div>
-                <Button size="sm" onClick={addNewSlotCall}>Add</Button>
-                <Button size="sm" variant="outline" onClick={() => setShowNewForm(false)}>Cancel</Button>
+                <div className="flex gap-1.5 pb-0.5">
+                  <Button size="sm" className="h-8 px-4 text-xs" onClick={addNewSlotCall}>Add</Button>
+                  <Button size="sm" variant="ghost" className="h-8 px-3 text-xs" onClick={() => setShowNewForm(false)}>Cancel</Button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Open Calls Section */}
+          {/* Open Calls */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-yellow-500" />
-                <h3 className="text-sm font-semibold text-foreground">Open Calls</h3>
-                <Badge variant="outline" className="text-xs">{pendingCalls.length}</Badge>
+                <Clock className="h-3.5 w-3.5 text-yellow-500/80" />
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Open</span>
+                {pendingCalls.length > 0 && (
+                  <span className="text-xs font-semibold tabular-nums bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded px-1.5 py-0.5 leading-none">
+                    {pendingCalls.length}
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {pendingCalls.length > 0 && (
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => { setWheelWinner(null); setWheelModalOpen(true); }}
-                    className="h-7 gap-1.5 text-xs border-primary/40 hover:border-primary hover:bg-primary/10 text-primary"
+                    className="h-7 gap-1.5 text-xs border-primary/30 hover:border-primary/60 hover:bg-primary/10 text-primary"
                   >
                     <Dices className="h-3.5 w-3.5" />
                     Roll Random
@@ -654,11 +663,11 @@ export function SlotCalls() {
                 {(pendingCalls.length > 0 || completedCalls.length > 0) && (
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
                     onClick={clearAllPendingCalls}
-                    className="h-7 gap-1 text-xs text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/60 hover:bg-destructive/10"
+                    className="h-7 gap-1 text-xs text-destructive/70 hover:text-destructive hover:bg-destructive/10"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3 w-3" />
                     Clear All
                   </Button>
                 )}
@@ -666,47 +675,46 @@ export function SlotCalls() {
             </div>
 
             {isLoading ? (
-              <p className="text-muted-foreground text-sm py-4 text-center">Loading...</p>
+              <div className="py-8 text-center text-xs text-muted-foreground">Loading...</div>
             ) : pendingCalls.length === 0 ? (
-              <p className="text-muted-foreground text-sm py-4 text-center border border-dashed border-primary/10 rounded-lg">
+              <div className="py-6 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg">
                 No open calls in queue
-              </p>
+              </div>
             ) : (
-              <div className="space-y-1">
-                {/* Header */}
-                <div className="grid grid-cols-[2fr_3fr_1fr_auto] gap-3 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                  <div>Username</div>
-                  <div>Slot Name</div>
+              <div className="rounded-lg border border-border/50 overflow-hidden">
+                <div className="grid grid-cols-[2fr_3fr_1fr_auto] gap-0 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground bg-muted/30 border-b border-border/40">
+                  <div>User</div>
+                  <div>Slot</div>
                   <div>Type</div>
-                  <div className="w-24"></div>
+                  <div className="w-[88px]" />
                 </div>
-                {pendingCalls.map((call) => (
+                {pendingCalls.map((call, idx) => (
                   <div
                     key={call.id}
-                    className="grid grid-cols-[2fr_3fr_1fr_auto] gap-3 px-3 py-3 items-center bg-background/50 border border-yellow-500/20 rounded-lg"
+                    className={`grid grid-cols-[2fr_3fr_1fr_auto] gap-0 px-3 py-2.5 items-center transition-colors hover:bg-muted/20 ${idx < pendingCalls.length - 1 ? 'border-b border-border/30' : ''}`}
                   >
-                    <div className="font-medium text-sm">{call.username}</div>
-                    <div className="text-sm text-muted-foreground">{call.slot_name}</div>
+                    <div className="text-sm font-medium">{call.username}</div>
+                    <div className="text-sm text-muted-foreground truncate pr-2">{call.slot_name}</div>
                     <div>
-                      <Badge variant="outline" className="text-xs">{call.type}</Badge>
+                      <span className="text-[11px] font-medium px-1.5 py-0.5 rounded border border-border/50 bg-muted/30 text-muted-foreground capitalize">{call.type}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 w-[88px] justify-end">
                       <Button
                         size="sm"
-                        variant="default"
+                        variant="outline"
                         onClick={() => openCompleteModal(call)}
-                        className="h-7 gap-1 text-xs"
+                        className="h-7 gap-1 text-xs px-2 border-green-500/30 hover:border-green-500/60 hover:bg-green-500/10 text-green-400 hover:text-green-400"
                       >
-                        <CheckCircle className="h-3.5 w-3.5" />
-                        Complete
+                        <CheckCircle className="h-3 w-3" />
+                        Done
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => deleteSlotCall(call.id)}
-                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                        className="h-7 w-7 p-0 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
@@ -715,63 +723,63 @@ export function SlotCalls() {
             )}
           </div>
 
-          {/* Completed Calls Section */}
+          {/* Completed Calls */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-green-500" />
-              <h3 className="text-sm font-semibold text-foreground">Completed Calls</h3>
-              <Badge variant="outline" className="text-xs">{completedCalls.length}</Badge>
+              <Trophy className="h-3.5 w-3.5 text-green-500/80" />
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Completed</span>
+              {completedCalls.length > 0 && (
+                <span className="text-xs font-semibold tabular-nums bg-green-500/10 text-green-400 border border-green-500/20 rounded px-1.5 py-0.5 leading-none">
+                  {completedCalls.length}
+                </span>
+              )}
             </div>
 
             {isLoading ? (
-              <p className="text-muted-foreground text-sm py-4 text-center">Loading...</p>
+              <div className="py-8 text-center text-xs text-muted-foreground">Loading...</div>
             ) : completedCalls.length === 0 ? (
-              <p className="text-muted-foreground text-sm py-4 text-center border border-dashed border-primary/10 rounded-lg">
+              <div className="py-6 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg">
                 No completed calls yet
-              </p>
+              </div>
             ) : (
-              <div className="space-y-1">
-                {/* Header */}
-                <div className="grid grid-cols-[2fr_3fr_1fr_1fr_1fr_2fr_auto] gap-3 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                  <div>Username</div>
-                  <div>Slot Name</div>
+              <div className="rounded-lg border border-border/50 overflow-hidden">
+                <div className="grid grid-cols-[2fr_3fr_1fr_1fr_1fr_2fr_auto] gap-0 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground bg-muted/30 border-b border-border/40">
+                  <div>User</div>
+                  <div>Slot</div>
                   <div>Type</div>
                   <div>Buy</div>
                   <div>Result</div>
                   <div>Multi</div>
-                  <div className="w-8"></div>
+                  <div className="w-7" />
                 </div>
-                {completedCalls.map((call) => {
+                {completedCalls.map((call, idx) => {
                   const multi = formatMultiplier(call.buy_amount, call.buy_result);
                   return (
                     <div
                       key={call.id}
-                      className="grid grid-cols-[2fr_3fr_1fr_1fr_1fr_2fr_auto] gap-3 px-3 py-3 items-center bg-background/50 border border-green-500/20 rounded-lg"
+                      className={`grid grid-cols-[2fr_3fr_1fr_1fr_1fr_2fr_auto] gap-0 px-3 py-2.5 items-center transition-colors hover:bg-muted/20 ${idx < completedCalls.length - 1 ? 'border-b border-border/30' : ''}`}
                     >
-                      <div className="font-medium text-sm">{call.username}</div>
-                      <div className="text-sm text-muted-foreground">{call.slot_name}</div>
+                      <div className="text-sm font-medium">{call.username}</div>
+                      <div className="text-sm text-muted-foreground truncate pr-2">{call.slot_name}</div>
                       <div>
-                        <Badge variant="outline" className="text-xs">{call.type}</Badge>
+                        <span className="text-[11px] font-medium px-1.5 py-0.5 rounded border border-border/50 bg-muted/30 text-muted-foreground capitalize">{call.type}</span>
                       </div>
-                      <div className="text-sm">{formatCurrency(call.buy_amount)}</div>
-                      <div className="text-sm text-green-400">{formatCurrency(call.buy_result)}</div>
-                      <div className="text-sm font-semibold">
+                      <div className="text-sm tabular-nums">{formatCurrency(call.buy_amount)}</div>
+                      <div className="text-sm tabular-nums text-green-400">{formatCurrency(call.buy_result)}</div>
+                      <div className="text-sm">
                         {multi ? (
-                          <span className="text-muted-foreground font-normal">
-                            {formatCurrency(call.buy_amount)} / {formatCurrency(call.buy_result)}{' '}
-                            = <span className="text-foreground font-semibold">{multi}x</span>
-                          </span>
+                          <span className="font-semibold text-foreground">{multi}x</span>
                         ) : (
-                          '-'
+                          <span className="text-muted-foreground/50">—</span>
                         )}
                       </div>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => deleteSlotCall(call.id)}
-                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                        className="h-7 w-7 p-0 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   );
@@ -788,17 +796,15 @@ export function SlotCalls() {
         onOpenChange={(open) => {
           if (!wheelSpinning) {
             setWheelModalOpen(open);
-            if (!open && wheelAnimFrameRef.current) {
-              cancelAnimationFrame(wheelAnimFrameRef.current);
-            }
+            if (!open && wheelAnimFrameRef.current) cancelAnimationFrame(wheelAnimFrameRef.current);
           }
         }}
       >
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Dices className="h-5 w-5 text-primary" />
-              Roll Random Slot Call
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Dices className="h-4 w-4 text-primary" />
+              Roll Random
             </DialogTitle>
           </DialogHeader>
 
@@ -807,48 +813,37 @@ export function SlotCalls() {
               <p className="text-muted-foreground text-sm text-center py-8">No open calls to spin.</p>
             ) : (
               <>
-                {/* Canvas wheel */}
-                <div className="relative flex items-center justify-center">
+                <div className="flex items-center justify-center p-2">
                   <canvas
                     ref={wheelCanvasRef}
-                    width={380}
-                    height={380}
-                    className="rounded-full"
+                    width={360}
+                    height={360}
                     style={{ maxWidth: '100%', height: 'auto' }}
                   />
                 </div>
 
-                {/* Winner announcement */}
                 {wheelWinner && !wheelSpinning && (
-                  <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 mb-2">
-                      <Trophy className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm font-semibold text-yellow-500">Selected!</span>
+                  <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-400 rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-3">
+                    <div className="flex items-center justify-center gap-1.5 mb-1">
+                      <Trophy className="w-3.5 h-3.5 text-yellow-500" />
+                      <span className="text-xs font-semibold text-yellow-500 uppercase tracking-wide">Selected</span>
                     </div>
-                    <p className="text-lg font-bold text-foreground">{wheelWinner.slot_name}</p>
-                    <p className="text-sm text-muted-foreground">Requested by {wheelWinner.username}</p>
+                    <p className="text-base font-semibold text-foreground">{wheelWinner.slot_name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">by {wheelWinner.username}</p>
                   </div>
                 )}
               </>
             )}
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => setWheelModalOpen(false)}
-              disabled={wheelSpinning}
-            >
+          <DialogFooter className="gap-2">
+            <Button size="sm" variant="outline" onClick={() => setWheelModalOpen(false)} disabled={wheelSpinning}>
               Close
             </Button>
             {pendingCalls.length > 0 && (
-              <Button
-                onClick={spinWheel}
-                disabled={wheelSpinning}
-                className="gap-2"
-              >
-                <Dices className="h-4 w-4" />
-                {wheelSpinning ? 'Spinning...' : wheelWinner ? 'Spin Again' : 'Spin!'}
+              <Button size="sm" onClick={spinWheel} disabled={wheelSpinning} className="gap-1.5">
+                <Dices className="h-3.5 w-3.5" />
+                {wheelSpinning ? 'Spinning...' : wheelWinner ? 'Spin Again' : 'Spin'}
               </Button>
             )}
           </DialogFooter>
@@ -857,21 +852,21 @@ export function SlotCalls() {
 
       {/* Complete Modal */}
       <Dialog open={completeModalOpen} onOpenChange={setCompleteModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Complete Slot Call</DialogTitle>
+            <DialogTitle className="text-base">Complete Slot Call</DialogTitle>
           </DialogHeader>
 
           {completingCall && (
             <div className="space-y-4">
-              <div className="p-3 bg-muted/40 rounded-lg space-y-1">
+              <div className="rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5">
                 <p className="text-sm font-medium">{completingCall.username}</p>
-                <p className="text-sm text-muted-foreground">{completingCall.slot_name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{completingCall.slot_name}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Buy Amount ($)</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground mb-1 block uppercase tracking-wide">Buy ($)</label>
                   <Input
                     type="number"
                     placeholder="0.00"
@@ -879,10 +874,11 @@ export function SlotCalls() {
                     onChange={(e) => setCompleteForm({ ...completeForm, buy_amount: e.target.value })}
                     min="0"
                     step="0.01"
+                    className="h-9 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Result ($)</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground mb-1 block uppercase tracking-wide">Result ($)</label>
                   <Input
                     type="number"
                     placeholder="0.00"
@@ -890,123 +886,123 @@ export function SlotCalls() {
                     onChange={(e) => setCompleteForm({ ...completeForm, buy_result: e.target.value })}
                     min="0"
                     step="0.01"
+                    className="h-9 text-sm"
                   />
                 </div>
               </div>
 
               {modalMulti && (
-                <div className="p-3 bg-muted/40 rounded-lg text-center">
-                  <p className="text-xs text-muted-foreground mb-0.5">Multiplier</p>
-                  <p className="text-sm font-mono">
-                    ${parseFloat(completeForm.buy_amount || '0').toFixed(2)} / ${parseFloat(completeForm.buy_result || '0').toFixed(2)}{' '}
-                    = <span className="font-bold text-foreground text-base">{modalMulti}x</span>
-                  </p>
+                <div className="rounded-lg border border-border/40 bg-muted/20 px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Multiplier</span>
+                  <span className="text-sm font-bold text-foreground">{modalMulti}x</span>
                 </div>
               )}
             </div>
           )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCompleteModalOpen(false)} disabled={isSaving}>
+          <DialogFooter className="gap-2">
+            <Button size="sm" variant="outline" onClick={() => setCompleteModalOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleComplete} disabled={isSaving} className="gap-2">
-              <CheckCircle className="h-4 w-4" />
-              {isSaving ? 'Saving...' : 'Mark Complete'}
+            <Button size="sm" onClick={handleComplete} disabled={isSaving} className="gap-1.5">
+              <CheckCircle className="h-3.5 w-3.5" />
+              {isSaving ? 'Saving...' : 'Complete'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Settings Modal - Request Limits */}
+      {/* Settings Modal */}
       <Dialog open={settingsModalOpen} onOpenChange={setSettingsModalOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Settings - Request Limits</DialogTitle>
+            <DialogTitle className="text-base">Request Limits</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Add New Limit */}
-            <div className="p-4 border border-primary/20 rounded-lg bg-background/50 space-y-3">
-              <h3 className="text-sm font-semibold">Add Request Limit</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Add Limit</p>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Username</label>
+                  <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Username</label>
                   <Input
-                    placeholder="Enter username"
+                    placeholder="username"
                     value={newLimitForm.username}
                     onChange={(e) => setNewLimitForm({ ...newLimitForm, username: e.target.value })}
-                    className="h-8"
+                    className="h-8 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Per Hour</label>
+                  <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Per Hour</label>
                   <Input
                     type="number"
                     placeholder="10"
                     value={newLimitForm.max_requests_per_hour}
                     onChange={(e) => setNewLimitForm({ ...newLimitForm, max_requests_per_hour: e.target.value })}
                     min="1"
-                    className="h-8"
+                    className="h-8 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">Per Day</label>
+                  <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Per Day</label>
                   <Input
                     type="number"
                     placeholder="50"
                     value={newLimitForm.max_requests_per_day}
                     onChange={(e) => setNewLimitForm({ ...newLimitForm, max_requests_per_day: e.target.value })}
                     min="1"
-                    className="h-8"
+                    className="h-8 text-sm"
                   />
                 </div>
                 <div className="flex items-end">
-                  <Button size="sm" onClick={addRequestLimit} className="w-full">
-                    Add Limit
+                  <Button size="sm" onClick={addRequestLimit} className="w-full h-8 text-xs">
+                    Add
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* List of Limits */}
+            {/* Limits List */}
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold flex items-center gap-2">
-                User Request Limits
-                <Badge variant="outline" className="text-xs">{requestLimits.length}</Badge>
-              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">User Limits</span>
+                {requestLimits.length > 0 && (
+                  <span className="text-xs font-semibold tabular-nums bg-muted/50 text-muted-foreground border border-border/50 rounded px-1.5 py-0.5 leading-none">
+                    {requestLimits.length}
+                  </span>
+                )}
+              </div>
 
               {isLoadingLimits ? (
-                <p className="text-muted-foreground text-sm py-4 text-center">Loading...</p>
+                <div className="py-6 text-center text-xs text-muted-foreground">Loading...</div>
               ) : requestLimits.length === 0 ? (
-                <p className="text-muted-foreground text-sm py-4 text-center border border-dashed border-primary/10 rounded-lg">
+                <div className="py-6 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg">
                   No request limits set
-                </p>
+                </div>
               ) : (
-                <div className="space-y-1">
-                  {/* Header */}
-                  <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-3 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                <div className="rounded-lg border border-border/50 overflow-hidden">
+                  <div className="grid grid-cols-[1fr_1fr_1fr_auto] px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground bg-muted/30 border-b border-border/40">
                     <div>Username</div>
                     <div>Per Hour</div>
                     <div>Per Day</div>
-                    <div className="w-16"></div>
+                    <div className="w-7" />
                   </div>
-
-                  {requestLimits.map((limit) => (
+                  {requestLimits.map((limit, idx) => (
                     <div
                       key={limit.id}
-                      className="grid grid-cols-[1fr_1fr_1fr_auto] gap-3 px-3 py-3 items-center bg-background/50 border border-primary/20 rounded-lg"
+                      className={`grid grid-cols-[1fr_1fr_1fr_auto] px-3 py-2.5 items-center hover:bg-muted/20 transition-colors ${idx < requestLimits.length - 1 ? 'border-b border-border/30' : ''}`}
                     >
-                      <div className="font-medium text-sm">{limit.username}</div>
-                      <div className="text-sm text-muted-foreground">{limit.max_requests_per_hour}</div>
-                      <div className="text-sm text-muted-foreground">{limit.max_requests_per_day}</div>
+                      <div className="text-sm font-medium">{limit.username}</div>
+                      <div className="text-sm text-muted-foreground tabular-nums">{limit.max_requests_per_hour}</div>
+                      <div className="text-sm text-muted-foreground tabular-nums">{limit.max_requests_per_day}</div>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => deleteRequestLimit(limit.id)}
-                        className="h-7 w-7 p-0 text-destructive hover:text-destructive ml-auto"
+                        className="h-7 w-7 p-0 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   ))}
@@ -1016,7 +1012,7 @@ export function SlotCalls() {
           </div>
 
           <DialogFooter>
-            <Button onClick={() => setSettingsModalOpen(false)}>Close</Button>
+            <Button size="sm" onClick={() => setSettingsModalOpen(false)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
