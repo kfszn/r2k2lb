@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, CheckCircle, Trash2, Clock, Trophy, Settings, Dices, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { Plus, CheckCircle, Trash2, Clock, Trophy, Settings, Dices, ArrowUp, ArrowDown, ArrowUpDown, TrendingUp, TrendingDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface RequestLimit {
@@ -35,6 +35,14 @@ interface SlotCall {
   buy_amount: number | null;
   buy_result: number | null;
   status: string;
+}
+
+interface CallerStat {
+  username: string;
+  calls: number;
+  totalBuy: number;    // sum of all call costs
+  totalResult: number; // sum of all winnings
+  profit: number;      // totalResult - totalBuy
 }
 
 export function SlotCalls() {
@@ -593,6 +601,89 @@ export function SlotCalls() {
       : <ArrowUp className="h-3 w-3" />;
   };
 
+  // Format a signed profit/loss value, e.g. +$120.50 or -$45.00
+  const formatProfit = (value: number) => {
+    const sign = value >= 0 ? '+' : '-';
+    return `${sign}$${Math.abs(value).toFixed(2)}`;
+  };
+
+  // Aggregate completed calls per user: total cost, total winnings, profit and call count.
+  const callerStats: CallerStat[] = (() => {
+    const map = new Map<string, CallerStat>();
+    for (const call of completedCalls) {
+      const buy = call.buy_amount ?? 0;
+      const result = call.buy_result ?? 0;
+      const stat = map.get(call.username) ?? {
+        username: call.username,
+        calls: 0,
+        totalBuy: 0,
+        totalResult: 0,
+        profit: 0,
+      };
+      stat.calls += 1;
+      stat.totalBuy += buy;
+      stat.totalResult += result;
+      stat.profit = stat.totalResult - stat.totalBuy;
+      map.set(call.username, stat);
+    }
+    return Array.from(map.values());
+  })();
+
+  const bestCaller = callerStats.length
+    ? callerStats.reduce((best, s) => (s.profit > best.profit ? s : best))
+    : null;
+  const worstCaller = callerStats.length
+    ? callerStats.reduce((worst, s) => (s.profit < worst.profit ? s : worst))
+    : null;
+
+  // Small stats card used for both Best and Worst caller.
+  const CallerCard = ({
+    variant,
+    stat,
+  }: {
+    variant: 'best' | 'worst';
+    stat: CallerStat;
+  }) => {
+    const isBest = variant === 'best';
+    const accent = isBest ? 'text-green-400' : 'text-red-400';
+    const border = isBest ? 'border-green-500/20' : 'border-red-500/20';
+    const bg = isBest ? 'bg-green-500/5' : 'bg-red-500/5';
+    return (
+      <div className={`rounded-lg border ${border} ${bg} p-3`}>
+        <div className="flex items-center gap-1.5 mb-2">
+          {isBest ? (
+            <TrendingUp className="h-3.5 w-3.5 text-green-400" />
+          ) : (
+            <TrendingDown className="h-3.5 w-3.5 text-red-400" />
+          )}
+          <span className={`text-[11px] font-semibold uppercase tracking-wide ${accent}`}>
+            {isBest ? 'Best Caller' : 'Worst Caller'}
+          </span>
+        </div>
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-base font-bold text-foreground truncate">{stat.username}</span>
+          <span className={`text-sm font-bold tabular-nums ${stat.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {formatProfit(stat.profit)}
+          </span>
+        </div>
+        <div className="mt-2.5 grid grid-cols-3 gap-2 text-center">
+          <div>
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Calls</div>
+            <div className="text-sm font-semibold tabular-nums">{stat.calls}</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Cost</div>
+            <div className="text-sm font-semibold tabular-nums">{formatCurrency(stat.totalBuy)}</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Won</div>
+            <div className="text-sm font-semibold tabular-nums text-green-400">{formatCurrency(stat.totalResult)}</div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
       <Card className="border-border/60">
@@ -788,6 +879,14 @@ export function SlotCalls() {
                 </span>
               )}
             </div>
+
+            {/* Best / Worst caller summary (per-user profit across all their completed calls) */}
+            {!isLoading && bestCaller && worstCaller && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <CallerCard variant="best" stat={bestCaller} />
+                <CallerCard variant="worst" stat={worstCaller} />
+              </div>
+            )}
 
             {isLoading ? (
               <div className="py-8 text-center text-xs text-muted-foreground">Loading...</div>
