@@ -92,6 +92,14 @@ function AccountPageContent() {
   )
 
   const loadProfile = async () => {
+    // Complete any pending Kick link from the OAuth signup flow first,
+    // so the freshly attached connection shows up in this load.
+    try {
+      await fetch('/api/auth/kick/attach', { method: 'POST' })
+    } catch {
+      // non-fatal — profile still loads without the pending link
+    }
+
     const res = await fetch('/api/account/connections')
     if (!res.ok) {
       router.replace('/auth/login')

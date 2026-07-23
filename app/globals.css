@@ -278,6 +278,126 @@
   animation: tile-pop 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ==========================================================================
+   Futuristic leaderboard styling
+   ========================================================================== */
+
+/* Perspective grid floor — subtle animated tech grid */
+@keyframes lb-grid-pan {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 44px; }
+}
+
+.lb-grid {
+  background-image:
+    linear-gradient(oklch(0.65 0.2 250 / 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.65 0.2 250 / 0.10) 1px, transparent 1px);
+  background-size: 44px 44px;
+  animation: lb-grid-pan 6s linear infinite;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 30%, transparent 75%);
+}
+
+/* Floating aurora glow orbs */
+@keyframes lb-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -24px, 0) scale(1.08); }
+}
+
+.lb-orb {
+  animation: lb-float 9s ease-in-out infinite;
+  filter: blur(60px);
+}
+
+/* Neon text glow */
+.neon-text {
+  text-shadow:
+    0 0 12px oklch(0.65 0.2 250 / 0.55),
+    0 0 40px oklch(0.65 0.2 250 / 0.30);
+}
+
+.neon-text-cyan {
+  text-shadow:
+    0 0 12px oklch(0.7 0.18 200 / 0.55),
+    0 0 40px oklch(0.7 0.18 200 / 0.30);
+}
+
+/* Animated conic gradient border wrapper */
+@keyframes lb-border-spin {
+  to { transform: rotate(1turn); }
+}
+
+.lb-ring {
+  position: relative;
+  isolation: isolate;
+}
+.lb-ring::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--lb-angle, 0deg),
+    oklch(0.65 0.2 250 / 0.9),
+    oklch(0.7 0.18 200 / 0.9),
+    transparent 40%,
+    transparent 60%,
+    oklch(0.65 0.2 250 / 0.9)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: lb-border-spin 5s linear infinite;
+  z-index: -1;
+}
+
+/* Shimmer sweep for the champion card */
+@keyframes lb-shimmer {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  100% { transform: translateX(220%) skewX(-18deg); }
+}
+
+.lb-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.lb-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    oklch(1 0 0 / 0.14),
+    transparent
+  );
+  animation: lb-shimmer 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Scanline sweep on stat cards */
+.lb-card {
+  background:
+    linear-gradient(180deg, oklch(0.2 0.03 260 / 0.6), oklch(0.15 0.025 260 / 0.7));
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.lb-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px -12px oklch(0.65 0.2 250 / 0.4);
+}
+
+/* Support @property for smooth conic-gradient animation where available */
+@property --lb-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
@@ -286,7 +406,11 @@
   .animate-deal-in,
   .animate-tile-pop,
   .logo-bounce,
-  .dot-pulse {
+  .dot-pulse,
+  .lb-grid,
+  .lb-orb,
+  .lb-ring::before,
+  .lb-shimmer::after {
     animation: none;
   }
 }

@@ -14,8 +14,9 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trophy, Users, Swords, Settings, Zap, Lock, ShieldAlert, ArrowLeft, LayoutList, Gamepad2, Ticket } from "lucide-react";
+import { Loader2, Trophy, Users, Settings, Zap, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3 } from "lucide-react";
 import Link from "next/link";
+import { AdminNav, type AdminNavView } from "@/components/admin/admin-nav";
 import { Input } from "@/components/ui/input";
 import { ClaimsManager } from "@/components/admin/claims-manager";
 import { WagerVerification } from "@/components/admin/wager-verification";
@@ -79,12 +80,14 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="flex h-screen items-center justify-center px-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md border-primary/20 bg-card/60 backdrop-blur-xl shadow-[0_0_60px_-20px_rgba(80,120,255,0.4)]">
             <CardHeader className="space-y-2 text-center">
               <div className="flex justify-center mb-4">
-                <Lock className="h-8 w-8 text-primary" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10">
+                  <Lock className="h-7 w-7 text-primary" />
+                </div>
               </div>
-              <CardTitle>Admin Access</CardTitle>
+              <CardTitle className="text-2xl">Admin Access</CardTitle>
               <p className="text-sm text-muted-foreground">Enter the admin password to continue</p>
             </CardHeader>
             <CardContent>
@@ -117,134 +120,65 @@ export default function AdminPage() {
 
   // Dashboard View
   if (currentView === "dashboard") {
+    const sections: {
+      view?: AdminView;
+      href?: string;
+      title: string;
+      description: string;
+      icon: React.ReactNode;
+    }[] = [
+      { view: "tournament", title: "Tournament Management", description: "Create tournaments, manage matches, verify entries, and handle claims", icon: <Trophy className="h-6 w-6" /> },
+      { view: "stream-games", title: "Stream Games", description: "Manage stream games and interactive content for viewers", icon: <Gamepad2 className="h-6 w-6" /> },
+      { view: "raffle", title: "Weekly Raffle", description: "Configure raffle settings and select winners", icon: <Ticket className="h-6 w-6" /> },
+      { view: "shop", title: "Rewards Shop", description: "Manage shop items, fulfill redemptions, and configure point settings", icon: <Settings className="h-6 w-6" /> },
+      { view: "users", title: "Users", description: "View all users, adjust point balances, and manage accounts", icon: <Users className="h-6 w-6" /> },
+      { view: "games", title: "Games Analytics", description: "View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko", icon: <BarChart3 className="h-6 w-6" /> },
+      { view: "leaderboards", title: "Leaderboard Manager", description: "Create and manage leaderboards for AceBet and Kick with custom prize structures", icon: <ListOrdered className="h-6 w-6" /> },
+      { href: "/admin/fifty-fifty", title: "50/50 Raffle", description: "Open rounds, view live stats, trigger draws, and review round history", icon: <Ticket className="h-6 w-6" /> },
+      { view: "r2koins", title: "R2Koins", description: "Link platform accounts, manage conversion rates, and monitor wager-based coin awards", icon: <Zap className="h-6 w-6" /> },
+      { view: "website", title: "Affiliate Analytics", description: "Verify individual wagers and view total affiliate statistics", icon: <LineChart className="h-6 w-6" /> },
+    ];
+
+    const cardInner = (s: (typeof sections)[number]) => (
+      <div className="flex h-full flex-col gap-4 p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary transition-colors group-hover:border-primary/50 group-hover:bg-primary/20">
+            {s.icon}
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted-foreground/40 transition-all group-hover:translate-x-1 group-hover:text-primary" />
+        </div>
+        <div className="space-y-1.5">
+          <h2 className="font-bold text-foreground">{s.title}</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">{s.description}</p>
+        </div>
+      </div>
+    );
+
+    const cardClass =
+      "group h-full cursor-pointer rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_12px_40px_-12px_rgba(80,120,255,0.35)]";
+
     return (
       <main className="min-h-screen bg-background">
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("tournament")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Trophy className="h-8 w-8 text-primary" />
-                  <CardTitle>Tournament Management</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Create tournaments, manage matches, verify entries, and handle claims</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("stream-games")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Gamepad2 className="h-8 w-8 text-primary" />
-                  <CardTitle>Stream Games</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Manage stream games and interactive content for viewers</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("raffle")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Trophy className="h-8 w-8 text-primary" />
-                  <CardTitle>Weekly Raffle</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Configure raffle settings and select winners</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("shop")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Settings className="h-8 w-8 text-primary" />
-                  <CardTitle>Rewards Shop</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Manage shop items, fulfill redemptions, and configure point settings</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("users")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Users className="h-8 w-8 text-primary" />
-                  <CardTitle>Users</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">View all users, adjust point balances, and manage accounts</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("games")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Gamepad2 className="h-8 w-8 text-primary" />
-                  <CardTitle>Games Analytics</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("leaderboards")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Trophy className="h-8 w-8 text-primary" />
-                  <CardTitle>Leaderboard Manager</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Create and manage leaderboards for AceBet and Kick with custom prize structures</p>
-              </CardContent>
-            </Card>
-
-            <Link href="/admin/fifty-fifty" className="block">
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow h-full">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <Ticket className="h-8 w-8 text-primary" />
-                    <CardTitle>50/50 Raffle</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">Open rounds, view live stats, trigger draws, and review round history</p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("r2koins")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Zap className="h-8 w-8 text-primary" />
-                  <CardTitle>R2Koins</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Link platform accounts, manage conversion rates, and monitor wager-based coin awards</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView("website")}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Settings className="h-8 w-8 text-primary" />
-                  <CardTitle>Affiliate Analytics</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Verify individual wagers and view total affiliate statistics</p>
-              </CardContent>
-            </Card>
+          <AdminNav current="dashboard" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <div className="mb-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Control Center</p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {sections.map((s) =>
+              s.href ? (
+                <Link key={s.title} href={s.href} className={cardClass}>
+                  {cardInner(s)}
+                </Link>
+              ) : (
+                <button key={s.title} onClick={() => setCurrentView(s.view!)} className={cardClass}>
+                  {cardInner(s)}
+                </button>
+              )
+            )}
           </div>
         </div>
       </main>
@@ -258,13 +192,8 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Tournament Management</h1>
-          </div>
+          <AdminNav current="tournament" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Tournament Management</h1>
 
           <TournamentSelector 
             onSelectTournament={(t) => {
@@ -310,13 +239,8 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Stream Games</h1>
-          </div>
+          <AdminNav current="stream-games" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Stream Games</h1>
 
           <StreamGamesManager />
         </div>
@@ -331,16 +255,11 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Affiliate Analytics</h1>
-          </div>
+          <AdminNav current="website" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Affiliate Analytics</h1>
 
           <Tabs defaultValue="wager" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-3 border border-border/40 bg-card/60 backdrop-blur-xl">
               <TabsTrigger value="wager" className="gap-2">
                 <Zap className="h-4 w-4" />
                 Individual Wager Verification
@@ -389,13 +308,8 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Rewards Shop</h1>
-          </div>
+          <AdminNav current="shop" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Rewards Shop</h1>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <ShopManager />
@@ -416,13 +330,8 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Users</h1>
-          </div>
+          <AdminNav current="users" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Users</h1>
           <UsersManager />
         </div>
       </main>
@@ -436,13 +345,8 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Games Analytics</h1>
-          </div>
+          <AdminNav current="games" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Games Analytics</h1>
           <GamesManager />
         </div>
       </main>
@@ -456,13 +360,8 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Leaderboard Manager</h1>
-          </div>
+          <AdminNav current="leaderboards" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Leaderboard Manager</h1>
           <LeaderboardManager />
         </div>
       </main>
@@ -476,13 +375,8 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">R2Koins Management</h1>
-          </div>
+          <AdminNav current="r2koins" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">R2Koins Management</h1>
           <R2KoinsManager />
         </div>
       </main>
@@ -496,13 +390,8 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Weekly Raffle Management</h1>
-          </div>
+          <AdminNav current="raffle" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Weekly Raffle Management</h1>
           <RaffleManager />
         </div>
       </main>

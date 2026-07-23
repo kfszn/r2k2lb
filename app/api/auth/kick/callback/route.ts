@@ -84,8 +84,11 @@ export async function GET(req: NextRequest) {
   console.log('[kick] kickUser raw:', JSON.stringify(kickUser))
 
   // Kick API may use "user_id" or "id" depending on endpoint version
-  const kickId       = String((kickUser as any).user_id ?? (kickUser as any).id ?? '')
-  const kickUsername = (kickUser as any).name ?? (kickUser as any).username ?? null
+  const kickId          = String((kickUser as any).user_id ?? (kickUser as any).id ?? '')
+  const kickUsernameRaw = (kickUser as any).name ?? (kickUser as any).username ?? null
+  // Normalize to lowercase — the bot's !verify path stores lowercase, so all
+  // writes/lookups must be case-insensitive-consistent.
+  const kickUsername = kickUsernameRaw ? String(kickUsernameRaw).toLowerCase() : null
   const kickAvatar   = (kickUser as any).profile_picture ?? (kickUser as any).avatar ?? null
 
   console.log('[kick] parsed:', { kickId, kickUsername, kickAvatar })
@@ -124,7 +127,7 @@ export async function GET(req: NextRequest) {
 
   // ── LOGIN MODE ─────────────────────────────────────────────────────────────
   // Look up existing profile by kick_id
-  const { data: existingProfile, error: lookupError } = await supabase
+  const { data: byId, error: lookupError } = await supabase
     .from('profiles')
     .select('id, email')
     .eq('kick_id', kickId)
@@ -133,6 +136,40 @@ export async function GET(req: NextRequest) {
   if (lookupError) {
     console.error('[kick/callback] profile lookup error:', lookupError)
     return clearCookies(NextResponse.redirect(`${siteUrl}/auth/login?kick_error=db_error`))
+  }
+
+  let existingProfile = byId
+
+  // Fallback: bot-verified users (!verify) have kick_username but no kick_id.
+  // Match case-insensitively on username, then backfill kick_id so future
+  // logins hit the fast path.
+  if (!existingProfile && kickUsername) {
+    const { data: byName, error: nameLookupError } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .is('kick_id', null)
+      .ilike('kick_username', kickUsername)
+      .maybeSingle()
+
+    if (nameLookupError) {
+      console.error('[kick/callback] username fallback lookup error:', nameLookupError)
+    } else if (byName) {
+      const { error: backfillError } = await supabase
+        .from('profiles')
+        .update({
+          kick_id: kickId,
+          kick_username: kickUsername,
+          kick_avatar: kickAvatar,
+          kick_linked_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', byName.id)
+
+      if (backfillError) {
+        console.error('[kick/callback] kick_id backfill error:', backfillError)
+      }
+      existingProfile = byName
+    }
   }
 
   if (existingProfile) {
@@ -147,7 +184,7 @@ export async function GET(req: NextRequest) {
 
     if (linkError || !linkData?.properties?.hashed_token) {
       console.error('[kick/callback] generate link error:', linkError)
-      return clearCookies(NextResponse.redirect(`${siteUrl}/auth/login?kick_error=login_failed&kick_user=${encodeURIComponent(kickUsername)}`))
+      return clearCookies(NextResponse.redirect(`${siteUrl}/auth/login?kick_error=login_failed&kick_user=${encodeURIComponent(kickUsername ?? '')}`))
     }
 
     // Send the token_hash to our dedicated server-side exchange route.
@@ -158,10 +195,20 @@ export async function GET(req: NextRequest) {
     return clearCookies(NextResponse.redirect(kickLoginUrl.toString()))
   }
 
-  // No linked account — redirect to signup, pre-filling kick identity info
-  return clearCookies(
+  // No linked account — stash the verified Kick identity in a short-lived
+  // httpOnly cookie so it can be attached server-side once the user signs up
+  // and logs in (the signup page itself can't be trusted with these values).
+  const signupRes = clearCookies(
     NextResponse.redirect(
-      `${siteUrl}/auth/signup?kick_id=${encodeURIComponent(kickId)}&kick_username=${encodeURIComponent(kickUsername)}&kick_needs_account=1`
+      `${siteUrl}/auth/signup?kick_username=${encodeURIComponent(kickUsername ?? '')}&kick_needs_account=1`
     )
   )
+  signupRes.cookies.set('kick_pending', JSON.stringify({ id: kickId, username: kickUsername, avatar: kickAvatar }), {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60, // 1 hour to complete signup + email confirmation
+  })
+  return signupRes
 }
