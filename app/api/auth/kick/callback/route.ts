@@ -184,7 +184,7 @@ export async function GET(req: NextRequest) {
 
     if (linkError || !linkData?.properties?.hashed_token) {
       console.error('[kick/callback] generate link error:', linkError)
-      return clearCookies(NextResponse.redirect(`${siteUrl}/auth/login?kick_error=login_failed&kick_user=${encodeURIComponent(kickUsername)}`))
+      return clearCookies(NextResponse.redirect(`${siteUrl}/auth/login?kick_error=login_failed&kick_user=${encodeURIComponent(kickUsername ?? '')}`))
     }
 
     // Send the token_hash to our dedicated server-side exchange route.
