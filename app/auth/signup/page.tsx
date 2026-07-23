@@ -1,8 +1,8 @@
 'use client'
 
-import React from "react"
+import React, { Suspense } from "react"
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,6 +13,21 @@ import Image from 'next/image'
 import { Eye, EyeOff } from 'lucide-react'
 
 export default function SignUpPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground text-sm">Loading...</div>
+      </div>
+    }>
+      <SignUpPageContent />
+    </Suspense>
+  )
+}
+
+function SignUpPageContent() {
+  const searchParams = useSearchParams()
+  const kickNeedsAccount = searchParams.get('kick_needs_account') === '1'
+  const kickUsername = searchParams.get('kick_username')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -141,13 +156,23 @@ export default function SignUpPage() {
                   </button>
                 </div>
 
-                <div className="bg-muted/50 border border-border/40 rounded-lg p-4 text-sm text-muted-foreground space-y-1">
-                  <p className="font-semibold text-foreground">Link your Kick account</p>
-                  <p>Go to R2K2&apos;s Kick chat and type:</p>
-                  <p className="font-mono bg-background/60 rounded px-3 py-1.5 text-foreground text-center">
-                    !verify {accountId}
-                  </p>
-                </div>
+                {kickNeedsAccount ? (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-sm text-green-400 space-y-1">
+                    <p className="font-semibold">Kick account ready to link</p>
+                    <p className="text-green-400/80">
+                      {kickUsername ? `${kickUsername} ` : 'Your Kick account '}will be linked
+                      automatically when you confirm your email and sign in.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-muted/50 border border-border/40 rounded-lg p-4 text-sm text-muted-foreground space-y-1">
+                    <p className="font-semibold text-foreground">Link your Kick account</p>
+                    <p>Go to R2K2&apos;s Kick chat and type:</p>
+                    <p className="font-mono bg-background/60 rounded px-3 py-1.5 text-foreground text-center">
+                      !verify {accountId}
+                    </p>
+                  </div>
+                )}
               </>
             ) : (
               <div className="bg-muted/50 border border-border/40 rounded-lg p-4 text-sm text-muted-foreground text-center space-y-1">
@@ -201,6 +226,17 @@ export default function SignUpPage() {
           <CardDescription>Sign up to claim your leaderboard account</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {kickNeedsAccount && (
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-sm text-green-400">
+              <p className="font-semibold">
+                Kick verified{kickUsername ? `: ${kickUsername}` : ''}
+              </p>
+              <p className="text-green-400/80 mt-1">
+                No account found for this Kick user. Create one below and your Kick account
+                will be linked automatically after you confirm your email and sign in.
+              </p>
+            </div>
+          )}
           {error && (
             <div className="space-y-3">
               <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
