@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, CheckCircle, AlertCircle, Target } from 'lucide-react'
+import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, CheckCircle, AlertCircle } from 'lucide-react'
+import { GoalTracker } from '@/components/goal-tracker'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 import {
@@ -255,44 +256,12 @@ export default function LuxdropLeaderboard() {
           />
         </div>
 
-        {/* Wager Goal */}
-        {(() => {
-          const pct = Math.min((totalWagered / WAGER_GOAL) * 100, 100)
-          const reached = totalWagered >= WAGER_GOAL
-          return (
-            <div className="max-w-4xl mx-auto mt-3 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl px-5 py-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Target className={`h-4 w-4 ${reached ? 'text-green-400' : 'text-primary'}`} />
-                  <span className="text-sm font-semibold">
-                    {reached ? 'Goal Reached!' : 'Wager Goal'}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-1.5 text-sm tabular-nums">
-                  <span className={`font-bold ${reached ? 'text-green-400' : 'text-foreground'}`}>
-                    {formatMoney(totalWagered)}
-                  </span>
-                  <span className="text-muted-foreground">/</span>
-                  <span className="text-muted-foreground">{formatMoney(WAGER_GOAL)}</span>
-                  <span className={`ml-1 text-xs font-semibold ${reached ? 'text-green-400' : 'text-primary'}`}>
-                    {pct.toFixed(1)}%
-                  </span>
-                </div>
-              </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted/60">
-                <div
-                  className={`h-full rounded-full transition-all duration-700 ${reached ? 'bg-green-400' : 'bg-primary'} shadow-[0_0_12px_-2px_rgba(80,120,255,0.7)]`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              {!reached && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {formatMoney(WAGER_GOAL - totalWagered)} remaining to reach the goal
-                </p>
-              )}
-            </div>
-          )
-        })()}
+        <GoalTracker
+          current={totalWagered}
+          goal={WAGER_GOAL}
+          formatMoney={formatMoney}
+          className="max-w-4xl mx-auto mt-3"
+        />
       </section>
 
       {/* Tab Nav */}

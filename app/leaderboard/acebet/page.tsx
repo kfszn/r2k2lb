@@ -309,7 +309,7 @@ export default function AcebetLeaderboard() {
       {/* Stats Cards */}
       {leaderboard && (
         <section className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-6xl mx-auto">
             <StatCard
               label="Total Wagered"
               value={formatMoney(totalWagered)}
@@ -322,14 +322,6 @@ export default function AcebetLeaderboard() {
               icon={<Users className="h-5 w-5" />}
               tone="accent"
             />
-
-            <GoalTracker
-              current={totalWagered}
-              goal={400000000}
-              formatMoney={formatMoney}
-              label="Wager Goal"
-            />
-
             {!showPrevious && (
               <StatCard
                 label="Time Remaining"
@@ -339,6 +331,12 @@ export default function AcebetLeaderboard() {
               />
             )}
           </div>
+          <GoalTracker
+            current={totalWagered}
+            goal={400000000}
+            formatMoney={formatMoney}
+            className="max-w-6xl mx-auto mt-3"
+          />
         </section>
       )}
 
