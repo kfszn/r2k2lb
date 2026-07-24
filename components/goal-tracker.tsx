@@ -1,4 +1,3 @@
-import { Card, CardContent } from '@/components/ui/card'
 import { Target } from 'lucide-react'
 
 interface GoalTrackerProps {
@@ -6,39 +5,45 @@ interface GoalTrackerProps {
   goal: number
   formatMoney: (amount: number) => string
   label?: string
+  className?: string
 }
 
-export function GoalTracker({ current, goal, formatMoney, label = 'Goal Progress' }: GoalTrackerProps) {
-  const percentage = Math.min((current / goal) * 100, 100)
+export function GoalTracker({ current, goal, formatMoney, label = 'Wager Goal', className = '' }: GoalTrackerProps) {
+  const pct = Math.min((current / goal) * 100, 100)
+  const reached = current >= goal
   const remaining = Math.max(goal - current, 0)
 
   return (
-    <Card className="bg-card/50 backdrop-blur border-accent/20">
-      <CardContent className="px-4 py-3">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground uppercase font-medium mb-0.5 tracking-wider">{label}</p>
-              <p className="text-sm font-bold text-accent truncate">{formatMoney(current)} / {formatMoney(goal)}</p>
-            </div>
-            <Target className="h-5 w-5 text-accent/40 flex-shrink-0" />
-          </div>
-          
-          <div className="space-y-1">
-            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-accent to-accent/60 transition-all duration-500"
-                style={{ width: `${percentage}%` }}
-              />
-            </div>
-            
-            <div className="flex justify-between items-center text-xs text-muted-foreground">
-              <span>{percentage.toFixed(1)}% Complete</span>
-              <span>Remaining: {formatMoney(remaining)}</span>
-            </div>
-          </div>
+    <div className={`rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl px-5 py-4 ${className}`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Target className={`h-4 w-4 ${reached ? 'text-green-400' : 'text-primary'}`} />
+          <span className="text-sm font-semibold">
+            {reached ? 'Goal Reached!' : label}
+          </span>
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex items-baseline gap-1.5 text-sm tabular-nums">
+          <span className={`font-bold ${reached ? 'text-green-400' : 'text-foreground'}`}>
+            {formatMoney(current)}
+          </span>
+          <span className="text-muted-foreground">/</span>
+          <span className="text-muted-foreground">{formatMoney(goal)}</span>
+          <span className={`ml-1 text-xs font-semibold ${reached ? 'text-green-400' : 'text-primary'}`}>
+            {pct.toFixed(1)}%
+          </span>
+        </div>
+      </div>
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted/60">
+        <div
+          className={`h-full rounded-full transition-all duration-700 ${reached ? 'bg-green-400' : 'bg-primary'} shadow-[0_0_12px_-2px_rgba(80,120,255,0.7)]`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      {!reached && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          {formatMoney(remaining)} remaining to reach the goal
+        </p>
+      )}
+    </div>
   )
 }

@@ -183,8 +183,18 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold">{tournament.name}</h1>
-                  <Badge className="text-base">{status === 'registration' ? 'REGISTERING' : status === 'live' ? 'LIVE' : 'CLOSED'}</Badge>
+              <h1 className="text-3xl font-bold tracking-tight">{tournament.name}</h1>
+              <Badge
+                className={`text-sm ${
+                  status === 'registration'
+                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                    : status === 'live'
+                    ? 'bg-primary/10 text-primary border border-primary/25'
+                    : 'bg-muted text-muted-foreground border border-border/50'
+                }`}
+              >
+                {status === 'registration' ? 'REGISTERING' : status === 'live' ? 'LIVE' : 'CLOSED'}
+              </Badge>
             </div>
             <div className="flex gap-3 items-end">
               <div className="w-48">
@@ -214,39 +224,39 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Users className="h-8 w-8 text-primary opacity-60" />
-              <div>
-                <p className="text-sm text-muted-foreground">Players</p>
-                <p className="text-2xl font-bold">{players.length}/{tournament.max_players}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-5 backdrop-blur-xl">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
+            <Users className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Players</p>
+            <p className="text-2xl font-bold tabular-nums">{players.length}/{tournament.max_players}</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div>
-              <p className="text-sm text-muted-foreground">Active Players</p>
-              <p className="text-2xl font-bold">{activePlayers}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-5 backdrop-blur-xl">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-green-500/25 bg-green-500/10 text-green-400">
+            <Zap className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Active Players</p>
+            <p className="text-2xl font-bold tabular-nums">{activePlayers}</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Wagers</p>
-              <p className="text-2xl font-bold">{formatCurrency(totalWagers)}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-5 backdrop-blur-xl">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
+            <TrendingUp className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Total Wagers</p>
+            <p className="text-2xl font-bold tabular-nums">{formatCurrency(totalWagers)}</p>
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="players" className="space-y-4">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3 border border-border/40 bg-card/60 backdrop-blur-xl">
           <TabsTrigger value="players" className="gap-2">
             <Users className="h-4 w-4" />
             Players
@@ -276,9 +286,9 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
               ) : (
                 <div className="space-y-2">
                   {(players as TournamentPlayer[]).map(player => (
-                    <div key={player.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={player.id} className="flex items-center justify-between rounded-xl border border-border/50 bg-card/40 p-4 transition-colors hover:border-border">
                       <div>
-                        <p className="font-medium">{player.acebet_username}</p>
+                        <p className="font-medium">{player.acebet_username || <span className="text-muted-foreground">No Acebet</span>}</p>
                         <p className="text-sm text-muted-foreground">@{player.kick_username}</p>
                       </div>
                       <div className="flex items-center gap-4">

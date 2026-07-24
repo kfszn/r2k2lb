@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Dices, Trash2, Trophy, X, Loader2 } from 'lucide-react';
+import { Flag, Trash2, X, Loader2 } from 'lucide-react';
+import { HorseRaceDialog } from '@/components/admin/horse-race';
 
 interface GiveawayRow {
   id: string;
@@ -30,13 +30,8 @@ export function Giveaway() {
   const [closing, setClosing] = useState(false);
   const [clearing, setClearing] = useState(false);
 
-  // Wheel state
-  const [wheelModalOpen, setWheelModalOpen] = useState(false);
-  const [wheelSpinning, setWheelSpinning] = useState(false);
-  const [wheelWinner, setWheelWinner] = useState<GiveawayEntry | null>(null);
-  const wheelCanvasRef = useRef<HTMLCanvasElement>(null);
-  const wheelAngleRef = useRef(0);
-  const wheelAnimFrameRef = useRef<number | null>(null);
+  // Horse race modal state
+  const [raceModalOpen, setRaceModalOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     const res = await fetch('/api/admin/giveaway');
@@ -52,12 +47,6 @@ export function Giveaway() {
     const interval = setInterval(fetchData, 4000);
     return () => clearInterval(interval);
   }, [fetchData]);
-
-  useEffect(() => {
-    return () => {
-      if (wheelAnimFrameRef.current) cancelAnimationFrame(wheelAnimFrameRef.current);
-    };
-  }, []);
 
   const handleOpen = async () => {
     if (!keyword.trim()) return;
@@ -95,142 +84,8 @@ export function Giveaway() {
     return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
-  // ── Wheel ──────────────────────────────────────────────────────────────────
-
-  const WHEEL_COLORS = [
-    '#7c3aed', '#2563eb', '#0891b2', '#059669',
-    '#d97706', '#dc2626', '#db2777', '#7c3aed',
-  ];
-
-  const drawWheel = useCallback((angle: number, items: GiveawayEntry[], winner: GiveawayEntry | null) => {
-    const canvas = wheelCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const W = canvas.width;
-    const H = canvas.height;
-    const cx = W / 2;
-    const cy = H / 2;
-    const radius = Math.min(cx, cy) - 8;
-
-    ctx.clearRect(0, 0, W, H);
-    if (items.length === 0) return;
-
-    const slice = (2 * Math.PI) / items.length;
-
-    items.forEach((item, i) => {
-      const start = angle + i * slice;
-      const end = start + slice;
-      const isWinner = winner && item.id === winner.id;
-
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, radius, start, end);
-      ctx.closePath();
-      ctx.fillStyle = isWinner ? '#f59e0b' : WHEEL_COLORS[i % WHEEL_COLORS.length];
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(start + slice / 2);
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold ${Math.min(13, Math.max(9, 200 / items.length))}px sans-serif`;
-      ctx.shadowColor = 'rgba(0,0,0,0.6)';
-      ctx.shadowBlur = 3;
-      const label = item.kick_username.length > 14 ? item.kick_username.slice(0, 13) + '…' : item.kick_username;
-      ctx.fillText(label, radius - 10, 4);
-      ctx.restore();
-    });
-
-    // Center cap
-    ctx.beginPath();
-    ctx.arc(cx, cy, 18, 0, 2 * Math.PI);
-    ctx.fillStyle = '#1a1a2e';
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Pointer
-    ctx.save();
-    ctx.translate(cx, 6);
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(-10, -18);
-    ctx.lineTo(10, -18);
-    ctx.closePath();
-    ctx.fillStyle = '#f59e0b';
-    ctx.fill();
-    ctx.restore();
-  }, []);
-
-  const spinWheel = useCallback(() => {
-    if (wheelSpinning || entries.length === 0) return;
-
-    setWheelWinner(null);
-    setWheelSpinning(true);
-
-    const items = entries;
-    const n = items.length;
-    const slice = (2 * Math.PI) / n;
-    const TAU = 2 * Math.PI;
-    const winnerIndex = Math.floor(Math.random() * n);
-
-    // Pointer is at 12 o'clock = -π/2 in canvas arc coords.
-    // Slice i is drawn from (angle + i*slice) to (angle + i*slice + slice).
-    // We need: finalAngle + winnerIndex*slice + slice/2 = -π/2 (mod TAU)
-    // => restAngle = -π/2 - winnerIndex*slice - slice/2
-    const restAngle = -Math.PI / 2 - winnerIndex * slice - slice / 2;
-
-    // Find the smallest absolute angle >= currentAngle + minSpins*TAU
-    // that is congruent to restAngle (mod TAU).
-    const minSpins = 6;
-    const extraFraction = Math.random();
-    const minTarget = wheelAngleRef.current + (minSpins + extraFraction) * TAU;
-    const k = Math.ceil((minTarget - restAngle) / TAU);
-    const absoluteTarget = restAngle + k * TAU;
-
-    const startAngle = wheelAngleRef.current;
-    const startTime = performance.now();
-    const duration = 4000 + Math.random() * 1500;
-    const easeOut = (t: number) => 1 - Math.pow(1 - t, 4);
-
-    const animate = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeOut(progress);
-      wheelAngleRef.current = startAngle + eased * (absoluteTarget - startAngle);
-      drawWheel(wheelAngleRef.current, items, null);
-
-      if (progress < 1) {
-        wheelAnimFrameRef.current = requestAnimationFrame(animate);
-      } else {
-        wheelAngleRef.current = absoluteTarget;
-        const w = items[winnerIndex];
-        setWheelWinner(w);
-        setWheelSpinning(false);
-        drawWheel(wheelAngleRef.current, items, w);
-      }
-    };
-
-    wheelAnimFrameRef.current = requestAnimationFrame(animate);
-  }, [wheelSpinning, entries, drawWheel]);
-
-  useEffect(() => {
-    if (wheelModalOpen && !wheelSpinning) {
-      const t = setTimeout(() => drawWheel(wheelAngleRef.current, entries, wheelWinner), 50);
-      return () => clearTimeout(t);
-    }
-  }, [wheelModalOpen, entries, wheelWinner, wheelSpinning, drawWheel]);
-
   const handleConfirmAndClear = async () => {
-    setWheelModalOpen(false);
-    setWheelWinner(null);
+    setRaceModalOpen(false);
     await handleClear();
     await handleClose();
   };
@@ -326,11 +181,11 @@ export function Giveaway() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => { setWheelWinner(null); setWheelModalOpen(true); }}
+                      onClick={() => setRaceModalOpen(true)}
                       className="h-7 gap-1.5 text-xs border-primary/30 hover:border-primary/60 hover:bg-primary/10 text-primary"
                     >
-                      <Dices className="h-3.5 w-3.5" />
-                      Roll Winner
+                      <Flag className="h-3.5 w-3.5" />
+                      Start Race
                     </Button>
                   )}
                   {entries.length > 0 && (
@@ -387,77 +242,13 @@ export function Giveaway() {
         </CardContent>
       </Card>
 
-      {/* Wheel Modal */}
-      <Dialog
-        open={wheelModalOpen}
-        onOpenChange={(open) => {
-          if (!wheelSpinning) {
-            setWheelModalOpen(open);
-            if (!open && wheelAnimFrameRef.current) cancelAnimationFrame(wheelAnimFrameRef.current);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base">
-              <Dices className="h-4 w-4 text-primary" />
-              Roll Winner
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            {entries.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-8">No entries to spin.</p>
-            ) : (
-              <>
-                <div className="flex items-center justify-center p-2">
-                  <canvas
-                    ref={wheelCanvasRef}
-                    width={360}
-                    height={360}
-                    style={{ maxWidth: '100%', height: 'auto' }}
-                  />
-                </div>
-
-                {wheelWinner && !wheelSpinning && (
-                  <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-400 rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-3">
-                    <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <Trophy className="w-3.5 h-3.5 text-yellow-500" />
-                      <span className="text-xs font-semibold text-yellow-500 uppercase tracking-wide">Winner</span>
-                    </div>
-                    <p className="text-base font-semibold text-foreground">{wheelWinner.kick_username}</p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button size="sm" variant="outline" onClick={() => setWheelModalOpen(false)} disabled={wheelSpinning}>
-              Close
-            </Button>
-            {entries.length > 0 && (
-              <>
-                <Button size="sm" onClick={spinWheel} disabled={wheelSpinning} className="gap-1.5">
-                  <Dices className="h-3.5 w-3.5" />
-                  {wheelSpinning ? 'Spinning...' : wheelWinner ? 'Spin Again' : 'Spin'}
-                </Button>
-                {wheelWinner && !wheelSpinning && (
-                  <Button
-                    size="sm"
-                    variant="default"
-                    onClick={handleConfirmAndClear}
-                    className="gap-1.5 bg-green-600 hover:bg-green-700"
-                  >
-                    <Trophy className="h-3.5 w-3.5" />
-                    Confirm & Clear
-                  </Button>
-                )}
-              </>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Horse Race Modal */}
+      <HorseRaceDialog
+        open={raceModalOpen}
+        onOpenChange={setRaceModalOpen}
+        entries={entries}
+        onConfirmAndClear={handleConfirmAndClear}
+      />
     </div>
   );
 }

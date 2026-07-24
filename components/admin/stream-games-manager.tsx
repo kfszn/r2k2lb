@@ -40,7 +40,7 @@ const GAMES: { id: GameType; label: string; description: string; icon: React.Rea
   {
     id: 'giveaway',
     label: 'Giveaway',
-    description: 'Keyword-based chat giveaways with a live entrant list and winner wheel',
+    description: 'Keyword-based chat giveaways with a live entrant list and horse race winner picker',
     icon: <PartyPopper className="h-7 w-7 text-primary" />,
   },
 ];

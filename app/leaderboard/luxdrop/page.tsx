@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, CheckCircle, AlertCircle } from 'lucide-react'
+import { GoalTracker } from '@/components/goal-tracker'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 import {
@@ -22,6 +23,7 @@ const START_DATE = '2026-07-07'
 const END_DATE   = '2026-08-08'
 const DISPLAY_RANGE = 'Jul 8 – Aug 8, 2026'
 const PRIZE_TOTAL = 2500
+const WAGER_GOAL = 65000
 
 // Top 10 prize breakdown — $2,500 total pool
 // 1st $1,000 · 2nd $500 · 3rd $300 · 4th $175 · 5th $125
@@ -253,6 +255,13 @@ export default function LuxdropLeaderboard() {
             className="col-span-2 md:col-span-1"
           />
         </div>
+
+        <GoalTracker
+          current={totalWagered}
+          goal={WAGER_GOAL}
+          formatMoney={formatMoney}
+          className="max-w-4xl mx-auto mt-3"
+        />
       </section>
 
       {/* Tab Nav */}
