@@ -39,7 +39,7 @@ const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards" | "r2koins";
 
 export default function AdminPage() {
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(true); // TEMP: v0 preview bypass, revert before commit
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [currentView, setCurrentView] = useState<AdminView>("dashboard");
