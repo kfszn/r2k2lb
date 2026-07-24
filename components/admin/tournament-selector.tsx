@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, EyeOff, AlertCircle, Plus, Trash2 } from 'lucide-react';
@@ -87,19 +86,19 @@ export function TournamentSelector({ onSelectTournament, onCreateNew }: Tourname
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-blue-500/10 text-blue-700';
+        return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
       case 'registration':
-        return 'bg-green-500/10 text-green-700';
-      case 'active':
-        return 'bg-purple-500/10 text-purple-700';
+        return 'bg-green-500/10 text-green-400 border border-green-500/20';
+      case 'live':
+        return 'bg-primary/10 text-primary border border-primary/25';
       case 'paused':
-        return 'bg-yellow-500/10 text-yellow-700';
+        return 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20';
       case 'completed':
-        return 'bg-gray-500/10 text-gray-700';
+        return 'bg-muted text-muted-foreground border border-border/50';
       case 'cancelled':
-        return 'bg-red-500/10 text-red-700';
+        return 'bg-red-500/10 text-red-400 border border-red-500/20';
       default:
-        return 'bg-gray-500/10 text-gray-700';
+        return 'bg-muted text-muted-foreground border border-border/50';
     }
   };
 
@@ -139,94 +138,89 @@ export function TournamentSelector({ onSelectTournament, onCreateNew }: Tourname
 
   return (
     <div className="space-y-6">
-      {/* Create New Button */}
-      <div className="flex justify-end">
-        <Button onClick={onCreateNew} size="lg" className="gap-2">
-          <Plus className="h-5 w-5" />
+      {/* Header: count + filter pills + create button */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-sm text-muted-foreground">
+            {filteredTournaments.length} of {tournaments.length} shown
+          </span>
+          <Button
+            variant={filters.showLive ? 'default' : 'outline'}
+            size="sm"
+            className="gap-1.5 rounded-full"
+            onClick={() => setFilters({ ...filters, showLive: !filters.showLive })}
+          >
+            {filters.showLive ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            Live
+          </Button>
+          <Button
+            variant={filters.showRegistering ? 'default' : 'outline'}
+            size="sm"
+            className="gap-1.5 rounded-full"
+            onClick={() => setFilters({ ...filters, showRegistering: !filters.showRegistering })}
+          >
+            {filters.showRegistering ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            Registering
+          </Button>
+          <Button
+            variant={filters.showClosed ? 'default' : 'outline'}
+            size="sm"
+            className="gap-1.5 rounded-full"
+            onClick={() => setFilters({ ...filters, showClosed: !filters.showClosed })}
+          >
+            {filters.showClosed ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            Closed
+          </Button>
+        </div>
+        <Button onClick={onCreateNew} className="gap-2">
+          <Plus className="h-4 w-4" />
           Create New Tournament
         </Button>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant={filters.showLive ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilters({ ...filters, showLive: !filters.showLive })}
-            >
-              {filters.showLive ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-              Live
-            </Button>
-            <Button
-              variant={filters.showRegistering ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilters({ ...filters, showRegistering: !filters.showRegistering })}
-            >
-              {filters.showRegistering ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-              Registering
-            </Button>
-            <Button
-              variant={filters.showClosed ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilters({ ...filters, showClosed: !filters.showClosed })}
-            >
-              {filters.showClosed ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-              Closed
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Tournaments Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredTournaments.length === 0 ? (
-          <Card className="md:col-span-2 lg:col-span-3">
-            <CardContent className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
-              <AlertCircle className="h-5 w-5" />
-              No tournaments match your filters
-            </CardContent>
-          </Card>
+          <div className="md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border/60 py-16 text-muted-foreground">
+            <AlertCircle className="h-6 w-6 opacity-60" />
+            <p className="text-sm">No tournaments match your filters</p>
+          </div>
         ) : (
           filteredTournaments.map(tournament => (
-            <Card key={tournament.id} className="cursor-pointer hover:shadow-lg transition-shadow flex flex-col" onClick={() => onSelectTournament(tournament)}>
-              <CardHeader>
-                <div className="space-y-2">
-                  <CardTitle className="text-lg">{tournament.name}</CardTitle>
-                  <Badge className={getStatusColor(tournament.status)}>
-                    {getStatusLabel(tournament.status)}
-                  </Badge>
+            <div
+              key={tournament.id}
+              onClick={() => onSelectTournament(tournament)}
+              className="group flex cursor-pointer flex-col rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_12px_40px_-12px_rgba(80,120,255,0.35)]"
+            >
+              <div className="flex items-start justify-between gap-3 p-5 pb-4">
+                <h3 className="font-bold leading-tight text-foreground text-balance">{tournament.name}</h3>
+                <Badge className={`shrink-0 ${getStatusColor(tournament.status)}`}>
+                  {getStatusLabel(tournament.status)}
+                </Badge>
+              </div>
+              <div className="grid flex-1 grid-cols-2 gap-4 px-5 pb-5 text-sm">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Game</p>
+                  <p className="mt-0.5 font-medium">{tournament.game_name}</p>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3 flex-1">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Game</p>
-                    <p className="font-medium">{tournament.game_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Bet</p>
-                    <p className="font-medium">${tournament.bet_amount}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Players</p>
-                    <p className="font-medium">{tournament.player_count}/{tournament.max_players}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Created</p>
-                    <p className="font-medium text-xs">{new Date(tournament.created_at).toLocaleDateString()}</p>
-                  </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Bet</p>
+                  <p className="mt-0.5 font-medium tabular-nums">${tournament.bet_amount}</p>
                 </div>
-              </CardContent>
-              <div className="border-t p-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Players</p>
+                  <p className="mt-0.5 font-medium tabular-nums">{tournament.player_count}/{tournament.max_players}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Created</p>
+                  <p className="mt-0.5 font-medium">{new Date(tournament.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <div className="border-t border-border/50 p-3">
                 <Button
-                  variant="destructive"
+                  variant="ghost"
                   size="sm"
-                  className="w-full gap-2"
+                  className="w-full gap-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (deleteConfirm === tournament.id) {
@@ -240,7 +234,7 @@ export function TournamentSelector({ onSelectTournament, onCreateNew }: Tourname
                   {deleteConfirm === tournament.id ? 'Confirm Delete' : 'Delete'}
                 </Button>
               </div>
-            </Card>
+            </div>
           ))
         )}
       </div>
