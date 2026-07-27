@@ -259,8 +259,8 @@ export default function RewardMatchPage() {
                 </a>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/perks/acebet/wager-rewards">
-                  View Wager Rewards
+                <Link href="/leaderboard/acebet">
+                  Back to AceBet Leaderboard
                 </Link>
               </Button>
             </div>
