@@ -130,7 +130,7 @@ export function PodiumCard({
   name: string
   avatar: string
   wagered: string
-  prize: string
+  prize: ReactNode
   fallback: string
   size?: 'sm' | 'md' | 'lg'
 }) {
@@ -200,7 +200,7 @@ export function PlayerRow({
   name: string
   avatar: string
   wagered: string
-  prize: string
+  prize: ReactNode
   fallback: string
 }) {
   const [imgError, setImgError] = useState(false)
@@ -246,7 +246,7 @@ export function TableHeader() {
 // ---------------------------------------------------------------------------
 // Prize badge (hero total)
 // ---------------------------------------------------------------------------
-export function PrizePool({ total }: { total: string }) {
+export function PrizePool({ total }: { total: ReactNode }) {
   return (
     <div className="lb-ring inline-flex items-center gap-3 rounded-full border border-transparent bg-card/60 px-7 py-3 backdrop-blur-xl">
       <Trophy className="h-6 w-6 text-primary" />

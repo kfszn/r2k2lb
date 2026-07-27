@@ -112,6 +112,21 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/leaderboard/luxdrop`,
   },
+  csbattle: {
+    title: 'CsBattle Leaderboard — Monthly Coin Prizes with Code R2K2',
+    description:
+      'Compete on the R2K2 CsBattle leaderboard for a 3,000 coin prize pool. Use code R2K2 on CsBattle and every wager counts toward your placement and R2Koins balance.',
+    keywords: [
+      'CsBattle leaderboard',
+      'CsBattle R2K2',
+      'CsBattle code R2K2',
+      'CsBattle monthly prizes',
+      'CsBattle rewards',
+      'CsBattle wager competition',
+      'R2Koins CsBattle',
+    ],
+    canonical: `${baseUrl}/leaderboard/csbattle`,
+  },
   kick: {
     title: 'Kick Leaderboard — Top Chatters & Subscribers | R2K2',
     description:
