@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, CheckCircle } from 'lucide-react'
+import { GoalTracker } from '@/components/goal-tracker'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
 import {
@@ -24,6 +25,7 @@ const END_DATE   = '2026-08-25'      // 30 days after start
 const DISPLAY_RANGE = 'Jul 26 – Aug 25, 2026'
 const PRIZE_TOTAL = 3000
 const PRIZE_UNIT = 'coins'
+const WAGER_GOAL = 65000
 
 // Top 10 prize breakdown — 3,000 coins total pool, weighted heavily to the top 3
 // 1st 1,200 · 2nd 700 · 3rd 400 · 4th 200 · 5th 150
@@ -253,6 +255,12 @@ export default function CsBattleLeaderboard() {
             className="col-span-2 md:col-span-1"
           />
         </div>
+        <GoalTracker
+          current={totalWagered}
+          goal={WAGER_GOAL}
+          formatMoney={formatMoney}
+          className="max-w-4xl mx-auto mt-3"
+        />
       </section>
 
       {/* Tab Nav */}
