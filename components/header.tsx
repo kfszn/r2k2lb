@@ -159,28 +159,86 @@ function Header() {
               LuxDrop
               <ChevronDown className="h-4 w-4" />
             </button>
-            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[180px] z-50 py-1">
+            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
               <Link
                 href="/leaderboard/luxdrop"
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Leaderboard
               </Link>
+              <Link
+                href="/raffle/luxdrop"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Raffle
+              </Link>
+              <div className="h-px bg-border/20 mx-2 my-1" />
+              <div className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
+                Code Perks
+              </div>
+              <Link
+                href="/perks/luxdrop/wager-milestones"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center justify-between gap-2"
+              >
+                Wager Milestones
+                <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
+              </Link>
+              <Link
+                href="/perks/luxdrop/first-deposit"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                First Time Deposit Bonus
+              </Link>
+              <Link
+                href="/perks/luxdrop/loss-back"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Loss-back
+              </Link>
             </div>
           </div>
 
-          {/* CsBattle Dropdown */}
+          {/* CSBattle Dropdown */}
           <div className="relative group">
             <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
-              CsBattle
+              CSBattle
               <ChevronDown className="h-4 w-4" />
             </button>
-            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[180px] z-50 py-1">
+            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
               <Link
                 href="/leaderboard/csbattle"
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Leaderboard
+              </Link>
+              <Link
+                href="/raffle/csbattle"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Raffle
+              </Link>
+              <div className="h-px bg-border/20 mx-2 my-1" />
+              <div className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
+                Code Perks
+              </div>
+              <Link
+                href="/perks/csbattle/wager-milestones"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center justify-between gap-2"
+              >
+                Wager Milestones
+                <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
+              </Link>
+              <Link
+                href="/perks/csbattle/first-deposit"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                First Time Deposit Bonus
+              </Link>
+              <Link
+                href="/perks/csbattle/loss-back"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Loss-back
               </Link>
             </div>
           </div>
@@ -363,23 +421,53 @@ function Header() {
                       <Link href="/leaderboard/luxdrop" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Leaderboard
                       </Link>
+                      <Link href="/raffle/luxdrop" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Raffle
+                      </Link>
+                      <div className="h-px bg-border/20 my-1" />
+                      <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
+                      <Link href="/perks/luxdrop/wager-milestones" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
+                        Wager Milestones
+                        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
+                      </Link>
+                      <Link href="/perks/luxdrop/first-deposit" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        First Time Deposit Bonus
+                      </Link>
+                      <Link href="/perks/luxdrop/loss-back" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Loss-back
+                      </Link>
                     </div>
                   )}
                 </div>
 
-                {/* Mobile CsBattle */}
+                {/* Mobile CSBattle */}
                 <div className="space-y-1">
                   <button
                     onClick={() => { setMobileCsbattle(!mobileCsbattle); setMobileAcebet(false); setMobileLuxdrop(false); setMobileKick(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
-                    CsBattle
+                    CSBattle
                     <ChevronDown className={`h-4 w-4 transition-transform ${mobileCsbattle ? 'rotate-180' : ''}`} />
                   </button>
                   {mobileCsbattle && (
                     <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
                       <Link href="/leaderboard/csbattle" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Leaderboard
+                      </Link>
+                      <Link href="/raffle/csbattle" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Raffle
+                      </Link>
+                      <div className="h-px bg-border/20 my-1" />
+                      <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
+                      <Link href="/perks/csbattle/wager-milestones" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
+                        Wager Milestones
+                        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
+                      </Link>
+                      <Link href="/perks/csbattle/first-deposit" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        First Time Deposit Bonus
+                      </Link>
+                      <Link href="/perks/csbattle/loss-back" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Loss-back
                       </Link>
                     </div>
                   )}

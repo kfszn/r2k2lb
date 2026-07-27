@@ -83,7 +83,7 @@ export default function HomePage() {
             </div>
             <div className="w-full max-w-sm">
               <PlatformCard
-                name="CsBattle"
+                name="CSBattle"
                 logo="/assets/csbattle.png"
                 href="/leaderboard/csbattle"
                 signupUrl="https://csbattle.com/r/r2k2"

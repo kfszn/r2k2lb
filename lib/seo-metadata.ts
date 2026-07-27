@@ -113,17 +113,17 @@ export const pageMetadata = {
     canonical: `${baseUrl}/leaderboard/luxdrop`,
   },
   csbattle: {
-    title: 'CsBattle Leaderboard — Monthly Coin Prizes with Code R2K2',
+    title: 'CSBattle Leaderboard — Monthly Coin Prizes with Code R2K2',
     description:
-      'Compete on the R2K2 CsBattle leaderboard for a 3,000 coin prize pool. Use code R2K2 on CsBattle and every wager counts toward your placement and R2Koins balance.',
+      'Compete on the R2K2 CSBattle leaderboard for a 3,000 coin prize pool. Use code R2K2 on CSBattle and every wager counts toward your placement and R2Koins balance.',
     keywords: [
-      'CsBattle leaderboard',
-      'CsBattle R2K2',
-      'CsBattle code R2K2',
-      'CsBattle monthly prizes',
-      'CsBattle rewards',
-      'CsBattle wager competition',
-      'R2Koins CsBattle',
+      'CSBattle leaderboard',
+      'CSBattle R2K2',
+      'CSBattle code R2K2',
+      'CSBattle monthly prizes',
+      'CSBattle rewards',
+      'CSBattle wager competition',
+      'R2Koins CSBattle',
     ],
     canonical: `${baseUrl}/leaderboard/csbattle`,
   },
@@ -320,6 +320,82 @@ export const pageMetadata = {
       'betting rewards program',
     ],
     canonical: `${baseUrl}/wagerbonus`,
+  },
+  perksLuxdropFirstDeposit: {
+    title: 'LuxDrop First Deposit Bonus — 20% Flat with Code R2K2',
+    description:
+      'Claim a flat 20% first deposit bonus on LuxDrop with code R2K2. No maximum cap. Learn the 2x playthrough requirement and how to claim.',
+    keywords: [
+      'LuxDrop first deposit bonus',
+      'LuxDrop welcome bonus',
+      'LuxDrop code R2K2',
+      'LuxDrop deposit match',
+      'first deposit bonus',
+    ],
+    canonical: `${baseUrl}/perks/luxdrop/first-deposit`,
+  },
+  perksLuxdropLossBack: {
+    title: 'LuxDrop Loss Back — 10% R2K2 Exclusive Cashback',
+    description:
+      'Get a flat 10% loss back on LuxDrop with code R2K2. No maximum cap. Recover a percentage of your monthly losses via ticket.',
+    keywords: [
+      'LuxDrop loss back',
+      'LuxDrop cashback',
+      'LuxDrop R2K2 bonus',
+      'gambling cashback',
+      'loss recovery',
+    ],
+    canonical: `${baseUrl}/perks/luxdrop/loss-back`,
+  },
+  perksLuxdropWagerMilestones: {
+    title: 'LuxDrop Wager Milestones — Coming Soon | R2K2',
+    description:
+      'LuxDrop wager milestone rewards with code R2K2 are coming soon. Check back for tiered bonuses based on your total wager volume.',
+    keywords: [
+      'LuxDrop wager milestones',
+      'LuxDrop wager rewards',
+      'LuxDrop bonus',
+      'R2K2 LuxDrop rewards',
+    ],
+    canonical: `${baseUrl}/perks/luxdrop/wager-milestones`,
+  },
+  perksCsbattleFirstDeposit: {
+    title: 'CSBattle First Deposit Bonus — 20% Flat with Code R2K2',
+    description:
+      'Claim a flat 20% first deposit bonus on CSBattle with code R2K2. No maximum cap. Learn the 2x playthrough requirement and how to claim.',
+    keywords: [
+      'CSBattle first deposit bonus',
+      'CSBattle welcome bonus',
+      'CSBattle code R2K2',
+      'CSBattle deposit match',
+      'first deposit bonus',
+    ],
+    canonical: `${baseUrl}/perks/csbattle/first-deposit`,
+  },
+  perksCsbattleLossBack: {
+    title: 'CSBattle Loss Back — 10% R2K2 Exclusive Cashback',
+    description:
+      'Get a flat 10% loss back on CSBattle with code R2K2. No maximum cap. Recover a percentage of your monthly losses via ticket.',
+    keywords: [
+      'CSBattle loss back',
+      'CSBattle cashback',
+      'CSBattle R2K2 bonus',
+      'gambling cashback',
+      'loss recovery',
+    ],
+    canonical: `${baseUrl}/perks/csbattle/loss-back`,
+  },
+  perksCsbattleWagerMilestones: {
+    title: 'CSBattle Wager Milestones — Coming Soon | R2K2',
+    description:
+      'CSBattle wager milestone rewards with code R2K2 are coming soon. Check back for tiered bonuses based on your total wager volume.',
+    keywords: [
+      'CSBattle wager milestones',
+      'CSBattle wager rewards',
+      'CSBattle bonus',
+      'R2K2 CSBattle rewards',
+    ],
+    canonical: `${baseUrl}/perks/csbattle/wager-milestones`,
   },
   games: {
     title: 'Provably Fair Games — Play with R2K2 Points',
