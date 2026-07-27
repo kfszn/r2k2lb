@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import fetch from "node-fetch";
-import { HttpsProxyAgent } from "https-proxy-agent";
 
 // Never cache — always pull live wager data from CsBattle on each request
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Match the same module-level proxy pattern used by the AceBet / LuxDrop routes
-const proxyAgent = process.env.PROXY_URL
-  ? new HttpsProxyAgent(process.env.PROXY_URL)
-  : undefined;
+// NOTE: Unlike the AceBet / LuxDrop routes, CsBattle's public API is reached
+// directly (no outbound proxy). Routing it through PROXY_URL causes the
+// upstream connection to be reset (ECONNRESET).
 
 // The public affiliate leaderboard UUID. Configurable via env, with the
 // R2K2 leaderboard as the default.
@@ -32,21 +29,23 @@ export async function GET(request: NextRequest) {
 
   console.log("[v0] CsBattle date range:", from, "→", to);
 
-  const upstream = new URL(
-    `https://api.csbattle.com/leaderboards/affiliates/${CSBATTLE_LEADERBOARD_ID}`
-  );
-  if (from) upstream.searchParams.set("from", from);
-  if (to) upstream.searchParams.set("to", to);
+  // Build the query manually so spaces encode as %20 (matching CsBattle's
+  // documented format) rather than the "+" that URLSearchParams would emit.
+  const query: string[] = [];
+  if (from) query.push(`from=${encodeURIComponent(from)}`);
+  if (to) query.push(`to=${encodeURIComponent(to)}`);
+  const upstreamUrl =
+    `https://api.csbattle.com/leaderboards/affiliates/${CSBATTLE_LEADERBOARD_ID}` +
+    (query.length ? `?${query.join("&")}` : "");
 
   try {
-    const response = await fetch(upstream.toString(), {
+    const response = await fetch(upstreamUrl, {
       method: "GET",
       headers: {
         Accept: "application/json",
         ...(CSBATTLE_API_KEY ? { "x-api-key": CSBATTLE_API_KEY } : {}),
       },
-      // @ts-ignore — node-fetch agent type vs built-in fetch
-      agent: proxyAgent,
+      cache: "no-store",
     });
 
     const text = await response.text();
