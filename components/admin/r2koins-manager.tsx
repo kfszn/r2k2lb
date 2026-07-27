@@ -671,6 +671,15 @@ function RatesTab() {
   const [rateInput, setRateInput] = useState("");
   const [rateSaving, setRateSaving] = useState(false);
 
+  // Add new platform
+  const [newPlatform, setNewPlatform] = useState("");
+  const [newRate, setNewRate] = useState("");
+  const [addSaving, setAddSaving] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addSuccess, setAddSuccess] = useState<string | null>(null);
+
+  const existingPlatforms = new Set((ratesData?.rates ?? []).map((r) => r.platform.toLowerCase()));
+
   const handleSaveRate = async (p: string) => {
     const value = Number(rateInput);
     if (!Number.isFinite(value) || value < 0) return;
@@ -685,89 +694,191 @@ function RatesTab() {
     mutateRates();
   };
 
+  const handleAddPlatform = async () => {
+    const platformKey = newPlatform.trim().toLowerCase();
+    const rate = Number(newRate);
+    if (!platformKey) { setAddError("Platform name is required"); return; }
+    if (!Number.isFinite(rate) || rate < 0) { setAddError("Enter a valid non-negative rate"); return; }
+    setAddSaving(true);
+    setAddError(null);
+    setAddSuccess(null);
+    try {
+      const res = await fetch("/api/admin/r2koins/rates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform: platformKey, coins_per_dollar: rate }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setAddError(json.error ?? "Failed to add platform");
+      } else {
+        setAddSuccess(`Platform "${platformKey}" seeded at ${rate} coins / $1`);
+        setNewPlatform("");
+        setNewRate("");
+        mutateRates();
+      }
+    } catch {
+      setAddError("Network error. Please try again.");
+    } finally {
+      setAddSaving(false);
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Coins className="h-5 w-5 text-primary" />
-          Conversion Rates
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Coins awarded per $1 wagered. Changes apply on the next daily sync — no redeploy needed.
-        </p>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Platform</TableHead>
-              <TableHead>Coins per $1</TableHead>
-              <TableHead>Example</TableHead>
-              <TableHead className="w-24" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {(ratesData?.rates ?? []).map((rate) => (
-              <TableRow key={rate.platform}>
-                <TableCell className="font-medium capitalize">{rate.platform}</TableCell>
-                <TableCell>
-                  {editingRate === rate.platform ? (
-                    <Input
-                      type="number"
-                      step="any"
-                      min="0"
-                      value={rateInput}
-                      onChange={(e) => setRateInput(e.target.value)}
-                      className="w-32 h-8"
-                      autoFocus
-                    />
-                  ) : (
-                    <span className="font-mono">{rate.coins_per_dollar}</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {Math.round(10000 * rate.coins_per_dollar).toLocaleString()} coins / $10,000
-                </TableCell>
-                <TableCell>
-                  {editingRate === rate.platform ? (
-                    <div className="flex gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8"
-                        disabled={rateSaving}
-                        onClick={() => handleSaveRate(rate.platform)}
-                      >
-                        {rateSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 text-green-500" />}
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8"
-                        onClick={() => setEditingRate(null)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8"
-                      onClick={() => {
-                        setEditingRate(rate.platform);
-                        setRateInput(String(rate.coins_per_dollar));
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  )}
-                </TableCell>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Coins className="h-5 w-5 text-primary" />
+            Conversion Rates
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Coins awarded per $1 wagered. Changes apply on the next daily sync — no redeploy needed.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Platform</TableHead>
+                <TableHead>Coins per $1</TableHead>
+                <TableHead>Example</TableHead>
+                <TableHead className="w-24" />
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {(ratesData?.rates ?? []).map((rate) => (
+                <TableRow key={rate.platform}>
+                  <TableCell className="font-medium capitalize">{rate.platform}</TableCell>
+                  <TableCell>
+                    {editingRate === rate.platform ? (
+                      <Input
+                        type="number"
+                        step="any"
+                        min="0"
+                        value={rateInput}
+                        onChange={(e) => setRateInput(e.target.value)}
+                        className="w-32 h-8"
+                        autoFocus
+                      />
+                    ) : (
+                      <span className="font-mono">{rate.coins_per_dollar}</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {Math.round(10000 * rate.coins_per_dollar).toLocaleString()} coins / $10,000
+                  </TableCell>
+                  <TableCell>
+                    {editingRate === rate.platform ? (
+                      <div className="flex gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8"
+                          disabled={rateSaving}
+                          onClick={() => handleSaveRate(rate.platform)}
+                        >
+                          {rateSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 text-green-500" />}
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8"
+                          onClick={() => setEditingRate(null)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        onClick={() => {
+                          setEditingRate(rate.platform);
+                          setRateInput(String(rate.coins_per_dollar));
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Add / seed a new platform row */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5 text-primary" />
+            Add Platform
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Seed a new platform (e.g. <span className="font-mono">csbattle</span>) into the
+            conversion-rate table so the daily sync and account-linking can use it. Use lowercase.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Platform key (lowercase)</Label>
+              <Input
+                placeholder="e.g. csbattle"
+                value={newPlatform}
+                onChange={(e) => { setNewPlatform(e.target.value); setAddError(null); setAddSuccess(null); }}
+              />
+              {existingPlatforms.size > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Existing: {[...existingPlatforms].join(", ")}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Coins per $1 wagered</Label>
+              <Input
+                type="number"
+                step="any"
+                min="0"
+                placeholder="e.g. 1"
+                value={newRate}
+                onChange={(e) => { setNewRate(e.target.value); setAddError(null); setAddSuccess(null); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.nativeEvent.isComposing) handleAddPlatform();
+                }}
+              />
+            </div>
+          </div>
+          {addError && (
+            <div className="flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {addError}
+            </div>
+          )}
+          {addSuccess && (
+            <div className="flex items-center gap-2 text-sm text-green-500">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              {addSuccess}
+            </div>
+          )}
+          <Button
+            onClick={handleAddPlatform}
+            disabled={addSaving || !newPlatform.trim() || !newRate.trim()}
+          >
+            {addSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Add Platform"
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

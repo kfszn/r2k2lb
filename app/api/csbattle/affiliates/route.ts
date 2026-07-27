@@ -27,8 +27,6 @@ export async function GET(request: NextRequest) {
   const from = startDate ? `${startDate} 00:00:00` : undefined;
   const to = endDate ? `${endDate} 23:59:59` : undefined;
 
-  console.log("[v0] CsBattle date range:", from, "→", to);
-
   // Build the query manually so spaces encode as %20 (matching CsBattle's
   // documented format) rather than the "+" that URLSearchParams would emit.
   const query: string[] = [];
@@ -49,8 +47,6 @@ export async function GET(request: NextRequest) {
     });
 
     const text = await response.text();
-    console.log("[v0] CsBattle status:", response.status);
-    console.log("[v0] CsBattle FULL response body:", text);
 
     if (!response.ok) {
       return NextResponse.json(
