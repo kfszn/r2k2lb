@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, CheckCircle } from 'lucide-react'
 import { GoalTracker } from '@/components/goal-tracker'
 import { GiveawayCounter } from '@/components/giveaway-counter'
@@ -24,7 +24,6 @@ const START_DATE = '2026-07-25'      // query start (1 day early for boundary)
 const END_DATE   = '2026-08-25'      // 30 days after start
 const DISPLAY_RANGE = 'Jul 26 – Aug 25, 2026'
 const PRIZE_TOTAL = 3000
-const PRIZE_UNIT = 'C'
 const WAGER_GOAL = 65000
 
 // Top 10 prize breakdown — 3,000 coins total pool, weighted heavily to the top 3
@@ -32,7 +31,21 @@ const WAGER_GOAL = 65000
 // 6th 100 · 7th 90 · 8th 60 · 9th 60 · 10th 40
 const REWARDS: number[] = [1200, 700, 400, 200, 150, 100, 90, 60, 60, 40]
 
-  const formatCoins = (amt: number) => `${amt.toLocaleString()} C`
+// Renders a coin amount with the CsBattle coin icon in place of a unit label
+function CoinAmount({ amount, iconClassName }: { amount: number; iconClassName?: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 align-middle">
+      {amount.toLocaleString()}
+      <img
+        src="/assets/csbattle-coin.png"
+        alt="coins"
+        className={`inline-block object-contain ${iconClassName ?? 'h-[1em] w-[1em]'}`}
+      />
+    </span>
+  )
+}
+
+
 
 // ---------------------------------------------------------------------------
 // Types — CsBattle API returns { users: [...] }
@@ -159,9 +172,9 @@ export default function CsBattleLeaderboard() {
 
   const totalWagered = entries.reduce((sum, e) => sum + getEntryWagered(e), 0)
 
-  const prizeLabel = (rank: number): string => {
+  const prizeLabel = (rank: number): ReactNode => {
     if (REWARDS[rank - 1] != null && REWARDS[rank - 1] > 0) {
-      return formatCoins(REWARDS[rank - 1])
+      return <CoinAmount amount={REWARDS[rank - 1]} />
     }
     return '—'
   }
@@ -188,7 +201,7 @@ export default function CsBattleLeaderboard() {
               className="h-16 md:h-20 w-auto mx-auto object-contain animate-fade-in-up animation-delay-100 drop-shadow-[0_0_25px_rgba(80,120,255,0.35)]"
             />
             <div className="flex justify-center animate-fade-in-up animation-delay-200">
-              <PrizePool total={`${PRIZE_TOTAL.toLocaleString()} ${PRIZE_UNIT}`} />
+              <PrizePool total={<CoinAmount amount={PRIZE_TOTAL} iconClassName="h-7 w-7" />} />
             </div>
             <h1 className="text-4xl md:text-6xl font-black leading-tight text-balance animate-fade-in-up animation-delay-200 tracking-tight">
               CsBattle <span className="neon-text text-primary">Leaderboard</span>
@@ -214,14 +227,14 @@ export default function CsBattleLeaderboard() {
             {/* Prize positions — top 5 displayed */}
             <div className="flex flex-wrap justify-center gap-2 text-sm font-semibold">
               {[
-                { label: '1st', prize: '1,200', color: 'bg-yellow-400/20 border-yellow-400/40 text-yellow-400' },
-                { label: '2nd', prize: '700',   color: 'bg-slate-400/20 border-slate-400/40 text-slate-300' },
-                { label: '3rd', prize: '400',   color: 'bg-amber-700/20 border-amber-700/40 text-amber-500' },
-                { label: '4th', prize: '200',   color: 'bg-primary/20 border-primary/40 text-primary' },
-                { label: '5th', prize: '150',   color: 'bg-green-600/20 border-green-600/40 text-green-500' },
+                { label: '1st', prize: 1200, color: 'bg-yellow-400/20 border-yellow-400/40 text-yellow-400' },
+                { label: '2nd', prize: 700,  color: 'bg-slate-400/20 border-slate-400/40 text-slate-300' },
+                { label: '3rd', prize: 400,  color: 'bg-amber-700/20 border-amber-700/40 text-amber-500' },
+                { label: '4th', prize: 200,  color: 'bg-primary/20 border-primary/40 text-primary' },
+                { label: '5th', prize: 150,  color: 'bg-green-600/20 border-green-600/40 text-green-500' },
               ].map(({ label, prize, color }) => (
-                <span key={label} className={`px-3 py-1 rounded-full border ${color}`}>
-                  {label} — {prize} C
+                <span key={label} className={`px-3 py-1 rounded-full border inline-flex items-center gap-1 ${color}`}>
+                  {label} — <CoinAmount amount={prize} iconClassName="h-4 w-4" />
                 </span>
               ))}
               <span className="px-3 py-1 rounded-full border bg-muted/30 border-border text-muted-foreground">
@@ -343,7 +356,9 @@ export default function CsBattleLeaderboard() {
                 {/* Prize breakdown */}
                 <div className="rounded-2xl border border-border/50 overflow-hidden">
                   <div className="px-5 py-4 bg-muted/40 border-b border-border/50">
-                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Prize Breakdown — {PRIZE_TOTAL.toLocaleString()} {PRIZE_UNIT} Pool</h3>
+                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground inline-flex items-center gap-1">
+                      Prize Breakdown — <CoinAmount amount={PRIZE_TOTAL} iconClassName="h-4 w-4" /> Pool
+                    </h3>
                   </div>
                   <div className="divide-y divide-border/30">
                     {REWARDS.map((amt, i) => {
@@ -355,7 +370,7 @@ export default function CsBattleLeaderboard() {
                             <Trophy className={`h-4 w-4 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-500' : 'text-muted-foreground/40'}`} />
                           </div>
                           <span className={`font-bold text-sm ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-500' : 'text-foreground'}`}>
-                            {amt.toLocaleString()} C
+                            <CoinAmount amount={amt} iconClassName="h-4 w-4" />
                           </span>
                         </div>
                       )
