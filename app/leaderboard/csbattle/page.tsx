@@ -31,7 +31,7 @@ const WAGER_GOAL = 65000
 // 6th 100 · 7th 90 · 8th 60 · 9th 60 · 10th 40
 const REWARDS: number[] = [1200, 700, 400, 200, 150, 100, 90, 60, 60, 40]
 
-// Renders a coin amount with the CsBattle coin icon in place of a unit label
+// Renders a coin amount with the CSBattle coin icon in place of a unit label
 function CoinAmount({ amount, iconClassName }: { amount: number; iconClassName?: string }) {
   return (
     <span className="inline-flex items-center gap-1 align-middle">
@@ -48,46 +48,46 @@ function CoinAmount({ amount, iconClassName }: { amount: number; iconClassName?:
 
 
 // ---------------------------------------------------------------------------
-// Types — CsBattle API returns { users: [...] }
+// Types — CSBattle API returns { users: [...] }
 // ---------------------------------------------------------------------------
-interface CsBattleEntry {
+interface CSBattleEntry {
   uuid?: string
   id?: number | string
   username?: string
   name?: string
   avatar?: string | null
-  wager?: number        // CsBattle returns this in dollars
+  wager?: number        // CSBattle returns this in dollars
   wagered?: number
   rank?: number
 }
 
-function normalizeEntries(raw: unknown): CsBattleEntry[] {
-  if (Array.isArray(raw)) return raw as CsBattleEntry[]
+function normalizeEntries(raw: unknown): CSBattleEntry[] {
+  if (Array.isArray(raw)) return raw as CSBattleEntry[]
   if (raw && typeof raw === 'object') {
     const obj = raw as Record<string, unknown>
     for (const key of ['users', 'data', 'affiliates', 'results', 'leaderboard', 'entries']) {
-      if (Array.isArray(obj[key])) return obj[key] as CsBattleEntry[]
+      if (Array.isArray(obj[key])) return obj[key] as CSBattleEntry[]
     }
   }
   return []
 }
 
-function getEntryId(e: CsBattleEntry): string {
+function getEntryId(e: CSBattleEntry): string {
   return String(e.uuid ?? e.id ?? Math.random())
 }
-function getEntryName(e: CsBattleEntry): string {
+function getEntryName(e: CSBattleEntry): string {
   return e.username ?? e.name ?? 'Unknown'
 }
-function getEntryWagered(e: CsBattleEntry): number {
+function getEntryWagered(e: CSBattleEntry): number {
   return e.wager ?? e.wagered ?? 0
 }
-function getEntryAvatar(e: CsBattleEntry): string | null {
+function getEntryAvatar(e: CSBattleEntry): string | null {
   return e.avatar ?? null
 }
 
-export default function CsBattleLeaderboard() {
+export default function CSBattleLeaderboard() {
   const [activeTab, setActiveTab] = useState<'leaderboard' | 'rules'>('leaderboard')
-  const [entries, setEntries] = useState<CsBattleEntry[]>([])
+  const [entries, setEntries] = useState<CSBattleEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
@@ -149,7 +149,7 @@ export default function CsBattleLeaderboard() {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
-  // CsBattle returns wager amounts already in dollars
+  // CSBattle returns wager amounts already in dollars
   const formatMoney = (dollars: number) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -197,14 +197,14 @@ export default function CsBattleLeaderboard() {
             </span>
             <img
               src="/assets/csbattle.png"
-              alt="CsBattle"
+              alt="CSBattle"
               className="h-16 md:h-20 w-auto mx-auto object-contain animate-fade-in-up animation-delay-100 drop-shadow-[0_0_25px_rgba(80,120,255,0.35)]"
             />
             <div className="flex justify-center animate-fade-in-up animation-delay-200">
               <PrizePool total={<CoinAmount amount={PRIZE_TOTAL} iconClassName="h-7 w-7" />} />
             </div>
             <h1 className="text-4xl md:text-6xl font-black leading-tight text-balance animate-fade-in-up animation-delay-200 tracking-tight">
-              CsBattle <span className="neon-text text-primary">Leaderboard</span>
+              CSBattle <span className="neon-text text-primary">Leaderboard</span>
             </h1>
             <div className="flex justify-center">
               <a
@@ -214,11 +214,11 @@ export default function CsBattleLeaderboard() {
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-semibold shadow-[0_0_30px_-8px_rgba(80,120,255,0.7)] hover:shadow-[0_0_40px_-6px_rgba(80,120,255,0.9)]"
               >
                 <Trophy className="h-4 w-4" />
-                Sign up on CsBattle
+                Sign up on CSBattle
               </a>
             </div>
             <p className="text-lg text-muted-foreground text-pretty">
-              Every <strong>wager</strong> on CsBattle under Code{' '}
+              Every <strong>wager</strong> on CSBattle under Code{' '}
               <strong className="text-primary">R2K2</strong> counts towards your score.
               <br />
               <em className="text-sm">{DISPLAY_RANGE}</em>
@@ -325,7 +325,7 @@ export default function CsBattleLeaderboard() {
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    The CsBattle leaderboard tracks your wagering activity on{' '}
+                    The CSBattle leaderboard tracks your wagering activity on{' '}
                     <a href="https://csbattle.com/r/r2k2" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">csbattle.com</a>{' '}
                     using code <strong className="text-primary">R2K2</strong>. The more you wager during the competition period, the higher you climb.
                   </p>
@@ -382,7 +382,7 @@ export default function CsBattleLeaderboard() {
                 <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-5 py-4 space-y-2">
                   <h3 className="font-semibold text-sm text-blue-400">Eligibility</h3>
                   <ul className="text-sm text-muted-foreground space-y-1.5">
-                    <li>• You must be registered on CsBattle using referral code <strong className="text-primary">R2K2</strong>.</li>
+                    <li>• You must be registered on CSBattle using referral code <strong className="text-primary">R2K2</strong>.</li>
                     <li>• Wagers must be placed within the leaderboard period: <strong className="text-foreground">{DISPLAY_RANGE}</strong>.</li>
                     <li>• Prizes are distributed at the end of the leaderboard period.</li>
                     <li>• R2K2 reserves the right to disqualify accounts suspected of abuse or multi-accounting.</li>
@@ -415,7 +415,7 @@ export default function CsBattleLeaderboard() {
                 <Trophy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-4" />
                 <h2 className="text-xl font-bold mb-2">No entries yet</h2>
                 <p className="text-muted-foreground text-pretty">
-                  The leaderboard is live — sign up on CsBattle with code{' '}
+                  The leaderboard is live — sign up on CSBattle with code{' '}
                   <strong className="text-primary">R2K2</strong> and start wagering to claim your spot.
                 </p>
                 <a
@@ -424,7 +424,7 @@ export default function CsBattleLeaderboard() {
                   rel="noopener noreferrer"
                   className="inline-flex mt-4 items-center gap-2 px-5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-semibold text-sm"
                 >
-                  Join CsBattle with R2K2
+                  Join CSBattle with R2K2
                 </a>
               </div>
             )}

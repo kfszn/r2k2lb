@@ -18,7 +18,7 @@ interface RaffleConfig {
   end_date: string;
 }
 
-function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
+function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbattle' }) {
   const [config, setConfig] = useState<RaffleConfig | null>(null);
   const [configForm, setConfigForm] = useState({
     min_wager: 50,
@@ -84,6 +84,28 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' }) {
             const wagerAmount = (u.wagered || 0) / 100;
             if (wagerAmount < config.min_wager) return;
             const name = u.name || '';
+            if (!name) return;
+            const tickets = Math.max(1, Math.floor(wagerAmount / ticketsPerWager));
+            for (let i = 0; i < tickets; i++) {
+              ticketPool.push(name);
+            }
+          });
+        }
+      } else {
+        // LuxDrop & CSBattle affiliate APIs return wager amounts already in dollars
+        const res = await fetch(
+          `/api/${platform}/affiliates?startDate=${config.start_date}&endDate=${config.end_date}`,
+          { cache: 'no-store' },
+        );
+        if (res.ok) {
+          const json = await res.json();
+          const rows = Array.isArray(json)
+            ? json
+            : json?.users || json?.data || json?.affiliates || json?.results || json?.leaderboard || json?.entries || [];
+          rows.forEach((u: any) => {
+            const wagerAmount = u.wager ?? u.wagered ?? u.wagerAmount ?? u.totalWagered ?? 0;
+            if (wagerAmount < config.min_wager) return;
+            const name = u.username ?? u.name ?? '';
             if (!name) return;
             const tickets = Math.max(1, Math.floor(wagerAmount / ticketsPerWager));
             for (let i = 0; i < tickets; i++) {
@@ -351,14 +373,20 @@ export function RaffleManager() {
       </div>
 
       <Tabs defaultValue="acebet" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="acebet">Acebet</TabsTrigger>
-
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="acebet">AceBet</TabsTrigger>
+          <TabsTrigger value="luxdrop">LuxDrop</TabsTrigger>
+          <TabsTrigger value="csbattle">CSBattle</TabsTrigger>
         </TabsList>
         <TabsContent value="acebet">
           <RaffleAdminTab platform="acebet" />
         </TabsContent>
-
+        <TabsContent value="luxdrop">
+          <RaffleAdminTab platform="luxdrop" />
+        </TabsContent>
+        <TabsContent value="csbattle">
+          <RaffleAdminTab platform="csbattle" />
+        </TabsContent>
       </Tabs>
     </div>
   );
