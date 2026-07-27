@@ -24,7 +24,7 @@ const START_DATE = '2026-07-25'      // query start (1 day early for boundary)
 const END_DATE   = '2026-08-25'      // 30 days after start
 const DISPLAY_RANGE = 'Jul 26 – Aug 25, 2026'
 const PRIZE_TOTAL = 3000
-const PRIZE_UNIT = 'coins'
+const PRIZE_UNIT = 'C'
 const WAGER_GOAL = 65000
 
 // Top 10 prize breakdown — 3,000 coins total pool, weighted heavily to the top 3
@@ -32,7 +32,7 @@ const WAGER_GOAL = 65000
 // 6th 100 · 7th 90 · 8th 60 · 9th 60 · 10th 40
 const REWARDS: number[] = [1200, 700, 400, 200, 150, 100, 90, 60, 60, 40]
 
-const formatCoins = (amt: number) => `${amt.toLocaleString()} coins`
+  const formatCoins = (amt: number) => `${amt.toLocaleString()} C`
 
 // ---------------------------------------------------------------------------
 // Types — CsBattle API returns { users: [...] }
@@ -221,7 +221,7 @@ export default function CsBattleLeaderboard() {
                 { label: '5th', prize: '150',   color: 'bg-green-600/20 border-green-600/40 text-green-500' },
               ].map(({ label, prize, color }) => (
                 <span key={label} className={`px-3 py-1 rounded-full border ${color}`}>
-                  {label} — {prize} coins
+                  {label} — {prize} C
                 </span>
               ))}
               <span className="px-3 py-1 rounded-full border bg-muted/30 border-border text-muted-foreground">
@@ -355,7 +355,7 @@ export default function CsBattleLeaderboard() {
                             <Trophy className={`h-4 w-4 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-500' : 'text-muted-foreground/40'}`} />
                           </div>
                           <span className={`font-bold text-sm ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-500' : 'text-foreground'}`}>
-                            {amt.toLocaleString()} coins
+                            {amt.toLocaleString()} C
                           </span>
                         </div>
                       )
