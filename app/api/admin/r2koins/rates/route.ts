@@ -22,6 +22,42 @@ export async function GET() {
   return NextResponse.json({ rates: data ?? [] });
 }
 
+// POST — insert a new platform row (used to seed new sponsors like CSBattle)
+export async function POST(request: NextRequest) {
+  try {
+    const { platform, coins_per_dollar } = await request.json();
+
+    if (!platform || coins_per_dollar === undefined || coins_per_dollar === null) {
+      return NextResponse.json(
+        { error: "platform and coins_per_dollar are required" },
+        { status: 400 }
+      );
+    }
+
+    const rate = Number(coins_per_dollar);
+    if (!Number.isFinite(rate) || rate < 0) {
+      return NextResponse.json(
+        { error: "coins_per_dollar must be a non-negative number" },
+        { status: 400 }
+      );
+    }
+
+    const supabase = getSupabase();
+    const { error } = await supabase.from("platform_rates").upsert(
+      { platform: platform.toLowerCase(), coins_per_dollar: rate, updated_at: new Date().toISOString() },
+      { onConflict: "platform" }
+    );
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
 // PATCH — update a platform's rate (no redeploy needed)
 export async function PATCH(request: NextRequest) {
   try {

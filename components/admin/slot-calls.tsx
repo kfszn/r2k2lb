@@ -636,6 +636,49 @@ export function SlotCalls() {
     ? callerStats.reduce((worst, s) => (s.profit < worst.profit ? s : worst))
     : null;
 
+  // Session-level aggregates across ALL completed calls
+  const sessionTotals = (() => {
+    let totalBuy = 0;
+    let totalResult = 0;
+    let wins = 0;
+    let losses = 0;
+    for (const call of completedCalls) {
+      const buy = call.buy_amount ?? 0;
+      const result = call.buy_result ?? 0;
+      totalBuy += buy;
+      totalResult += result;
+      if (result >= buy) wins++;
+      else losses++;
+    }
+    return { totalBuy, totalResult, netProfit: totalResult - totalBuy, wins, losses };
+  })();
+
+  // Per-caller stats enriched with win/loss counts
+  const callerStatsEnriched = (() => {
+    const map = new Map<string, CallerStat & { wins: number; losses: number }>();
+    for (const call of completedCalls) {
+      const buy = call.buy_amount ?? 0;
+      const result = call.buy_result ?? 0;
+      const existing = map.get(call.username) ?? {
+        username: call.username,
+        calls: 0,
+        totalBuy: 0,
+        totalResult: 0,
+        profit: 0,
+        wins: 0,
+        losses: 0,
+      };
+      existing.calls += 1;
+      existing.totalBuy += buy;
+      existing.totalResult += result;
+      existing.profit = existing.totalResult - existing.totalBuy;
+      if (result >= buy) existing.wins++;
+      else existing.losses++;
+      map.set(call.username, existing);
+    }
+    return Array.from(map.values()).sort((a, b) => b.calls - a.calls);
+  })();
+
   // Small stats card used for both Best and Worst caller.
   const CallerCard = ({
     variant,
@@ -880,11 +923,74 @@ export function SlotCalls() {
               )}
             </div>
 
+            {/* Session totals bar */}
+            {!isLoading && completedCalls.length > 0 && (
+              <div className="rounded-lg border border-border/50 bg-muted/20 px-4 py-3 grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Total Calls</div>
+                  <div className="text-sm font-bold tabular-nums">{completedCalls.length}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Wins</div>
+                  <div className="text-sm font-bold tabular-nums text-green-400">{sessionTotals.wins}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Losses</div>
+                  <div className="text-sm font-bold tabular-nums text-red-400">{sessionTotals.losses}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Total Spent</div>
+                  <div className="text-sm font-bold tabular-nums">{formatCurrency(sessionTotals.totalBuy)}</div>
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Net Profit</div>
+                  <div className={`text-sm font-bold tabular-nums ${sessionTotals.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {formatProfit(sessionTotals.netProfit)}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Best / Worst caller summary (per-user profit across all their completed calls) */}
             {!isLoading && bestCaller && worstCaller && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <CallerCard variant="best" stat={bestCaller} />
                 <CallerCard variant="worst" stat={worstCaller} />
+              </div>
+            )}
+
+            {/* Per-caller individual stats table */}
+            {!isLoading && callerStatsEnriched.length > 0 && (
+              <div className="rounded-lg border border-border/50 overflow-hidden">
+                <div className="px-3 py-2 bg-muted/30 border-b border-border/40 flex items-center gap-2">
+                  <Trophy className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Individual Stats</span>
+                </div>
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/10 border-b border-border/30">
+                  <div>User</div>
+                  <div className="text-center">Calls</div>
+                  <div className="text-center">Wins</div>
+                  <div className="text-center">Losses</div>
+                  <div className="text-center">Spent</div>
+                  <div className="text-center">Won</div>
+                  <div className="text-right">Net</div>
+                </div>
+                {callerStatsEnriched.map((s, idx) => (
+                  <div
+                    key={s.username}
+                    className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] px-3 py-2 items-center hover:bg-muted/20 transition-colors ${idx < callerStatsEnriched.length - 1 ? 'border-b border-border/20' : ''}`}
+                  >
+                    <div className="text-sm font-medium truncate pr-1">{s.username}</div>
+                    <div className="text-xs tabular-nums text-center text-muted-foreground">{s.calls}</div>
+                    <div className="text-xs tabular-nums text-center text-green-400">{s.wins}</div>
+                    <div className="text-xs tabular-nums text-center text-red-400">{s.losses}</div>
+                    <div className="text-xs tabular-nums text-center text-muted-foreground">{formatCurrency(s.totalBuy)}</div>
+                    <div className="text-xs tabular-nums text-center text-green-400">{formatCurrency(s.totalResult)}</div>
+                    <div className={`text-xs tabular-nums text-right font-semibold ${s.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {formatProfit(s.profit)}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

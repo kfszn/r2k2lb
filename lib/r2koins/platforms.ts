@@ -10,6 +10,9 @@ const proxyAgent = process.env.PROXY_URL
 const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
 const LUXDROP_API_KEY = process.env.LUXDROP_API_KEY;
 const LUXDROP_AFFILIATE_CODES = process.env.LUXDROP_AFFILIATE_CODES ?? "R2K2";
+const CSBATTLE_LEADERBOARD_ID =
+  process.env.CSBATTLE_LEADERBOARD_ID ?? "a450042c-7dde-4fc3-9656-dca50d671cd8";
+const CSBATTLE_API_KEY = process.env.CSBATTLE_API_KEY;
 
 // Acebet detailed-summary from the earliest date = lifetime totals under the affiliate
 const ACEBET_LIFETIME_START = "2025-12-26";
@@ -27,6 +30,15 @@ interface LuxdropEntry {
   name?: string;
   wagered?: number;
   wagerAmount?: number;
+  totalWagered?: number;
+}
+
+interface CsbattleEntry {
+  username?: string;
+  name?: string;
+  /** CSBattle returns wager in dollars (not cents) */
+  wager?: number;
+  wagered?: number;
   totalWagered?: number;
 }
 
@@ -94,6 +106,48 @@ export async function fetchLuxdropUserList(): Promise<LuxdropEntry[] | null> {
 }
 
 /**
+ * Fetch the full CSBattle affiliate leaderboard (lifetime window, from 2024-01-01 to today).
+ * CSBattle's public leaderboard API requires no auth but honours x-api-key if provided.
+ * Wager amounts are already in DOLLARS (no cents conversion needed).
+ * Returns null on failure.
+ */
+export async function fetchCsbattleUserList(): Promise<CsbattleEntry[] | null> {
+  try {
+    const from = encodeURIComponent("2024-01-01 00:00:00");
+    const to = encodeURIComponent(
+      new Date().toISOString().slice(0, 10) + " 23:59:59"
+    );
+    const url =
+      `https://api.csbattle.com/leaderboards/affiliates/${CSBATTLE_LEADERBOARD_ID}` +
+      `?from=${from}&to=${to}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        ...(CSBATTLE_API_KEY ? { "x-api-key": CSBATTLE_API_KEY } : {}),
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) return null;
+    const raw = await response.json().catch(() => null);
+    if (!raw) return null;
+
+    // API returns { users: [...] }
+    const rows: unknown[] = Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.users)
+      ? raw.users
+      : [];
+
+    return rows as CsbattleEntry[];
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Look up a single user's lifetime wager total in DOLLARS on a platform.
  * Returns:
  *  - number  → the wager total in dollars
@@ -126,6 +180,18 @@ export async function fetchPlatformWagerTotal(
     // LuxDrop wagered is in cents — convert to dollars
     const cents = Number(entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0);
     return cents / 100;
+  }
+
+  if (platform === "csbattle") {
+    const entries = await fetchCsbattleUserList();
+    if (entries === null) return null;
+    const entry = entries.find((e) => {
+      const name = e.username ?? e.name;
+      return name && name.toLowerCase() === uname;
+    });
+    if (!entry) return "not_found";
+    // CSBattle wager is already in dollars
+    return Number(entry.wager ?? entry.wagered ?? entry.totalWagered ?? 0);
   }
 
   return null;
