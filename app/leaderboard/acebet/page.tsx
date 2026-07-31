@@ -342,7 +342,7 @@ export default function AcebetLeaderboard() {
           </div>
           <GoalTracker
             current={totalWagered}
-            goal={400000000}
+            goal={350000000}
             formatMoney={formatMoney}
             className="max-w-6xl mx-auto mt-3"
           />
