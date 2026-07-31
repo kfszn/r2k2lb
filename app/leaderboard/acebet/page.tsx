@@ -32,7 +32,7 @@ interface LeaderboardData {
 }
 
 // Prize pool: $20,000 total — top 15 paid spots (11th–15th = $40 Bonus Buy)
-const REWARDS = [7000, 3500, 2750, 2000, 1500, 1250, 1000, 645, 250, 100, 1, 1, 1, 1, 1]
+const REWARDS = [7500, 3750, 2500, 2000, 1500, 1045, 700, 500, 300, 200, 1, 1, 1, 1, 1]
 const REWARD_LABELS: (string | null)[] = [null, null, null, null, null, null, null, null, null, null, '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy']
 
 interface MonthConfig {
@@ -92,6 +92,15 @@ const PREVIOUS_MONTHS: MonthConfig[] = [
     start_at: '2026-05-27',
     end_at: '2026-06-27',
     display: 'May 27 – Jun 27, 2026',
+    rewards: [7000, 3500, 2750, 2000, 1500, 1250, 1000, 645, 250, 100, 1, 1, 1, 1, 1],
+    labels: [null, null, null, null, null, null, null, null, null, null, '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy'],
+    total: 20000,
+  },
+  {
+    label: 'July',
+    start_at: '2026-06-29',
+    end_at: '2026-07-30',
+    display: 'Jun 29 – Jul 30, 2026',
     rewards: [7000, 3500, 2750, 2000, 1500, 1250, 1000, 645, 250, 100, 1, 1, 1, 1, 1],
     labels: [null, null, null, null, null, null, null, null, null, null, '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy', '$40 Bonus Buy'],
     total: 20000,
@@ -161,7 +170,7 @@ export default function AcebetLeaderboard() {
   // Compute time remaining immediately (not just inside setInterval)
   const computeTimeRemaining = (month: string) => {
     if (month !== 'current') return 'Ended'
-    const endTime = new Date('2026-07-30T19:00:00Z').getTime()
+    const endTime = new Date('2026-08-31T19:00:00Z').getTime()
     const diff = endTime - Date.now()
     if (diff <= 0) return 'Ended'
     const days = Math.floor(diff / 86400000)
@@ -180,7 +189,7 @@ export default function AcebetLeaderboard() {
       const found = PREVIOUS_MONTHS.find(m => m.label === selectedMonth)
       if (found) setDateRange(`${found.display}`)
     } else {
-      setDateRange(`Jun 29 – Jul 30, 2026`)
+      setDateRange(`Jul 30 – Aug 31, 2026`)
     }
 
     // Set immediately so there's no blank flash
