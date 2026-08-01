@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
 import { CountdownTimer } from '@/components/raffle/countdown-timer';
 import { RaffleSpinner } from '@/components/raffle/raffle-spinner';
-import { Trophy, Users, DollarSign, Clock, Ticket, Star } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { Trophy, Users, DollarSign, Clock, Ticket, Star, Radio } from 'lucide-react';
 
 export type RafflePlatform = 'acebet' | 'luxdrop' | 'csbattle';
 
@@ -44,6 +46,9 @@ const PLATFORM_LABELS: Record<RafflePlatform, string> = {
   csbattle: 'CSBattle',
 };
 
+// Max individual ticket chips to render per user (keeps the DOM light)
+const CHIPS_PER_USER = 6;
+
 // Normalize a sponsor affiliate response into an array of entries.
 function normalizeEntries(raw: unknown): any[] {
   if (Array.isArray(raw)) return raw;
@@ -62,6 +67,12 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
   const [winners, setWinners] = useState<Winner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPeriodWinner, setCurrentPeriodWinner] = useState<string | null>(null);
+
+  // Live-draw state (driven by admin broadcasts over Supabase Realtime)
+  const [liveWinner, setLiveWinner] = useState<string | null>(null);
+  const [liveSpinning, setLiveSpinning] = useState(false);
+  const [liveLanded, setLiveLanded] = useState(false);
+  const [liveSpinKey, setLiveSpinKey] = useState(0);
 
   const fetchData = useCallback(async () => {
     try {
@@ -141,6 +152,38 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
     return () => clearInterval(interval);
   }, [fetchData]);
 
+  // Subscribe to the admin's live-draw broadcasts for this platform.
+  useEffect(() => {
+    const supabase = createClient();
+    const channel: RealtimeChannel = supabase.channel(`raffle-draw-${platform}`, {
+      config: { broadcast: { self: false } },
+    });
+
+    channel
+      .on('broadcast', { event: 'spin' }, ({ payload }) => {
+        const winner = payload?.winner as string | undefined;
+        if (!winner) return;
+        setLiveWinner(winner);
+        setLiveLanded(false);
+        setLiveSpinning(true);
+        setLiveSpinKey((k) => k + 1);
+      })
+      .on('broadcast', { event: 'confirmed' }, () => {
+        // Winner persisted server-side — refresh data, then clear the live overlay
+        setLiveSpinning(false);
+        fetchData();
+        setTimeout(() => {
+          setLiveWinner(null);
+          setLiveLanded(false);
+        }, 6000);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [platform, fetchData]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -159,6 +202,14 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
       year: 'numeric',
     });
   };
+
+  const totalTickets = eligible.reduce((sum, u) => sum + u.tickets, 0);
+
+  // Resolve what the spinner should display:
+  //  - a live draw broadcast from admin takes priority
+  //  - otherwise fall back to the persisted winner for this period
+  const spinnerWinner = liveWinner ?? currentPeriodWinner;
+  const spinnerHasWinner = liveLanded || (!liveSpinning && !!currentPeriodWinner);
 
   return (
     <div className="space-y-8">
@@ -230,30 +281,52 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
         )}
       </div>
 
+      {/* Live draw banner */}
+      {liveSpinning && (
+        <div className="flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-500">
+          <Radio className="w-4 h-4 text-primary animate-pulse" />
+          <span className="text-sm font-semibold text-primary">Live draw in progress — winner being selected now!</span>
+        </div>
+      )}
+
       {/* Winner Spinner */}
       <RaffleSpinner
         entries={eligible.map((u) => u.username)}
-        winner={currentPeriodWinner}
+        winner={spinnerWinner}
         prizeAmount={config?.prize_amount || 0}
-        isSpinning={false}
-        hasWinnerForPeriod={!!currentPeriodWinner}
+        isSpinning={liveSpinning}
+        spinKey={liveSpinKey}
+        hasWinnerForPeriod={spinnerHasWinner}
+        onSpinComplete={() => {
+          setLiveSpinning(false);
+          if (liveWinner) setLiveLanded(true);
+        }}
       />
 
-      {/* Entries Grid */}
+      {/* Ticket Pool — individual tickets per participant */}
       <div className="rounded-2xl border border-border/60 bg-secondary/30 overflow-hidden">
-        <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between">
+        <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Star className="w-4 h-4 text-primary" />
+              <Ticket className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Current Entries</h3>
-              <p className="text-xs text-muted-foreground">{eligible.length} qualified participants</p>
+              <h3 className="font-semibold text-foreground">Ticket Pool</h3>
+              <p className="text-xs text-muted-foreground">
+                {config?.start_date && config?.end_date
+                  ? `${formatDate(config.start_date)} – ${formatDate(config.end_date)}`
+                  : 'Current raffle period'}
+              </p>
             </div>
           </div>
-          <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">
-            {eligible.length} / {config?.max_entries?.toLocaleString() || '10,000'}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">
+              {totalTickets.toLocaleString()} tickets
+            </Badge>
+            <Badge variant="outline" className="border-border/60">
+              {eligible.length} entrants
+            </Badge>
+          </div>
         </div>
 
         <div className="p-6">
@@ -268,28 +341,59 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {eligible.map((user, i) => (
-                <div
-                  key={`${user.username}-${i}`}
-                  className="group relative flex items-center gap-3 rounded-xl border border-border/40 bg-background/40 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-primary/5"
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-primary">{i + 1}</span>
+            <div className="space-y-3">
+              {eligible.map((user, i) => {
+                const odds = totalTickets > 0 ? (user.tickets / totalTickets) * 100 : 0;
+                const chips = Math.min(user.tickets, CHIPS_PER_USER);
+                const remaining = user.tickets - chips;
+                return (
+                  <div
+                    key={`${user.username}-${i}`}
+                    className="rounded-xl border border-border/40 bg-background/40 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-primary/5"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                          <span className="text-xs font-bold text-primary">{i + 1}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate blur-[3px] select-none" aria-hidden="true">
+                            {maskName(user.username)}
+                          </p>
+                          <span className="sr-only">Hidden participant</span>
+                          <p className="text-xs text-muted-foreground">
+                            ${user.wager_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} wagered
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-bold text-primary">
+                          {user.tickets} {user.tickets === 1 ? 'ticket' : 'tickets'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{odds.toFixed(odds < 0.1 ? 3 : 1)}% odds</p>
+                      </div>
+                    </div>
+
+                    {/* Individual ticket chips */}
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {Array.from({ length: chips }).map((_, t) => (
+                        <span
+                          key={t}
+                          className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-primary/5 px-1.5 py-0.5 text-[10px] font-mono text-primary/80"
+                        >
+                          <Ticket className="w-2.5 h-2.5" />
+                          {String(t + 1).padStart(2, '0')}
+                        </span>
+                      ))}
+                      {remaining > 0 && (
+                        <span className="inline-flex items-center rounded-md border border-border/40 bg-background/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+                          +{remaining.toLocaleString()} more
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {maskName(user.username)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      ${user.wager_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                    <p className="text-xs text-primary font-medium">
-                      {user.tickets} {user.tickets === 1 ? 'ticket' : 'tickets'}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

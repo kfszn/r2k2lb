@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RaffleSpinner } from '@/components/raffle/raffle-spinner';
+import { createClient } from '@/lib/supabase/client';
 
 interface RaffleConfig {
   platform: string;
@@ -39,8 +41,28 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
   const [spinComplete, setSpinComplete] = useState(false);
   const [spinKey, setSpinKey] = useState(0); // increment to re-trigger spin animation
 
+  // Realtime broadcast channel — pushes the live draw to the public /raffle pages
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const [isLiveConnected, setIsLiveConnected] = useState(false);
+
   useEffect(() => {
     fetchConfig();
+  }, [platform]);
+
+  // Open a broadcast channel for this platform so viewers on /raffle see the draw live
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase.channel(`raffle-draw-${platform}`, {
+      config: { broadcast: { self: false } },
+    });
+    channel.subscribe((status) => {
+      setIsLiveConnected(status === 'SUBSCRIBED');
+    });
+    channelRef.current = channel;
+    return () => {
+      supabase.removeChannel(channel);
+      channelRef.current = null;
+    };
   }, [platform]);
 
   useEffect(() => {
@@ -145,11 +167,16 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
     }
   };
 
-  const handleSpin = () => {
-    if (eligible.length === 0) {
-      alert('No eligible entries to draw from');
-      return;
-    }
+  // Broadcast the live draw to everyone watching the public /raffle page
+  const broadcastSpin = (winner: string) => {
+    channelRef.current?.send({
+      type: 'broadcast',
+      event: 'spin',
+      payload: { winner, prizeAmount: config?.prize_amount || 0, ts: Date.now() },
+    });
+  };
+
+  const drawWinner = () => {
     // Pick a random winner from the weighted ticket pool
     const winner = eligible[Math.floor(Math.random() * eligible.length)];
     setSelectedWinner(winner);
@@ -157,6 +184,15 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
     setIsSpinning(true);
     // Increment spinKey to force a fresh animation (handles re-spins too)
     setSpinKey((k) => k + 1);
+    broadcastSpin(winner);
+  };
+
+  const handleSpin = () => {
+    if (eligible.length === 0) {
+      alert('No eligible entries to draw from');
+      return;
+    }
+    drawWinner();
   };
 
   const handleConfirmWinner = async () => {
@@ -175,6 +211,12 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
       });
       const data = await response.json();
       if (response.ok) {
+        // Tell the public /raffle page the winner is now official
+        channelRef.current?.send({
+          type: 'broadcast',
+          event: 'confirmed',
+          payload: { winner: selectedWinner, ts: Date.now() },
+        });
         alert(`Winner confirmed: ${selectedWinner} wins $${config.prize_amount.toLocaleString()}`);
         // Reset
         setIsSpinning(false);
@@ -196,11 +238,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
   const handleResetSpin = () => {
     // Re-spin: pick a new winner and trigger a fresh animation immediately
     if (eligible.length === 0) return;
-    const winner = eligible[Math.floor(Math.random() * eligible.length)];
-    setSelectedWinner(winner);
-    setSpinComplete(false);
-    setIsSpinning(true);
-    setSpinKey((k) => k + 1);
+    drawWinner();
   };
 
   return (
@@ -317,7 +355,27 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
       {/* Draw Winner - Visual Spinner */}
       <Card className="border-chart-3/30">
         <CardHeader>
-          <CardTitle>Draw Winner</CardTitle>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle>Draw Winner</CardTitle>
+            <Badge
+              variant="outline"
+              className={
+                isLiveConnected
+                  ? 'border-chart-3/40 text-chart-3'
+                  : 'border-border/60 text-muted-foreground'
+              }
+            >
+              <span
+                className={`mr-1.5 inline-block h-2 w-2 rounded-full ${
+                  isLiveConnected ? 'bg-chart-3 animate-pulse' : 'bg-muted-foreground'
+                }`}
+              />
+              {isLiveConnected ? 'Live on /raffle' : 'Connecting...'}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Spinning here broadcasts the draw live to everyone viewing the public raffle page.
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <RaffleSpinner
