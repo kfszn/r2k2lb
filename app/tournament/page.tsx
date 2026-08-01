@@ -17,8 +17,10 @@ import {
   Zap,
   TrendingUp,
   ArrowRight,
+  BarChart3,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TournamentMeta {
   id: string;
@@ -43,14 +45,7 @@ const STATUS_META: Record<string, { label: string; color: string; dot: string }>
   },
 };
 
-function formatCurrency(cents: number): string {
-  const dollars = (cents || 0) / 100;
-  return `$${dollars.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
+// ── Identical StatTile to admin ───────────────────────────────────────────────
 interface StatTileProps {
   icon: React.ReactNode;
   label: string;
@@ -61,10 +56,10 @@ interface StatTileProps {
 function StatTile({ icon, label, value, accent = "primary" }: StatTileProps) {
   const accentCls =
     accent === "green"
-      ? "border-green-500/20 bg-green-500/10 text-green-400"
+      ? "border-green-500/20 bg-green-500/8 text-green-400"
       : accent === "yellow"
-      ? "border-yellow-500/20 bg-yellow-500/10 text-yellow-400"
-      : "border-primary/20 bg-primary/10 text-primary";
+      ? "border-yellow-500/20 bg-yellow-500/8 text-yellow-400"
+      : "border-primary/20 bg-primary/8 text-primary";
   return (
     <div className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/40 p-4">
       <div
@@ -86,8 +81,8 @@ export default function TournamentPage() {
   const { matches, loadBracketForTournament } = useBracket();
   const [tournament, setTournament] = useState<TournamentMeta | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [playerCount, setPlayerCount] = useState<number>(0);
-  const [activeCount, setActiveCount] = useState<number>(0);
+  const [playerCount, setPlayerCount] = useState(0);
+  const [activeCount, setActiveCount] = useState(0);
 
   useEffect(() => {
     const supabase = createClient();
@@ -99,7 +94,6 @@ export default function TournamentPage() {
         .eq("is_current", true)
         .in("status", ["registration", "live"])
         .single();
-
       setTournament(data ?? null);
       setIsLoaded(true);
     };
@@ -113,29 +107,22 @@ export default function TournamentPage() {
         { event: "*", schema: "public", table: "tournaments" },
         (payload) => {
           const n = payload.new as TournamentMeta & { is_current?: boolean };
-          if (
-            n?.is_current === true &&
-            ["registration", "live"].includes(n?.status)
-          ) {
+          if (n?.is_current === true && ["registration", "live"].includes(n?.status)) {
             setTournament(n);
-          } else if (
-            tournament?.id === (payload.old as { id?: string })?.id
-          ) {
+          } else if (tournament?.id === (payload.old as { id?: string })?.id) {
             setTournament(null);
           }
         }
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!tournament?.id) return;
     loadBracketForTournament(tournament.id);
-
     const supabase = createClient();
     supabase
       .from("tournament_players")
@@ -149,7 +136,6 @@ export default function TournamentPage() {
 
   const isActive = tournament && isLoaded;
   const isLive = tournament?.status === "live";
-  const isRegistration = tournament?.status === "registration";
   const hasBracket = isActive && matches.length > 0;
   const statusMeta = STATUS_META[tournament?.status ?? ""] ?? null;
 
@@ -160,24 +146,19 @@ export default function TournamentPage() {
 
       {isActive ? (
         <main>
-          {/* ── Sticky banner ─────────────────────────────────────── */}
-          <div className="sticky top-0 z-10 border-b border-border/60 bg-card/60 backdrop-blur-sm">
-            <div className="container mx-auto px-4 max-w-7xl">
+          {/* ── Sticky banner — identical to admin top-bar ─────────── */}
+          <div className="sticky top-0 z-10 border-b border-border/40 bg-card/60 backdrop-blur-sm">
+            <div className="container mx-auto px-4 max-w-5xl">
               <div className="flex items-center justify-between h-12">
                 <div className="flex items-center gap-3 min-w-0">
                   <Swords className="h-4 w-4 text-primary shrink-0" />
-                  <span className="font-semibold text-sm text-foreground truncate">
-                    {tournament.name}
-                  </span>
+                  <span className="font-semibold text-sm truncate">{tournament.name}</span>
                   <span className="text-xs text-muted-foreground hidden sm:inline shrink-0">
                     {tournament.game_name} &middot; ${tournament.bet_amount} buy-in
                   </span>
                 </div>
                 {statusMeta && (
-                  <Badge
-                    variant="outline"
-                    className={`text-xs gap-1.5 shrink-0 ${statusMeta.color}`}
-                  >
+                  <Badge variant="outline" className={`text-xs gap-1.5 shrink-0 ${statusMeta.color}`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${statusMeta.dot}`} />
                     {statusMeta.label}
                   </Badge>
@@ -186,8 +167,25 @@ export default function TournamentPage() {
             </div>
           </div>
 
-          <div className="container mx-auto px-4 py-6 max-w-7xl space-y-6">
-            {/* ── Stat tiles ────────────────────────────────────────── */}
+          <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6">
+
+            {/* ── Title block — mirrors admin tournament title ────────── */}
+            <div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-2xl font-bold tracking-tight">{tournament.name}</h1>
+                {statusMeta && (
+                  <Badge variant="outline" className={`text-xs gap-1.5 ${statusMeta.color}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${statusMeta.dot}`} />
+                    {statusMeta.label}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {tournament.game_name} &middot; ${tournament.bet_amount} buy-in &middot; {tournament.max_players} player cap
+              </p>
+            </div>
+
+            {/* ── Stat tiles — identical grid to admin ───────────────── */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatTile
                 icon={<Users className="h-4 w-4" />}
@@ -210,99 +208,95 @@ export default function TournamentPage() {
               <StatTile
                 icon={<TrendingUp className="h-4 w-4" />}
                 label="Prize Pool"
-                value={
-                  tournament.prize_pool
-                    ? `$${tournament.prize_pool.toLocaleString()}`
-                    : "—"
-                }
+                value={tournament.prize_pool ? `$${tournament.prize_pool.toLocaleString()}` : "—"}
                 accent="yellow"
               />
             </div>
 
-            {/* ── Main content ──────────────────────────────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-              {/* Sidebar */}
-              <aside className="space-y-4 order-2 lg:order-1">
-                <HowToEnter minWager={0} requireActive={true} />
-                {isRegistration && <LiveEntries />}
-                <WinnersCircle />
-              </aside>
+            {/* ── Tabs — mirrors admin Players / Bracket / Stats tabs ── */}
+            <Tabs defaultValue="bracket" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3 bg-card/60 border border-border/40 h-9">
+                <TabsTrigger value="bracket" className="text-xs gap-1.5">
+                  <Swords className="h-3.5 w-3.5" />
+                  Bracket
+                </TabsTrigger>
+                <TabsTrigger value="entrants" className="text-xs gap-1.5">
+                  <Users className="h-3.5 w-3.5" />
+                  Entrants
+                </TabsTrigger>
+                <TabsTrigger value="info" className="text-xs gap-1.5">
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  Info
+                </TabsTrigger>
+              </TabsList>
 
-              {/* Bracket / empty bracket state */}
-              <section className="order-1 lg:order-2 min-w-0">
+              {/* Bracket tab */}
+              <TabsContent value="bracket">
                 <div className="rounded-xl border border-border/40 bg-card/40 overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
                     <div className="flex items-center gap-2">
                       <Swords className="h-4 w-4 text-primary" />
-                      <span className="font-semibold text-sm text-foreground">
-                        Live Bracket
-                      </span>
+                      <span className="font-semibold text-sm">Live Bracket</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {isLive && (
-                        <Badge
-                          variant="outline"
-                          className="border-red-500/30 bg-red-500/10 text-red-400 text-xs gap-1.5"
-                        >
+                        <Badge variant="outline" className="border-red-500/30 bg-red-500/10 text-red-400 text-xs gap-1.5">
                           <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
                           LIVE
                         </Badge>
                       )}
                       {matches.length > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          {matches.length} matches
-                        </span>
+                        <span className="text-xs text-muted-foreground">{matches.length} matches</span>
                       )}
                     </div>
                   </div>
 
                   {hasBracket ? (
-                    <div className="p-3 sm:p-4">
+                    <div className="overflow-x-auto p-4">
                       <BracketDisplay />
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center gap-2 py-20 text-center px-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-border/40 bg-card/60 mb-1">
-                        <Swords className="h-6 w-6 text-muted-foreground/40" />
+                    <div className="flex flex-col items-center justify-center gap-2 py-16 text-center px-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/40 bg-card/60 mb-1">
+                        <Swords className="h-5 w-5 text-muted-foreground/40" />
                       </div>
-                      <p className="text-sm font-medium text-foreground">
-                        Bracket not set yet
-                      </p>
+                      <p className="text-sm font-medium">Bracket not set yet</p>
                       <p className="text-xs text-muted-foreground max-w-xs">
-                        {isRegistration
+                        {tournament.status === "registration"
                           ? "Registration is open — the bracket will appear once players are seeded."
                           : "The bracket will appear here once the tournament goes live."}
                       </p>
                     </div>
                   )}
                 </div>
+              </TabsContent>
 
-                {/* Live entries in the main column when live (bracket takes full width) */}
-                {isLive && (
-                  <div className="mt-4">
-                    <LiveEntries />
-                  </div>
-                )}
-              </section>
-            </div>
+              {/* Entrants tab */}
+              <TabsContent value="entrants" className="space-y-4">
+                <LiveEntries />
+                <WinnersCircle />
+              </TabsContent>
+
+              {/* Info tab */}
+              <TabsContent value="info">
+                <HowToEnter minWager={0} requireActive={true} />
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       ) : (
         /* ── No active tournament ───────────────────────────────────── */
         <main className="min-h-[calc(100vh-64px)]">
-          <div className="container mx-auto px-4 max-w-7xl py-10 space-y-6">
+          <div className="container mx-auto px-4 max-w-5xl py-10 space-y-6">
             {/* Hero */}
             <div className="rounded-xl border border-border/40 bg-card/40 p-8 flex flex-col items-center text-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-border/40 bg-card/60">
                 <Trophy className="h-7 w-7 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                  No Active Tournament
-                </h1>
+                <h1 className="text-2xl font-bold tracking-tight">No Active Tournament</h1>
                 <p className="text-sm text-muted-foreground mt-1.5 max-w-sm mx-auto leading-relaxed">
-                  There&apos;s no tournament running right now. Follow R2K2 on
-                  Kick to be notified when the next one starts.
+                  There&apos;s no tournament running right now. Follow R2K2 on Kick to be notified when the next one starts.
                 </p>
               </div>
               <a
@@ -317,7 +311,6 @@ export default function TournamentPage() {
               </a>
             </div>
 
-            {/* Info grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <HowToEnter minWager={0} requireActive={true} />
               <WinnersCircle />

@@ -40,7 +40,7 @@ export function LiveEntries() {
   const accepted = entries.filter((e) => e.status === "registered");
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card/40 backdrop-blur overflow-hidden">
+    <div className="rounded-xl border border-border/40 bg-card/40 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
         <div className="flex items-center gap-2">
