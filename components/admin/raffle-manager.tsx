@@ -181,10 +181,10 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
   };
 
   const drawWinner = () => {
-    // Assign sequential ticket numbers, then RNG-pick a winning ticket number.
-    // The owner of that ticket is the winner — mirrors exactly what viewers see.
-    const { holders, total } = assignTicketNumbers(eligible);
-    const pick = pickWinningTicket(holders, total);
+    // Mint tickets in threshold-round order, then RNG-pick a winning ticket
+    // number. The owner of that ticket is the winner — mirrors what viewers see.
+    const { holders, total, ownerByTicket } = assignTicketNumbers(eligible);
+    const pick = pickWinningTicket(holders, total, ownerByTicket);
     if (!pick) return;
     setSelectedWinner(pick.holder.username);
     setSelectedTicket(pick.ticketNumber);
@@ -350,8 +350,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
             <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
               {assignTicketNumbers(eligible).holders.map((h) => (
                 <Badge key={h.username} variant="secondary" className="text-xs font-mono">
-                  {h.username} &middot; #{h.startTicket.toLocaleString()}
-                  {h.tickets > 1 && `–#${h.endTicket.toLocaleString()}`}
+                  {h.username} &middot; {h.tickets.toLocaleString()} {h.tickets === 1 ? 'ticket' : 'tickets'}
                 </Badge>
               ))}
             </div>

@@ -350,13 +350,12 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
             <div className="space-y-3">
               {holders.map((user, i) => {
                 const odds = totalTickets > 0 ? (user.tickets / totalTickets) * 100 : 0;
-                const chips = Math.min(user.tickets, CHIPS_PER_USER);
-                const remaining = user.tickets - chips;
+                const shownNumbers = user.ticketNumbers.slice(0, CHIPS_PER_USER);
+                const remaining = user.tickets - shownNumbers.length;
                 const pad = String(totalTickets).length;
-                // Highlight this row if the live winning ticket falls in its range
+                // Highlight this row if the live winning ticket belongs to it
                 const winTicket = liveWinner ? liveTicket : null;
-                const isWinningRow =
-                  winTicket != null && winTicket >= user.startTicket && winTicket <= user.endTicket;
+                const isWinningRow = winTicket != null && user.ticketNumbers.includes(winTicket);
                 return (
                   <div
                     key={`${user.username}-${i}`}
@@ -385,18 +384,14 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
                         <p className="text-sm font-bold text-primary">
                           {user.tickets} {user.tickets === 1 ? 'ticket' : 'tickets'}
                         </p>
-                        <p className="text-xs text-muted-foreground font-mono">
-                          #{user.startTicket.toLocaleString()}
-                          {user.tickets > 1 && `–#${user.endTicket.toLocaleString()}`}
-                        </p>
                         <p className="text-[10px] text-muted-foreground/70">{odds.toFixed(odds < 0.1 ? 3 : 1)}% odds</p>
                       </div>
                     </div>
 
-                    {/* Individual ticket chips — actual sequential ticket numbers */}
+                    {/* Individual ticket chips — actual global ticket numbers,
+                        interleaved in the threshold order they were earned */}
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {Array.from({ length: chips }).map((_, t) => {
-                        const num = user.startTicket + t;
+                      {shownNumbers.map((num) => {
                         const isWinChip = winTicket === num;
                         return (
                           <span
@@ -414,7 +409,7 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
                       })}
                       {remaining > 0 && (
                         <span className="inline-flex items-center rounded-md border border-border/40 bg-background/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-                          +{remaining.toLocaleString()} more (#{(user.startTicket + chips).toLocaleString()}–#{user.endTicket.toLocaleString()})
+                          +{remaining.toLocaleString()} more
                         </span>
                       )}
                     </div>
