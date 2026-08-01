@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, X, Check } from 'lucide-react';
+import { Trophy, X, Check, Swords, Crown, Clock, Edit3 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useBracket } from '@/lib/bracket-context';
 
 interface Tournament {
@@ -21,18 +21,25 @@ interface ScoreEditState {
   score2: string;
 }
 
+const CARD_H = 116;
+const CARD_W = 220;
+const GAP_X = 36;
+const BASE_GAP_Y = 10;
+
 export function BracketManager({ tournament }: { tournament: Tournament }) {
-  const { matches, updateMatchScore, setMatchWinner, getPlayerName, loadBracketForTournament, activeTournamentId } = useBracket();
+  const {
+    matches,
+    updateMatchScore,
+    setMatchWinner,
+    getPlayerName,
+    loadBracketForTournament,
+  } = useBracket();
   const [editingScore, setEditingScore] = useState<ScoreEditState | null>(null);
 
-  // Load bracket from DB when this tournament is opened
   useEffect(() => {
-    if (tournament.id) {
-      loadBracketForTournament(tournament.id);
-    }
+    if (tournament.id) loadBracketForTournament(tournament.id);
   }, [tournament.id, loadBracketForTournament]);
 
-  // Group matches by round index
   const matchesByRound = matches.reduce(
     (acc, match) => {
       if (!acc[match.roundIndex]) acc[match.roundIndex] = [];
@@ -47,7 +54,6 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
     .sort((a, b) => a - b);
 
   const handleSetWinner = (matchId: string, winnerId: string) => {
-    // Pass tournament info so winner can be recorded when bracket completes
     setMatchWinner(matchId, winnerId, {
       id: tournament.id,
       name: tournament.name,
@@ -57,281 +63,346 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
 
   const handleSaveScore = (matchId: string) => {
     if (!editingScore) return;
-
     const score1 = parseFloat(editingScore.score1);
     const score2 = parseFloat(editingScore.score2);
-
-    if (isNaN(score1) || isNaN(score2)) {
-      alert('Please enter valid numbers for both scores');
-      return;
-    }
+    if (isNaN(score1) || isNaN(score2)) return;
 
     updateMatchScore(matchId, score1, score2);
 
-    const match = matches.find(m => m.id === matchId);
+    const match = matches.find((m) => m.id === matchId);
     if (match && score1 !== score2) {
       const winnerId = score1 > score2 ? match.slotAId : match.slotBId;
       if (winnerId) {
-        // Pass tournament info so winner can be recorded when bracket completes
-        setMatchWinner(matchId, winnerId, {
-          id: tournament.id,
-          name: tournament.name,
-          prize: tournament.prize_pool || 0,
-        });
+        handleSetWinner(matchId, winnerId);
       }
     }
-
     setEditingScore(null);
   };
 
   if (matches.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Manage Bracket</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">No matches generated yet</p>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/40 py-10 text-center">
+        <Swords className="h-7 w-7 text-muted-foreground/25" />
+        <p className="text-sm text-muted-foreground">No matches yet — generate a bracket first</p>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="h-5 w-5" />
-          Manage Bracket
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="w-full overflow-x-auto pb-4">
-          <div className="inline-flex gap-6 p-2 min-w-full">
-            {rounds.map((round) => (
-              <div key={round} className="flex flex-col gap-2 min-w-fit">
-                {/* Round Label */}
-                <div className="text-center mb-2 px-2">
-                  <h3 className="font-bold text-xs uppercase tracking-wider text-primary/80">
-                    {round === rounds.length - 1 ? 'FINALS' : `R${round + 1}`}
-                  </h3>
+    <div className="rounded-xl border border-border/40 bg-card/30 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40">
+        <Trophy className="h-4 w-4 text-primary" />
+        <span className="font-semibold text-sm">Manage Bracket</span>
+        <span className="ml-auto text-xs text-muted-foreground">{matches.length} matches</span>
+      </div>
+
+      <div className="overflow-x-auto p-4">
+        <div className="inline-flex gap-0 pb-2">
+          {rounds.map((round, colIdx) => {
+            const spacingMult = Math.pow(2, colIdx);
+            const gapY = BASE_GAP_Y * spacingMult + CARD_H * (spacingMult - 1);
+            const topOffset =
+              colIdx === 0 ? 0 : (CARD_H + gapY) / 2 - CARD_H / 2;
+            const roundMatches = [...(matchesByRound[round] || [])].sort(
+              (a, b) => a.matchIndex - b.matchIndex
+            );
+            const isFinals = round === rounds[rounds.length - 1];
+            const roundLabel = isFinals
+              ? 'Finals'
+              : `Round ${round + 1}`;
+
+            return (
+              <div
+                key={round}
+                className="flex flex-col"
+                style={{ width: CARD_W + GAP_X }}
+              >
+                {/* Round label */}
+                <div
+                  className="mb-3 flex items-center justify-center"
+                  style={{ width: CARD_W }}
+                >
+                  <span
+                    className={cn(
+                      'rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider',
+                      isFinals
+                        ? 'border-yellow-500/30 bg-yellow-500/8 text-yellow-500'
+                        : 'border-primary/25 bg-primary/6 text-primary/80'
+                    )}
+                  >
+                    {roundLabel}
+                  </span>
                 </div>
 
-                {/* Matches in this round */}
-                <div className="flex flex-col gap-2">
-                  {matchesByRound[round]?.map((match) => {
+                <div
+                  className="flex flex-col"
+                  style={{ gap: gapY, paddingTop: topOffset }}
+                >
+                  {roundMatches.map((match) => {
                     const isEditing = editingScore?.matchId === match.id;
+                    const isDone = match.status === 'completed';
+                    const isLive = match.status === 'live';
+                    const isBye = match.slotBId === null && match.slotAId !== null;
+                    const p1 = getPlayerName(match.slotAId);
+                    const p2 = getPlayerName(match.slotBId);
+                    const p1Wins = isDone && match.winnerId === match.slotAId;
+                    const p2Wins = isDone && match.winnerId === match.slotBId;
+                    const tieBreak =
+                      match.player1Score > 0 &&
+                      match.player2Score > 0 &&
+                      match.player1Score === match.player2Score;
 
                     return (
-                      <div key={match.id} className="relative group">
-                        <div className="w-56 rounded-lg border border-primary/20 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden bg-gradient-to-br from-card via-card to-secondary/20">
-                          {/* Status bar */}
-                          {match.status === 'completed' && (
-                            <div className="h-0.5 bg-primary" />
+                      <div
+                        key={match.id}
+                        className={cn(
+                          'rounded-lg border bg-card overflow-hidden transition-all',
+                          isLive && 'border-primary/40 ring-1 ring-primary/20',
+                          isDone && 'border-border/30 opacity-80',
+                          !isLive && !isDone && 'border-border/35'
+                        )}
+                        style={{ width: CARD_W }}
+                      >
+                        {/* Top strip */}
+                        <div
+                          className={cn(
+                            'h-0.5',
+                            isLive && 'bg-primary animate-pulse',
+                            isDone && 'bg-green-500/40',
+                            !isLive && !isDone && 'bg-border/20'
                           )}
-                          {match.status === 'live' && (
-                            <div className="h-0.5 bg-red-500 animate-pulse" />
-                          )}
-                          {match.status === 'pending' && match.slotBId !== null && (
-                            <div className="h-0.5 bg-muted" />
-                          )}
+                        />
 
-                          <div className="p-2 space-y-1.5">
-                            {/* Bye Match (slot is null) */}
-                            {match.slotBId === null && match.slotAId !== null ? (
-                              <div className="p-2 rounded bg-primary/10 border border-primary/30">
-                                <div className="flex items-center justify-between gap-2">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-xs text-foreground truncate">
-                                      {getPlayerName(match.slotAId) || 'TBD'}
-                                    </p>
-                                  </div>
-                                  <span className="text-xs font-bold text-primary flex-shrink-0">BYE</span>
-                                </div>
+                        {/* Match header */}
+                        <div className="flex items-center justify-between px-2.5 pt-1.5 pb-0.5">
+                          <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wide">
+                            Match {match.matchIndex + 1}
+                          </span>
+                          <span>
+                            {isDone && <Crown className="h-3 w-3 text-yellow-500/70" />}
+                            {isLive && (
+                              <Badge className="h-4 px-1.5 text-[9px] border-primary/30 bg-primary/10 text-primary rounded-full">
+                                LIVE
+                              </Badge>
+                            )}
+                            {!isDone && !isLive && (
+                              <Clock className="h-3 w-3 text-muted-foreground/25" />
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="px-2 pb-2.5 space-y-1">
+                          {isBye ? (
+                            /* BYE match */
+                            <div className="rounded-md border border-primary/20 bg-primary/8 px-2.5 py-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-foreground truncate">
+                                  {p1 || 'TBD'}
+                                </span>
+                                <span className="text-[10px] font-bold text-primary ml-2">
+                                  BYE
+                                </span>
                               </div>
-                            ) : (
-                              <>
-                                {/* Slot A */}
-                                <div
-                                  className={`p-1.5 rounded transition-all duration-200 text-xs cursor-pointer hover:border-primary/60 ${
-                                    match.status === 'completed' && match.winnerId === match.slotAId
-                                      ? 'bg-primary/15 border border-primary/40'
-                                      : 'bg-secondary/30 border border-transparent'
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between gap-2">
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-semibold text-foreground truncate">
-                                        {getPlayerName(match.slotAId) || '—'}
-                                      </p>
-                                    </div>
-                                    <div className="text-right flex-shrink-0">
-                                      <span className="font-bold text-foreground">
-                                        {match.player1Score || '—'}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
+                            </div>
+                          ) : (
+                            <>
+                              {/* Player A */}
+                              <AdminSlot
+                                name={p1}
+                                score={match.player1Score}
+                                isWinner={p1Wins}
+                                isLoser={isDone && !p1Wins && !!match.slotAId}
+                                isLive={isLive}
+                                isEmpty={!match.slotAId}
+                              />
 
-                                {/* VS Divider */}
-                                <div className="flex items-center gap-1 py-0.5">
-                                  <div className="flex-1 h-px bg-border/40" />
-                                  <span className="text-xs font-bold text-muted-foreground/50 px-1">vs</span>
-                                  <div className="flex-1 h-px bg-border/40" />
-                                </div>
+                              <div className="flex items-center gap-1 px-1">
+                                <div className="flex-1 h-px bg-border/25" />
+                                <Swords className="h-2 w-2 text-muted-foreground/25" />
+                                <div className="flex-1 h-px bg-border/25" />
+                              </div>
 
-                                {/* Slot B */}
-                                <div
-                                  className={`p-1.5 rounded transition-all duration-200 text-xs cursor-pointer hover:border-primary/60 ${
-                                    match.status === 'completed' && match.winnerId === match.slotBId
-                                      ? 'bg-primary/15 border border-primary/40'
-                                      : 'bg-secondary/30 border border-transparent'
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between gap-2">
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-semibold text-foreground truncate">
-                                        {getPlayerName(match.slotBId) || '—'}
-                                      </p>
-                                    </div>
-                                    <div className="text-right flex-shrink-0">
-                                      <span className="font-bold text-foreground">
-                                        {match.player2Score || '—'}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
+                              {/* Player B */}
+                              <AdminSlot
+                                name={p2}
+                                score={match.player2Score}
+                                isWinner={p2Wins}
+                                isLoser={isDone && !p2Wins && !!match.slotBId}
+                                isLive={isLive}
+                                isEmpty={!match.slotBId}
+                              />
 
-                                {/* Score Edit Form */}
-                                {isEditing ? (
-                                  <div className="pt-2 space-y-1.5">
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      value={editingScore.score1}
-                                      onChange={(e) =>
-                                        setEditingScore({
-                                          ...editingScore,
-                                          score1: e.target.value,
-                                        })
-                                      }
-                                      placeholder="Score"
-                                      className="h-7 text-xs"
-                                    />
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      value={editingScore.score2}
-                                      onChange={(e) =>
-                                        setEditingScore({
-                                          ...editingScore,
-                                          score2: e.target.value,
-                                        })
-                                      }
-                                      placeholder="Score"
-                                      className="h-7 text-xs"
-                                    />
-                                    <div className="flex gap-1">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleSaveScore(match.id)}
-                                        className="flex-1 h-6 text-xs gap-1"
-                                      >
-                                        <Check className="h-3 w-3" />
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => setEditingScore(null)}
-                                        className="flex-1 h-6 text-xs gap-1"
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="pt-1 space-y-1">
+                              {/* Score editor */}
+                              {isEditing ? (
+                                <div className="pt-1.5 space-y-1">
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={editingScore.score1}
+                                    onChange={(e) =>
+                                      setEditingScore({
+                                        ...editingScore,
+                                        score1: e.target.value,
+                                      })
+                                    }
+                                    placeholder={`${p1 || 'P1'} score`}
+                                    className="h-7 text-xs"
+                                  />
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={editingScore.score2}
+                                    onChange={(e) =>
+                                      setEditingScore({
+                                        ...editingScore,
+                                        score2: e.target.value,
+                                      })
+                                    }
+                                    placeholder={`${p2 || 'P2'} score`}
+                                    className="h-7 text-xs"
+                                  />
+                                  <div className="flex gap-1">
+                                    <Button
+                                      size="sm"
+                                      className="flex-1 h-7 text-xs gap-1"
+                                      onClick={() => handleSaveScore(match.id)}
+                                    >
+                                      <Check className="h-3 w-3" />
+                                      Save
+                                    </Button>
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="w-full h-6 text-xs"
-                                      onClick={() =>
-                                        setEditingScore({
-                                          matchId: match.id,
-                                          score1: String(match.player1Score || 0),
-                                          score2: String(match.player2Score || 0),
-                                        })
-                                      }
-                                      disabled={match.status === 'completed'}
+                                      className="h-7 w-7 p-0"
+                                      onClick={() => setEditingScore(null)}
                                     >
-                                      Edit Scores
+                                      <X className="h-3 w-3" />
                                     </Button>
-
-                                    {match.player1Score !== undefined && 
-                                     match.player2Score !== undefined &&
-                                     match.player1Score > 0 && 
-                                     match.player2Score > 0 && 
-                                     match.player1Score === match.player2Score && (
-                                      <div className="flex gap-1">
-                                        <Button
-                                          size="sm"
-                                          className="flex-1 h-6 text-xs"
-                                          onClick={() =>
-                                            handleSetWinner(match.id, match.slotAId || '')
-                                          }
-                                          disabled={match.status === 'completed'}
-                                        >
-                                          A Wins
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          className="flex-1 h-6 text-xs"
-                                          onClick={() =>
-                                            handleSetWinner(match.id, match.slotBId || '')
-                                          }
-                                          disabled={match.status === 'completed'}
-                                        >
-                                          B Wins
-                                        </Button>
-                                      </div>
-                                    )}
                                   </div>
-                                )}
+                                </div>
+                              ) : (
+                                <div className="pt-1.5 space-y-1">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="w-full h-7 text-xs gap-1.5"
+                                    disabled={isDone}
+                                    onClick={() =>
+                                      setEditingScore({
+                                        matchId: match.id,
+                                        score1: String(match.player1Score || ''),
+                                        score2: String(match.player2Score || ''),
+                                      })
+                                    }
+                                  >
+                                    <Edit3 className="h-3 w-3" />
+                                    {isDone ? 'Completed' : 'Set Scores'}
+                                  </Button>
 
-                                {/* Status Badge */}
-                                <div className="pt-1">
-                                  {match.status === 'completed' && (
-                                    <Badge className="w-full justify-center bg-primary/20 text-primary hover:bg-primary/25 border border-primary/40 text-xs h-5">
-                                      Done
-                                    </Badge>
-                                  )}
-                                  {match.status === 'live' && (
-                                    <Badge className="w-full justify-center bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/20 animate-pulse text-xs h-5">
-                                      Live
-                                    </Badge>
-                                  )}
-                                  {match.status === 'pending' && (
-                                    <Badge className="w-full justify-center bg-muted/40 text-muted-foreground border border-border/40 hover:bg-muted/50 text-xs h-5">
-                                      Pending
-                                    </Badge>
+                                  {/* Tie-break buttons */}
+                                  {tieBreak && !isDone && (
+                                    <div className="flex gap-1">
+                                      <Button
+                                        size="sm"
+                                        className="flex-1 h-7 text-[11px] bg-primary/80 hover:bg-primary"
+                                        onClick={() =>
+                                          handleSetWinner(
+                                            match.id,
+                                            match.slotAId || ''
+                                          )
+                                        }
+                                      >
+                                        <Crown className="h-3 w-3 mr-1" />
+                                        {p1 || 'P1'}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="flex-1 h-7 text-[11px] bg-primary/80 hover:bg-primary"
+                                        onClick={() =>
+                                          handleSetWinner(
+                                            match.id,
+                                            match.slotBId || ''
+                                          )
+                                        }
+                                      >
+                                        <Crown className="h-3 w-3 mr-1" />
+                                        {p2 || 'P2'}
+                                      </Button>
+                                    </div>
                                   )}
                                 </div>
-                              </>
-                            )}
-                          </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     );
                   })}
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
+  );
+}
+
+interface AdminSlotProps {
+  name: string;
+  score: number;
+  isWinner: boolean;
+  isLoser: boolean;
+  isLive: boolean;
+  isEmpty: boolean;
+}
+
+function AdminSlot({ name, score, isWinner, isLoser, isLive, isEmpty }: AdminSlotProps) {
+  if (isEmpty) {
+    return (
+      <div className="flex items-center rounded-md border border-dashed border-border/25 bg-muted/10 px-2.5 py-1.5">
+        <span className="text-xs italic text-muted-foreground/40">TBD</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        'flex items-center justify-between rounded-md px-2.5 py-1.5 transition-all',
+        isWinner && 'bg-green-500/12 border border-green-500/25',
+        isLoser && 'bg-muted/10 border border-border/15 opacity-50',
+        !isWinner && !isLoser && isLive && 'bg-primary/8 border border-primary/20',
+        !isWinner && !isLoser && !isLive && 'bg-muted/20 border border-border/15'
+      )}
+    >
+      <div className="flex items-center gap-1.5 min-w-0">
+        {isWinner && <Crown className="h-3 w-3 text-yellow-500 flex-shrink-0" />}
+        <span
+          className={cn(
+            'text-xs font-semibold truncate',
+            isWinner && 'text-green-400',
+            isLoser && 'text-muted-foreground line-through',
+            !isWinner && !isLoser && 'text-foreground'
+          )}
+        >
+          {name || '—'}
+        </span>
+      </div>
+      {score > 0 && (
+        <span
+          className={cn(
+            'text-[11px] font-bold font-mono ml-1.5 flex-shrink-0 tabular-nums',
+            isWinner && 'text-green-400',
+            isLoser && 'text-muted-foreground/50',
+            !isWinner && !isLoser && 'text-foreground'
+          )}
+        >
+          {score.toFixed(2)}x
+        </span>
+      )}
+    </div>
   );
 }

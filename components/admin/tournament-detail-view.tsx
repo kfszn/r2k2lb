@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,9 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Users, TrendingUp, ArrowLeft, Plus, Trash2, AlertCircle, Zap } from 'lucide-react';
-import useSWR from 'swr';
-import { createClient } from '@/lib/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +19,21 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  Users,
+  TrendingUp,
+  ArrowLeft,
+  Plus,
+  Trash2,
+  AlertCircle,
+  Zap,
+  Radio,
+  CheckCircle2,
+  XCircle,
+  BarChart3,
+} from 'lucide-react';
+import useSWR from 'swr';
+import { createClient } from '@/lib/supabase/client';
 import { BracketGenerator } from './bracket-generator';
 import { BracketManager } from './bracket-manager';
 
@@ -50,13 +61,39 @@ interface TournamentDetailViewProps {
   onBack: () => void;
 }
 
-// Format wager amount - API returns in .01 cents (100 = $1)
 function formatCurrency(cents: number): string {
   const dollars = (cents || 0) / 100;
-  return `$ ${dollars.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `$${dollars.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
-export function TournamentDetailView({ tournament, onBack }: TournamentDetailViewProps) {
+const STATUS_META: Record<
+  string,
+  { label: string; color: string; dot: string }
+> = {
+  registration: {
+    label: 'Registering',
+    color: 'border-green-500/30 bg-green-500/10 text-green-400',
+    dot: 'bg-green-400',
+  },
+  live: {
+    label: 'Live',
+    color: 'border-red-500/30 bg-red-500/10 text-red-400',
+    dot: 'bg-red-500',
+  },
+  completed: {
+    label: 'Closed',
+    color: 'border-border/40 bg-muted/30 text-muted-foreground',
+    dot: 'bg-muted-foreground',
+  },
+};
+
+export function TournamentDetailView({
+  tournament,
+  onBack,
+}: TournamentDetailViewProps) {
   const supabase = createClient();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [aceUsername, setAceUsername] = useState('');
@@ -64,6 +101,7 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState(tournament.status);
+  const [pendingStatus, setPendingStatus] = useState(tournament.status);
   const [statusLoading, setStatusLoading] = useState(false);
 
   const { data: players = [], mutate: refreshPlayers } = useSWR(
@@ -73,25 +111,18 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
         .from('tournament_players')
         .select('*')
         .eq('tournament_id', tournament.id);
-
-      if (error) {
-        console.error('[v0] Error fetching players:', error);
-        return [];
-      }
+      if (error) return [];
       return data || [];
     }
   );
 
   const handleAddPlayer = async () => {
-    // At least one username is required
     if (!aceUsername.trim() && !kickUsername.trim()) {
-      setError('Please enter either an Acebet username or Kick username');
+      setError('Enter either an Acebet or Kick username');
       return;
     }
-
     setIsLoading(true);
     setError('');
-
     try {
       const response = await fetch('/api/admin/player/add', {
         method: 'POST',
@@ -102,311 +133,373 @@ export function TournamentDetailView({ tournament, onBack }: TournamentDetailVie
           kickUsername: kickUsername.trim() || aceUsername.trim(),
         }),
       });
-
       const result = await response.json();
-
       if (!response.ok) {
         setError(result.error || 'Failed to add player');
-        setIsLoading(false);
         return;
       }
-
       setAceUsername('');
       setKickUsername('');
       setShowAddDialog(false);
       refreshPlayers();
-    } catch (err) {
+    } catch {
       setError('An error occurred while adding the player');
-      console.error('[v0] Error adding player:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleRemovePlayer = async (playerId: string) => {
-    if (!confirm('Are you sure you want to remove this player?')) return;
-
-    setIsLoading(true);
-    try {
-      await supabase
-        .from('tournament_players')
-        .delete()
-        .eq('id', playerId);
-
-      refreshPlayers();
-    } catch (err) {
-      console.error('[v0] Error removing player:', err);
-    } finally {
-      setIsLoading(false);
-    }
+    if (!confirm('Remove this player?')) return;
+    await supabase.from('tournament_players').delete().eq('id', playerId);
+    refreshPlayers();
   };
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusSave = async () => {
     setStatusLoading(true);
     try {
-      // Use the API endpoint so is_current gets set properly
       const response = await fetch('/api/admin/tournament/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tournamentId: tournament.id,
-          status: newStatus,
+          status: pendingStatus,
         }),
       });
-
-      if (!response.ok) {
-        const result = await response.json();
-        console.error('[v0] Error updating tournament status:', result.error);
-        setStatus(tournament.status);
-      } else {
-        setStatus(newStatus);
+      if (response.ok) {
+        setStatus(pendingStatus);
       }
-    } catch (err) {
-      console.error('[v0] Error updating status:', err);
-      setStatus(tournament.status);
+    } catch {
+      // revert
+      setPendingStatus(status);
     } finally {
       setStatusLoading(false);
     }
   };
 
-  const totalWagers = (players as TournamentPlayer[]).reduce((sum, p) => sum + (p.acebet_wager || 0), 0);
-  const activePlayers = (players as TournamentPlayer[]).filter(p => p.acebet_active).length;
+  const totalWagers = (players as TournamentPlayer[]).reduce(
+    (sum, p) => sum + (p.acebet_wager || 0),
+    0
+  );
+  const activePlayers = (players as TournamentPlayer[]).filter(
+    (p) => p.acebet_active
+  ).length;
+
+  const meta = STATUS_META[status] ?? STATUS_META.completed;
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
+      {/* Top bar */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" />
-          Back to Tournaments
-        </Button>
+          All Tournaments
+        </button>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold tracking-tight">{tournament.name}</h1>
-              <Badge
-                className={`text-sm ${
-                  status === 'registration'
-                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                    : status === 'live'
-                    ? 'bg-primary/10 text-primary border border-primary/25'
-                    : 'bg-muted text-muted-foreground border border-border/50'
-                }`}
-              >
-                {status === 'registration' ? 'REGISTERING' : status === 'live' ? 'LIVE' : 'CLOSED'}
-              </Badge>
-            </div>
-            <div className="flex gap-3 items-end">
-              <div className="w-48">
-                <label className="text-sm font-medium text-muted-foreground">Tournament Status</label>
-                <Select value={status} onValueChange={setStatus} disabled={statusLoading}>
-                  <SelectTrigger className="w-full mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="registration">REGISTERING</SelectItem>
-                    <SelectItem value="live">LIVE</SelectItem>
-                    <SelectItem value="completed">CLOSED</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button 
-                onClick={() => handleStatusChange(status)}
-                disabled={statusLoading || status === tournament.status}
-                size="sm"
-              >
-                {statusLoading ? 'Saving...' : 'Save'}
-              </Button>
-            </div>
-          </div>
-          <p className="text-muted-foreground">{tournament.game_name} • ${tournament.bet_amount} bet</p>
+        {/* Status switcher */}
+        <div className="flex items-center gap-2">
+          <Select
+            value={pendingStatus}
+            onValueChange={setPendingStatus}
+            disabled={statusLoading}
+          >
+            <SelectTrigger className="w-40 h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="registration">Registering</SelectItem>
+              <SelectItem value="live">Live</SelectItem>
+              <SelectItem value="completed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            className="h-8"
+            onClick={handleStatusSave}
+            disabled={statusLoading || pendingStatus === status}
+          >
+            {statusLoading ? 'Saving…' : 'Apply'}
+          </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-5 backdrop-blur-xl">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
-            <Users className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Players</p>
-            <p className="text-2xl font-bold tabular-nums">{players.length}/{tournament.max_players}</p>
-          </div>
+      {/* Tournament title */}
+      <div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="text-2xl font-bold tracking-tight">{tournament.name}</h1>
+          <Badge
+            variant="outline"
+            className={`text-xs gap-1.5 ${meta.color}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${meta.dot} ${status === 'live' ? 'animate-pulse' : ''}`} />
+            {meta.label}
+          </Badge>
         </div>
-
-        <div className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-5 backdrop-blur-xl">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-green-500/25 bg-green-500/10 text-green-400">
-            <Zap className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Active Players</p>
-            <p className="text-2xl font-bold tabular-nums">{activePlayers}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-5 backdrop-blur-xl">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
-            <TrendingUp className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Total Wagers</p>
-            <p className="text-2xl font-bold tabular-nums">{formatCurrency(totalWagers)}</p>
-          </div>
-        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          {tournament.game_name} &middot; ${tournament.bet_amount} buy-in &middot; {tournament.max_players} player cap
+        </p>
       </div>
 
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-3">
+        <StatTile
+          icon={<Users className="h-4 w-4" />}
+          label="Players"
+          value={`${players.length}/${tournament.max_players}`}
+          accent="primary"
+        />
+        <StatTile
+          icon={<Zap className="h-4 w-4" />}
+          label="Active"
+          value={String(activePlayers)}
+          accent="green"
+        />
+        <StatTile
+          icon={<TrendingUp className="h-4 w-4" />}
+          label="Wagers"
+          value={formatCurrency(totalWagers)}
+          accent="primary"
+        />
+      </div>
+
+      {/* Tabs */}
       <Tabs defaultValue="players" className="space-y-4">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3 border border-border/40 bg-card/60 backdrop-blur-xl">
-          <TabsTrigger value="players" className="gap-2">
-            <Users className="h-4 w-4" />
+        <TabsList className="grid w-full grid-cols-3 bg-card/60 border border-border/40 h-9">
+          <TabsTrigger value="players" className="text-xs gap-1.5">
+            <Users className="h-3.5 w-3.5" />
             Players
           </TabsTrigger>
-          <TabsTrigger value="bracket" className="gap-2">
-            <Zap className="h-4 w-4" />
+          <TabsTrigger value="bracket" className="text-xs gap-1.5">
+            <Radio className="h-3.5 w-3.5" />
             Bracket
           </TabsTrigger>
-          <TabsTrigger value="stats" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
+          <TabsTrigger value="stats" className="text-xs gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" />
             Stats
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="players" className="space-y-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Tournament Entrants</CardTitle>
-              <Button onClick={() => setShowAddDialog(true)} size="sm" className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add Player
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {players.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No players registered</p>
-              ) : (
-                <div className="space-y-2">
-                  {(players as TournamentPlayer[]).map(player => (
-                    <div key={player.id} className="flex items-center justify-between rounded-xl border border-border/50 bg-card/40 p-4 transition-colors hover:border-border">
-                      <div>
-                        <p className="font-medium">{player.acebet_username || <span className="text-muted-foreground">No Acebet</span>}</p>
-                        <p className="text-sm text-muted-foreground">@{player.kick_username}</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="font-medium">{formatCurrency(player.acebet_wager)}</p>
-                          <Badge variant={player.acebet_active ? 'default' : 'outline'} className="text-xs mt-1">
-                            {player.acebet_active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemovePlayer(player.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+        {/* Players tab */}
+        <TabsContent value="players" className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-foreground">
+              {players.length} entrant{players.length !== 1 ? 's' : ''}
+            </p>
+            <Button
+              size="sm"
+              className="h-8 gap-1.5"
+              onClick={() => setShowAddDialog(true)}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Player
+            </Button>
+          </div>
+
+          {players.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/40 py-12 text-center">
+              <Users className="h-8 w-8 text-muted-foreground/25" />
+              <p className="text-sm text-muted-foreground">No players registered</p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-border/40 overflow-hidden divide-y divide-border/30">
+              {(players as TournamentPlayer[]).map((player) => (
+                <div
+                  key={player.id}
+                  className="flex items-center justify-between px-4 py-3 bg-card/30 hover:bg-card/60 transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                        player.acebet_active
+                          ? 'bg-green-500'
+                          : 'bg-muted-foreground/30'
+                      }`}
+                    />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {player.acebet_username || (
+                          <span className="italic text-muted-foreground">
+                            No Acebet
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        @{player.kick_username}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatCurrency(player.acebet_wager)}
+                      </p>
+                      <div className="flex items-center justify-end gap-1 mt-0.5">
+                        {player.acebet_active ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <XCircle className="h-3 w-3 text-muted-foreground/40" />
+                        )}
+                        <span className="text-[11px] text-muted-foreground">
+                          {player.acebet_active ? 'Active' : 'Inactive'}
+                        </span>
                       </div>
                     </div>
-                  ))}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => handleRemovePlayer(player.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
-        {/* Bracket Tab */}
+        {/* Bracket tab */}
         <TabsContent value="bracket" className="space-y-4">
-          <div className="grid gap-6">
-            <BracketGenerator tournament={tournament} />
-            <BracketManager tournament={tournament} />
-          </div>
+          <BracketGenerator tournament={tournament} />
+          <BracketManager tournament={tournament} />
         </TabsContent>
 
-        {/* Stats Tab */}
+        {/* Stats tab */}
         <TabsContent value="stats">
-          <Card>
-            <CardHeader>
-              <CardTitle>Tournament Statistics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-secondary rounded-lg">
-                    <p className="text-sm text-muted-foreground">Total Players</p>
-                    <p className="text-2xl font-bold">{players.length}</p>
-                  </div>
-                  <div className="p-4 bg-secondary rounded-lg">
-                    <p className="text-sm text-muted-foreground">Active Players</p>
-                    <p className="text-2xl font-bold">{activePlayers}</p>
-                  </div>
-                  <div className="p-4 bg-secondary rounded-lg col-span-2">
-                    <p className="text-sm text-muted-foreground">Total Wagers</p>
-                    <p className="text-2xl font-bold">{formatCurrency(totalWagers)}</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="rounded-xl border border-border/40 overflow-hidden divide-y divide-border/30">
+            <StatRow label="Total Players" value={String(players.length)} />
+            <StatRow label="Active Players" value={String(activePlayers)} />
+            <StatRow
+              label="Inactive Players"
+              value={String(players.length - activePlayers)}
+            />
+            <StatRow
+              label="Total Wagers"
+              value={formatCurrency(totalWagers)}
+            />
+            <StatRow
+              label="Avg Wager"
+              value={
+                players.length > 0
+                  ? formatCurrency(totalWagers / players.length)
+                  : '$0.00'
+              }
+            />
+            {tournament.prize_pool && (
+              <StatRow
+                label="Prize Pool"
+                value={`$${tournament.prize_pool.toLocaleString()}`}
+              />
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
+      {/* Add Player Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Player to Tournament</DialogTitle>
+            <DialogTitle>Add Player</DialogTitle>
             <DialogDescription>
-              Enter at least one username (Acebet or Kick). If Acebet is provided, stats will be verified via the API.
+              Enter at least one username. Acebet stats will be verified if provided.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 pt-2">
             {error && (
-              <div className="flex items-start gap-3 p-3 bg-destructive/10 rounded-lg">
-                <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-2.5 rounded-lg bg-destructive/10 p-3">
+                <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-destructive">{error}</p>
               </div>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-sm font-medium">Acebet Username</label>
               <Input
-                placeholder="Enter Acebet username"
+                placeholder="acebet_user"
                 value={aceUsername}
-                onChange={e => {
+                onChange={(e) => {
                   setAceUsername(e.target.value);
                   setError('');
                 }}
                 disabled={isLoading}
               />
-              <p className="text-xs text-muted-foreground">
-                Optional - if provided, stats will be pulled from API
-              </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-sm font-medium">Kick Username</label>
               <Input
-                placeholder="Enter Kick username"
+                placeholder="kick_user"
                 value={kickUsername}
-                onChange={e => setKickUsername(e.target.value)}
+                onChange={(e) => setKickUsername(e.target.value)}
                 disabled={isLoading}
               />
-              <p className="text-xs text-muted-foreground">
-                Optional - at least one username is required
-              </p>
             </div>
 
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowAddDialog(false)} disabled={isLoading}>
+            <div className="flex gap-2 justify-end pt-1">
+              <Button
+                variant="outline"
+                onClick={() => setShowAddDialog(false)}
+                disabled={isLoading}
+              >
                 Cancel
               </Button>
-              <Button onClick={handleAddPlayer} disabled={isLoading || (!aceUsername.trim() && !kickUsername.trim())} className="gap-2">
-                {isLoading ? 'Adding...' : 'Add Player'}
+              <Button
+                onClick={handleAddPlayer}
+                disabled={
+                  isLoading ||
+                  (!aceUsername.trim() && !kickUsername.trim())
+                }
+              >
+                {isLoading ? 'Adding…' : 'Add Player'}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+interface StatTileProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  accent: 'primary' | 'green';
+}
+
+function StatTile({ icon, label, value, accent }: StatTileProps) {
+  const accentCls =
+    accent === 'green'
+      ? 'border-green-500/20 bg-green-500/8 text-green-400'
+      : 'border-primary/20 bg-primary/8 text-primary';
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/40 p-4">
+      <div
+        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border ${accentCls}`}
+      >
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+          {label}
+        </p>
+        <p className="text-lg font-bold tabular-nums truncate">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function StatRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3 bg-card/30">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-semibold tabular-nums">{value}</span>
     </div>
   );
 }
