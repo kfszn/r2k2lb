@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { CountdownTimer } from '@/components/raffle/countdown-timer';
 import { RaffleSpinner } from '@/components/raffle/raffle-spinner';
 import { createClient } from '@/lib/supabase/client';
+import { assignTicketNumbers } from '@/lib/raffle/tickets';
 import { Trophy, Users, DollarSign, Clock, Ticket, Star, Radio } from 'lucide-react';
 
 export type RafflePlatform = 'acebet' | 'luxdrop' | 'csbattle';
@@ -70,6 +71,7 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
 
   // Live-draw state (driven by admin broadcasts over Supabase Realtime)
   const [liveWinner, setLiveWinner] = useState<string | null>(null);
+  const [liveTicket, setLiveTicket] = useState<number | null>(null);
   const [liveSpinning, setLiveSpinning] = useState(false);
   const [liveLanded, setLiveLanded] = useState(false);
   const [liveSpinKey, setLiveSpinKey] = useState(0);
@@ -122,7 +124,6 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
         }
       }
 
-      users.sort((a, b) => b.wager_amount - a.wager_amount);
       setEligible(users);
 
       try {
@@ -163,7 +164,9 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
       .on('broadcast', { event: 'spin' }, ({ payload }) => {
         const winner = payload?.winner as string | undefined;
         if (!winner) return;
+        const ticket = payload?.ticketNumber as number | undefined;
         setLiveWinner(winner);
+        setLiveTicket(typeof ticket === 'number' ? ticket : null);
         setLiveLanded(false);
         setLiveSpinning(true);
         setLiveSpinKey((k) => k + 1);
@@ -174,6 +177,7 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
         fetchData();
         setTimeout(() => {
           setLiveWinner(null);
+          setLiveTicket(null);
           setLiveLanded(false);
         }, 6000);
       })
@@ -203,7 +207,8 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
     });
   };
 
-  const totalTickets = eligible.reduce((sum, u) => sum + u.tickets, 0);
+  // Assign sequential ticket numbers (shared logic with the admin draw panel)
+  const { holders, total: totalTickets } = assignTicketNumbers(eligible);
 
   // Resolve what the spinner should display:
   //  - a live draw broadcast from admin takes priority
@@ -297,6 +302,7 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
         isSpinning={liveSpinning}
         spinKey={liveSpinKey}
         hasWinnerForPeriod={spinnerHasWinner}
+        winningTicket={liveWinner ? liveTicket : null}
         onSpinComplete={() => {
           setLiveSpinning(false);
           if (liveWinner) setLiveLanded(true);
@@ -342,14 +348,23 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
             </div>
           ) : (
             <div className="space-y-3">
-              {eligible.map((user, i) => {
+              {holders.map((user, i) => {
                 const odds = totalTickets > 0 ? (user.tickets / totalTickets) * 100 : 0;
                 const chips = Math.min(user.tickets, CHIPS_PER_USER);
                 const remaining = user.tickets - chips;
+                const pad = String(totalTickets).length;
+                // Highlight this row if the live winning ticket falls in its range
+                const winTicket = liveWinner ? liveTicket : null;
+                const isWinningRow =
+                  winTicket != null && winTicket >= user.startTicket && winTicket <= user.endTicket;
                 return (
                   <div
                     key={`${user.username}-${i}`}
-                    className="rounded-xl border border-border/40 bg-background/40 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-primary/5"
+                    className={`rounded-xl border px-4 py-3 transition-colors ${
+                      isWinningRow
+                        ? 'border-chart-3/50 bg-chart-3/10'
+                        : 'border-border/40 bg-background/40 hover:border-primary/30 hover:bg-primary/5'
+                    }`}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
@@ -370,24 +385,36 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
                         <p className="text-sm font-bold text-primary">
                           {user.tickets} {user.tickets === 1 ? 'ticket' : 'tickets'}
                         </p>
-                        <p className="text-xs text-muted-foreground">{odds.toFixed(odds < 0.1 ? 3 : 1)}% odds</p>
+                        <p className="text-xs text-muted-foreground font-mono">
+                          #{user.startTicket.toLocaleString()}
+                          {user.tickets > 1 && `–#${user.endTicket.toLocaleString()}`}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/70">{odds.toFixed(odds < 0.1 ? 3 : 1)}% odds</p>
                       </div>
                     </div>
 
-                    {/* Individual ticket chips */}
+                    {/* Individual ticket chips — actual sequential ticket numbers */}
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {Array.from({ length: chips }).map((_, t) => (
-                        <span
-                          key={t}
-                          className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-primary/5 px-1.5 py-0.5 text-[10px] font-mono text-primary/80"
-                        >
-                          <Ticket className="w-2.5 h-2.5" />
-                          {String(t + 1).padStart(2, '0')}
-                        </span>
-                      ))}
+                      {Array.from({ length: chips }).map((_, t) => {
+                        const num = user.startTicket + t;
+                        const isWinChip = winTicket === num;
+                        return (
+                          <span
+                            key={num}
+                            className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-mono ${
+                              isWinChip
+                                ? 'border-chart-3/50 bg-chart-3/20 text-chart-3 font-bold'
+                                : 'border-primary/20 bg-primary/5 text-primary/80'
+                            }`}
+                          >
+                            <Ticket className="w-2.5 h-2.5" />
+                            {String(num).padStart(pad, '0')}
+                          </span>
+                        );
+                      })}
                       {remaining > 0 && (
                         <span className="inline-flex items-center rounded-md border border-border/40 bg-background/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-                          +{remaining.toLocaleString()} more
+                          +{remaining.toLocaleString()} more (#{(user.startTicket + chips).toLocaleString()}–#{user.endTicket.toLocaleString()})
                         </span>
                       )}
                     </div>

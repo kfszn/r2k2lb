@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Trophy, Sparkles } from 'lucide-react';
+import { Trophy, Sparkles, Ticket } from 'lucide-react';
 
 interface RaffleSpinnerProps {
   entries: string[]; // weighted pool (names repeated by ticket count)
@@ -10,6 +10,7 @@ interface RaffleSpinnerProps {
   isSpinning: boolean;
   spinKey?: number; // increment to force a new spin animation
   hasWinnerForPeriod?: boolean; // true if winner already picked for current period
+  winningTicket?: number | null; // the RNG-selected ticket number that won
   onSpinComplete?: () => void;
 }
 
@@ -48,6 +49,7 @@ export function RaffleSpinner({
   isSpinning,
   spinKey = 0,
   hasWinnerForPeriod = false,
+  winningTicket = null,
   onSpinComplete,
 }: RaffleSpinnerProps) {
   const VISIBLE = 5;
@@ -318,6 +320,14 @@ export function RaffleSpinner({
               <Trophy className="w-4 h-4 text-chart-3" />
               <span className="text-sm font-semibold text-chart-3">Winner!</span>
             </div>
+            {winningTicket != null && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-3">
+                <Ticket className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-mono font-semibold text-primary">
+                  Winning Ticket #{winningTicket.toLocaleString()}
+                </span>
+              </div>
+            )}
             <p className="text-2xl font-bold text-foreground">{maskName(winner)}</p>
             <p className="text-lg font-bold text-chart-3 mt-1">
               +${prizeAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}

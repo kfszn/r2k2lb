@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RaffleSpinner } from '@/components/raffle/raffle-spinner';
 import { createClient } from '@/lib/supabase/client';
+import { assignTicketNumbers, pickWinningTicket, type TicketUser } from '@/lib/raffle/tickets';
 
 interface RaffleConfig {
   platform: string;
@@ -31,12 +32,13 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
     end_date: '2026-02-21',
   });
   const [isSavingConfig, setIsSavingConfig] = useState(false);
-  const [eligible, setEligible] = useState<string[]>([]);
+  const [eligible, setEligible] = useState<TicketUser[]>([]);
   const [isLoadingEntries, setIsLoadingEntries] = useState(false);
 
   // Spinner state
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedWinner, setSelectedWinner] = useState<string | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<number | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [spinComplete, setSpinComplete] = useState(false);
   const [spinKey, setSpinKey] = useState(0); // increment to re-trigger spin animation
@@ -92,9 +94,9 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
     if (!config) return;
     setIsLoadingEntries(true);
     try {
-      // Build weighted ticket pool: 1 ticket per tickets_per_wager wagered
+      // Build per-user ticket counts: 1 ticket per tickets_per_wager wagered
       const ticketsPerWager = config.tickets_per_wager || 2500;
-      let ticketPool: string[] = [];
+      const users: TicketUser[] = [];
 
       if (platform === 'acebet') {
         const lbRes = await fetch(
@@ -107,10 +109,11 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
             if (wagerAmount < config.min_wager) return;
             const name = u.name || '';
             if (!name) return;
-            const tickets = Math.max(1, Math.floor(wagerAmount / ticketsPerWager));
-            for (let i = 0; i < tickets; i++) {
-              ticketPool.push(name);
-            }
+            users.push({
+              username: name,
+              wager_amount: wagerAmount,
+              tickets: Math.max(1, Math.floor(wagerAmount / ticketsPerWager)),
+            });
           });
         }
       } else {
@@ -129,14 +132,15 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
             if (wagerAmount < config.min_wager) return;
             const name = u.username ?? u.name ?? '';
             if (!name) return;
-            const tickets = Math.max(1, Math.floor(wagerAmount / ticketsPerWager));
-            for (let i = 0; i < tickets; i++) {
-              ticketPool.push(name);
-            }
+            users.push({
+              username: name,
+              wager_amount: wagerAmount,
+              tickets: Math.max(1, Math.floor(wagerAmount / ticketsPerWager)),
+            });
           });
         }
       }
-      setEligible(ticketPool);
+      setEligible(users);
     } catch (err) {
       console.error('Error fetching eligible:', err);
     } finally {
@@ -168,23 +172,27 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
   };
 
   // Broadcast the live draw to everyone watching the public /raffle page
-  const broadcastSpin = (winner: string) => {
+  const broadcastSpin = (winner: string, ticketNumber: number) => {
     channelRef.current?.send({
       type: 'broadcast',
       event: 'spin',
-      payload: { winner, prizeAmount: config?.prize_amount || 0, ts: Date.now() },
+      payload: { winner, ticketNumber, prizeAmount: config?.prize_amount || 0, ts: Date.now() },
     });
   };
 
   const drawWinner = () => {
-    // Pick a random winner from the weighted ticket pool
-    const winner = eligible[Math.floor(Math.random() * eligible.length)];
-    setSelectedWinner(winner);
+    // Assign sequential ticket numbers, then RNG-pick a winning ticket number.
+    // The owner of that ticket is the winner — mirrors exactly what viewers see.
+    const { holders, total } = assignTicketNumbers(eligible);
+    const pick = pickWinningTicket(holders, total);
+    if (!pick) return;
+    setSelectedWinner(pick.holder.username);
+    setSelectedTicket(pick.ticketNumber);
     setSpinComplete(false);
     setIsSpinning(true);
     // Increment spinKey to force a fresh animation (handles re-spins too)
     setSpinKey((k) => k + 1);
-    broadcastSpin(winner);
+    broadcastSpin(pick.holder.username, pick.ticketNumber);
   };
 
   const handleSpin = () => {
@@ -217,10 +225,11 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
           event: 'confirmed',
           payload: { winner: selectedWinner, ts: Date.now() },
         });
-        alert(`Winner confirmed: ${selectedWinner} wins $${config.prize_amount.toLocaleString()}`);
+        alert(`Winner confirmed: ${selectedWinner} (Ticket #${selectedTicket?.toLocaleString() ?? '?'}) wins $${config.prize_amount.toLocaleString()}`);
         // Reset
         setIsSpinning(false);
         setSelectedWinner(null);
+        setSelectedTicket(null);
         setSpinComplete(false);
       } else {
         const errMsg = data?.error || 'Unknown error';
@@ -322,8 +331,10 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
           <div className="flex items-center justify-between">
             <CardTitle>Eligible Entries</CardTitle>
             <div className="flex items-center gap-2">
-              <Badge variant="outline">{new Set(eligible).size} users</Badge>
-              <Badge variant="secondary">{eligible.length} tickets</Badge>
+              <Badge variant="outline">{eligible.length} users</Badge>
+              <Badge variant="secondary">
+                {eligible.reduce((s, u) => s + u.tickets, 0).toLocaleString()} tickets
+              </Badge>
               <Button variant="outline" size="sm" onClick={fetchEligible} disabled={isLoadingEntries}>
                 {isLoadingEntries ? 'Loading...' : 'Refresh'}
               </Button>
@@ -337,14 +348,10 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
             </p>
           ) : (
             <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-              {Array.from(
-                eligible.reduce((acc, name) => {
-                  acc.set(name, (acc.get(name) || 0) + 1);
-                  return acc;
-                }, new Map<string, number>()),
-              ).map(([name, count]) => (
-                <Badge key={name} variant="secondary" className="text-xs">
-                  {name} &times; {count}
+              {assignTicketNumbers(eligible).holders.map((h) => (
+                <Badge key={h.username} variant="secondary" className="text-xs font-mono">
+                  {h.username} &middot; #{h.startTicket.toLocaleString()}
+                  {h.tickets > 1 && `–#${h.endTicket.toLocaleString()}`}
                 </Badge>
               ))}
             </div>
@@ -379,11 +386,12 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
         </CardHeader>
         <CardContent className="space-y-4">
           <RaffleSpinner
-            entries={eligible}
+            entries={eligible.map((u) => u.username)}
             winner={selectedWinner}
             prizeAmount={config?.prize_amount || 0}
             isSpinning={isSpinning}
             spinKey={spinKey}
+            winningTicket={selectedTicket}
             onSpinComplete={() => setSpinComplete(true)}
           />
 
@@ -408,7 +416,9 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
                   disabled={isConfirming}
                   className="flex-1 bg-chart-3 hover:bg-chart-3/90 text-background"
                 >
-                  {isConfirming ? 'Confirming...' : `Confirm ${selectedWinner} as Winner`}
+                  {isConfirming
+                    ? 'Confirming...'
+                    : `Confirm ${selectedWinner}${selectedTicket ? ` (#${selectedTicket.toLocaleString()})` : ''} as Winner`}
                 </Button>
                 <Button variant="outline" onClick={handleResetSpin} disabled={isConfirming}>
                   Re-spin
