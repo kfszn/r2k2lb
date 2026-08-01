@@ -1,233 +1,262 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { BracketMatch, TournamentPlayer } from "@/lib/types/tournament";
-import { Crown, Swords } from "lucide-react";
+import { Crown, Swords, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface LiveBracketProps {
   matches: BracketMatch[];
   players: TournamentPlayer[];
 }
 
+const CARD_H = 108;
+const CARD_W = 224;
+const GAP_X = 40;
+const BASE_GAP_Y = 12;
+
 export function LiveBracket({ matches, players }: LiveBracketProps) {
-  const getPlayerName = (playerId: string | null) => {
-    if (!playerId) return null;
+  const getPlayerName = (playerId: string | null): string => {
+    if (!playerId) return "";
     const player = players.find((p) => p.id === playerId);
-    return player?.kick_username || player?.acebet_username || "TBD";
+    return player?.kick_username ?? player?.acebet_username ?? "TBD";
   };
 
-  // Group matches by round
   const rounds = matches.reduce<Record<number, BracketMatch[]>>((acc, match) => {
-    if (!acc[match.round]) acc[match.round] = [];
-    acc[match.round].push(match);
+    const r = match.round ?? match.round_number;
+    if (!acc[r]) acc[r] = [];
+    acc[r].push(match);
     return acc;
   }, {});
 
-  const roundNames: Record<number, string> = {
-    1: "Round 1",
-    2: "Quarter Finals",
-    3: "Semi Finals",
-    4: "Finals",
-  };
+  const roundNums = Object.keys(rounds)
+    .map(Number)
+    .sort((a, b) => a - b);
 
-  const getRoundName = (round: number, totalRounds: number) => {
-    const roundsFromEnd = totalRounds - round + 1;
-    if (roundsFromEnd === 1) return "Finals";
-    if (roundsFromEnd === 2) return "Semi Finals";
-    if (roundsFromEnd === 3) return "Quarter Finals";
+  const totalRounds = roundNums.at(-1) ?? 0;
+
+  const getRoundLabel = (round: number): string => {
+    const fromEnd = totalRounds - round + 1;
+    if (fromEnd === 1) return "Finals";
+    if (fromEnd === 2) return "Semis";
+    if (fromEnd === 3) return "Quarters";
     return `Round ${round}`;
   };
 
-  const totalRounds = Math.max(...Object.keys(rounds).map(Number), 0);
-
   if (matches.length === 0) {
     return (
-      <Card className="bg-card/50 border-border/50 backdrop-blur p-8">
-        <div className="flex flex-col items-center justify-center text-center">
-          <Swords className="h-12 w-12 text-muted-foreground/50 mb-3" />
-          <p className="text-lg font-medium text-foreground">Bracket Not Generated</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Waiting for registration to close and bracket to be generated...
-          </p>
-        </div>
-      </Card>
+      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+        <Swords className="h-8 w-8 text-muted-foreground/30" />
+        <p className="text-sm font-medium text-muted-foreground">Bracket not generated yet</p>
+        <p className="text-xs text-muted-foreground/60">Waiting for registration to close…</p>
+      </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto pb-4">
-      <div className="flex gap-8 min-w-max">
-        {Object.entries(rounds)
-          .sort(([a], [b]) => Number(a) - Number(b))
-          .map(([round, roundMatches]) => (
-            <div key={round} className="flex flex-col gap-4">
-              <div className="text-center">
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                  {getRoundName(Number(round), totalRounds)}
-                </Badge>
-              </div>
+    <div className="overflow-x-auto pb-2">
+      <div className="inline-flex gap-0 pt-2 pb-2">
+        {roundNums.map((round, colIdx) => {
+          const spacingMult = Math.pow(2, colIdx);
+          const gapY = BASE_GAP_Y * spacingMult + CARD_H * (spacingMult - 1);
+          const topOffset = colIdx === 0 ? 0 : (CARD_H + gapY) / 2 - CARD_H / 2;
+          const roundMatches = [...rounds[round]].sort(
+            (a, b) => a.match_number - b.match_number
+          );
+          const label = getRoundLabel(round);
+          const isFinals = round === totalRounds;
+
+          return (
+            <div
+              key={round}
+              className="flex flex-col"
+              style={{ width: CARD_W + GAP_X }}
+            >
+              {/* Round header */}
               <div
-                className="flex flex-col justify-around gap-4"
-                style={{ minHeight: `${roundMatches.length * 140}px` }}
+                className="mb-3 flex items-center justify-center"
+                style={{ width: CARD_W }}
               >
-                {roundMatches
-                  .sort((a, b) => a.match_number - b.match_number)
-                  .map((match) => (
-                    <MatchCard
-                      key={match.id}
-                      match={match}
-                      player1Name={getPlayerName(match.player1_id)}
-                      player2Name={getPlayerName(match.player2_id)}
-                      winnerName={match.winner_id ? getPlayerName(match.winner_id) : null}
-                      isFinal={Number(round) === totalRounds}
-                    />
-                  ))}
+                <span
+                  className={cn(
+                    "rounded-full border px-3 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
+                    isFinals
+                      ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-500"
+                      : "border-primary/30 bg-primary/8 text-primary"
+                  )}
+                >
+                  {label}
+                </span>
+              </div>
+
+              {/* Matches */}
+              <div
+                className="flex flex-col"
+                style={{ gap: gapY, paddingTop: topOffset }}
+              >
+                {roundMatches.map((match) => (
+                  <MatchCard
+                    key={match.id}
+                    match={match}
+                    p1Name={getPlayerName(match.player1_id)}
+                    p2Name={getPlayerName(match.player2_id)}
+                    isFinals={isFinals}
+                  />
+                ))}
               </div>
             </div>
-          ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
 interface MatchCardProps {
-  match: BracketMatch & {
-    player1_slot_name?: string | null;
-    player1_slot_type?: string | null;
-    player2_slot_name?: string | null;
-    player2_slot_type?: string | null;
-  };
-  player1Name: string | null;
-  player2Name: string | null;
-  winnerName: string | null;
-  isFinal: boolean;
+  match: BracketMatch;
+  p1Name: string;
+  p2Name: string;
+  isFinals: boolean;
 }
 
-function MatchCard({ match, player1Name, player2Name, winnerName, isFinal }: MatchCardProps) {
-  const isLive = match.status === "in_progress";
-  const isComplete = match.status === "completed";
-  const isPlayer1Winner = match.winner_id === match.player1_id;
-  const isPlayer2Winner = match.winner_id === match.player2_id;
+function MatchCard({ match, p1Name, p2Name, isFinals }: MatchCardProps) {
+  const isLive = match.status === "active" || match.status === "in_progress" as string;
+  const isDone = match.status === "completed";
+  const p1Won = match.winner_id === match.player1_id;
+  const p2Won = match.winner_id === match.player2_id;
+  const hasWinner = !!match.winner_id;
+  const isBye = match.is_bye;
 
-  return (
-    <Card
-      className={cn(
-        "w-72 overflow-hidden border transition-all",
-        isLive && "border-primary ring-2 ring-primary/20",
-        isComplete && "border-border/50 opacity-90",
-        isFinal && isComplete && "border-yellow-500/50 ring-2 ring-yellow-500/20"
-      )}
-    >
-      {isLive && (
-        <div className="bg-primary px-3 py-1 text-center">
-          <span className="text-xs font-bold text-primary-foreground uppercase tracking-wider flex items-center justify-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
-            LIVE
-          </span>
-        </div>
-      )}
-      {isFinal && isComplete && (
-        <div className="bg-yellow-500 px-3 py-1 text-center">
-          <span className="text-xs font-bold text-black uppercase tracking-wider flex items-center justify-center gap-1.5">
-            <Crown className="h-3 w-3" />
-            CHAMPION
-          </span>
-        </div>
-      )}
-      <div className="p-3 space-y-2 bg-card">
-        {/* Player 1 */}
-        <PlayerSlot
-          name={player1Name}
-          multiplier={match.player1_score}
-          slotName={match.player1_slot_name}
-          slotType={match.player1_slot_type}
-          isWinner={isPlayer1Winner}
-          isLoser={isComplete && !isPlayer1Winner && player1Name !== null}
-        />
-        
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground font-medium">VS</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        {/* Player 2 */}
-        <PlayerSlot
-          name={player2Name}
-          multiplier={match.player2_score}
-          slotName={match.player2_slot_name}
-          slotType={match.player2_slot_type}
-          isWinner={isPlayer2Winner}
-          isLoser={isComplete && !isPlayer2Winner && player2Name !== null}
-        />
-      </div>
-    </Card>
-  );
-}
-
-interface PlayerSlotProps {
-  name: string | null;
-  multiplier: number | null;
-  slotName?: string | null;
-  slotType?: string | null;
-  isWinner: boolean;
-  isLoser: boolean;
-}
-
-function PlayerSlot({ name, multiplier, slotName, slotType, isWinner, isLoser }: PlayerSlotProps) {
   return (
     <div
       className={cn(
-        "rounded-md px-3 py-2 transition-colors",
-        !name && "bg-muted/30 border border-dashed border-border",
-        name && !isWinner && !isLoser && "bg-muted/50",
-        isWinner && "bg-green-500/20 border border-green-500/50",
-        isLoser && "bg-muted/30 opacity-60"
+        "relative overflow-hidden rounded-lg border bg-card transition-all duration-300",
+        isLive && "border-primary/50 shadow-md shadow-primary/10 ring-1 ring-primary/20",
+        isDone && !isLive && "border-border/35 opacity-80",
+        !isLive && !isDone && "border-border/35"
       )}
+      style={{ width: CARD_W }}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {isWinner && <Crown className="h-4 w-4 text-yellow-500" />}
-          <span
-            className={cn(
-              "font-medium truncate max-w-[120px]",
-              !name && "text-muted-foreground italic",
-              isWinner && "text-green-400",
-              isLoser && "text-muted-foreground line-through"
-            )}
-          >
-            {name || "TBD"}
-          </span>
-        </div>
-        {multiplier !== null && (
-          <Badge
-            variant={isWinner ? "default" : "secondary"}
-            className={cn(
-              "font-mono font-bold",
-              isWinner && "bg-green-500 text-white"
-            )}
-          >
-            {multiplier.toFixed(2)}x
-          </Badge>
+      {/* Status strip */}
+      <div
+        className={cn(
+          "h-0.5 w-full",
+          isLive && "bg-primary animate-pulse",
+          isDone && "bg-green-500/50",
+          !isLive && !isDone && "bg-border/20"
         )}
-      </div>
-      {/* Slot Call Display */}
-      {slotName && (
-        <div className="mt-1.5 flex items-center gap-1.5 text-xs">
-          <span className="text-muted-foreground">Slot:</span>
-          <span className="text-foreground font-medium truncate max-w-[140px]">{slotName}</span>
-          {slotType && (
-            <Badge variant="outline" className={cn(
-              "text-[10px] px-1.5 py-0",
-              slotType === "super" && "border-yellow-500/50 text-yellow-500",
-              slotType === "regular" && "border-muted-foreground/50 text-muted-foreground"
-            )}>
-              {slotType}
+      />
+
+      {/* Header row */}
+      <div className="flex items-center justify-between px-2.5 pt-1.5 pb-0.5">
+        <span className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-wide">
+          #{match.match_number}
+        </span>
+        <span className="flex items-center gap-1">
+          {isLive && (
+            <Badge
+              variant="outline"
+              className="h-4 px-1.5 text-[9px] border-primary/40 bg-primary/10 text-primary"
+            >
+              LIVE
             </Badge>
           )}
+          {isDone && isFinals && hasWinner && (
+            <Crown className="h-3 w-3 text-yellow-500" />
+          )}
+          {isDone && !isFinals && <Crown className="h-3 w-3 text-green-500/70" />}
+          {!isLive && !isDone && <Clock className="h-3 w-3 text-muted-foreground/30" />}
+        </span>
+      </div>
+
+      {/* Players */}
+      <div className="px-2 pb-2.5 space-y-1">
+        <Slot
+          name={p1Name || "TBD"}
+          score={match.player1_score}
+          isWinner={p1Won}
+          isLoser={isDone && !p1Won && !!p1Name}
+          isLive={isLive}
+          isEmpty={!match.player1_id}
+        />
+
+        <div className="flex items-center gap-1 px-1">
+          <div className="flex-1 h-px bg-border/25" />
+          <Swords className="h-2 w-2 text-muted-foreground/25" />
+          <div className="flex-1 h-px bg-border/25" />
         </div>
+
+        {isBye ? (
+          <div className="flex items-center justify-center rounded-md border border-dashed border-border/25 py-1.5">
+            <span className="text-[10px] font-semibold text-primary/60 uppercase tracking-wider">BYE</span>
+          </div>
+        ) : (
+          <Slot
+            name={p2Name || "TBD"}
+            score={match.player2_score}
+            isWinner={p2Won}
+            isLoser={isDone && !p2Won && !!p2Name}
+            isLive={isLive}
+            isEmpty={!match.player2_id}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface SlotProps {
+  name: string;
+  score: number | null;
+  isWinner: boolean;
+  isLoser: boolean;
+  isLive: boolean;
+  isEmpty: boolean;
+}
+
+function Slot({ name, score, isWinner, isLoser, isLive, isEmpty }: SlotProps) {
+  if (isEmpty) {
+    return (
+      <div className="flex items-center rounded-md border border-dashed border-border/25 bg-muted/10 px-2.5 py-1.5">
+        <span className="text-xs italic text-muted-foreground/40">TBD</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between rounded-md px-2.5 py-1.5 transition-all",
+        isWinner && "bg-green-500/12 border border-green-500/30",
+        isLoser && "bg-muted/15 border border-border/15 opacity-50",
+        !isWinner && !isLoser && isLive && "bg-primary/8 border border-primary/20",
+        !isWinner && !isLoser && !isLive && "bg-muted/25 border border-border/15"
+      )}
+    >
+      <div className="flex items-center gap-1.5 min-w-0">
+        {isWinner && <Crown className="h-3 w-3 text-yellow-500 flex-shrink-0" />}
+        <span
+          className={cn(
+            "text-xs font-medium truncate",
+            isWinner && "text-green-400",
+            isLoser && "text-muted-foreground line-through",
+            !isWinner && !isLoser && "text-foreground"
+          )}
+        >
+          {name}
+        </span>
+      </div>
+      {score !== null && score > 0 && (
+        <span
+          className={cn(
+            "text-[11px] font-bold font-mono ml-1.5 flex-shrink-0 tabular-nums",
+            isWinner && "text-green-400",
+            isLoser && "text-muted-foreground/50",
+            !isWinner && !isLoser && isLive && "text-primary"
+          )}
+        >
+          {score.toFixed(2)}x
+        </span>
       )}
     </div>
   );

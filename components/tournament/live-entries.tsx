@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, CheckCircle2, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User, CheckCircle2 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TournamentEntry {
   id: string;
   kick_username: string;
   acebet_username: string;
   status: "registered" | "accepted" | "denied" | "pending";
+  created_at?: string;
 }
 
 export function LiveEntries() {
@@ -32,65 +33,87 @@ export function LiveEntries() {
     };
 
     fetchEntries();
-
-    // Poll for new entries every 5 seconds
     const interval = setInterval(fetchEntries, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  const acceptedCount = entries.filter((e) => e.status === "registered").length;
-
-  if (isLoading) {
-    return (
-      <Card className="bg-card/50 border-border/50 backdrop-blur">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-bold text-foreground">Live Entries</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">Loading entries...</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const accepted = entries.filter((e) => e.status === "registered");
 
   return (
-    <Card className="bg-card/50 border-border/50 backdrop-blur">
-      <CardHeader className="pb-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-lg font-bold text-foreground">Live Entries</CardTitle>
-        <Badge variant="secondary" className="text-lg px-3 py-1">
-          {acceptedCount} Entered
+    <div className="rounded-xl border border-border/50 bg-card/40 backdrop-blur overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-primary" />
+          <span className="font-semibold text-sm text-foreground">Entrants</span>
+        </div>
+        <Badge
+          variant="outline"
+          className="border-primary/30 bg-primary/8 text-primary text-xs font-bold tabular-nums"
+        >
+          {accepted.length}
         </Badge>
-      </CardHeader>
-      <CardContent className="space-y-3 max-h-96 overflow-y-auto">
-        {entries.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Waiting for entries... Type !enter [username] in chat</p>
-        ) : (
-          entries
-            .filter((e) => e.status === "accepted")
-            .sort(
-              (a, b) =>
-                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            )
-            .map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border/40 hover:bg-secondary/50 transition-colors"
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm font-medium text-foreground">{entry.kick_username}</p>
-                    <p className="text-xs text-muted-foreground">Acebet: {entry.acebet_username}</p>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      ) : accepted.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-1.5 py-8 text-center px-4">
+          <Users className="h-7 w-7 text-muted-foreground/25" />
+          <p className="text-xs text-muted-foreground">No entrants yet</p>
+          <p className="text-[11px] text-muted-foreground/60">
+            Type !enter in chat to join
+          </p>
+        </div>
+      ) : (
+        <ScrollArea className="h-[240px]">
+          <div className="p-2 space-y-1">
+            {accepted
+              .sort(
+                (a, b) =>
+                  new Date(b.created_at ?? 0).getTime() -
+                  new Date(a.created_at ?? 0).getTime()
+              )
+              .map((entry, idx) => (
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 bg-muted/20 hover:bg-muted/35 transition-colors"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">
+                        {entry.kick_username}
+                      </p>
+                      {entry.acebet_username && (
+                        <p className="text-[11px] text-muted-foreground/70 truncate">
+                          {entry.acebet_username}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                  {entry.created_at ? (
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Clock className="h-2.5 w-2.5 text-muted-foreground/40" />
+                      <span className="text-[10px] text-muted-foreground/50 font-mono">
+                        {new Date(entry.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground/40 flex-shrink-0 font-mono tabular-nums">
+                      #{idx + 1}
+                    </span>
+                  )}
                 </div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  {new Date(entry.created_at).toLocaleTimeString()}
-                </div>
-              </div>
-            ))
-        )}
-      </CardContent>
-    </Card>
+              ))}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
   );
 }
