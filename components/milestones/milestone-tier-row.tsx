@@ -164,13 +164,13 @@ export function MilestoneTierRow({ tier, discordUrl, isLast }: MilestoneTierRowP
         </span>
       </div>
 
-      {/* Claim Ticket — gradient green pill with glow */}
+      {/* Claim Ticket — gradient blue pill with glow */}
       <div className="shrink-0 ml-1 sm:ml-2 w-[110px] sm:w-[130px]">
         <Link
           href={discordUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-500 px-3 sm:px-5 py-2.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider text-emerald-950 whitespace-nowrap shadow-[0_0_20px_-6px_rgba(52,211,153,0.7)] transition-all duration-200 hover:from-emerald-300 hover:to-emerald-400 hover:shadow-[0_0_24px_-4px_rgba(52,211,153,0.9)] active:scale-95"
+          className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-b from-blue-400 to-blue-600 px-3 sm:px-5 py-2.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider text-white whitespace-nowrap shadow-[0_0_20px_-6px_rgba(96,165,250,0.7)] transition-all duration-200 hover:from-blue-300 hover:to-blue-500 hover:shadow-[0_0_24px_-4px_rgba(96,165,250,0.9)] active:scale-95"
         >
           <Ticket className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
           <span className="hidden sm:inline">Claim Ticket</span>
