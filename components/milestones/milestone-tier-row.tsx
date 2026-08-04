@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Medal, Award, Star, Sparkles, Gem, Crown, Trophy, Ticket } from 'lucide-react'
+import { Medal, Award, Star, Sparkles, Gem, Crown, Trophy, Ticket, Check, Lock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface MilestoneTier {
@@ -108,22 +108,37 @@ interface MilestoneTierRowProps {
   tier: MilestoneTier
   discordUrl: string
   isLast?: boolean
+  /**
+   * Per-user progress state:
+   *  - undefined → no tracking (visitor not signed in / not linked)
+   *  - true      → wager requirement met this cycle (unlocked)
+   *  - false     → tracking active but not yet reached (locked)
+   */
+  reached?: boolean
 }
 
-export function MilestoneTierRow({ tier, discordUrl, isLast }: MilestoneTierRowProps) {
+export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: MilestoneTierRowProps) {
   const palette = PALETTES[TIER_TO_PALETTE[tier.tier] ?? 'elite']
   const Icon = palette.icon
   const payoutText = typeof tier.payout === 'number' ? fmt(tier.payout) : tier.payout
+
+  const tracking = reached !== undefined
+  const isUnlocked = reached === true
+  const isLocked = reached === false
 
   return (
     <div
       className={`group relative flex items-center gap-4 px-4 sm:px-5 py-4 transition-colors ${palette.rowHover} ${
         !isLast ? 'border-b border-border/30' : ''
-      }`}
+      } ${isUnlocked ? 'bg-emerald-500/[0.05]' : ''} ${isLocked ? 'opacity-55' : ''}`}
     >
-      {/* Left accent bar — fades in on hover */}
+      {/* Left accent bar — persistent when unlocked, else fades in on hover */}
       <span
-        className={`absolute left-0 top-1/2 h-0 w-[3px] -translate-y-1/2 rounded-r-full ${palette.accent} opacity-0 transition-all duration-300 group-hover:h-[62%] group-hover:opacity-100`}
+        className={`absolute left-0 top-1/2 w-[3px] -translate-y-1/2 rounded-r-full transition-all duration-300 ${
+          isUnlocked
+            ? 'h-[62%] bg-emerald-400 opacity-100'
+            : `h-0 ${palette.accent} opacity-0 group-hover:h-[62%] group-hover:opacity-100`
+        }`}
         aria-hidden="true"
       />
 
@@ -140,11 +155,18 @@ export function MilestoneTierRow({ tier, discordUrl, isLast }: MilestoneTierRowP
         <p className="text-sm sm:text-base font-black uppercase tracking-wide text-foreground leading-tight">
           {tier.label}
         </p>
-        <span
-          className={`mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${palette.pill}`}
-        >
-          Level {tier.tier}
-        </span>
+        {isUnlocked ? (
+          <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+            <Check className="h-3 w-3" strokeWidth={3} />
+            Unlocked
+          </span>
+        ) : (
+          <span
+            className={`mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${palette.pill}`}
+          >
+            Level {tier.tier}
+          </span>
+        )}
       </div>
 
       {/* Wager requirement */}
@@ -164,18 +186,30 @@ export function MilestoneTierRow({ tier, discordUrl, isLast }: MilestoneTierRowP
         </span>
       </div>
 
-      {/* Claim Ticket — gradient blue pill with glow */}
+      {/* Claim Ticket — gradient blue pill with glow. Locked when tracking a
+          user who hasn't reached this tier yet. */}
       <div className="shrink-0 ml-1 sm:ml-2 w-[110px] sm:w-[130px]">
-        <Link
-          href={discordUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-b from-blue-400 to-blue-600 px-3 sm:px-5 py-2.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider text-white whitespace-nowrap shadow-[0_0_20px_-6px_rgba(96,165,250,0.7)] transition-all duration-200 hover:from-blue-300 hover:to-blue-500 hover:shadow-[0_0_24px_-4px_rgba(96,165,250,0.9)] active:scale-95"
-        >
-          <Ticket className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
-          <span className="hidden sm:inline">Claim Ticket</span>
-          <span className="sm:hidden">Claim</span>
-        </Link>
+        {isLocked ? (
+          <div
+            className="flex items-center justify-center gap-1.5 rounded-full border border-border/50 bg-muted/30 px-3 sm:px-5 py-2.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap"
+            aria-label="Locked — milestone not yet reached"
+          >
+            <Lock className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
+            <span className="hidden sm:inline">Locked</span>
+            <span className="sm:hidden">Lock</span>
+          </div>
+        ) : (
+          <Link
+            href={discordUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-b from-blue-400 to-blue-600 px-3 sm:px-5 py-2.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider text-white whitespace-nowrap shadow-[0_0_20px_-6px_rgba(96,165,250,0.7)] transition-all duration-200 hover:from-blue-300 hover:to-blue-500 hover:shadow-[0_0_24px_-4px_rgba(96,165,250,0.9)] active:scale-95"
+          >
+            <Ticket className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
+            <span className="hidden sm:inline">Claim Ticket</span>
+            <span className="sm:hidden">Claim</span>
+          </Link>
+        )}
       </div>
     </div>
   )

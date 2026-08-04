@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
-import { MilestoneTierRow, type MilestoneTier } from '@/components/milestones/milestone-tier-row'
-import { AlertCircle, TrendingUp } from 'lucide-react'
+import { type MilestoneTier } from '@/components/milestones/milestone-tier-row'
+import { MilestoneTracker } from '@/components/milestones/milestone-tracker'
+import { TrendingUp } from 'lucide-react'
 
 export const metadata: Metadata = generatePageMetadata('perksAcebetWagerRewards')
 
@@ -45,40 +46,24 @@ export default function AceBetWagerRewardsPage() {
             <p className="text-muted-foreground">
               Earn <span className="text-foreground font-medium">$10 per $10,000 wagered</span> on {SPONSOR} with code{' '}
               <span className="text-primary font-mono font-bold">R2K2</span>. Hit a milestone, open a Discord ticket to
-              claim. Resets monthly — don&apos;t let rewards expire.
+              claim your reward.
             </p>
           </div>
 
-          {/* Tier table */}
-          <div className="rounded-2xl border border-border/50 bg-gradient-to-b from-card/70 to-card/30 overflow-hidden shadow-[0_0_50px_-24px_rgba(0,0,0,0.7)]">
-            {/* Table column headers */}
-            <div className="flex items-center gap-4 px-4 sm:px-5 py-3 border-b border-border/50 bg-muted/20">
-              <div className="w-12 sm:w-14 shrink-0" />
-              <p className="w-24 sm:w-28 shrink-0 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tier</p>
-              <p className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Wager Required</p>
-              <p className="w-24 sm:w-28 shrink-0 text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Reward</p>
-              <div className="shrink-0 ml-1 sm:ml-2 w-[110px] sm:w-[130px]" />
-            </div>
+          {/* Personal progress + tier table */}
+          <MilestoneTracker
+            platform="acebet"
+            sponsor={SPONSOR}
+            tiers={TIERS}
+            discordUrl={DISCORD_URL}
+          />
 
-            {/* Rows */}
-            {TIERS.map((tier, i) => (
-              <MilestoneTierRow
-                key={tier.tier}
-                tier={tier}
-                discordUrl={DISCORD_URL}
-                isLast={i === TIERS.length - 1}
-              />
-            ))}
-          </div>
-
-          {/* Important notice */}
-          <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3">
-            <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-            <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-destructive">Monthly Reset:</span> Wager totals reset at the start of
-              each month. Unclaimed rewards do not carry over. Open a ticket before month-end with your wager screenshot.
-            </p>
-          </div>
+          {/* Info note */}
+          <p className="text-sm text-muted-foreground px-1">
+            Wager totals are measured over the current {SPONSOR} leaderboard cycle and{' '}
+            <span className="text-foreground font-medium">reset with the leaderboard</span>. Open a ticket in Discord to
+            claim any milestone you&apos;ve unlocked before the cycle ends.
+          </p>
 
           {/* CTAs */}
           <div className="flex flex-wrap gap-3">
