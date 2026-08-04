@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { Medal, Award, Star, Sparkles, Gem, Crown, Trophy, Ticket } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 export interface MilestoneTier {
   tier: number
@@ -10,19 +12,92 @@ export interface MilestoneTier {
   payoutLabel?: string
 }
 
-// Per-tier icon: coloured circle with a letter/symbol, matching the reference image style
-const TIER_STYLES: Record<number, { bg: string; border: string; text: string; symbol: string }> = {
-  1:  { bg: 'bg-amber-800/70',   border: 'border-amber-600/60',  text: 'text-amber-300',  symbol: 'I'   },
-  2:  { bg: 'bg-amber-700/70',   border: 'border-amber-500/60',  text: 'text-amber-200',  symbol: 'II'  },
-  3:  { bg: 'bg-slate-600/70',   border: 'border-slate-400/60',  text: 'text-slate-200',  symbol: 'III' },
-  4:  { bg: 'bg-violet-900/70',  border: 'border-violet-500/60', text: 'text-violet-300', symbol: 'IV'  },
-  5:  { bg: 'bg-yellow-700/70',  border: 'border-yellow-500/60', text: 'text-yellow-200', symbol: 'V'   },
-  6:  { bg: 'bg-yellow-600/70',  border: 'border-yellow-400/60', text: 'text-yellow-100', symbol: 'VI'  },
-  7:  { bg: 'bg-teal-800/70',    border: 'border-teal-500/60',   text: 'text-teal-200',   symbol: 'VII' },
-  8:  { bg: 'bg-blue-900/70',    border: 'border-blue-500/60',   text: 'text-blue-300',   symbol: 'VIII'},
-  9:  { bg: 'bg-red-900/70',     border: 'border-red-500/60',    text: 'text-red-300',    symbol: 'IX'  },
-  10: { bg: 'bg-zinc-600/70',    border: 'border-zinc-300/50',   text: 'text-zinc-100',   symbol: 'X'   },
-  11: { bg: 'bg-indigo-900/70',  border: 'border-indigo-400/60', text: 'text-indigo-200', symbol: 'XI'  },
+interface Palette {
+  icon: LucideIcon
+  iconWrap: string
+  iconText: string
+  pill: string
+  accent: string
+  rowHover: string
+}
+
+// Escalating "metal/gem" palettes — bronze → silver → gold → platinum → sapphire → ruby → diamond → elite
+const PALETTES: Record<string, Palette> = {
+  bronze: {
+    icon: Medal,
+    iconWrap: 'bg-gradient-to-br from-amber-500/25 to-amber-800/20 ring-1 ring-amber-500/40 shadow-[0_0_22px_-8px_rgba(245,158,11,0.7)]',
+    iconText: 'text-amber-300',
+    pill: 'bg-amber-500/10 border-amber-500/25 text-amber-300',
+    accent: 'bg-amber-500',
+    rowHover: 'hover:bg-amber-500/[0.04]',
+  },
+  silver: {
+    icon: Award,
+    iconWrap: 'bg-gradient-to-br from-slate-300/25 to-slate-600/20 ring-1 ring-slate-300/40 shadow-[0_0_22px_-8px_rgba(203,213,225,0.6)]',
+    iconText: 'text-slate-200',
+    pill: 'bg-slate-400/10 border-slate-300/25 text-slate-200',
+    accent: 'bg-slate-300',
+    rowHover: 'hover:bg-slate-300/[0.04]',
+  },
+  gold: {
+    icon: Star,
+    iconWrap: 'bg-gradient-to-br from-yellow-400/30 to-amber-600/20 ring-1 ring-yellow-400/45 shadow-[0_0_24px_-7px_rgba(250,204,21,0.75)]',
+    iconText: 'text-yellow-200',
+    pill: 'bg-yellow-400/10 border-yellow-400/25 text-yellow-200',
+    accent: 'bg-yellow-400',
+    rowHover: 'hover:bg-yellow-400/[0.04]',
+  },
+  platinum: {
+    icon: Sparkles,
+    iconWrap: 'bg-gradient-to-br from-teal-300/25 to-cyan-600/20 ring-1 ring-teal-300/40 shadow-[0_0_24px_-7px_rgba(94,234,212,0.7)]',
+    iconText: 'text-teal-200',
+    pill: 'bg-teal-400/10 border-teal-300/25 text-teal-200',
+    accent: 'bg-teal-300',
+    rowHover: 'hover:bg-teal-400/[0.04]',
+  },
+  sapphire: {
+    icon: Gem,
+    iconWrap: 'bg-gradient-to-br from-blue-400/30 to-blue-700/20 ring-1 ring-blue-400/45 shadow-[0_0_24px_-7px_rgba(96,165,250,0.75)]',
+    iconText: 'text-blue-200',
+    pill: 'bg-blue-500/10 border-blue-400/25 text-blue-200',
+    accent: 'bg-blue-400',
+    rowHover: 'hover:bg-blue-500/[0.04]',
+  },
+  ruby: {
+    icon: Gem,
+    iconWrap: 'bg-gradient-to-br from-rose-400/30 to-red-700/20 ring-1 ring-rose-400/45 shadow-[0_0_24px_-7px_rgba(251,113,133,0.75)]',
+    iconText: 'text-rose-200',
+    pill: 'bg-rose-500/10 border-rose-400/25 text-rose-200',
+    accent: 'bg-rose-400',
+    rowHover: 'hover:bg-rose-500/[0.04]',
+  },
+  diamond: {
+    icon: Crown,
+    iconWrap: 'bg-gradient-to-br from-sky-200/30 to-cyan-500/20 ring-1 ring-sky-200/50 shadow-[0_0_26px_-6px_rgba(186,230,253,0.85)]',
+    iconText: 'text-sky-100',
+    pill: 'bg-sky-400/10 border-sky-200/30 text-sky-100',
+    accent: 'bg-sky-200',
+    rowHover: 'hover:bg-sky-400/[0.04]',
+  },
+  elite: {
+    icon: Trophy,
+    iconWrap: 'bg-gradient-to-br from-violet-400/30 to-indigo-700/25 ring-1 ring-violet-400/50 shadow-[0_0_28px_-6px_rgba(167,139,250,0.9)]',
+    iconText: 'text-violet-200',
+    pill: 'bg-violet-500/10 border-violet-400/30 text-violet-200',
+    accent: 'bg-violet-400',
+    rowHover: 'hover:bg-violet-500/[0.04]',
+  },
+}
+
+const TIER_TO_PALETTE: Record<number, keyof typeof PALETTES> = {
+  1: 'bronze', 2: 'bronze',
+  3: 'silver', 4: 'silver',
+  5: 'gold', 6: 'gold',
+  7: 'platinum',
+  8: 'sapphire',
+  9: 'ruby',
+  10: 'diamond',
+  11: 'elite',
 }
 
 function fmt(n: number) {
@@ -36,54 +111,70 @@ interface MilestoneTierRowProps {
 }
 
 export function MilestoneTierRow({ tier, discordUrl, isLast }: MilestoneTierRowProps) {
-  const style = TIER_STYLES[tier.tier] ?? TIER_STYLES[11]
+  const palette = PALETTES[TIER_TO_PALETTE[tier.tier] ?? 'elite']
+  const Icon = palette.icon
   const payoutText = typeof tier.payout === 'number' ? fmt(tier.payout) : tier.payout
 
   return (
     <div
-      className={`flex items-center gap-5 px-5 py-4 hover:bg-white/[0.025] transition-colors ${
-        !isLast ? 'border-b border-border/25' : ''
+      className={`group relative flex items-center gap-4 px-4 sm:px-5 py-4 transition-colors ${palette.rowHover} ${
+        !isLast ? 'border-b border-border/30' : ''
       }`}
     >
-      {/* Medal icon — circle with roman numeral, matching the reference image */}
+      {/* Left accent bar — fades in on hover */}
+      <span
+        className={`absolute left-0 top-1/2 h-0 w-[3px] -translate-y-1/2 rounded-r-full ${palette.accent} opacity-0 transition-all duration-300 group-hover:h-[62%] group-hover:opacity-100`}
+        aria-hidden="true"
+      />
+
+      {/* Tier medal icon */}
       <div
-        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 ${style.bg} ${style.border}`}
+        className={`relative flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl ${palette.iconWrap} transition-transform duration-300 group-hover:scale-105`}
         aria-hidden="true"
       >
-        <span className={`text-[11px] font-black tracking-tight ${style.text}`}>{style.symbol}</span>
+        <Icon className={`h-6 w-6 sm:h-7 sm:w-7 ${palette.iconText}`} strokeWidth={2} />
       </div>
 
-      {/* Tier name + level sublabel */}
-      <div className="w-32 shrink-0">
-        <p className="text-base font-black uppercase tracking-wide text-foreground leading-tight">
+      {/* Tier name + level pill */}
+      <div className="w-24 sm:w-28 shrink-0">
+        <p className="text-sm sm:text-base font-black uppercase tracking-wide text-foreground leading-tight">
           {tier.label}
         </p>
-        <p className={`text-[11px] font-bold uppercase tracking-[0.18em] mt-0.5 ${style.text}`}>
+        <span
+          className={`mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${palette.pill}`}
+        >
           Level {tier.tier}
+        </span>
+      </div>
+
+      {/* Wager requirement */}
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-0.5 sm:hidden">
+          Wager
+        </p>
+        <p className="text-base sm:text-lg font-bold tabular-nums text-foreground truncate">
+          {fmt(tier.wager)}
         </p>
       </div>
 
-      {/* Wager requirement — large, prominent */}
-      <div className="flex-1 text-base font-bold tabular-nums text-foreground">
-        {fmt(tier.wager)}
-      </div>
-
-      {/* Payout — bright green, very large */}
-      <div className="w-32 shrink-0 text-right">
-        <span className="text-2xl font-black tabular-nums text-green-400 leading-none">
+      {/* Reward — glowing green */}
+      <div className="w-24 sm:w-28 shrink-0 text-right">
+        <span className="text-lg sm:text-2xl font-black tabular-nums text-emerald-400 leading-none [text-shadow:0_0_22px_rgba(52,211,153,0.4)]">
           {payoutText}
         </span>
       </div>
 
-      {/* CLAIM TICKET button — solid green pill, all-caps, bold */}
-      <div className="shrink-0 ml-2">
+      {/* Claim Ticket — gradient green pill with glow */}
+      <div className="shrink-0 ml-1 sm:ml-2 w-[110px] sm:w-[130px]">
         <Link
           href={discordUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center rounded-full bg-green-500 hover:bg-green-400 active:scale-95 transition-all px-6 py-2.5 text-[13px] font-black uppercase tracking-[0.12em] text-black whitespace-nowrap shadow-[0_0_12px_rgba(74,222,128,0.25)]"
+          className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-500 px-3 sm:px-5 py-2.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider text-emerald-950 whitespace-nowrap shadow-[0_0_20px_-6px_rgba(52,211,153,0.7)] transition-all duration-200 hover:from-emerald-300 hover:to-emerald-400 hover:shadow-[0_0_24px_-4px_rgba(52,211,153,0.9)] active:scale-95"
         >
-          Claim Ticket
+          <Ticket className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
+          <span className="hidden sm:inline">Claim Ticket</span>
+          <span className="sm:hidden">Claim</span>
         </Link>
       </div>
     </div>

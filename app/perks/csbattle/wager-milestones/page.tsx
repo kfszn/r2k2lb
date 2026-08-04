@@ -50,14 +50,14 @@ export default function CsbattleWagerMilestonesPage() {
           </div>
 
           {/* Tier table */}
-          <div className="rounded-xl border border-border/40 bg-card/40 overflow-hidden">
+          <div className="rounded-2xl border border-border/50 bg-gradient-to-b from-card/70 to-card/30 overflow-hidden shadow-[0_0_50px_-24px_rgba(0,0,0,0.7)]">
             {/* Table column headers */}
-            <div className="flex items-center gap-4 px-5 py-2.5 border-b border-border/40 bg-muted/20">
-              <div className="w-11 shrink-0" />
-              <p className="w-28 shrink-0 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tier</p>
+            <div className="flex items-center gap-4 px-4 sm:px-5 py-3 border-b border-border/50 bg-muted/20">
+              <div className="w-12 sm:w-14 shrink-0" />
+              <p className="w-24 sm:w-28 shrink-0 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tier</p>
               <p className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Wager Required</p>
-              <p className="w-28 shrink-0 text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Reward</p>
-              <div className="shrink-0 ml-2 w-[120px]" />
+              <p className="w-24 sm:w-28 shrink-0 text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Reward</p>
+              <div className="shrink-0 ml-1 sm:ml-2 w-[110px] sm:w-[130px]" />
             </div>
 
             {TIERS.map((tier, i) => (
