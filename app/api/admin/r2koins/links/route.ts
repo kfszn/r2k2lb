@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { fetchPlatformWagerTotal } from "@/lib/r2koins/platforms";
+import { fetchPlatformWagerTotal, fetchAcebetByUserId } from "@/lib/r2koins/platforms";
 
 function getSupabase() {
   return createClient(
@@ -34,11 +34,19 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { kick_user_id, platform, platform_username, discord_ticket_ref, linked_by_admin } = body;
+    const { kick_user_id, platform, platform_username, acebet_id, discord_ticket_ref, linked_by_admin } = body;
 
-    if (!kick_user_id || !platform || !platform_username) {
+    // For AceBet, an AB-<id> may be supplied instead of / alongside a username.
+    // The numeric ID is the reliable key and avoids "user not found" from
+    // display-name mismatches.
+    const acebetIdSuffix =
+      platform === "acebet" && acebet_id
+        ? String(acebet_id).trim().replace(/^AB-/i, "")
+        : "";
+
+    if (!kick_user_id || !platform || (!platform_username && !acebetIdSuffix)) {
       return NextResponse.json(
-        { error: "kick_user_id, platform, and platform_username are required" },
+        { error: "kick_user_id, platform, and either a platform username or AceBet ID are required" },
         { status: 400 }
       );
     }
@@ -71,8 +79,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch CURRENT lifetime wager from the platform — becomes the baseline
-    const wagerTotal = await fetchPlatformWagerTotal(platform, platform_username.trim());
+    // Fetch CURRENT lifetime wager from the platform — becomes the baseline.
+    // Prefer AceBet ID lookup (reliable) when an AB-<id> was supplied.
+    let wagerTotal: number | "not_found" | null;
+    let resolvedUsername = platform_username?.trim() ?? "";
+
+    if (acebetIdSuffix) {
+      const byId = await fetchAcebetByUserId(acebetIdSuffix);
+      if (byId === null) {
+        wagerTotal = null;
+      } else if (byId === "not_found") {
+        wagerTotal = "not_found";
+      } else {
+        wagerTotal = byId.wagered;
+        // Use the platform's real display name; fall back to the ID label.
+        resolvedUsername = resolvedUsername || byId.username;
+      }
+    } else {
+      wagerTotal = await fetchPlatformWagerTotal(platform, resolvedUsername);
+    }
 
     if (wagerTotal === null) {
       return NextResponse.json(
@@ -81,8 +106,9 @@ export async function POST(request: NextRequest) {
       );
     }
     if (wagerTotal === "not_found") {
+      const label = acebetIdSuffix ? `AB-${acebetIdSuffix}` : `"${resolvedUsername}"`;
       return NextResponse.json(
-        { error: `"${platform_username}" not found under the R2K2 affiliate on ${platform}` },
+        { error: `${label} not found under the R2K2 affiliate on ${platform}` },
         { status: 404 }
       );
     }
@@ -93,7 +119,7 @@ export async function POST(request: NextRequest) {
       .insert({
         kick_user_id,
         platform,
-        platform_username: platform_username.trim(),
+        platform_username: resolvedUsername || `AB-${acebetIdSuffix}`,
         linked_by_admin: linked_by_admin ?? null,
         discord_ticket_ref: discord_ticket_ref ?? null,
         initial_wager_baseline: wagerTotal,

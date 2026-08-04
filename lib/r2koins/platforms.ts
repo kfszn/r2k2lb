@@ -20,6 +20,7 @@ const ACEBET_LIFETIME_START = "2025-12-26";
 const LUXDROP_LIFETIME_START = "2024-01-01";
 
 interface AcebetUser {
+  userId: number | string;
   name: string;
   wagered: number;
   active: boolean;
@@ -145,6 +146,32 @@ export async function fetchCsbattleUserList(): Promise<CsbattleEntry[] | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Resolve an Acebet user by their numeric account ID (the `AB-<userId>` suffix).
+ * This is the reliable link key — display names can differ or collide, but the
+ * userId is unique. Use this to avoid "user not found" errors when the display
+ * name doesn't match exactly.
+ *
+ * Returns:
+ *  - { username, wagered } → matched (wagered in dollars, same as name lookup)
+ *  - "not_found" → API reached, no user with that ID under the affiliate
+ *  - null → API failure
+ */
+export async function fetchAcebetByUserId(
+  userIdSuffix: string
+): Promise<{ username: string; wagered: number } | "not_found" | null> {
+  const suffix = String(userIdSuffix).trim().replace(/^AB-/i, "");
+  if (!/^\d+$/.test(suffix)) return "not_found";
+
+  const users = await fetchAcebetUserList();
+  if (users === null) return null;
+
+  const user = users.find((u) => String(u.userId) === suffix);
+  if (!user) return "not_found";
+
+  return { username: user.name ?? `AB-${suffix}`, wagered: Number(user.wagered) || 0 };
 }
 
 /**
