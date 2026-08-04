@@ -35,8 +35,9 @@ export async function GET(request: NextRequest) {
 
   // Resolve the linked platform username. linked_accounts (admin/Discord link)
   // is canonical for all three platforms; AceBet also supports self-serve
-  // linking on the account page via profiles.acebet_username.
+  // linking on the account page via profiles.acebet_username + acebet_id_suffix.
   let username: string | null = null;
+  let acebetUserId: string | null = null;
 
   const { data: link } = await supabase
     .from("linked_accounts")
@@ -47,20 +48,28 @@ export async function GET(request: NextRequest) {
 
   username = link?.platform_username ?? null;
 
-  if (!username && platform === "acebet") {
+  if (platform === "acebet") {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("acebet_username")
+      .select("acebet_username, acebet_id_suffix")
       .eq("id", user.id)
       .maybeSingle();
-    username = profile?.acebet_username ?? null;
+    // Self-serve AceBet link stores the exact userId suffix — the reliable
+    // match key — plus the resolved display name.
+    acebetUserId = profile?.acebet_id_suffix ?? null;
+    if (!username) username = profile?.acebet_username ?? null;
   }
 
-  if (!username) {
+  if (!username && !acebetUserId) {
     return NextResponse.json({ authenticated: true, linked: false, window });
   }
 
-  const wager = await fetchWindowedWager(platform, username);
+  const origin = request.nextUrl.origin;
+  const wager = await fetchWindowedWager(
+    platform,
+    { username, acebetUserId },
+    origin
+  );
 
   return NextResponse.json({
     authenticated: true,
