@@ -14,7 +14,7 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Settings, Zap, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3 } from "lucide-react";
+import { Loader2, Trophy, Users, Settings, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { AdminNav, type AdminNavView } from "@/components/admin/admin-nav";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,6 @@ import { RewardsSettings } from "@/components/admin/rewards-settings";
 import { GamesManager } from "@/components/admin/games-manager";
 import { LeaderboardManager } from "@/components/admin/leaderboard-manager";
 import { AcebetUserLookup } from "@/components/admin/acebet-user-lookup";
-import { R2KoinsManager } from "@/components/admin/r2koins-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
