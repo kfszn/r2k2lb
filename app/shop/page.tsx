@@ -36,7 +36,7 @@ type Profile = {
   id: string
   account_id: string
   kick_username: string | null
-  points: number
+  r2koins: number
   manual_award_balance?: number
   manual_award_wagered?: number
 }
@@ -70,7 +70,8 @@ export default function ShopPage() {
         .select('id, account_id, kick_username, points, manual_award_balance, manual_award_wagered')
         .eq('id', session.user.id)
         .maybeSingle()
-      setProfile(data ?? null)
+      // Map DB `points` column → r2koins in local type
+      setProfile(data ? { ...data, r2koins: data.points } : null)
       setLoadingProfile(false)
     }
     load()
@@ -89,7 +90,7 @@ export default function ShopPage() {
       const json = await res.json()
       if (!res.ok) {
         if (json.error === 'insufficient_points') {
-          setError(`You need ${selectedItem.points_cost.toLocaleString()} points but only have ${profile.points.toLocaleString()}.`)
+          setError(`You need ${selectedItem.points_cost.toLocaleString()} R2Koins but only have ${profile.r2koins.toLocaleString()}.`)
         } else if (json.error === 'redemption_cooldown') {
           setError('You can only redeem once every 30 days. Please check back later.')
         } else if (json.error === 'playthrough_required') {
@@ -102,7 +103,7 @@ export default function ShopPage() {
         setSelectedItem(null)
         return
       }
-      setProfile(p => p ? { ...p, points: json.new_balance } : p)
+      setProfile(p => p ? { ...p, r2koins: json.new_balance } : p)
       setSuccessOrder(json.order_id)
       setSelectedItem(null)
     } finally {
@@ -123,7 +124,7 @@ export default function ShopPage() {
             <h1 className="text-3xl font-bold">Rewards Shop</h1>
           </div>
           <p className="text-muted-foreground">
-            Spend your points on exclusive rewards. Earn points by watching the stream and chatting on Kick.
+            Spend your R2Koins on exclusive rewards. Earn R2Koins by watching the stream and chatting on Kick.
           </p>
         </div>
 
@@ -135,11 +136,11 @@ export default function ShopPage() {
                 <Zap className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Your balance</p>
-                  <p className="text-2xl font-bold text-foreground">{profile.points.toLocaleString()} <span className="text-base font-normal text-muted-foreground">points</span></p>
+                  <p className="text-2xl font-bold text-foreground">{profile.r2koins.toLocaleString()} <span className="text-base font-normal text-muted-foreground">R2Koins</span></p>
                 </div>
                 {!profile.kick_username && (
                   <div className="ml-auto text-right">
-                    <p className="text-xs text-muted-foreground">Link your Kick account to earn points</p>
+                    <p className="text-xs text-muted-foreground">Link your Kick account to earn R2Koins</p>
                     <p className="font-mono text-xs bg-background/60 rounded px-2 py-1 mt-1">!verify {profile.account_id}</p>
                   </div>
                 )}
@@ -149,7 +150,7 @@ export default function ShopPage() {
                 <Lock className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Sign in to redeem rewards</p>
-                  <p className="text-xs text-muted-foreground">Create a free account to start earning and spending points.</p>
+                  <p className="text-xs text-muted-foreground">Create a free account to start earning and spending R2Koins.</p>
                 </div>
                 <Button size="sm" className="ml-auto" onClick={() => router.push('/auth/login')}>
                   Sign In
@@ -195,7 +196,7 @@ export default function ShopPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {items.map(item => {
               const outOfStock = item.inventory !== null && item.inventory <= 0
-              const canAfford = profile && profile.points >= item.points_cost && !outOfStock
+              const canAfford = profile && profile.r2koins >= item.points_cost && !outOfStock
               return (
                 <Card
                   key={item.id}
@@ -221,7 +222,7 @@ export default function ShopPage() {
                     <div className="flex items-center gap-1.5">
                       <Zap className="h-4 w-4 text-primary" />
                       <span className="text-xl font-bold text-primary">{item.points_cost.toLocaleString()}</span>
-                      <span className="text-sm text-muted-foreground">points</span>
+                      <span className="text-sm text-muted-foreground">R2Koins</span>
                     </div>
 
                     {outOfStock ? (
@@ -234,7 +235,7 @@ export default function ShopPage() {
                         disabled={!canAfford}
                         onClick={() => setSelectedItem(item)}
                       >
-                        {canAfford ? 'Redeem' : 'Not enough points'}
+                        {canAfford ? 'Redeem' : 'Not enough R2Koins'}
                       </Button>
                     ) : (
                       <Button
@@ -260,10 +261,10 @@ export default function ShopPage() {
             <AlertDialogTitle>Confirm Redemption</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to redeem <strong>{selectedItem?.name}</strong> for{' '}
-              <strong>{selectedItem?.points_cost.toLocaleString()} points</strong>?
+              <strong>{selectedItem?.points_cost.toLocaleString()} R2Koins</strong>?
               {profile && (
                 <span className="block mt-1 text-xs text-muted-foreground">
-                  Your balance after: {((profile.points || 0) - (selectedItem?.points_cost || 0)).toLocaleString()} points
+                  Your balance after: {((profile.r2koins || 0) - (selectedItem?.points_cost || 0)).toLocaleString()} R2Koins
                 </span>
               )}
             </AlertDialogDescription>
