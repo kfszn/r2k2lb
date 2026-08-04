@@ -14,19 +14,24 @@ const SIGNUP_URL = 'https://www.acebet.co/welcome/r/r2k2'
 const DISCORD_URL = 'https://discord.gg/RsjSPzGKTR'
 const SPONSOR = 'AceBet'
 
-// $10 per $10,000 wagered — payout = wager / 10,000 * 10
+// $10 per $10,000 wagered — cumulative payout = wager / 10,000 * 10
+// claimable = this tier's payout minus the previous tier's payout (delta paid out)
+// Rewards do not stack — the difference from your last claim is what gets paid.
 const TIERS: MilestoneTier[] = [
-  { tier: 1,  label: 'Bronze I',    wager: 25_000,     payout: 25 },
-  { tier: 2,  label: 'Bronze II',   wager: 50_000,     payout: 50 },
-  { tier: 3,  label: 'Silver I',    wager: 100_000,    payout: 100 },
-  { tier: 4,  label: 'Silver II',   wager: 250_000,    payout: 250 },
-  { tier: 5,  label: 'Gold I',      wager: 500_000,    payout: 500 },
-  { tier: 6,  label: 'Gold II',     wager: 750_000,    payout: 750 },
-  { tier: 7,  label: 'Platinum I',  wager: 1_000_000,  payout: 1_000 },
-  { tier: 8,  label: 'Platinum II', wager: 1_500_000,  payout: 1_500 },
-  { tier: 9,  label: 'Diamond I',   wager: 2_000_000,  payout: 2_000 },
-  { tier: 10, label: 'Diamond II',  wager: 3_000_000,  payout: 3_000 },
-  { tier: 11, label: 'Elite',       wager: 5_000_000,  payout: 5_000 },
+  { tier: 1,  label: 'Bronze I',    wager:    10_000, payout:    10, claimable:    10 },
+  { tier: 2,  label: 'Bronze II',   wager:    25_000, payout:    25, claimable:    15 },
+  { tier: 3,  label: 'Bronze III',  wager:    50_000, payout:    50, claimable:    25 },
+  { tier: 4,  label: 'Silver I',    wager:   100_000, payout:   100, claimable:    50 },
+  { tier: 5,  label: 'Silver II',   wager:   250_000, payout:   250, claimable:   150 },
+  { tier: 6,  label: 'Silver III',  wager:   350_000, payout:   350, claimable:   100 },
+  { tier: 7,  label: 'Gold I',      wager:   500_000, payout:   500, claimable:   150 },
+  { tier: 8,  label: 'Gold II',     wager:   750_000, payout:   750, claimable:   250 },
+  { tier: 9,  label: 'Platinum I',  wager: 1_000_000, payout: 1_000, claimable:   250 },
+  { tier: 10, label: 'Platinum II', wager: 1_250_000, payout: 1_250, claimable:   250 },
+  { tier: 11, label: 'Diamond I',   wager: 1_500_000, payout: 1_500, claimable:   250 },
+  { tier: 12, label: 'Diamond II',  wager: 2_000_000, payout: 2_000, claimable:   500 },
+  { tier: 13, label: 'Elite',       wager: 3_000_000, payout: 3_000, claimable: 1_000 },
+  { tier: 14, label: 'Legend',      wager: 5_000_000, payout: 5_000, claimable: 2_000 },
 ]
 
 export default function AceBetWagerRewardsPage() {
@@ -58,12 +63,21 @@ export default function AceBetWagerRewardsPage() {
             discordUrl={DISCORD_URL}
           />
 
-          {/* Info note */}
-          <p className="text-sm text-muted-foreground px-1">
-            Wager totals are measured over the current {SPONSOR} leaderboard cycle and{' '}
-            <span className="text-foreground font-medium">reset with the leaderboard</span>. Open a ticket in Discord to
-            claim any milestone you&apos;ve unlocked before the cycle ends.
-          </p>
+          {/* Claim rules note */}
+          <div className="rounded-xl border border-border/40 bg-card/30 px-4 py-3 space-y-1.5">
+            <p className="text-sm text-muted-foreground">
+              <span className="text-foreground font-semibold">How claiming works:</span>{' '}
+              Milestones are claimable at any point once you are{' '}
+              <span className="text-foreground font-medium">$10,000+ wagered beyond your last claim</span>.
+              Rewards do not stack — you receive the <span className="text-foreground font-medium">difference</span> between
+              your current milestone and the last one you claimed (shown as <span className="text-emerald-400 font-medium">+$X claim</span> on each row).
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Wager totals reset with the{' '}
+              <span className="text-foreground font-medium">{SPONSOR} leaderboard cycle</span>. Open a ticket in Discord
+              before the cycle ends to claim.
+            </p>
+          </div>
 
           {/* CTAs */}
           <div className="flex flex-wrap gap-3">
