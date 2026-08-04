@@ -7,22 +7,22 @@ export interface MilestoneTier {
   label: string
   wager: number
   payout: number | string
-  payoutLabel?: string // e.g. "$25" or "Contact"
+  payoutLabel?: string
 }
 
-// Per-tier medal colour + emoji used as a fallback icon inside a dark rounded square
-const TIER_STYLES: Record<number, { bg: string; border: string; emoji: string }> = {
-  1:  { bg: 'bg-amber-900/60',   border: 'border-amber-700/50',  emoji: '🥉' },
-  2:  { bg: 'bg-amber-800/60',   border: 'border-amber-600/50',  emoji: '🪙' },
-  3:  { bg: 'bg-slate-600/60',   border: 'border-slate-400/50',  emoji: '💎' },
-  4:  { bg: 'bg-purple-900/60',  border: 'border-purple-500/50', emoji: '🔷' },
-  5:  { bg: 'bg-yellow-800/60',  border: 'border-yellow-500/50', emoji: '⭐' },
-  6:  { bg: 'bg-yellow-700/60',  border: 'border-yellow-400/50', emoji: '🌟' },
-  7:  { bg: 'bg-teal-800/60',    border: 'border-teal-500/50',   emoji: '💠' },
-  8:  { bg: 'bg-blue-900/60',    border: 'border-blue-500/50',   emoji: '🔵' },
-  9:  { bg: 'bg-red-900/60',     border: 'border-red-500/50',    emoji: '🔴' },
-  10: { bg: 'bg-zinc-600/60',    border: 'border-zinc-300/50',   emoji: '👑' },
-  11: { bg: 'bg-indigo-900/60',  border: 'border-indigo-400/50', emoji: '✨' },
+// Per-tier icon: coloured circle with a letter/symbol, matching the reference image style
+const TIER_STYLES: Record<number, { bg: string; border: string; text: string; symbol: string }> = {
+  1:  { bg: 'bg-amber-800/70',   border: 'border-amber-600/60',  text: 'text-amber-300',  symbol: 'I'   },
+  2:  { bg: 'bg-amber-700/70',   border: 'border-amber-500/60',  text: 'text-amber-200',  symbol: 'II'  },
+  3:  { bg: 'bg-slate-600/70',   border: 'border-slate-400/60',  text: 'text-slate-200',  symbol: 'III' },
+  4:  { bg: 'bg-violet-900/70',  border: 'border-violet-500/60', text: 'text-violet-300', symbol: 'IV'  },
+  5:  { bg: 'bg-yellow-700/70',  border: 'border-yellow-500/60', text: 'text-yellow-200', symbol: 'V'   },
+  6:  { bg: 'bg-yellow-600/70',  border: 'border-yellow-400/60', text: 'text-yellow-100', symbol: 'VI'  },
+  7:  { bg: 'bg-teal-800/70',    border: 'border-teal-500/60',   text: 'text-teal-200',   symbol: 'VII' },
+  8:  { bg: 'bg-blue-900/70',    border: 'border-blue-500/60',   text: 'text-blue-300',   symbol: 'VIII'},
+  9:  { bg: 'bg-red-900/70',     border: 'border-red-500/60',    text: 'text-red-300',    symbol: 'IX'  },
+  10: { bg: 'bg-zinc-600/70',    border: 'border-zinc-300/50',   text: 'text-zinc-100',   symbol: 'X'   },
+  11: { bg: 'bg-indigo-900/70',  border: 'border-indigo-400/60', text: 'text-indigo-200', symbol: 'XI'  },
 }
 
 function fmt(n: number) {
@@ -41,43 +41,47 @@ export function MilestoneTierRow({ tier, discordUrl, isLast }: MilestoneTierRowP
 
   return (
     <div
-      className={`flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition-colors ${
-        !isLast ? 'border-b border-border/30' : ''
+      className={`flex items-center gap-5 px-5 py-4 hover:bg-white/[0.025] transition-colors ${
+        !isLast ? 'border-b border-border/25' : ''
       }`}
     >
-      {/* Medal icon */}
+      {/* Medal icon — circle with roman numeral, matching the reference image */}
       <div
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-xl ${style.bg} ${style.border}`}
+        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 ${style.bg} ${style.border}`}
         aria-hidden="true"
       >
-        {style.emoji}
+        <span className={`text-[11px] font-black tracking-tight ${style.text}`}>{style.symbol}</span>
       </div>
 
-      {/* Tier name + level */}
-      <div className="w-28 shrink-0">
-        <p className="text-sm font-bold uppercase tracking-wide">Tier {tier.tier}</p>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+      {/* Tier name + level sublabel */}
+      <div className="w-32 shrink-0">
+        <p className="text-base font-black uppercase tracking-wide text-foreground leading-tight">
+          {tier.label}
+        </p>
+        <p className={`text-[11px] font-bold uppercase tracking-[0.18em] mt-0.5 ${style.text}`}>
           Level {tier.tier}
         </p>
       </div>
 
-      {/* Wager requirement */}
-      <div className="flex-1 text-sm font-semibold tabular-nums text-foreground/80">
+      {/* Wager requirement — large, prominent */}
+      <div className="flex-1 text-base font-bold tabular-nums text-foreground">
         {fmt(tier.wager)}
       </div>
 
-      {/* Payout — bright green, large */}
-      <div className="w-28 text-right shrink-0">
-        <span className="text-lg font-bold tabular-nums text-green-400">{payoutText}</span>
+      {/* Payout — bright green, very large */}
+      <div className="w-32 shrink-0 text-right">
+        <span className="text-2xl font-black tabular-nums text-green-400 leading-none">
+          {payoutText}
+        </span>
       </div>
 
-      {/* CTA */}
+      {/* CLAIM TICKET button — solid green pill, all-caps, bold */}
       <div className="shrink-0 ml-2">
         <Link
           href={discordUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center rounded-full bg-green-500 px-5 py-2 text-xs font-bold uppercase tracking-widest text-black hover:bg-green-400 active:scale-95 transition-all whitespace-nowrap"
+          className="inline-flex items-center justify-center rounded-full bg-green-500 hover:bg-green-400 active:scale-95 transition-all px-6 py-2.5 text-[13px] font-black uppercase tracking-[0.12em] text-black whitespace-nowrap shadow-[0_0_12px_rgba(74,222,128,0.25)]"
         >
           Claim Ticket
         </Link>
