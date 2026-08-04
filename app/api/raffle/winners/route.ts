@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
         platform,
         username,
         prize_amount: prizeAmount,
-        week_start: weekStart || null,
+        // week_start is NOT NULL in the DB — fall back to today's date
+        week_start: weekStart || new Date().toISOString().slice(0, 10),
         raffle_type: 'Weekly',
         won_date: new Date().toISOString(),
       })

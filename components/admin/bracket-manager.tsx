@@ -67,6 +67,7 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
     const score2 = parseFloat(editingScore.score2);
     if (isNaN(score1) || isNaN(score2)) return;
 
+    // Always save scores — winner only auto-advances on clear win (not tie)
     updateMatchScore(matchId, score1, score2);
 
     const match = matches.find((m) => m.id === matchId);
@@ -76,7 +77,12 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
         handleSetWinner(matchId, winnerId);
       }
     }
-    setEditingScore(null);
+    // Keep edit panel open after save so scores can be corrected
+    setEditingScore({
+      matchId,
+      score1: String(score1),
+      score2: String(score2),
+    });
   };
 
   if (matches.length === 0) {
@@ -275,10 +281,11 @@ export function BracketManager({ tournament }: { tournament: Tournament }) {
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="h-7 w-7 p-0"
+                                      className="flex-1 h-7 text-xs gap-1"
                                       onClick={() => setEditingScore(null)}
                                     >
                                       <X className="h-3 w-3" />
+                                      Close
                                     </Button>
                                   </div>
                                 </div>
