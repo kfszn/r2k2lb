@@ -13,20 +13,19 @@ const SIGNUP_URL = 'https://www.acebet.co/welcome/r/r2k2'
 const DISCORD_URL = 'https://discord.gg/RsjSPzGKTR'
 const SPONSOR = 'AceBet'
 
-// $1 per $1,000 wagered, minimum $25,000 wagered to claim
-// Tiers are cumulative milestones
+// $10 per $10,000 wagered — payout = wager / 10,000 * 10
 const TIERS: MilestoneTier[] = [
   { tier: 1,  label: 'Bronze I',    wager: 25_000,     payout: 25 },
   { tier: 2,  label: 'Bronze II',   wager: 50_000,     payout: 50 },
-  { tier: 3,  label: 'Silver I',    wager: 75_000,     payout: 75 },
-  { tier: 4,  label: 'Silver II',   wager: 100_000,    payout: 100 },
-  { tier: 5,  label: 'Gold I',      wager: 150_000,    payout: 150 },
-  { tier: 6,  label: 'Gold II',     wager: 200_000,    payout: 200 },
-  { tier: 7,  label: 'Platinum I',  wager: 300_000,    payout: 300 },
-  { tier: 8,  label: 'Platinum II', wager: 400_000,    payout: 400 },
-  { tier: 9,  label: 'Diamond I',   wager: 500_000,    payout: 500 },
-  { tier: 10, label: 'Diamond II',  wager: 750_000,    payout: 750 },
-  { tier: 11, label: 'Elite',       wager: 1_000_000,  payout: 1000 },
+  { tier: 3,  label: 'Silver I',    wager: 100_000,    payout: 100 },
+  { tier: 4,  label: 'Silver II',   wager: 250_000,    payout: 250 },
+  { tier: 5,  label: 'Gold I',      wager: 500_000,    payout: 500 },
+  { tier: 6,  label: 'Gold II',     wager: 750_000,    payout: 750 },
+  { tier: 7,  label: 'Platinum I',  wager: 1_000_000,  payout: 1_000 },
+  { tier: 8,  label: 'Platinum II', wager: 1_500_000,  payout: 1_500 },
+  { tier: 9,  label: 'Diamond I',   wager: 2_000_000,  payout: 2_000 },
+  { tier: 10, label: 'Diamond II',  wager: 3_000_000,  payout: 3_000 },
+  { tier: 11, label: 'Elite',       wager: 5_000_000,  payout: 5_000 },
 ]
 
 export default function AceBetWagerRewardsPage() {
@@ -44,7 +43,7 @@ export default function AceBetWagerRewardsPage() {
               <h1 className="text-3xl font-bold tracking-tight">Wager Rewards</h1>
             </div>
             <p className="text-muted-foreground">
-              Earn <span className="text-foreground font-medium">$1 per $1,000 wagered</span> on {SPONSOR} with code{' '}
+              Earn <span className="text-foreground font-medium">$10 per $10,000 wagered</span> on {SPONSOR} with code{' '}
               <span className="text-primary font-mono font-bold">R2K2</span>. Hit a milestone, open a Discord ticket to
               claim. Resets monthly — don&apos;t let rewards expire.
             </p>
