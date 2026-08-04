@@ -8,7 +8,10 @@ export interface MilestoneTier {
   tier: number
   label: string
   wager: number
+  /** Cumulative payout total at this milestone */
   payout: number | string
+  /** Amount claimable at this tier = payout minus previous tier's payout */
+  claimable?: number
   payoutLabel?: string
 }
 
@@ -90,14 +93,14 @@ const PALETTES: Record<string, Palette> = {
 }
 
 const TIER_TO_PALETTE: Record<number, keyof typeof PALETTES> = {
-  1: 'bronze', 2: 'bronze',
-  3: 'silver', 4: 'silver',
-  5: 'gold', 6: 'gold',
-  7: 'platinum',
-  8: 'sapphire',
-  9: 'ruby',
-  10: 'diamond',
-  11: 'elite',
+  1: 'bronze', 2: 'bronze', 3: 'bronze',
+  4: 'silver', 5: 'silver', 6: 'silver',
+  7: 'gold',   8: 'gold',
+  9: 'platinum', 10: 'platinum',
+  11: 'sapphire',
+  12: 'ruby',
+  13: 'diamond',
+  14: 'elite',
 }
 
 function fmt(n: number) {
@@ -121,6 +124,7 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
   const palette = PALETTES[TIER_TO_PALETTE[tier.tier] ?? 'elite']
   const Icon = palette.icon
   const payoutText = typeof tier.payout === 'number' ? fmt(tier.payout) : tier.payout
+  const claimableText = tier.claimable != null ? fmt(tier.claimable) : null
 
   const tracking = reached !== undefined
   const isUnlocked = reached === true
@@ -179,11 +183,16 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
         </p>
       </div>
 
-      {/* Reward — glowing green */}
+      {/* Reward — cumulative total + claimable delta */}
       <div className="w-24 sm:w-28 shrink-0 text-right">
         <span className="text-lg sm:text-2xl font-black tabular-nums text-emerald-400 leading-none [text-shadow:0_0_22px_rgba(52,211,153,0.4)]">
           {payoutText}
         </span>
+        {claimableText && (
+          <p className="mt-0.5 text-[10px] font-semibold tabular-nums text-emerald-300/60 leading-none">
+            +{claimableText} claim
+          </p>
+        )}
       </div>
 
       {/* Claim Ticket — gradient blue pill with glow. Locked when tracking a
