@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Trophy, MessageCircle, ExternalLink, Zap, CheckCircle2, Clock } from 'lucide-react'
+import { Trophy, MessageCircle, ExternalLink, Zap, Clock } from 'lucide-react'
 
 type Challenge = {
   id: string
@@ -23,13 +22,7 @@ const PERKS_NAV = [
   { label: 'Challenges', href: '/perks/acebet/challenges' },
 ]
 
-type Filter = 'active' | 'inactive'
-
 export function ChallengesClient({ challenges }: { challenges: Challenge[] }) {
-  const [filter, setFilter] = useState<Filter>('active')
-
-  const shown = challenges.filter((c) => (filter === 'active' ? c.active : !c.active))
-
   return (
     <div className="space-y-10">
       {/* Hero */}
@@ -96,61 +89,27 @@ export function ChallengesClient({ challenges }: { challenges: Challenge[] }) {
         })}
       </nav>
 
-      {/* Filter toggle */}
-      <div className="flex items-center gap-1 rounded-full border border-border/50 bg-card/40 p-1 w-fit">
-        <button
-          onClick={() => setFilter('active')}
-          className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
-            filter === 'active'
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <CheckCircle2 className="h-3.5 w-3.5" />
-          Active
-          <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black tabular-nums leading-none ${filter === 'active' ? 'bg-emerald-500/30 text-emerald-300' : 'bg-muted/60 text-muted-foreground'}`}>
-            {challenges.filter((c) => c.active).length}
-          </span>
-        </button>
-        <button
-          onClick={() => setFilter('inactive')}
-          className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
-            filter === 'inactive'
-              ? 'bg-muted/60 text-foreground border border-border/60'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <Clock className="h-3.5 w-3.5" />
-          Inactive
-          <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black tabular-nums leading-none ${filter === 'inactive' ? 'bg-muted/80 text-foreground' : 'bg-muted/60 text-muted-foreground'}`}>
-            {challenges.filter((c) => !c.active).length}
-          </span>
-        </button>
-      </div>
-
       {/* Challenges grid */}
-      {shown.length === 0 ? (
+      {challenges.length === 0 ? (
         <div className="rounded-2xl border border-border/40 bg-card/30 py-20 text-center">
           <Trophy className="mx-auto h-12 w-12 text-muted-foreground/30 mb-4" />
-          <p className="text-lg font-semibold text-muted-foreground">
-            {filter === 'active' ? 'No active challenges right now' : 'No inactive challenges'}
-          </p>
+          <p className="text-lg font-semibold text-muted-foreground">No challenges yet</p>
           <p className="text-sm text-muted-foreground/60 mt-1">
-            {filter === 'active' ? 'Check back soon — new challenges drop regularly.' : 'All challenges are currently active.'}
+            Check back soon — new challenges drop regularly.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {shown.map((challenge) => (
+          {challenges.map((challenge) => (
             <div
               key={challenge.id}
               className={`group relative rounded-2xl border overflow-hidden transition-all ${
                 challenge.active
                   ? 'border-border/40 bg-gradient-to-b from-card/70 to-card/30 hover:border-amber-500/30 hover:shadow-[0_0_40px_-16px_rgba(245,158,11,0.3)]'
-                  : 'border-border/20 bg-card/20 opacity-60 grayscale-[40%]'
+                  : 'border-border/20 bg-card/20 opacity-50'
               }`}
             >
-              {/* Inactive ribbon */}
+              {/* Ended ribbon */}
               {!challenge.active && (
                 <div className="absolute top-3 left-3 z-10">
                   <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 border border-border/60 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -167,7 +126,7 @@ export function ChallengesClient({ challenges }: { challenges: Challenge[] }) {
                     src={challenge.image_url}
                     alt={challenge.title}
                     fill
-                    className={`object-cover transition-transform duration-500 ${challenge.active ? 'group-hover:scale-105' : ''}`}
+                    className={`object-cover transition-transform duration-500 ${challenge.active ? 'group-hover:scale-105' : 'grayscale'}`}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
@@ -200,7 +159,7 @@ export function ChallengesClient({ challenges }: { challenges: Challenge[] }) {
                       href={DISCORD_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 rounded-full bg-gradient-to-b from-amber-400 to-amber-500 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-amber-950 shadow-[0_0_16px_-6px_rgba(245,158,11,0.6)] transition-all hover:from-amber-300 hover:to-amber-400 hover:shadow-[0_0_20px_-4px_rgba(245,158,11,0.8)] active:scale-95 whitespace-nowrap"
+                      className="flex items-center gap-1.5 rounded-full bg-gradient-to-b from-amber-400 to-amber-500 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-amber-950 shadow-[0_0_16px_-6px_rgba(245,158,11,0.6)] transition-all hover:from-amber-300 hover:to-amber-400 active:scale-95 whitespace-nowrap"
                     >
                       <MessageCircle className="h-3.5 w-3.5" />
                       Claim — Open Ticket
