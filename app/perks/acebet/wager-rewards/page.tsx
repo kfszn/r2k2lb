@@ -42,27 +42,6 @@ export default function AceBetWagerRewardsPage() {
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto space-y-8">
 
-          {/* AceBet perks sub-nav */}
-          <nav className="flex flex-wrap gap-2" aria-label="AceBet perks">
-            {[
-              { label: 'Wager Rewards', href: '/perks/acebet/wager-rewards' },
-              { label: 'Reward Match', href: '/perks/acebet/reward-match' },
-              { label: 'Challenges', href: '/perks/acebet/challenges' },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
-                  item.href.includes('wager-rewards')
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
           {/* Page header */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">

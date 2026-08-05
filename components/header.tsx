@@ -150,6 +150,12 @@ function Header() {
               >
                 Loss-back
               </Link>
+              <Link 
+                href="/perks/acebet/challenges" 
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Challenges
+              </Link>
             </div>
           </div>
 
@@ -402,6 +408,9 @@ function Header() {
                       </Link>
                       <Link href="/perks/acebet/loss-back" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Loss-back
+                      </Link>
+                      <Link href="/perks/acebet/challenges" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Challenges
                       </Link>
                     </div>
                   )}
