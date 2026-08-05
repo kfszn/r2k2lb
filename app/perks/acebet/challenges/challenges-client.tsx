@@ -16,11 +16,6 @@ type Challenge = {
 
 const DISCORD_URL = 'https://discord.gg/r2k2'
 const SPONSOR = 'AceBet'
-const PERKS_NAV = [
-  { label: 'Wager Rewards', href: '/perks/acebet/wager-rewards' },
-  { label: 'Reward Match', href: '/perks/acebet/reward-match' },
-  { label: 'Challenges', href: '/perks/acebet/challenges' },
-]
 
 export function ChallengesClient({ challenges }: { challenges: Challenge[] }) {
   return (
@@ -68,26 +63,6 @@ export function ChallengesClient({ challenges }: { challenges: Challenge[] }) {
           </div>
         </div>
       </div>
-
-      {/* Perks sub-nav */}
-      <nav className="flex flex-wrap gap-2" aria-label="AceBet perks">
-        {PERKS_NAV.map((item) => {
-          const isActive = item.href.includes('challenges')
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground'
-              }`}
-            >
-              {item.label}
-            </Link>
-          )
-        })}
-      </nav>
 
       {/* Challenges grid */}
       {challenges.length === 0 ? (
