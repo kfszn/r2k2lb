@@ -15,7 +15,7 @@ type Challenge = {
   sort_order: number
 }
 
-const DISCORD_URL = 'https://discord.gg/RsjSPzGKTR'
+const DISCORD_URL = 'https://discord.gg/r2k2'
 const SPONSOR = 'AceBet'
 const PERKS_NAV = [
   { label: 'Wager Rewards', href: '/perks/acebet/wager-rewards' },
