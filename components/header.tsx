@@ -271,10 +271,10 @@ function Header() {
             </div>
           </div>
 
-          {/* Points Dropdown */}
+          {/* R2Koins Dropdown */}
           <div className="relative group">
             <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
-              Points
+              R2Koins
               <ChevronDown className="h-4 w-4" />
             </button>
             <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[180px] z-50 py-1">
@@ -504,13 +504,13 @@ function Header() {
                   )}
                 </div>
 
-                {/* Mobile Points */}
+                {/* Mobile R2Koins */}
                 <div className="space-y-1">
                   <button
                     onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false); setMobileLuxdrop(false); setMobileCsbattle(false); setMobileKick(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
-                    Points
+                    R2Koins
                     <ChevronDown className={`h-4 w-4 transition-transform ${mobilePoints ? 'rotate-180' : ''}`} />
                   </button>
                   {mobilePoints && (

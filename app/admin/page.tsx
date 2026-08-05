@@ -14,7 +14,7 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Settings, Zap, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3 } from "lucide-react";
+import { Loader2, Trophy, Users, Settings, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { AdminNav, type AdminNavView } from "@/components/admin/admin-nav";
 import { Input } from "@/components/ui/input";
@@ -32,11 +32,10 @@ import { RewardsSettings } from "@/components/admin/rewards-settings";
 import { GamesManager } from "@/components/admin/games-manager";
 import { LeaderboardManager } from "@/components/admin/leaderboard-manager";
 import { AcebetUserLookup } from "@/components/admin/acebet-user-lookup";
-import { R2KoinsManager } from "@/components/admin/r2koins-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards" | "r2koins";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -131,11 +130,10 @@ export default function AdminPage() {
       { view: "stream-games", title: "Stream Games", description: "Manage stream games and interactive content for viewers", icon: <Gamepad2 className="h-6 w-6" /> },
       { view: "raffle", title: "Weekly Raffle", description: "Configure raffle settings and select winners", icon: <Ticket className="h-6 w-6" /> },
       { view: "shop", title: "Rewards Shop", description: "Manage shop items, fulfill redemptions, and configure point settings", icon: <Settings className="h-6 w-6" /> },
-      { view: "users", title: "Users", description: "View all users, adjust point balances, and manage accounts", icon: <Users className="h-6 w-6" /> },
+      { view: "users", title: "Users", description: "Manage accounts, R2Koin balances, platform links, conversion rates, and email verification", icon: <Users className="h-6 w-6" /> },
       { view: "games", title: "Games Analytics", description: "View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko", icon: <BarChart3 className="h-6 w-6" /> },
       { view: "leaderboards", title: "Leaderboard Manager", description: "Create and manage leaderboards for AceBet and Kick with custom prize structures", icon: <ListOrdered className="h-6 w-6" /> },
       { href: "/admin/fifty-fifty", title: "50/50 Raffle", description: "Open rounds, view live stats, trigger draws, and review round history", icon: <Ticket className="h-6 w-6" /> },
-      { view: "r2koins", title: "R2Koins", description: "Link platform accounts, manage conversion rates, and monitor wager-based coin awards", icon: <Zap className="h-6 w-6" /> },
       { view: "website", title: "Affiliate Analytics", description: "Verify individual wagers and view total affiliate statistics", icon: <LineChart className="h-6 w-6" /> },
     ];
 
@@ -363,21 +361,6 @@ export default function AdminPage() {
           <AdminNav current="leaderboards" onNavigate={(v) => setCurrentView(v as AdminView)} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Leaderboard Manager</h1>
           <LeaderboardManager />
-        </div>
-      </main>
-    );
-  }
-
-  // R2Koins Management View
-  if (currentView === "r2koins") {
-    return (
-      <main className="min-h-screen bg-background">
-        <GiveawayCounter />
-        <Header />
-        <div className="container mx-auto px-4 py-6">
-          <AdminNav current="r2koins" onNavigate={(v) => setCurrentView(v as AdminView)} />
-          <h1 className="text-3xl font-bold tracking-tight mb-6">R2Koins Management</h1>
-          <R2KoinsManager />
         </div>
       </main>
     );

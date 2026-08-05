@@ -16,7 +16,7 @@ type Profile = {
   id: string
   account_id: string
   email: string
-  points: number
+  r2koins: number
   created_at: string
   // Kick
   kick_id: string | null
@@ -106,7 +106,9 @@ function AccountPageContent() {
       return
     }
     const json = await res.json()
-    setProfile(json.profile ?? null)
+    const raw = json.profile ?? null
+    // Map DB `points` → r2koins in local state
+    setProfile(raw ? { ...raw, r2koins: raw.points } : null)
     setLoading(false)
   }
 
@@ -225,17 +227,17 @@ function AccountPageContent() {
           </CardContent>
         </Card>
 
-        {/* Points */}
+        {/* R2Koins Balance */}
         <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground font-semibold">Points Balance</CardTitle>
+            <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground font-semibold">R2Koins Balance</CardTitle>
             <Link href="/shop">
               <Button size="sm" variant="outline" className="text-xs bg-transparent h-7 px-3">Visit Shop</Button>
             </Link>
           </CardHeader>
           <CardContent>
-            <p className="text-5xl font-bold text-foreground">{profile.points.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">Spend points in the Shop to redeem exclusive rewards</p>
+            <p className="text-5xl font-bold text-foreground">{profile.r2koins.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">Spend R2Koins in the Shop to redeem exclusive rewards</p>
           </CardContent>
         </Card>
 

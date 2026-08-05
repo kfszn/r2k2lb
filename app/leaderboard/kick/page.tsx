@@ -186,7 +186,7 @@ export default function KickLeaderboard() {
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Earn points by chatting in the stream while it&apos;s live. Every message and emote adds to your score.
+              Earn R2Koins by chatting in the stream while it&apos;s live. Every message and emote adds to your score.
             </p>
 
             <div className="flex justify-center">
@@ -384,7 +384,7 @@ export default function KickLeaderboard() {
                     ? 'Select a past leaderboard above'
                     : !showPrevious && !activeConfig
                     ? 'No active leaderboard'
-                    : 'No points recorded yet'}
+                    : 'No R2Koins recorded yet'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {showPrevious && !selectedPastId
@@ -434,7 +434,7 @@ export default function KickLeaderboard() {
                               {entry.rank === 1 && <Trophy className="h-4 w-4 text-yellow-400 shrink-0" />}
                               <p className="font-bold text-foreground truncate text-lg">{entry.kick_username}</p>
                             </div>
-                            <p className="text-sm text-muted-foreground mt-0.5">{formatPoints(entry.total_points)} points</p>
+                            <p className="text-sm text-muted-foreground mt-0.5">{formatPoints(entry.total_points)} R2Koins</p>
                           </div>
                           {prize && (
                             <div className={`px-3 py-1.5 rounded-lg text-sm font-bold border shrink-0 ${PRIZE_COLORS[entry.rank - 1]}`}>
@@ -474,7 +474,7 @@ export default function KickLeaderboard() {
                               </span>
                             )}
                             <span className="text-sm font-semibold text-foreground tabular-nums">
-                              {formatPoints(entry.total_points)} pts
+                              {formatPoints(entry.total_points)} R2K
                             </span>
                           </div>
                         </div>

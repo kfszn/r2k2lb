@@ -10,7 +10,6 @@ import {
   Users,
   BarChart3,
   ListOrdered,
-  Zap,
   LineChart,
 } from 'lucide-react'
 
@@ -23,7 +22,6 @@ export type AdminNavView =
   | 'users'
   | 'games'
   | 'leaderboards'
-  | 'r2koins'
   | 'website'
 
 const NAV_ITEMS: { view: AdminNavView; label: string; icon: React.ReactNode }[] = [
@@ -35,7 +33,6 @@ const NAV_ITEMS: { view: AdminNavView; label: string; icon: React.ReactNode }[] 
   { view: 'users', label: 'Users', icon: <Users className="h-4 w-4" /> },
   { view: 'games', label: 'Games', icon: <BarChart3 className="h-4 w-4" /> },
   { view: 'leaderboards', label: 'Leaderboards', icon: <ListOrdered className="h-4 w-4" /> },
-  { view: 'r2koins', label: 'R2Koins', icon: <Zap className="h-4 w-4" /> },
   { view: 'website', label: 'Affiliates', icon: <LineChart className="h-4 w-4" /> },
 ]
 
