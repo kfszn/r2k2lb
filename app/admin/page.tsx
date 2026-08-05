@@ -14,7 +14,7 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Settings, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3 } from "lucide-react";
+import { Loader2, Trophy, Users, Settings, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3, Flame } from "lucide-react";
 import Link from "next/link";
 import { AdminNav, type AdminNavView } from "@/components/admin/admin-nav";
 import { Input } from "@/components/ui/input";
@@ -32,10 +32,11 @@ import { RewardsSettings } from "@/components/admin/rewards-settings";
 import { GamesManager } from "@/components/admin/games-manager";
 import { LeaderboardManager } from "@/components/admin/leaderboard-manager";
 import { AcebetUserLookup } from "@/components/admin/acebet-user-lookup";
+import { ChallengesManager } from "@/components/admin/challenges-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards" | "challenges";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -130,6 +131,7 @@ export default function AdminPage() {
       { view: "stream-games", title: "Stream Games", description: "Manage stream games and interactive content for viewers", icon: <Gamepad2 className="h-6 w-6" /> },
       { view: "raffle", title: "Weekly Raffle", description: "Configure raffle settings and select winners", icon: <Ticket className="h-6 w-6" /> },
       { view: "shop", title: "Rewards Shop", description: "Manage shop items, fulfill redemptions, and configure point settings", icon: <Settings className="h-6 w-6" /> },
+      { view: "challenges", title: "Challenges", description: "Create and manage AceBet challenges — add images, set prize amounts, and toggle visibility", icon: <Flame className="h-6 w-6" /> },
       { view: "users", title: "Users", description: "Manage accounts, R2Koin balances, platform links, conversion rates, and email verification", icon: <Users className="h-6 w-6" /> },
       { view: "games", title: "Games Analytics", description: "View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko", icon: <BarChart3 className="h-6 w-6" /> },
       { view: "leaderboards", title: "Leaderboard Manager", description: "Create and manage leaderboards for AceBet and Kick with custom prize structures", icon: <ListOrdered className="h-6 w-6" /> },
@@ -316,6 +318,20 @@ export default function AdminPage() {
               <RewardsSettings />
             </div>
           </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (currentView === "challenges") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <AdminNav current="challenges" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">AceBet Challenges</h1>
+          <ChallengesManager />
         </div>
       </main>
     );
