@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, CheckCircle, AlertCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react'
 import { GoalTracker } from '@/components/goal-tracker'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
@@ -17,11 +18,11 @@ import {
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-// Query start pulled back 1 day (Jul 7) to make sure wagers near the
-// boundary/timezone edge are captured. Displayed range stays Jul 8.
-const START_DATE = '2026-07-07'
-const END_DATE   = '2026-08-08'
-const DISPLAY_RANGE = 'Jul 8 – Aug 8, 2026'
+// Query start pulled back 1 day to make sure wagers near the boundary/timezone
+// edge are captured. Displayed range stays the actual start day.
+const CURRENT_START = '2026-08-08'
+const CURRENT_END = '2026-09-08'
+const CURRENT_DISPLAY = 'Aug 9 – Sep 8, 2026'
 const PRIZE_TOTAL = 2500
 const WAGER_GOAL = 65000
 
@@ -32,6 +33,28 @@ const REWARDS: number[] = [1000, 500, 300, 175, 125, 100, 100, 75, 75, 50]
 const REWARD_LABELS: (string | null)[] = REWARDS.map(
   (amt) => `$${amt.toLocaleString()}`
 )
+
+interface PeriodConfig {
+  label: string
+  start_at: string
+  end_at: string
+  display: string
+  rewards: number[]
+  labels?: (string | null)[]
+  total: number
+}
+
+// Previous leaderboard periods
+const PREVIOUS_PERIODS: PeriodConfig[] = [
+  {
+    label: 'July',
+    start_at: '2026-07-07',
+    end_at: '2026-08-08',
+    display: 'Jul 8 – Aug 8, 2026',
+    rewards: [1000, 500, 300, 175, 125, 100, 100, 75, 75, 50],
+    total: 2500,
+  },
+]
 
 // ---------------------------------------------------------------------------
 // Types — LuxDrop API returns the array directly or wrapped
@@ -76,45 +99,72 @@ function getEntryAvatar(e: LuxDropEntry): string | null {
 
 export default function LuxdropLeaderboard() {
   const [activeTab, setActiveTab] = useState<'leaderboard' | 'rules'>('leaderboard')
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('current') // 'current' | period label
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [entries, setEntries] = useState<LuxDropEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState<string>('')
 
+  const showPrevious = selectedPeriod !== 'current'
+  const activePeriodConfig = PREVIOUS_PERIODS.find(p => p.label === selectedPeriod) ?? null
+
+  const activeStart = showPrevious ? (activePeriodConfig?.start_at ?? CURRENT_START) : CURRENT_START
+  const activeEnd = showPrevious ? (activePeriodConfig?.end_at ?? CURRENT_END) : CURRENT_END
+  const activeDisplay = showPrevious ? (activePeriodConfig?.display ?? '') : CURRENT_DISPLAY
+  const activeRewards = showPrevious ? (activePeriodConfig?.rewards ?? []) : REWARDS
+  const activeLabels = showPrevious ? (activePeriodConfig?.labels ?? null) : REWARD_LABELS
+  const activeTotal = showPrevious ? (activePeriodConfig?.total ?? 0) : PRIZE_TOTAL
+
   // ---------------------------------------------------------------------------
   // Fetch
   // ---------------------------------------------------------------------------
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const res = await fetch(
-          `/api/luxdrop/affiliates?startDate=${START_DATE}&endDate=${END_DATE}`,
-          { cache: 'no-store' }
-        )
-        const json = await res.json()
-        if (!res.ok) {
-          setError(`${json.error ?? 'Failed to load leaderboard'}${json.detail ? ` — ${json.detail}` : ''}`)
-          return
-        }
-        setEntries(normalizeEntries(json))
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Unknown error'
-        setError(`Failed to fetch leaderboard — ${msg}`)
-      } finally {
-        setLoading(false)
+  const loadLeaderboard = async (period: string) => {
+    setLoading(true)
+    setError(null)
+    setSearchQuery('')
+    try {
+      const found = period !== 'current' ? PREVIOUS_PERIODS.find(p => p.label === period) : null
+      const startDate = found ? found.start_at : CURRENT_START
+      const endDate = found ? found.end_at : CURRENT_END
+
+      const res = await fetch(
+        `/api/luxdrop/affiliates?startDate=${startDate}&endDate=${endDate}`,
+        { cache: 'no-store' }
+      )
+      const json = await res.json()
+      if (!res.ok) {
+        setError(`${json.error ?? 'Failed to load leaderboard'}${json.detail ? ` — ${json.detail}` : ''}`)
+        return
       }
+      setEntries(normalizeEntries(json))
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setError(`Failed to fetch leaderboard — ${msg}`)
+    } finally {
+      setLoading(false)
     }
-    load()
+  }
+
+  useEffect(() => {
+    loadLeaderboard('current')
   }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!dropdownOpen) return
+    const handler = () => setDropdownOpen(false)
+    document.addEventListener('click', handler)
+    return () => document.removeEventListener('click', handler)
+  }, [dropdownOpen])
 
   // ---------------------------------------------------------------------------
   // Countdown timer
   // ---------------------------------------------------------------------------
-  const computeTimeRemaining = () => {
-    const end = new Date(END_DATE + 'T23:59:59Z').getTime()
+  const computeTimeRemaining = (period: string) => {
+    if (period !== 'current') return 'Ended'
+    const end = new Date(CURRENT_END + 'T23:59:59Z').getTime()
     const diff = end - Date.now()
     if (diff <= 0) return 'Ended'
     const days    = Math.floor(diff / 86400000)
@@ -128,10 +178,10 @@ export default function LuxdropLeaderboard() {
   }
 
   useEffect(() => {
-    setTimeRemaining(computeTimeRemaining())
-    const interval = setInterval(() => setTimeRemaining(computeTimeRemaining()), 1000)
+    setTimeRemaining(computeTimeRemaining(selectedPeriod))
+    const interval = setInterval(() => setTimeRemaining(computeTimeRemaining(selectedPeriod)), 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [selectedPeriod])
 
   // ---------------------------------------------------------------------------
   // Helpers
@@ -160,8 +210,8 @@ export default function LuxdropLeaderboard() {
   const totalWagered = entries.reduce((sum, e) => sum + getEntryWagered(e), 0)
 
   const prizeLabel = (rank: number): string => {
-    if (REWARDS[rank - 1] != null && REWARDS[rank - 1] > 0) {
-      return REWARD_LABELS[rank - 1] ?? `$${REWARDS[rank - 1].toLocaleString()}`
+    if (activeRewards[rank - 1] != null && activeRewards[rank - 1] > 0) {
+      return activeLabels?.[rank - 1] ?? `$${activeRewards[rank - 1].toLocaleString()}`
     }
     return 'TBD'
   }
@@ -188,7 +238,7 @@ export default function LuxdropLeaderboard() {
               className="h-12 md:h-14 w-auto mx-auto object-contain animate-fade-in-up animation-delay-100 drop-shadow-[0_0_25px_rgba(80,120,255,0.35)]"
             />
             <div className="flex justify-center animate-fade-in-up animation-delay-200">
-              <PrizePool total={`$${PRIZE_TOTAL.toLocaleString()}`} />
+              <PrizePool total={`$${activeTotal.toLocaleString()}`} />
             </div>
             <h1 className="text-4xl md:text-6xl font-black leading-tight text-balance animate-fade-in-up animation-delay-200 tracking-tight">
               Monthly <span className="neon-text text-primary">Leaderboard</span>
@@ -208,25 +258,32 @@ export default function LuxdropLeaderboard() {
               Every <strong>wager</strong> on LuxDrop under Code{' '}
               <strong className="text-primary">R2K2</strong> counts towards your score.
               <br />
-              <em className="text-sm">{DISPLAY_RANGE}</em>
+              <em className="text-sm">{activeDisplay}</em>
             </p>
 
             {/* Prize positions — top 5 displayed */}
             <div className="flex flex-wrap justify-center gap-2 text-sm font-semibold">
-              {[
-                { label: '1st', prize: '$1,000', color: 'bg-yellow-400/20 border-yellow-400/40 text-yellow-400' },
-                { label: '2nd', prize: '$500',   color: 'bg-slate-400/20 border-slate-400/40 text-slate-300' },
-                { label: '3rd', prize: '$300',   color: 'bg-amber-700/20 border-amber-700/40 text-amber-500' },
-                { label: '4th', prize: '$175',   color: 'bg-primary/20 border-primary/40 text-primary' },
-                { label: '5th', prize: '$125',   color: 'bg-green-600/20 border-green-600/40 text-green-500' },
-              ].map(({ label, prize, color }) => (
-                <span key={label} className={`px-3 py-1 rounded-full border ${color}`}>
-                  {label} — {prize}
+              {activeRewards.slice(0, 5).map((amt, i) => {
+                const ordinals = ['1st', '2nd', '3rd', '4th', '5th']
+                const colors = [
+                  'bg-yellow-400/20 border-yellow-400/40 text-yellow-400',
+                  'bg-slate-400/20 border-slate-400/40 text-slate-300',
+                  'bg-amber-700/20 border-amber-700/40 text-amber-500',
+                  'bg-primary/20 border-primary/40 text-primary',
+                  'bg-green-600/20 border-green-600/40 text-green-500',
+                ]
+                const displayValue = activeLabels?.[i] ?? `$${amt.toLocaleString()}`
+                return (
+                  <span key={ordinals[i]} className={`px-3 py-1 rounded-full border ${colors[i]}`}>
+                    {ordinals[i]} — {displayValue}
+                  </span>
+                )
+              })}
+              {activeRewards.length > 5 && (
+                <span className="px-3 py-1 rounded-full border bg-muted/30 border-border text-muted-foreground">
+                  +{activeRewards.length - 5} more positions paid
                 </span>
-              ))}
-              <span className="px-3 py-1 rounded-full border bg-muted/30 border-border text-muted-foreground">
-                +5 more positions paid
-              </span>
+              )}
             </div>
           </div>
         </div>
@@ -247,25 +304,73 @@ export default function LuxdropLeaderboard() {
             icon={<Users className="h-5 w-5" />}
             tone="accent"
           />
-          <StatCard
-            label="Time Remaining"
-            value={<span suppressHydrationWarning>{timeRemaining || '...'}</span>}
-            icon={<Clock className="h-5 w-5" />}
-            tone="destructive"
-            className="col-span-2 md:col-span-1"
-          />
+          {!showPrevious && (
+            <StatCard
+              label="Time Remaining"
+              value={<span suppressHydrationWarning>{timeRemaining || '...'}</span>}
+              icon={<Clock className="h-5 w-5" />}
+              tone="destructive"
+              className="col-span-2 md:col-span-1"
+            />
+          )}
         </div>
 
-        <GoalTracker
-          current={totalWagered}
-          goal={WAGER_GOAL}
-          formatMoney={formatMoney}
-          className="max-w-4xl mx-auto mt-3"
-        />
+        {!showPrevious && (
+          <GoalTracker
+            current={totalWagered}
+            goal={WAGER_GOAL}
+            formatMoney={formatMoney}
+            className="max-w-4xl mx-auto mt-3"
+          />
+        )}
+      </section>
+
+      {/* Current / Previous controls */}
+      <section className="py-6 border-b border-border/40">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap gap-3 justify-center items-center">
+            <Button
+              variant={!showPrevious ? 'default' : 'outline'}
+              onClick={() => { setSelectedPeriod('current'); loadLeaderboard('current') }}
+              className={!showPrevious ? '' : 'bg-transparent'}
+            >
+              Current Leaderboard
+            </Button>
+
+            <div className="relative">
+              <Button
+                variant={showPrevious ? 'default' : 'outline'}
+                className={`flex items-center gap-2 ${showPrevious ? '' : 'bg-transparent'}`}
+                onClick={(e) => { e.stopPropagation(); setDropdownOpen(o => !o) }}
+              >
+                {showPrevious ? selectedPeriod : 'Previous Leaderboards'}
+                <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </Button>
+              {dropdownOpen && (
+                <div className="absolute top-full mt-1 left-0 z-50 min-w-[200px] rounded-xl border border-border bg-card/90 backdrop-blur-xl shadow-2xl overflow-hidden">
+                  {PREVIOUS_PERIODS.map(p => (
+                    <button
+                      key={p.label}
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-muted/60 transition-colors ${selectedPeriod === p.label ? 'bg-primary/10' : ''}`}
+                      onClick={() => {
+                        setSelectedPeriod(p.label)
+                        setDropdownOpen(false)
+                        loadLeaderboard(p.label)
+                      }}
+                    >
+                      <p className={`font-semibold ${selectedPeriod === p.label ? 'text-primary' : 'text-foreground'}`}>{p.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{p.display}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Tab Nav */}
-      <section className="container mx-auto px-4 pb-2">
+      <section className="container mx-auto px-4 pb-2 pt-6">
         <div className="max-w-5xl mx-auto">
           <div className="flex gap-1 p-1 rounded-xl bg-card/60 border border-border/40 w-fit backdrop-blur-xl">
             <button
@@ -309,7 +414,7 @@ export default function LuxdropLeaderboard() {
                     </div>
                     <div>
                       <h2 className="text-xl font-bold">Leaderboard Rules</h2>
-                      <p className="text-sm text-muted-foreground">{DISPLAY_RANGE}</p>
+                      <p className="text-sm text-muted-foreground">{activeDisplay}</p>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -369,10 +474,10 @@ export default function LuxdropLeaderboard() {
                 {/* Prize breakdown */}
                 <div className="rounded-2xl border border-border/50 overflow-hidden">
                   <div className="px-5 py-4 bg-muted/40 border-b border-border/50">
-                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Prize Breakdown — ${PRIZE_TOTAL.toLocaleString()} Pool</h3>
+                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Prize Breakdown — ${activeTotal.toLocaleString()} Pool</h3>
                   </div>
                   <div className="divide-y divide-border/30">
-                    {REWARDS.map((amt, i) => {
+                    {activeRewards.map((amt, i) => {
                       const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
                       return (
                         <div key={i} className="flex items-center justify-between px-5 py-3 bg-card/50">
@@ -381,7 +486,7 @@ export default function LuxdropLeaderboard() {
                             <Trophy className={`h-4 w-4 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-500' : 'text-muted-foreground/40'}`} />
                           </div>
                           <span className={`font-bold text-sm ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-500' : 'text-foreground'}`}>
-                            ${amt.toLocaleString()}
+                            {activeLabels?.[i] ?? `$${amt.toLocaleString()}`}
                           </span>
                         </div>
                       )
@@ -394,7 +499,7 @@ export default function LuxdropLeaderboard() {
                   <h3 className="font-semibold text-sm text-blue-400">Eligibility</h3>
                   <ul className="text-sm text-muted-foreground space-y-1.5">
                     <li>• You must be registered on LuxDrop using referral code <strong className="text-primary">R2K2</strong>.</li>
-                    <li>• Wagers must be placed within the leaderboard period: <strong className="text-foreground">{DISPLAY_RANGE}</strong>.</li>
+                    <li>• Wagers must be placed within the leaderboard period: <strong className="text-foreground">{activeDisplay}</strong>.</li>
                     <li>• Prizes are distributed at the end of the leaderboard period.</li>
                     <li>• R2K2 reserves the right to disqualify accounts suspected of abuse or multi-accounting.</li>
                   </ul>
@@ -426,17 +531,25 @@ export default function LuxdropLeaderboard() {
                 <Trophy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-4" />
                 <h2 className="text-xl font-bold mb-2">No entries yet</h2>
                 <p className="text-muted-foreground text-pretty">
-                  The leaderboard is live — sign up on LuxDrop with code{' '}
-                  <strong className="text-primary">R2K2</strong> and start wagering to claim your spot.
+                  {showPrevious ? (
+                    <>No recorded entries for this period.</>
+                  ) : (
+                    <>
+                      The leaderboard is live — sign up on LuxDrop with code{' '}
+                      <strong className="text-primary">R2K2</strong> and start wagering to claim your spot.
+                    </>
+                  )}
                 </p>
-                <a
-                  href="https://luxdrop.com/r/R2K2"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex mt-4 items-center gap-2 px-5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-semibold text-sm"
-                >
-                  Join LuxDrop with R2K2
-                </a>
+                {!showPrevious && (
+                  <a
+                    href="https://luxdrop.com/r/R2K2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex mt-4 items-center gap-2 px-5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-semibold text-sm"
+                  >
+                    Join LuxDrop with R2K2
+                  </a>
+                )}
               </div>
             )}
 
