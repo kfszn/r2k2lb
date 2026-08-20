@@ -18,14 +18,14 @@ const SPONSOR = 'AceBet'
 // claimable = this tier's payout minus the previous tier's payout (delta paid out)
 // Rewards do not stack — the difference from your last claim is what gets paid.
 const TIERS: MilestoneTier[] = [
-  { tier: 1,  label: 'Beginner I',   wager:    10_000, payout:    10, claimable:    10 },
+  { tier: 1,  label: 'Beginner I',   wager:    10_000, payout:    20, claimable:    20 },
   { tier: 2,  label: 'Beginner II',  wager:    25_000, payout:    25, claimable:    15 },
   { tier: 3,  label: 'Beginner III', wager:    50_000, payout:    50, claimable:    25 },
   { tier: 4,  label: 'Casual I',     wager:   100_000, payout:   100, claimable:    50 },
   { tier: 5,  label: 'Casual II',    wager:   250_000, payout:   250, claimable:   150 },
   { tier: 6,  label: 'Casual III',   wager:   350_000, payout:   350, claimable:   100 },
-  { tier: 7,  label: 'Regular I',    wager:   500_000, payout:   500, claimable:   150 },
-  { tier: 8,  label: 'Regular II',   wager:   750_000, payout:   750, claimable:   250 },
+  { tier: 7,  label: 'Roller I',     wager:   500_000, payout:   500, claimable:   150 },
+  { tier: 8,  label: 'Roller II',    wager:   750_000, payout:   750, claimable:   250 },
   { tier: 9,  label: 'Degen I',      wager: 1_000_000, payout: 1_000, claimable:   250 },
   { tier: 10, label: 'Degen II',     wager: 1_250_000, payout: 1_250, claimable:   250 },
   { tier: 11, label: 'Whale I',      wager: 1_500_000, payout: 1_500, claimable:   250 },
