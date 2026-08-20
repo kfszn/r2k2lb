@@ -19,7 +19,7 @@ const SPONSOR = 'AceBet'
 // Rewards do not stack — the difference from your last claim is what gets paid.
 const TIERS: MilestoneTier[] = [
   { tier: 1,  label: 'Beginner I',   wager:    10_000, payout:    20, claimable:    20 },
-  { tier: 2,  label: 'Beginner II',  wager:    25_000, payout:    25, claimable:    15 },
+  { tier: 2,  label: 'Beginner II',  wager:    25_000, payout:    25, claimable:     5 },
   { tier: 3,  label: 'Beginner III', wager:    50_000, payout:    50, claimable:    25 },
   { tier: 4,  label: 'Casual I',     wager:   100_000, payout:   100, claimable:    50 },
   { tier: 5,  label: 'Casual II',    wager:   250_000, payout:   250, claimable:   150 },
