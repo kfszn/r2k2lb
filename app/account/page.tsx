@@ -28,6 +28,9 @@ type Profile = {
   acebet_id_suffix: string | null
   acebet_username: string | null
   acebet_linked_at: string | null
+  // LuxDrop
+  luxdrop_username: string | null
+  luxdrop_linked_at: string | null
   // Discord
   discord_id: string | null
   discord_username: string | null
@@ -82,6 +85,12 @@ function AccountPageContent() {
   const [acebetLoading, setAcebetLoading] = useState(false)
   const [acebetError, setAcebetError] = useState<string | null>(null)
   const [acebetSuccess, setAcebetSuccess] = useState<string | null>(null)
+
+  // LuxDrop link state
+  const [luxdropInput, setLuxdropInput] = useState('')
+  const [luxdropLoading, setLuxdropLoading] = useState(false)
+  const [luxdropError, setLuxdropError] = useState<string | null>(null)
+  const [luxdropSuccess, setLuxdropSuccess] = useState<string | null>(null)
 
   // Unlink state
   const [unlinkLoading, setUnlinkLoading] = useState<string | null>(null)
@@ -150,6 +159,32 @@ function AccountPageContent() {
       setAcebetError('Network error. Please try again.')
     } finally {
       setAcebetLoading(false)
+    }
+  }
+
+  const linkLuxdrop = async () => {
+    if (!luxdropInput.trim()) return
+    setLuxdropLoading(true)
+    setLuxdropError(null)
+    setLuxdropSuccess(null)
+    try {
+      const res = await fetch('/api/account/connections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ luxdrop_username: luxdropInput.trim() }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setLuxdropError(json.error ?? 'Failed to link LuxDrop account.')
+      } else {
+        setLuxdropSuccess(`Linked as ${json.luxdrop_username} — earning R2Koins on future wagers`)
+        setLuxdropInput('')
+        await loadProfile()
+      }
+    } catch {
+      setLuxdropError('Network error. Please try again.')
+    } finally {
+      setLuxdropLoading(false)
     }
   }
 
@@ -399,6 +434,81 @@ function AccountPageContent() {
                 >
                   {unlinkLoading === 'acebet' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Unlink className="h-3 w-3" />}
                   Unlink Acebet
+                </Button>
+              )}
+            </div>
+
+            {/* ── LuxDrop ────────────────────────────────────────────── */}
+            <div className="py-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">L</div>
+                  <div>
+                    <p className="text-sm font-medium">LuxDrop</p>
+                    {profile.luxdrop_username ? (
+                      <p className="text-sm text-muted-foreground">{profile.luxdrop_username}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Not linked</p>
+                    )}
+                  </div>
+                </div>
+                <span className={`text-xs rounded-full px-2.5 py-0.5 font-medium border ${
+                  profile.luxdrop_username
+                    ? 'bg-green-500/10 text-green-500 border-green-500/20'
+                    : 'bg-muted text-muted-foreground border-border/40'
+                }`}>
+                  {profile.luxdrop_username ? 'Linked' : 'Not linked'}
+                </span>
+              </div>
+
+              {luxdropSuccess && (
+                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-md px-3 py-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  {luxdropSuccess}
+                </div>
+              )}
+              {luxdropError && (
+                <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  {luxdropError}
+                </div>
+              )}
+
+              {!profile.luxdrop_username ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">Enter your LuxDrop username (must have wagered under code R2K2):</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Username"
+                      value={luxdropInput}
+                      onChange={e => setLuxdropInput(e.target.value)}
+                      disabled={luxdropLoading}
+                      className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                      onKeyDown={e => { if (e.key === 'Enter') linkLuxdrop() }}
+                    />
+                    <Button
+                      size="sm"
+                      className="h-9 text-xs gap-1.5"
+                      disabled={luxdropLoading || !luxdropInput.trim()}
+                      onClick={linkLuxdrop}
+                    >
+                      {luxdropLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                      {luxdropLoading ? 'Linking...' : 'Link'}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Linking automatically enrolls you in R2Koins — wagers from this point on earn coins.</p>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs gap-1.5 text-destructive hover:text-destructive border-destructive/30"
+                  disabled={unlinkLoading === 'luxdrop'}
+                  onClick={() => unlink('luxdrop')}
+                >
+                  {unlinkLoading === 'luxdrop' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Unlink className="h-3 w-3" />}
+                  Unlink LuxDrop
                 </Button>
               )}
             </div>
