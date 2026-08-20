@@ -18,20 +18,20 @@ const SPONSOR = 'AceBet'
 // claimable = this tier's payout minus the previous tier's payout (delta paid out)
 // Rewards do not stack — the difference from your last claim is what gets paid.
 const TIERS: MilestoneTier[] = [
-  { tier: 1,  label: 'Bronze I',    wager:    10_000, payout:    10, claimable:    10 },
-  { tier: 2,  label: 'Bronze II',   wager:    25_000, payout:    25, claimable:    15 },
-  { tier: 3,  label: 'Bronze III',  wager:    50_000, payout:    50, claimable:    25 },
-  { tier: 4,  label: 'Silver I',    wager:   100_000, payout:   100, claimable:    50 },
-  { tier: 5,  label: 'Silver II',   wager:   250_000, payout:   250, claimable:   150 },
-  { tier: 6,  label: 'Silver III',  wager:   350_000, payout:   350, claimable:   100 },
-  { tier: 7,  label: 'Gold I',      wager:   500_000, payout:   500, claimable:   150 },
-  { tier: 8,  label: 'Gold II',     wager:   750_000, payout:   750, claimable:   250 },
-  { tier: 9,  label: 'Platinum I',  wager: 1_000_000, payout: 1_000, claimable:   250 },
-  { tier: 10, label: 'Platinum II', wager: 1_250_000, payout: 1_250, claimable:   250 },
-  { tier: 11, label: 'Diamond I',   wager: 1_500_000, payout: 1_500, claimable:   250 },
-  { tier: 12, label: 'Diamond II',  wager: 2_000_000, payout: 2_000, claimable:   500 },
-  { tier: 13, label: 'Elite',       wager: 3_000_000, payout: 3_000, claimable: 1_000 },
-  { tier: 14, label: 'Legend',      wager: 5_000_000, payout: 5_000, claimable: 2_000 },
+  { tier: 1,  label: 'Beginner I',   wager:    10_000, payout:    10, claimable:    10 },
+  { tier: 2,  label: 'Beginner II',  wager:    25_000, payout:    25, claimable:    15 },
+  { tier: 3,  label: 'Beginner III', wager:    50_000, payout:    50, claimable:    25 },
+  { tier: 4,  label: 'Casual I',     wager:   100_000, payout:   100, claimable:    50 },
+  { tier: 5,  label: 'Casual II',    wager:   250_000, payout:   250, claimable:   150 },
+  { tier: 6,  label: 'Casual III',   wager:   350_000, payout:   350, claimable:   100 },
+  { tier: 7,  label: 'Regular I',    wager:   500_000, payout:   500, claimable:   150 },
+  { tier: 8,  label: 'Regular II',   wager:   750_000, payout:   750, claimable:   250 },
+  { tier: 9,  label: 'Degen I',      wager: 1_000_000, payout: 1_000, claimable:   250 },
+  { tier: 10, label: 'Degen II',     wager: 1_250_000, payout: 1_250, claimable:   250 },
+  { tier: 11, label: 'Whale I',      wager: 1_500_000, payout: 1_500, claimable:   250 },
+  { tier: 12, label: 'Whale II',     wager: 2_000_000, payout: 2_000, claimable:   500 },
+  { tier: 13, label: 'Elite',        wager: 3_000_000, payout: 3_000, claimable: 1_000 },
+  { tier: 14, label: 'Legend',       wager: 5_000_000, payout: 5_000, claimable: 2_000 },
 ]
 
 export default function AceBetWagerRewardsPage() {
