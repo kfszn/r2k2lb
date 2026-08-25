@@ -132,7 +132,7 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
 
   return (
     <div
-      className={`group relative flex items-center gap-4 px-4 sm:px-5 py-4 transition-colors ${palette.rowHover} ${
+      className={`group relative flex flex-col gap-3 px-4 py-4 transition-colors sm:flex-row sm:items-center sm:gap-4 sm:px-5 ${palette.rowHover} ${
         !isLast ? 'border-b border-border/30' : ''
       } ${isUnlocked ? 'bg-emerald-500/[0.05]' : ''} ${isLocked ? 'opacity-55' : ''}`}
     >
@@ -146,46 +146,61 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
         aria-hidden="true"
       />
 
-      {/* Tier medal icon */}
-      <div
-        className={`relative flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl ${palette.iconWrap} transition-transform duration-300 group-hover:scale-105`}
-        aria-hidden="true"
-      >
-        <Icon className={`h-6 w-6 sm:h-7 sm:w-7 ${palette.iconText}`} strokeWidth={2} />
-      </div>
+      {/* Top row (mobile): icon + tier/badge + reward. Desktop: same row as everything else. */}
+      <div className="flex items-center gap-4 sm:contents">
+        {/* Tier medal icon */}
+        <div
+          className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl sm:h-14 sm:w-14 ${palette.iconWrap} transition-transform duration-300 group-hover:scale-105`}
+          aria-hidden="true"
+        >
+          <Icon className={`h-6 w-6 sm:h-7 sm:w-7 ${palette.iconText}`} strokeWidth={2} />
+        </div>
 
-      {/* Tier name + level pill */}
-      <div className="w-24 sm:w-28 shrink-0">
-        <p className="text-sm sm:text-base font-black uppercase tracking-wide text-foreground leading-tight">
-          {tier.label}
-        </p>
-        {isUnlocked ? (
-          <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
-            <Check className="h-3 w-3" strokeWidth={3} />
-            Unlocked
+        {/* Tier name + level pill */}
+        <div className="min-w-0 flex-1 sm:w-28 sm:flex-none sm:shrink-0">
+          <p className="text-sm sm:text-base font-black uppercase tracking-wide text-foreground leading-tight">
+            {tier.label}
+          </p>
+          {isUnlocked ? (
+            <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+              <Check className="h-3 w-3" strokeWidth={3} />
+              Unlocked
+            </span>
+          ) : (
+            <span
+              className={`mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${palette.pill}`}
+            >
+              Level {tier.tier}
+            </span>
+          )}
+        </div>
+
+        {/* Reward — cumulative total + claimable delta (shown here on mobile, right-aligned) */}
+        <div className="shrink-0 text-right sm:hidden">
+          <span className="text-lg font-black tabular-nums text-emerald-400 leading-none [text-shadow:0_0_22px_rgba(52,211,153,0.4)]">
+            {payoutText}
           </span>
-        ) : (
-          <span
-            className={`mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${palette.pill}`}
-          >
-            Level {tier.tier}
-          </span>
-        )}
+          {claimableText && (
+            <p className="mt-0.5 text-[10px] font-semibold tabular-nums text-emerald-300/60 leading-none">
+              +{claimableText} claim
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Wager requirement */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 sm:order-none">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-0.5 sm:hidden">
-          Wager
+          Wager Required
         </p>
         <p className="text-base sm:text-lg font-bold tabular-nums text-foreground truncate">
           {fmt(tier.wager)}
         </p>
       </div>
 
-      {/* Reward — cumulative total + claimable delta */}
-      <div className="w-24 sm:w-28 shrink-0 text-right">
-        <span className="text-lg sm:text-2xl font-black tabular-nums text-emerald-400 leading-none [text-shadow:0_0_22px_rgba(52,211,153,0.4)]">
+      {/* Reward — desktop only (duplicated compact version shown above on mobile) */}
+      <div className="hidden w-28 shrink-0 text-right sm:block">
+        <span className="text-2xl font-black tabular-nums text-emerald-400 leading-none [text-shadow:0_0_22px_rgba(52,211,153,0.4)]">
           {payoutText}
         </span>
         {claimableText && (
@@ -196,27 +211,25 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
       </div>
 
       {/* Claim Ticket — gradient blue pill with glow. Locked when tracking a
-          user who hasn't reached this tier yet. */}
-      <div className="shrink-0 ml-1 sm:ml-2 w-[110px] sm:w-[130px]">
+          user who hasn't reached this tier yet. Full-width on mobile, fixed-width on desktop. */}
+      <div className="w-full shrink-0 sm:ml-2 sm:w-[130px]">
         {isLocked ? (
           <div
-            className="flex items-center justify-center gap-1.5 rounded-full border border-border/50 bg-muted/30 px-3 sm:px-5 py-2.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap"
+            className="flex items-center justify-center gap-1.5 rounded-full border border-border/50 bg-muted/30 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap sm:text-[12px]"
             aria-label="Locked — milestone not yet reached"
           >
             <Lock className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
-            <span className="hidden sm:inline">Locked</span>
-            <span className="sm:hidden">Lock</span>
+            Locked
           </div>
         ) : (
           <Link
             href={discordUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-b from-blue-400 to-blue-600 px-3 sm:px-5 py-2.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider text-white whitespace-nowrap shadow-[0_0_20px_-6px_rgba(96,165,250,0.7)] transition-all duration-200 hover:from-blue-300 hover:to-blue-500 hover:shadow-[0_0_24px_-4px_rgba(96,165,250,0.9)] active:scale-95"
+            className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-b from-blue-400 to-blue-600 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-white whitespace-nowrap shadow-[0_0_20px_-6px_rgba(96,165,250,0.7)] transition-all duration-200 hover:from-blue-300 hover:to-blue-500 hover:shadow-[0_0_24px_-4px_rgba(96,165,250,0.9)] active:scale-95 sm:text-[12px]"
           >
             <Ticket className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
-            <span className="hidden sm:inline">Claim Ticket</span>
-            <span className="sm:hidden">Claim</span>
+            Claim Ticket
           </Link>
         )}
       </div>
