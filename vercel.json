@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/r2koins-monthly-reset",
       "schedule": "5 0 1 * *"
+    },
+    {
+      "path": "/api/cron/roobet-weekly-archive",
+      "schedule": "10 0 * * *"
     }
   ]
 }
