@@ -67,13 +67,14 @@ function Header() {
 
   const isAdmin = user?.email === 'business.r2k2@gmail.com'
 
-  const closeMobile = () => {
-    setOpen(false)
-    setMobileAcebet(false)
-    setMobileLuxdrop(false)
-    setMobilePoints(false)
-    setMobileKick(false)
-  }
+ const closeMobile = () => {
+ setOpen(false)
+ setMobileAcebet(false)
+ setMobileLuxdrop(false)
+ setMobileRoobet(false)
+ setMobilePoints(false)
+ setMobileKick(false)
+ }
 
   return (
     <header className="border-b border-border/30 bg-card/70 backdrop-blur-xl sticky top-0 z-50">
@@ -370,7 +371,7 @@ function Header() {
                 {/* Mobile Acebet */}
                 <div className="space-y-1">
                   <button 
-                    onClick={() => setMobileAcebet(!mobileAcebet)}
+                    onClick={() => { setMobileAcebet(!mobileAcebet); setMobileLuxdrop(false); setMobileRoobet(false); setMobileKick(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     AceBet
@@ -412,7 +413,7 @@ function Header() {
                 {/* Mobile LuxDrop */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileAcebet(false); setMobileKick(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileAcebet(false); setMobileRoobet(false); setMobileKick(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     LuxDrop
@@ -442,11 +443,41 @@ function Header() {
                   )}
                 </div>
 
+                {/* Mobile Roobet */}
+                <div className="space-y-1">
+                  <button
+                    onClick={() => { setMobileRoobet(!mobileRoobet); setMobileAcebet(false); setMobileLuxdrop(false); setMobileKick(false); setMobilePoints(false) }}
+                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
+                  >
+                    Roobet
+                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileRoobet ? 'rotate-180' : ''}`} />
+                  </button>
+                  {mobileRoobet && (
+                    <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
+                      <Link href="/leaderboard/roobet" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Leaderboard
+                      </Link>
+                      <div className="h-px bg-border/20 my-1" />
+                      <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
+                      <Link href="/perks/roobet/wager-rewards" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Wager Rewards
+                      </Link>
+                      <Link href="/perks/roobet/rank-up-match" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
+                        Rank Up Match
+                        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
+                      </Link>
+                      <Link href="/perks/roobet/challenges" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Challenges
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
 
                 {/* Mobile Kick */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileKick(!mobileKick); setMobileAcebet(false); setMobileLuxdrop(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileKick(!mobileKick); setMobileAcebet(false); setMobileLuxdrop(false); setMobileRoobet(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-[#53fc18] transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Kick
@@ -477,7 +508,7 @@ function Header() {
                 {/* Mobile R2Koins */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false); setMobileLuxdrop(false); setMobileKick(false) }}
+                    onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false); setMobileLuxdrop(false); setMobileRoobet(false); setMobileKick(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     R2Koins
