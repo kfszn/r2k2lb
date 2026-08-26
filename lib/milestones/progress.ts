@@ -2,13 +2,12 @@
 // the public leaderboards use, so a user's tracked wager always matches what
 // they see on the leaderboard. We do NOT re-implement upstream fetching here.
 
-export type MilestonePlatform = "acebet" | "luxdrop" | "csbattle";
+export type MilestonePlatform = "acebet" | "luxdrop";
 
 /**
  * Leaderboard windows — these MUST match the per-platform leaderboard pages so
  * milestone progress "resets with the leaderboard".
  *   - AceBet:   app/api/leaderboard/route.js (DEFAULT_START/END)
- *   - CSBattle: app/leaderboard/csbattle/page.tsx (START_DATE/END_DATE)
  *   - LuxDrop:  app/leaderboard/luxdrop/page.tsx (START_DATE/END_DATE)
  */
 export const LEADERBOARD_WINDOWS: Record<
@@ -16,7 +15,6 @@ export const LEADERBOARD_WINDOWS: Record<
   { start: string; end: string }
 > = {
   acebet: { start: "2026-07-30", end: "2026-08-31" },
-  csbattle: { start: "2026-07-25", end: "2026-08-25" },
   luxdrop: { start: "2026-07-07", end: "2026-08-08" },
 };
 
@@ -81,18 +79,6 @@ export async function fetchWindowedWager(
       if (!entry) return "not_found";
       // AceBet API returns wagered in CENTS → convert to dollars.
       return (Number(entry.wagered) || 0) / 100;
-    }
-
-    if (platform === "csbattle") {
-      const url = `${origin}/api/csbattle/affiliates?startDate=${win.start}&endDate=${win.end}`;
-      const r = await fetch(url, { cache: "no-store" });
-      if (!r.ok) return null;
-      const json = await r.json().catch(() => null);
-      const rows = normalizeEntries(json);
-      const entry = username && rows.find((e) => eq(entryName(e), username));
-      if (!entry) return "not_found";
-      // CSBattle wager is already in dollars.
-      return Number(entry.wager ?? entry.wagered ?? 0) || 0;
     }
 
     if (platform === "luxdrop") {

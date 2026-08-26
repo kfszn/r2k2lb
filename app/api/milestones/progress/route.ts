@@ -9,9 +9,9 @@ import {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const VALID: MilestonePlatform[] = ["acebet", "luxdrop", "csbattle"];
+const VALID: MilestonePlatform[] = ["acebet", "luxdrop"];
 
-// GET /api/milestones/progress?platform=acebet|luxdrop|csbattle
+// GET /api/milestones/progress?platform=acebet|luxdrop
 // Returns the signed-in user's linked username + wager for the platform's
 // current leaderboard window.
 export async function GET(request: NextRequest) {

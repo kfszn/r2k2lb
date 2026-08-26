@@ -16,7 +16,7 @@ type Progress = {
 }
 
 interface MilestoneTrackerProps {
-  platform: 'acebet' | 'luxdrop' | 'csbattle'
+  platform: 'acebet' | 'luxdrop' | 'roobet'
   sponsor: string
   tiers: MilestoneTier[]
   discordUrl: string

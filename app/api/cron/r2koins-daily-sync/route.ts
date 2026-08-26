@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAcebetUserList, fetchLuxdropUserList, fetchCsbattleUserList } from "@/lib/r2koins/platforms";
+import { fetchAcebetUserList, fetchLuxdropUserList } from "@/lib/r2koins/platforms";
 
 export const maxDuration = 300;
 
@@ -81,22 +81,6 @@ export async function GET(request: NextRequest) {
                   String(e.username ?? e.name).toLowerCase(),
                   // LuxDrop wagered is in cents — convert to dollars
                   Number(e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0) / 100,
-                ])
-            )
-      );
-    } else if (platform === "csbattle") {
-      const entries = await fetchCsbattleUserList();
-      platformData.set(
-        platform,
-        entries === null
-          ? null
-          : new Map(
-              entries
-                .filter((e) => e.username ?? e.name)
-                .map((e) => [
-                  String(e.username ?? e.name).toLowerCase(),
-                  // CSBattle wager is already in dollars
-                  Number(e.wager ?? e.wagered ?? e.totalWagered ?? 0),
                 ])
             )
       );

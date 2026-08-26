@@ -112,20 +112,21 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/leaderboard/luxdrop`,
   },
-  csbattle: {
-    title: 'CSBattle Leaderboard — Monthly Coin Prizes with Code R2K2',
+  roobet: {
+    title: 'Roobet Leaderboard — Weekly $5,000 Prize Pool with Code R2K2',
     description:
-      'Compete on the R2K2 CSBattle leaderboard for a 3,000 coin prize pool. Use code R2K2 on CSBattle and every wager counts toward your placement and R2Koins balance.',
+      'Compete on the R2K2 Roobet weekly leaderboard for a $5,000 prize pool. Use code R2K2 on Roobet — every wager counts toward your placement, resetting every 7 days.',
     keywords: [
-      'CSBattle leaderboard',
-      'CSBattle R2K2',
-      'CSBattle code R2K2',
-      'CSBattle monthly prizes',
-      'CSBattle rewards',
-      'CSBattle wager competition',
-      'R2Koins CSBattle',
+      'Roobet leaderboard',
+      'Roobet R2K2',
+      'Roobet code R2K2',
+      'Roobet weekly leaderboard',
+      'Roobet $5000 prize pool',
+      'Roobet rewards',
+      'Roobet wager competition',
+      'R2Koins Roobet',
     ],
-    canonical: `${baseUrl}/leaderboard/csbattle`,
+    canonical: `${baseUrl}/leaderboard/roobet`,
   },
   kick: {
     title: 'Kick Leaderboard — Top Chatters & Subscribers | R2K2',
