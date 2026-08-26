@@ -168,13 +168,13 @@ function MilestoneStatusCard({
           <div>
             <p className="text-sm font-semibold text-foreground">No {sponsor} account linked</p>
             <p className="text-sm text-muted-foreground">
-              {platform === 'acebet'
-                ? 'Link your AceBet account to track your milestone progress automatically.'
+              {platform === 'acebet' || platform === 'roobet'
+                ? `Link your ${sponsor} account to track your milestone progress automatically.`
                 : `Link your ${sponsor} account in Discord to track your milestone progress automatically.`}
             </p>
           </div>
         </div>
-        {platform === 'acebet' ? (
+        {platform === 'acebet' || platform === 'roobet' ? (
           <Link
             href="/account"
             className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-foreground transition-all hover:bg-muted/50 active:scale-95"

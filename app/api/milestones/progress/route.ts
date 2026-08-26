@@ -34,8 +34,9 @@ export async function GET(request: NextRequest) {
   }
 
   // Resolve the linked platform username. linked_accounts (admin/Discord link)
-  // is canonical for all three platforms; AceBet also supports self-serve
-  // linking on the account page via profiles.acebet_username + acebet_id_suffix.
+  // is canonical for all three platforms; AceBet and Roobet also support
+  // self-serve linking on the account page via profiles.acebet_username /
+  // profiles.roobet_username.
   let username: string | null = null;
   let acebetUserId: string | null = null;
 
@@ -58,6 +59,15 @@ export async function GET(request: NextRequest) {
     // match key — plus the resolved display name.
     acebetUserId = profile?.acebet_id_suffix ?? null;
     if (!username) username = profile?.acebet_username ?? null;
+  }
+
+  if (platform === "roobet" && !username) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("roobet_username")
+      .eq("id", user.id)
+      .maybeSingle();
+    username = profile?.roobet_username ?? null;
   }
 
   if (!username && !acebetUserId) {

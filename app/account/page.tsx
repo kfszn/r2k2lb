@@ -548,6 +548,81 @@ function AccountPageContent() {
               )}
             </div>
 
+            {/* ── Roobet ─────────────────────────────────────────────── */}
+            <div className="py-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">R</div>
+                  <div>
+                    <p className="text-sm font-medium">Roobet</p>
+                    {profile.roobet_username ? (
+                      <p className="text-sm text-muted-foreground">{profile.roobet_username}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Not linked</p>
+                    )}
+                  </div>
+                </div>
+                <span className={`text-xs rounded-full px-2.5 py-0.5 font-medium border ${
+                  profile.roobet_username
+                    ? 'bg-green-500/10 text-green-500 border-green-500/20'
+                    : 'bg-muted text-muted-foreground border-border/40'
+                }`}>
+                  {profile.roobet_username ? 'Linked' : 'Not linked'}
+                </span>
+              </div>
+
+              {roobetSuccess && (
+                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-md px-3 py-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  {roobetSuccess}
+                </div>
+              )}
+              {roobetError && (
+                <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  {roobetError}
+                </div>
+              )}
+
+              {!profile.roobet_username ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">Enter your Roobet username (must have wagered under code R2K2):</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Username"
+                      value={roobetInput}
+                      onChange={e => setRoobetInput(e.target.value)}
+                      disabled={roobetLoading}
+                      className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                      onKeyDown={e => { if (e.key === 'Enter') linkRoobet() }}
+                    />
+                    <Button
+                      size="sm"
+                      className="h-9 text-xs gap-1.5"
+                      disabled={roobetLoading || !roobetInput.trim()}
+                      onClick={linkRoobet}
+                    >
+                      {roobetLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                      {roobetLoading ? 'Linking...' : 'Link'}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Linking lets us track your wager progress automatically for milestone rewards.</p>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs gap-1.5 text-destructive hover:text-destructive border-destructive/30"
+                  disabled={unlinkLoading === 'roobet'}
+                  onClick={() => unlink('roobet')}
+                >
+                  {unlinkLoading === 'roobet' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Unlink className="h-3 w-3" />}
+                  Unlink Roobet
+                </Button>
+              )}
+            </div>
+
             {/* ── Discord ────────────────────────────────────────────── */}
             <div className="py-4">
               <div className="flex items-center justify-between">
