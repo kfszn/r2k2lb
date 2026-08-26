@@ -23,6 +23,7 @@ export async function GET() {
       kick_id, kick_username, kick_avatar, kick_linked_at,
       acebet_id, acebet_id_suffix, acebet_username, acebet_linked_at,
       luxdrop_username, luxdrop_linked_at,
+      roobet_username, roobet_linked_at,
       discord_id, discord_username, discord_linked_at
     `)
     .eq('id', session.user.id)
@@ -156,6 +157,65 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, luxdrop_username: luxdropUsername })
   }
 
+  // ── Roobet self-serve link ─────────────────────────────────────────────
+  if (typeof body.roobet_username === 'string') {
+    const roobetUsername = body.roobet_username.trim()
+
+    if (!roobetUsername) {
+      return NextResponse.json({ error: 'Enter your Roobet username.' }, { status: 400 })
+    }
+
+    // Verify the username exists under the R2K2 affiliate code
+    const wagerTotal = await fetchPlatformWagerTotal('roobet', roobetUsername)
+
+    if (wagerTotal === null) {
+      return NextResponse.json({ error: 'Failed to reach the Roobet API. Try again shortly.' }, { status: 502 })
+    }
+    if (wagerTotal === 'not_found') {
+      return NextResponse.json(
+        { error: `No Roobet account named "${roobetUsername}" was found under affiliate code R2K2. Make sure you have wagered with code R2K2.` },
+        { status: 404 }
+      )
+    }
+
+    // Not already linked to another profile via the self-serve column
+    const { data: existingProfile } = await admin
+      .from('profiles')
+      .select('id')
+      .ilike('roobet_username', roobetUsername)
+      .neq('id', session.user.id)
+      .maybeSingle()
+
+    if (existingProfile) {
+      return NextResponse.json({ error: 'This Roobet username is already linked to another account.' }, { status: 409 })
+    }
+
+    // Not already linked via the canonical linked_accounts table (e.g. admin/Discord link)
+    const { data: existingLink } = await admin
+      .from('linked_accounts')
+      .select('id, kick_user_id')
+      .eq('platform', 'roobet')
+      .ilike('platform_username', roobetUsername)
+      .maybeSingle()
+
+    if (existingLink && existingLink.kick_user_id !== session.user.id) {
+      return NextResponse.json({ error: 'This Roobet username is already linked to another account.' }, { status: 409 })
+    }
+
+    const { error } = await admin
+      .from('profiles')
+      .update({
+        roobet_username: roobetUsername,
+        roobet_linked_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', session.user.id)
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    return NextResponse.json({ success: true, roobet_username: roobetUsername })
+  }
+
   // ── Acebet self-serve link ────────────────────────────────────────────
   const rawSuffix: string = String(body.acebet_id_suffix ?? '').trim().replace(/^AB-/i, '')
 
@@ -236,6 +296,8 @@ export async function DELETE(req: NextRequest) {
     Object.assign(updates, { acebet_id: null, acebet_id_suffix: null, acebet_username: null, acebet_linked_at: null })
   } else if (provider === 'luxdrop') {
     Object.assign(updates, { luxdrop_username: null, luxdrop_linked_at: null })
+  } else if (provider === 'roobet') {
+    Object.assign(updates, { roobet_username: null, roobet_linked_at: null })
   } else if (provider === 'discord') {
     Object.assign(updates, { discord_id: null, discord_username: null, discord_linked_at: null })
   } else {

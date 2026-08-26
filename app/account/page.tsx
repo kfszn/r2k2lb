@@ -31,6 +31,9 @@ type Profile = {
   // LuxDrop
   luxdrop_username: string | null
   luxdrop_linked_at: string | null
+  // Roobet
+  roobet_username: string | null
+  roobet_linked_at: string | null
   // Discord
   discord_id: string | null
   discord_username: string | null
@@ -91,6 +94,12 @@ function AccountPageContent() {
   const [luxdropLoading, setLuxdropLoading] = useState(false)
   const [luxdropError, setLuxdropError] = useState<string | null>(null)
   const [luxdropSuccess, setLuxdropSuccess] = useState<string | null>(null)
+
+  // Roobet link state
+  const [roobetInput, setRoobetInput] = useState('')
+  const [roobetLoading, setRoobetLoading] = useState(false)
+  const [roobetError, setRoobetError] = useState<string | null>(null)
+  const [roobetSuccess, setRoobetSuccess] = useState<string | null>(null)
 
   // Unlink state
   const [unlinkLoading, setUnlinkLoading] = useState<string | null>(null)
@@ -185,6 +194,32 @@ function AccountPageContent() {
       setLuxdropError('Network error. Please try again.')
     } finally {
       setLuxdropLoading(false)
+    }
+  }
+
+  const linkRoobet = async () => {
+    if (!roobetInput.trim()) return
+    setRoobetLoading(true)
+    setRoobetError(null)
+    setRoobetSuccess(null)
+    try {
+      const res = await fetch('/api/account/connections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roobet_username: roobetInput.trim() }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setRoobetError(json.error ?? 'Failed to link Roobet account.')
+      } else {
+        setRoobetSuccess(`Linked as ${json.roobet_username} — your wager progress will now track automatically`)
+        setRoobetInput('')
+        await loadProfile()
+      }
+    } catch {
+      setRoobetError('Network error. Please try again.')
+    } finally {
+      setRoobetLoading(false)
     }
   }
 

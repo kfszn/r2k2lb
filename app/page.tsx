@@ -48,7 +48,7 @@ export default function HomePage() {
             <p className="text-base text-muted-foreground">Click a logo to view the leaderboard</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto justify-items-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto justify-items-center">
             <div className="w-full max-w-sm">
               <PlatformCard
                 name="AceBet"
