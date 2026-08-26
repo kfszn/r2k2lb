@@ -204,51 +204,6 @@ function Header() {
             </div>
           </div>
 
-          {/* CSBattle Dropdown */}
-          <div className="relative group">
-            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
-              CSBattle
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
-              <Link
-                href="/leaderboard/csbattle"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Leaderboard
-              </Link>
-              <Link
-                href="/raffle/csbattle"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Raffle
-              </Link>
-              <div className="h-px bg-border/20 mx-2 my-1" />
-              <div className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
-                Code Perks
-              </div>
-              <Link
-                href="/perks/csbattle/wager-milestones"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center justify-between gap-2"
-              >
-                Wager Milestones
-                <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
-              </Link>
-              <Link
-                href="/perks/csbattle/first-deposit"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                First Time Deposit Bonus
-              </Link>
-              <Link
-                href="/perks/csbattle/loss-back"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Loss-back
-              </Link>
-            </div>
-          </div>
-
           {/* Kick Dropdown */}
           <div className="relative group">
             <button className="text-sm font-medium hover:text-[#53fc18] transition-colors flex items-center gap-1 py-2">
