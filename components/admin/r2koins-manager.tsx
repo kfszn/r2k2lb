@@ -876,7 +876,7 @@ function RatesTab() {
             Add Platform
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Seed a new platform (e.g. <span className="font-mono">csbattle</span>) into the
+            Seed a new platform (e.g. <span className="font-mono">roobet</span>) into the
             conversion-rate table so the daily sync and account-linking can use it. Use lowercase.
           </p>
         </CardHeader>
@@ -885,7 +885,7 @@ function RatesTab() {
             <div className="space-y-2">
               <Label>Platform key (lowercase)</Label>
               <Input
-                placeholder="e.g. csbattle"
+                placeholder="e.g. roobet"
                 value={newPlatform}
                 onChange={(e) => { setNewPlatform(e.target.value); setAddError(null); setAddSuccess(null); }}
               />

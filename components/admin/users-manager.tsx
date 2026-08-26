@@ -1077,7 +1077,7 @@ function RatesTab() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Platform key (lowercase)</Label>
-              <Input placeholder="e.g. csbattle" value={newPlatform}
+              <Input placeholder="e.g. roobet" value={newPlatform}
                 onChange={e => { setNewPlatform(e.target.value); setAddError(null); setAddSuccess(null) }} />
               {existingPlatforms.size > 0 && (
                 <p className="text-xs text-muted-foreground">Existing: {[...existingPlatforms].join(', ')}</p>

@@ -22,7 +22,7 @@ export async function GET() {
   return NextResponse.json({ rates: data ?? [] });
 }
 
-// POST — insert a new platform row (used to seed new sponsors like CSBattle)
+// POST — insert a new platform row (used to seed new sponsors like Roobet)
 export async function POST(request: NextRequest) {
   try {
     const { platform, coins_per_dollar } = await request.json();

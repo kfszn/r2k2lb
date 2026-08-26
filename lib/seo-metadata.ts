@@ -360,43 +360,41 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/perks/luxdrop/wager-milestones`,
   },
-  perksCsbattleFirstDeposit: {
-    title: 'CSBattle First Deposit Bonus — 20% Flat with Code R2K2',
+  perksRoobetWagerRewards: {
+    title: 'Roobet Wager Rewards — Coming Soon | R2K2',
     description:
-      'Claim a flat 20% first deposit bonus on CSBattle with code R2K2. No maximum cap. Learn the 2x playthrough requirement and how to claim.',
+      'Roobet wager reward tiers with code R2K2 are coming soon. Check back for tiered bonuses based on your total wager volume.',
     keywords: [
-      'CSBattle first deposit bonus',
-      'CSBattle welcome bonus',
-      'CSBattle code R2K2',
-      'CSBattle deposit match',
-      'first deposit bonus',
+      'Roobet wager rewards',
+      'Roobet wager tiers',
+      'Roobet bonus',
+      'R2K2 Roobet rewards',
     ],
-    canonical: `${baseUrl}/perks/csbattle/first-deposit`,
+    canonical: `${baseUrl}/perks/roobet/wager-rewards`,
   },
-  perksCsbattleLossBack: {
-    title: 'CSBattle Loss Back — 10% R2K2 Exclusive Cashback',
+  perksRoobetChallenges: {
+    title: 'Roobet Challenges — Coming Soon | R2K2',
     description:
-      'Get a flat 10% loss back on CSBattle with code R2K2. No maximum cap. Recover a percentage of your monthly losses via ticket.',
+      'Roobet challenges with code R2K2 are coming soon. Complete challenges to unlock exclusive rewards.',
     keywords: [
-      'CSBattle loss back',
-      'CSBattle cashback',
-      'CSBattle R2K2 bonus',
-      'gambling cashback',
-      'loss recovery',
+      'Roobet challenges',
+      'Roobet R2K2 challenges',
+      'Roobet bonus',
+      'R2K2 Roobet rewards',
     ],
-    canonical: `${baseUrl}/perks/csbattle/loss-back`,
+    canonical: `${baseUrl}/perks/roobet/challenges`,
   },
-  perksCsbattleWagerMilestones: {
-    title: 'CSBattle Wager Milestones — Coming Soon | R2K2',
+  perksRoobetRewardMatch: {
+    title: 'Roobet Reward Match — Coming Soon | R2K2',
     description:
-      'CSBattle wager milestone rewards with code R2K2 are coming soon. Check back for tiered bonuses based on your total wager volume.',
+      'Roobet reward match offer with code R2K2 is coming soon. Check back for deposit match details.',
     keywords: [
-      'CSBattle wager milestones',
-      'CSBattle wager rewards',
-      'CSBattle bonus',
-      'R2K2 CSBattle rewards',
+      'Roobet reward match',
+      'Roobet deposit match',
+      'Roobet bonus',
+      'R2K2 Roobet rewards',
     ],
-    canonical: `${baseUrl}/perks/csbattle/wager-milestones`,
+    canonical: `${baseUrl}/perks/roobet/reward-match`,
   },
   games: {
     title: 'Provably Fair Games — Play with R2K2 Points',

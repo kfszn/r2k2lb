@@ -83,14 +83,14 @@ export default function HomePage() {
             </div>
             <div className="w-full max-w-sm">
               <PlatformCard
-                name="CSBattle"
-                logo="/assets/csbattle.png"
-                href="/leaderboard/csbattle"
-                signupUrl="https://csbattle.com/r/r2k2"
+                name="Roobet"
+                logo="/assets/roobet.png"
+                href="/leaderboard/roobet"
+                signupUrl="https://roobet.com/?ref=r2k2"
                 rewards={[
-                  "3,000 Coin Leaderboard",
-                  "Top 10 Positions Paid",
-                  "1,200 Coin First Place Prize",
+                  "$5,000 Weekly Leaderboard",
+                  "Resets Every 7 Days",
+                  "Top Positions Paid",
                   "Compete with Code R2K2",
                   "Every Wager Counts"
                 ]}
