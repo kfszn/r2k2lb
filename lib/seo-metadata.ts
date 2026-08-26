@@ -249,6 +249,30 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/perks/acebet/wager-rewards`,
   },
+  perksRoobetWagerRewards: {
+    title: 'Roobet Wager Rewards — Weighted Wager Tier Bonuses',
+    description:
+      'Earn tier-based rewards on Roobet with code R2K2 — $150 per $100,000 weighted wagered. The more you wager, the bigger your reward. Claim your bonus.',
+    keywords: [
+      'Roobet wager rewards',
+      'Roobet tier rewards',
+      'weighted wager bonus',
+      'wager bonus Roobet',
+      'R2K2 Roobet rewards',
+    ],
+    canonical: `${baseUrl}/perks/roobet/wager-rewards`,
+  },
+  perksRoobetRankUpMatch: {
+    title: 'Roobet Rank Up Match — R2K2',
+    description:
+      'R2K2 matches your Roobet rank ups. Play under code R2K2 and get rewarded every time you level up.',
+    keywords: [
+      'Roobet rank up match',
+      'Roobet rank rewards',
+      'R2K2 Roobet perks',
+    ],
+    canonical: `${baseUrl}/perks/roobet/rank-up-match`,
+  },
   account: {
     title: 'My Account — R2K2 Dashboard',
     description:

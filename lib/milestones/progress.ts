@@ -2,20 +2,57 @@
 // the public leaderboards use, so a user's tracked wager always matches what
 // they see on the leaderboard. We do NOT re-implement upstream fetching here.
 
-export type MilestonePlatform = "acebet" | "luxdrop";
+export type MilestonePlatform = "acebet" | "luxdrop" | "roobet";
+
+// Roobet's leaderboard runs on a rolling 7-day period computed from an
+// anchor date — mirrors app/leaderboard/roobet/page.tsx (PERIOD_ANCHOR/PERIOD_DAYS)
+// and app/api/cron/roobet-weekly-archive exactly, so milestone progress
+// resets in lockstep with the public leaderboard.
+const ROOBET_PERIOD_ANCHOR = "2026-08-03";
+const ROOBET_PERIOD_DAYS = 7;
+
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function roobetCurrentPeriod(): { start: string; end: string } {
+  const today = new Date().toISOString().slice(0, 10);
+  let start = ROOBET_PERIOD_ANCHOR;
+  let end = addDays(start, ROOBET_PERIOD_DAYS - 1);
+  while (addDays(end, 1) <= today) {
+    start = addDays(end, 1);
+    end = addDays(start, ROOBET_PERIOD_DAYS - 1);
+  }
+  return { start, end };
+}
 
 /**
  * Leaderboard windows — these MUST match the per-platform leaderboard pages so
  * milestone progress "resets with the leaderboard".
  *   - AceBet:   app/api/leaderboard/route.js (DEFAULT_START/END)
  *   - LuxDrop:  app/leaderboard/luxdrop/page.tsx (START_DATE/END_DATE)
+ *   - Roobet:   app/leaderboard/roobet/page.tsx (rolling 7-day period)
  */
+const STATIC_WINDOWS: Record<"acebet" | "luxdrop", { start: string; end: string }> = {
+  acebet: { start: "2026-07-30", end: "2026-08-31" },
+  luxdrop: { start: "2026-07-07", end: "2026-08-08" },
+};
+
+export function getLeaderboardWindow(platform: MilestonePlatform): { start: string; end: string } {
+  if (platform === "roobet") return roobetCurrentPeriod();
+  return STATIC_WINDOWS[platform];
+}
+
+// Backward-compatible static snapshot (roobet resolved at import time — prefer
+// getLeaderboardWindow(platform) for anything that needs the live value).
 export const LEADERBOARD_WINDOWS: Record<
   MilestonePlatform,
   { start: string; end: string }
 > = {
-  acebet: { start: "2026-07-30", end: "2026-08-31" },
-  luxdrop: { start: "2026-07-07", end: "2026-08-08" },
+  ...STATIC_WINDOWS,
+  roobet: roobetCurrentPeriod(),
 };
 
 // ── Shared parsing (mirrors the leaderboard pages exactly) ───────────────────
@@ -57,7 +94,7 @@ export async function fetchWindowedWager(
   lookup: WagerLookup,
   origin: string
 ): Promise<number | "not_found" | null> {
-  const win = LEADERBOARD_WINDOWS[platform];
+  const win = getLeaderboardWindow(platform);
   if (!win) return null;
 
   const username = (lookup.username ?? "").trim();
@@ -90,6 +127,19 @@ export async function fetchWindowedWager(
       const entry = username && rows.find((e) => eq(entryName(e), username));
       if (!entry) return "not_found";
       // LuxDrop wager is already in dollars (NOT cents).
+      return Number(entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
+    }
+
+    if (platform === "roobet") {
+      const url = `${origin}/api/roobet/affiliates?startDate=${win.start}&endDate=${win.end}`;
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) return null;
+      const json = await r.json().catch(() => null);
+      const rows = normalizeEntries(json);
+      const entry = username && rows.find((e) => eq(entryName(e), username));
+      if (!entry) return "not_found";
+      // Roobet's weighted-wager value is already in dollars (NOT cents) —
+      // mirrors app/leaderboard/roobet/page.tsx's getEntryWagered().
       return Number(entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
     }
 

@@ -19,7 +19,8 @@ function Header() {
   const [open, setOpen] = useState(false)
   const [mobileAcebet, setMobileAcebet] = useState(false)
   const [mobileLuxdrop, setMobileLuxdrop] = useState(false)
-   const [mobilePoints, setMobilePoints] = useState(false)
+  const [mobileRoobet, setMobileRoobet] = useState(false)
+  const [mobilePoints, setMobilePoints] = useState(false)
   const [mobileKick, setMobileKick] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [kickAvatar, setKickAvatar] = useState<string | null>(null)
@@ -198,6 +199,45 @@ function Header() {
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Loss-back
+              </Link>
+            </div>
+          </div>
+
+          {/* Roobet Dropdown */}
+          <div className="relative group">
+            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
+              Roobet
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
+              <Link
+                href="/leaderboard/roobet"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Leaderboard
+              </Link>
+              <div className="h-px bg-border/20 mx-2 my-1" />
+              <div className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
+                Code Perks
+              </div>
+              <Link
+                href="/perks/roobet/wager-rewards"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Wager Rewards
+              </Link>
+              <Link
+                href="/perks/roobet/rank-up-match"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center justify-between gap-2"
+              >
+                Rank Up Match
+                <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
+              </Link>
+              <Link
+                href="/perks/roobet/challenges"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Challenges
               </Link>
             </div>
           </div>

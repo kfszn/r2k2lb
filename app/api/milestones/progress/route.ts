@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
   fetchWindowedWager,
-  LEADERBOARD_WINDOWS,
+  getLeaderboardWindow,
   type MilestonePlatform,
 } from "@/lib/milestones/progress";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const VALID: MilestonePlatform[] = ["acebet", "luxdrop"];
+const VALID: MilestonePlatform[] = ["acebet", "luxdrop", "roobet"];
 
-// GET /api/milestones/progress?platform=acebet|luxdrop
+// GET /api/milestones/progress?platform=acebet|luxdrop|roobet
 // Returns the signed-in user's linked username + wager for the platform's
 // current leaderboard window.
 export async function GET(request: NextRequest) {
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "invalid_platform" }, { status: 400 });
   }
 
-  const window = LEADERBOARD_WINDOWS[platform];
+  const window = getLeaderboardWindow(platform);
 
   const supabase = await createClient();
   const {

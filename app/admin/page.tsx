@@ -33,6 +33,7 @@ import { GamesManager } from "@/components/admin/games-manager";
 import { LeaderboardManager } from "@/components/admin/leaderboard-manager";
 import { AcebetUserLookup } from "@/components/admin/acebet-user-lookup";
 import { ChallengesManager } from "@/components/admin/challenges-manager";
+import { RoobetChallengesManager } from "@/components/admin/roobet-challenges-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
@@ -330,8 +331,11 @@ export default function AdminPage() {
         <Header />
         <div className="container mx-auto px-4 py-6">
           <AdminNav current="challenges" onNavigate={(v) => setCurrentView(v as AdminView)} />
-          <h1 className="text-3xl font-bold tracking-tight mb-6">AceBet Challenges</h1>
-          <ChallengesManager />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Challenges</h1>
+          <div className="space-y-8">
+            <ChallengesManager />
+            <RoobetChallengesManager />
+          </div>
         </div>
       </main>
     );
