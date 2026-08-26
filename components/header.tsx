@@ -19,8 +19,7 @@ function Header() {
   const [open, setOpen] = useState(false)
   const [mobileAcebet, setMobileAcebet] = useState(false)
   const [mobileLuxdrop, setMobileLuxdrop] = useState(false)
-  const [mobileCsbattle, setMobileCsbattle] = useState(false)
-  const [mobilePoints, setMobilePoints] = useState(false)
+   const [mobilePoints, setMobilePoints] = useState(false)
   const [mobileKick, setMobileKick] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [kickAvatar, setKickAvatar] = useState<string | null>(null)
@@ -71,7 +70,6 @@ function Header() {
     setOpen(false)
     setMobileAcebet(false)
     setMobileLuxdrop(false)
-    setMobileCsbattle(false)
     setMobilePoints(false)
     setMobileKick(false)
   }
@@ -374,7 +372,7 @@ function Header() {
                 {/* Mobile LuxDrop */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileAcebet(false); setMobileCsbattle(false); setMobileKick(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileAcebet(false); setMobileKick(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     LuxDrop
@@ -404,43 +402,11 @@ function Header() {
                   )}
                 </div>
 
-                {/* Mobile CSBattle */}
-                <div className="space-y-1">
-                  <button
-                    onClick={() => { setMobileCsbattle(!mobileCsbattle); setMobileAcebet(false); setMobileLuxdrop(false); setMobileKick(false); setMobilePoints(false) }}
-                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
-                  >
-                    CSBattle
-                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileCsbattle ? 'rotate-180' : ''}`} />
-                  </button>
-                  {mobileCsbattle && (
-                    <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
-                      <Link href="/leaderboard/csbattle" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Leaderboard
-                      </Link>
-                      <Link href="/raffle/csbattle" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Raffle
-                      </Link>
-                      <div className="h-px bg-border/20 my-1" />
-                      <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
-                      <Link href="/perks/csbattle/wager-milestones" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
-                        Wager Milestones
-                        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
-                      </Link>
-                      <Link href="/perks/csbattle/first-deposit" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        First Time Deposit Bonus
-                      </Link>
-                      <Link href="/perks/csbattle/loss-back" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Loss-back
-                      </Link>
-                    </div>
-                  )}
-                </div>
 
                 {/* Mobile Kick */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileKick(!mobileKick); setMobileAcebet(false); setMobileLuxdrop(false); setMobileCsbattle(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileKick(!mobileKick); setMobileAcebet(false); setMobileLuxdrop(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-[#53fc18] transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Kick
@@ -471,7 +437,7 @@ function Header() {
                 {/* Mobile R2Koins */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false); setMobileLuxdrop(false); setMobileCsbattle(false); setMobileKick(false) }}
+                    onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false); setMobileLuxdrop(false); setMobileKick(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     R2Koins

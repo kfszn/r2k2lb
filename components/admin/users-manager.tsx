@@ -1070,7 +1070,7 @@ function RatesTab() {
             Add Platform
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Seed a new platform (e.g. <span className="font-mono">csbattle</span>) into the rate table. Use lowercase.
+            Seed a new platform (e.g. <span className="font-mono">roobet</span>) into the rate table. Use lowercase.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
