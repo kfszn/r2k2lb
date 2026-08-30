@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, ChevronDown } from 'lucide-react'
+import { Trophy, Clock, TrendingUp, Users, Search, BookOpen, ChevronDown, Scale } from 'lucide-react'
 import { GoalTracker } from '@/components/goal-tracker'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { Header } from '@/components/header'
@@ -436,6 +436,35 @@ export default function RoobetLeaderboard() {
                     The Roobet leaderboard tracks your wagering activity on{' '}
                     <a href="https://roobet.com/?ref=R2K2" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">roobet.com</a>{' '}
                     using code <strong className="text-primary">R2K2</strong>, over a rolling 7-day period. Each week resets automatically and is archived once it ends.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-primary/20 bg-card/60 p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Scale className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-bold">Wager Weighting</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Your wagers on Roobet will count towards the leaderboard at the following weights based on the games you are playing. This helps prevent leaderboard abuse:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      <span>Games with an RTP of <strong className="text-foreground">97% or less</strong> contribute <strong className="text-primary">100%</strong> of the amount wagered to the leaderboard.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      <span>Games with an RTP <strong className="text-foreground">above 97%</strong> contribute <strong className="text-primary">50%</strong> of the amount wagered to the leaderboard.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      <span>Games with an RTP of <strong className="text-foreground">98% and above</strong> contribute <strong className="text-primary">10%</strong> of the amount wagered to the leaderboard.</span>
+                    </li>
+                  </ul>
+                  <p className="text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-4">
+                    Only <strong className="text-foreground">Slots</strong> and <strong className="text-foreground">House Games</strong> (Probability Fair) count. <strong className="text-foreground">Dice is excluded.</strong>
                   </p>
                 </div>
 
