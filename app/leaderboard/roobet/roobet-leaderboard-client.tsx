@@ -312,29 +312,6 @@ export default function RoobetLeaderboardClient() {
               <br />
               <em className="text-sm">{activeDisplay}</em>
             </p>
-
-            <div className="flex flex-wrap justify-center gap-2 text-sm font-semibold">
-              {activeRewards.slice(0, 5).map((amt, i) => {
-                const ordinals = ['1st', '2nd', '3rd', '4th', '5th']
-                const colors = [
-                  'bg-yellow-400/20 border-yellow-400/40 text-yellow-400',
-                  'bg-slate-400/20 border-slate-400/40 text-slate-300',
-                  'bg-amber-700/20 border-amber-700/40 text-amber-500',
-                  'bg-primary/20 border-primary/40 text-primary',
-                  'bg-green-600/20 border-green-600/40 text-green-500',
-                ]
-                return (
-                  <span key={ordinals[i]} className={`px-3 py-1 rounded-full border ${colors[i]}`}>
-                    {ordinals[i]} — ${amt.toLocaleString()}
-                  </span>
-                )
-              })}
-              {activeRewards.length > 5 && (
-                <span className="px-3 py-1 rounded-full border bg-muted/30 border-border text-muted-foreground">
-                  +{activeRewards.length - 5} more positions paid
-                </span>
-              )}
-            </div>
           </div>
         </div>
       </section>
