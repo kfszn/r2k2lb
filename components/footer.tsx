@@ -19,15 +19,15 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* AceBet Sign Up */}
+          {/* Roobet Sign Up */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">AceBet</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Roobet</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Sign up on AceBet with code <span className="font-bold text-primary">R2K2</span> to unlock exclusive perks, rewards, and leaderboard eligibility.
+              Sign up on Roobet with code <span className="font-bold text-primary">R2K2</span> to unlock exclusive perks, rewards, and leaderboard eligibility.
             </p>
             <div className="flex flex-col gap-2">
               <a
-                href="https://www.acebet.co/welcome/r/r2k2"
+                href="https://roobet.com/?ref=r2k2"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
@@ -35,7 +35,7 @@ export default function Footer() {
                 Sign Up with Code R2K2 &rarr;
               </a>
               <Link
-                href="/leaderboard/acebet"
+                href="/leaderboard/roobet"
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 View Leaderboard &rarr;
@@ -47,11 +47,9 @@ export default function Footer() {
           <div className="space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Quick Links</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/leaderboard/acebet" className="hover:text-foreground transition-colors">AceBet Leaderboard</Link></li>
-              <li><Link href="/perks/acebet/wager-rewards" className="hover:text-foreground transition-colors">Wager Rewards</Link></li>
-              <li><Link href="/perks/acebet/reward-match" className="hover:text-foreground transition-colors">Reward Match</Link></li>
-              <li><Link href="/perks/acebet/loss-back" className="hover:text-foreground transition-colors">Loss-back</Link></li>
-              <li><Link href="/perks/acebet/first-deposit" className="hover:text-foreground transition-colors">First Deposit Bonus</Link></li>
+              <li><Link href="/leaderboard/roobet" className="hover:text-foreground transition-colors">Roobet Leaderboard</Link></li>
+              <li><Link href="/perks/roobet/wager-rewards" className="hover:text-foreground transition-colors">Wager Rewards</Link></li>
+              <li><Link href="/perks/roobet/challenges" className="hover:text-foreground transition-colors">Challenges</Link></li>
               <li><Link href="/shop" className="hover:text-foreground transition-colors">Points Shop</Link></li>
             </ul>
           </div>
@@ -108,7 +106,7 @@ export default function Footer() {
 
         <div className="mt-8 pt-6 border-t border-border/20 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground/60">
           <p>&copy; {new Date().getFullYear()} R2K2. All rights reserved.</p>
-          <p>Not affiliated with AceBet. Gamble responsibly. 18+.</p>
+          <p>Not affiliated with Roobet. Gamble responsibly. 18+.</p>
         </div>
       </div>
     </footer>

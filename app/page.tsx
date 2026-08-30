@@ -33,7 +33,7 @@ export default function HomePage() {
               $30,000+ in Monthly Rewards Including $20,000 Monthly Leaderboard
             </p>
             <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto animate-fade-in-up animation-delay-300">
-              Compete on the AceBet leaderboard, earn wager bonuses, loss back, and more with code R2K2.
+              Compete on the Roobet leaderboard, earn wager bonuses, loss back, and more with code R2K2.
             </p>
 
           </div>
@@ -48,24 +48,7 @@ export default function HomePage() {
             <p className="text-base text-muted-foreground">Click a logo to view the leaderboard</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto justify-items-center">
-            <div className="w-full max-w-sm">
-              <PlatformCard
-                name="AceBet"
-                logo="/assets/rainbet.png"
-                href="/leaderboard/acebet"
-                signupUrl="https://www.acebet.co/welcome/r/r2k2"
-                rewards={[
-                  "$20,000 Monthly Leaderboard",
-                  "$30,000+ Total Monthly Rewards",
-                  "First Time Deposit Bonus",
-                  "Monthly Wager Bonuses",
-                  "VIP Rewards",
-                  "Weekly Slot Tournaments",
-                  "Lossback"
-                ]}
-              />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto justify-items-center">
             <div className="w-full max-w-sm">
               <PlatformCard
                 name="LuxDrop"
@@ -116,7 +99,7 @@ export default function HomePage() {
                   <Trophy className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">1st Time Deposit Bonus</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">Available on AceBet for new users signing up with code R2K2</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Available on Roobet for new users signing up with code R2K2</p>
               </CardContent>
             </Card>
 
@@ -127,7 +110,7 @@ export default function HomePage() {
                   <TrendingUp className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Wager Rewards</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">Earn rewards based on your wager volume on AceBet with code R2K2</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Earn rewards based on your wager volume on Roobet with code R2K2</p>
               </CardContent>
             </Card>
 
@@ -138,7 +121,7 @@ export default function HomePage() {
                   <Sparkles className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Loss Back</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">Get a percentage of your losses back on AceBet with code R2K2</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Get a percentage of your losses back on Roobet with code R2K2</p>
               </CardContent>
             </Card>
 

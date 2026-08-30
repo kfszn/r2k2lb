@@ -1,19 +1,15 @@
 import fetch from "node-fetch";
 import { HttpsProxyAgent } from "https-proxy-agent";
 
-// Same proxy-agent pattern as /app/api/acebet/validate/route.ts —
-// routes outbound calls through the whitelisted static IP.
+// Routes outbound calls through the whitelisted static IP.
 const proxyAgent = process.env.PROXY_URL
   ? new HttpsProxyAgent(process.env.PROXY_URL)
   : undefined;
 
-const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
 const LUXDROP_API_KEY = process.env.LUXDROP_API_KEY;
 const LUXDROP_AFFILIATE_CODES = process.env.LUXDROP_AFFILIATE_CODES ?? "R2K2";
 const ROOBET_API_KEY = process.env.ROOBET_API_KEY;
 
-// Acebet detailed-summary from the earliest date = lifetime totals under the affiliate
-const ACEBET_LIFETIME_START = "2025-12-26";
 // LuxDrop lifetime window start (before the affiliate program existed)
 const LUXDROP_LIFETIME_START = "2024-01-01";
 // Roobet lifetime window start (before the affiliate program existed)
@@ -23,13 +19,6 @@ const ROOBET_LIFETIME_START = "2024-01-01";
 const ROOBET_ENDPOINT = "https://roobetconnect.com/affiliate/v2/stats";
 const ROOBET_AFFILIATE_USER_ID = "51b44ea5-f07c-41c8-9daf-9a35718b459e";
 
-interface AcebetUser {
-  userId: number | string;
-  name: string;
-  wagered: number;
-  active: boolean;
-}
-
 interface LuxdropEntry {
   username?: string;
   name?: string;
@@ -37,33 +26,6 @@ interface LuxdropEntry {
   weightedWagered?: number;
   wagerAmount?: number;
   totalWagered?: number;
-}
-
-/**
- * Fetch the full Acebet affiliate user list (lifetime window).
- * Returns null on failure so callers can distinguish "API down" from "user not found".
- */
-export async function fetchAcebetUserList(): Promise<AcebetUser[] | null> {
-  if (!ACEBET_TOKEN) return null;
-  try {
-    const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${ACEBET_LIFETIME_START}`;
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        Accept: "application/json",
-        Referer: "https://acebet.co/",
-        Authorization: `Bearer ${ACEBET_TOKEN}`,
-      },
-      // @ts-ignore node-fetch agent typing
-      agent: proxyAgent,
-    });
-    if (!response.ok) return null;
-    const data = await response.json().catch(() => null);
-    return Array.isArray(data) ? (data as AcebetUser[]) : null;
-  } catch {
-    return null;
-  }
 }
 
 /**
@@ -140,32 +102,6 @@ export async function fetchRoobetUserList(): Promise<LuxdropEntry[] | null> {
 }
 
 /**
- * Resolve an Acebet user by their numeric account ID (the `AB-<userId>` suffix).
- * This is the reliable link key — display names can differ or collide, but the
- * userId is unique. Use this to avoid "user not found" errors when the display
- * name doesn't match exactly.
- *
- * Returns:
- *  - { username, wagered } → matched (wagered in dollars, same as name lookup)
- *  - "not_found" → API reached, no user with that ID under the affiliate
- *  - null → API failure
- */
-export async function fetchAcebetByUserId(
-  userIdSuffix: string
-): Promise<{ username: string; wagered: number } | "not_found" | null> {
-  const suffix = String(userIdSuffix).trim().replace(/^AB-/i, "");
-  if (!/^\d+$/.test(suffix)) return "not_found";
-
-  const users = await fetchAcebetUserList();
-  if (users === null) return null;
-
-  const user = users.find((u) => String(u.userId) === suffix);
-  if (!user) return "not_found";
-
-  return { username: user.name ?? `AB-${suffix}`, wagered: Number(user.wagered) || 0 };
-}
-
-/**
  * Look up a single user's lifetime wager total in DOLLARS on a platform.
  * Returns:
  *  - number  → the wager total in dollars
@@ -177,15 +113,6 @@ export async function fetchPlatformWagerTotal(
   platformUsername: string
 ): Promise<number | "not_found" | null> {
   const uname = platformUsername.toLowerCase();
-
-  if (platform === "acebet") {
-    const users = await fetchAcebetUserList();
-    if (users === null) return null;
-    const user = users.find((u) => u.name && u.name.toLowerCase() === uname);
-    if (!user) return "not_found";
-    // Acebet wagered is already in dollars
-    return Number(user.wagered) || 0;
-  }
 
   if (platform === "luxdrop") {
     const entries = await fetchLuxdropUserList();

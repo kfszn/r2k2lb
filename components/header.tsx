@@ -17,7 +17,6 @@ import {
 
 function Header() {
   const [open, setOpen] = useState(false)
-  const [mobileAcebet, setMobileAcebet] = useState(false)
   const [mobileLuxdrop, setMobileLuxdrop] = useState(false)
   const [mobileRoobet, setMobileRoobet] = useState(false)
   const [mobilePoints, setMobilePoints] = useState(false)
@@ -69,7 +68,6 @@ function Header() {
 
  const closeMobile = () => {
  setOpen(false)
- setMobileAcebet(false)
  setMobileLuxdrop(false)
  setMobileRoobet(false)
  setMobilePoints(false)
@@ -95,69 +93,6 @@ function Header() {
           <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
             Home
           </Link>
-
-          {/* Acebet Dropdown */}
-          <div className="relative group">
-            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
-              AceBet
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
-              <Link 
-                href="/leaderboard/acebet" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Leaderboard
-              </Link>
-              <Link 
-                href="/tournament" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Tournament
-              </Link>
-              <Link 
-                href="/raffle" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Raffle
-              </Link>
-              <div className="h-px bg-border/20 mx-2 my-1" />
-              <div className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
-                Code Perks
-              </div>
-              <Link 
-                href="/perks/acebet/wager-rewards" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Wager Rewards
-              </Link>
-              <Link 
-                href="/perks/acebet/reward-match" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center gap-2"
-              >
-                <span className="text-amber-400 text-xs font-bold">2x</span>
-                Reward Match
-              </Link>
-              <Link 
-                href="/perks/acebet/first-deposit" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                First Time Deposit Bonus
-              </Link>
-              <Link 
-                href="/perks/acebet/loss-back" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Loss-back
-              </Link>
-              <Link 
-                href="/perks/acebet/challenges" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Challenges
-              </Link>
-            </div>
-          </div>
 
           {/* LuxDrop Dropdown */}
           <div className="relative group">
@@ -216,6 +151,18 @@ function Header() {
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Leaderboard
+              </Link>
+              <Link
+                href="/tournament"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Tournament
+              </Link>
+              <Link
+                href="/raffle"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
+              >
+                Raffle
               </Link>
               <div className="h-px bg-border/20 mx-2 my-1" />
               <div className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
@@ -368,52 +315,10 @@ function Header() {
                   Home
                 </Link>
 
-                {/* Mobile Acebet */}
-                <div className="space-y-1">
-                  <button 
-                    onClick={() => { setMobileAcebet(!mobileAcebet); setMobileLuxdrop(false); setMobileRoobet(false); setMobileKick(false); setMobilePoints(false) }}
-                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
-                  >
-                    AceBet
-                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileAcebet ? 'rotate-180' : ''}`} />
-                  </button>
-                  {mobileAcebet && (
-                    <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
-                      <Link href="/leaderboard/acebet" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Leaderboard
-                      </Link>
-                      <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Tournament
-                      </Link>
-                      <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Raffle
-                      </Link>
-                      <div className="h-px bg-border/20 my-1" />
-                      <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
-                      <Link href="/perks/acebet/wager-rewards" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Wager Rewards
-                      </Link>
-                      <Link href="/perks/acebet/reward-match" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
-                        <span className="text-amber-400 text-xs font-bold">2x</span>
-                        Reward Match
-                      </Link>
-                      <Link href="/perks/acebet/first-deposit" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        First Time Deposit Bonus
-                      </Link>
-                      <Link href="/perks/acebet/loss-back" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Loss-back
-                      </Link>
-                      <Link href="/perks/acebet/challenges" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Challenges
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
                 {/* Mobile LuxDrop */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileAcebet(false); setMobileRoobet(false); setMobileKick(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileRoobet(false); setMobileKick(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     LuxDrop
@@ -446,7 +351,7 @@ function Header() {
                 {/* Mobile Roobet */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileRoobet(!mobileRoobet); setMobileAcebet(false); setMobileLuxdrop(false); setMobileKick(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileRoobet(!mobileRoobet); setMobileLuxdrop(false); setMobileKick(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Roobet
@@ -456,6 +361,12 @@ function Header() {
                     <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
                       <Link href="/leaderboard/roobet" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Leaderboard
+                      </Link>
+                      <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Tournament
+                      </Link>
+                      <Link href="/raffle" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                        Raffle
                       </Link>
                       <div className="h-px bg-border/20 my-1" />
                       <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
@@ -477,7 +388,7 @@ function Header() {
                 {/* Mobile Kick */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileKick(!mobileKick); setMobileAcebet(false); setMobileLuxdrop(false); setMobileRoobet(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileKick(!mobileKick); setMobileLuxdrop(false); setMobileRoobet(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-[#53fc18] transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Kick
@@ -508,7 +419,7 @@ function Header() {
                 {/* Mobile R2Koins */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false); setMobileLuxdrop(false); setMobileRoobet(false); setMobileKick(false) }}
+                    onClick={() => { setMobilePoints(!mobilePoints); setMobileLuxdrop(false); setMobileRoobet(false); setMobileKick(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     R2Koins

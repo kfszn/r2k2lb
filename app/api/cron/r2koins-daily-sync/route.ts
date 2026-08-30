@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAcebetUserList, fetchLuxdropUserList } from "@/lib/r2koins/platforms";
+import { fetchLuxdropUserList, fetchRoobetUserList } from "@/lib/r2koins/platforms";
 
 export const maxDuration = 300;
 
