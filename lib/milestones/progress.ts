@@ -127,7 +127,7 @@ export async function fetchWindowedWager(
       const entry = username && rows.find((e) => eq(entryName(e), username));
       if (!entry) return "not_found";
       // LuxDrop wager is already in dollars (NOT cents).
-      return Number(entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
+      return Number(entry.weightedWagered ?? entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
     }
 
     if (platform === "roobet") {
@@ -140,7 +140,7 @@ export async function fetchWindowedWager(
       if (!entry) return "not_found";
       // Roobet's weighted-wager value is already in dollars (NOT cents) —
       // mirrors app/leaderboard/roobet/page.tsx's getEntryWagered().
-      return Number(entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
+      return Number(entry.weightedWagered ?? entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
     }
 
     return null;

@@ -34,6 +34,7 @@ interface LuxdropEntry {
   username?: string;
   name?: string;
   wagered?: number;
+  weightedWagered?: number;
   wagerAmount?: number;
   totalWagered?: number;
 }
@@ -209,7 +210,7 @@ export async function fetchPlatformWagerTotal(
     if (!entry) return "not_found";
     // Roobet's weighted-wager value is already in dollars (NOT cents) —
     // mirrors app/leaderboard/roobet/page.tsx's getEntryWagered().
-    return Number(entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
+    return Number(entry.weightedWagered ?? entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
   }
 
   return null;

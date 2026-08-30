@@ -62,6 +62,7 @@ interface RoobetEntry {
   name?: string
   avatar?: string | null
   wagered?: number
+  weightedWagered?: number
   wagerAmount?: number
   totalWagered?: number
 }
@@ -94,7 +95,7 @@ function getEntryName(e: RoobetEntry): string {
   return e.username ?? e.name ?? 'Unknown'
 }
 function getEntryWagered(e: RoobetEntry): number {
-  return e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0
+  return e.weightedWagered ?? e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0
 }
 function getEntryAvatar(e: RoobetEntry): string | null {
   return e.avatar ?? null
