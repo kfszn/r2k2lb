@@ -6,7 +6,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { createClient } from "@/lib/supabase/client";
 
 interface Winner {
-  acebet_username: string | null;
+  roobet_username: string | null;
+  legacy_acebet_username: string | null;
   kick_username: string | null;
   tournament_name: string;
   prize_amount: number;
@@ -23,7 +24,7 @@ export function WinnersCircle() {
     async function fetchWinners() {
       const { data, error } = await supabase
         .from("tournament_winners")
-        .select("acebet_username, kick_username, tournament_name, prize_amount, tournament_id")
+        .select("roobet_username, legacy_acebet_username, kick_username, tournament_name, prize_amount, tournament_id")
         .order("won_at", { ascending: false })
         .limit(50);
 
@@ -121,7 +122,7 @@ export function WinnersCircle() {
             {winners.map((winner, index) => {
               const { icon, bg, text } = rankMeta(index);
               const name =
-                winner.acebet_username ?? winner.kick_username ?? "Unknown";
+                  winner.kick_username ?? winner.roobet_username ?? winner.legacy_acebet_username ?? "Unknown";
               return (
                 <div
                   key={`${winner.tournament_id}-${name}`}

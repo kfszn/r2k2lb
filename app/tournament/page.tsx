@@ -126,11 +126,11 @@ export default function TournamentPage() {
     const supabase = createClient();
     supabase
       .from("tournament_players")
-      .select("id, acebet_active", { count: "exact" })
+      .select("id, roobet_active", { count: "exact" })
       .eq("tournament_id", tournament.id)
       .then(({ data, count }) => {
         setPlayerCount(count ?? 0);
-        setActiveCount((data ?? []).filter((p) => p.acebet_active).length);
+        setActiveCount((data ?? []).filter((p) => p.roobet_active).length);
       });
   }, [tournament?.id, loadBracketForTournament]);
 

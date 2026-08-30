@@ -49,6 +49,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/leaderboard/roobet" className="hover:text-foreground transition-colors">Roobet Leaderboard</Link></li>
               <li><Link href="/perks/roobet/wager-rewards" className="hover:text-foreground transition-colors">Wager Rewards</Link></li>
+              <li><Link href="/perks/roobet/rank-up-match" className="hover:text-foreground transition-colors">Rank Up Match</Link></li>
               <li><Link href="/perks/roobet/challenges" className="hover:text-foreground transition-colors">Challenges</Link></li>
               <li><Link href="/shop" className="hover:text-foreground transition-colors">Points Shop</Link></li>
             </ul>

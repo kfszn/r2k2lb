@@ -23,11 +23,11 @@ type Profile = {
   kick_username: string | null
   kick_avatar: string | null
   kick_linked_at: string | null
-  // Acebet
-  acebet_id: string | null
-  acebet_id_suffix: string | null
-  acebet_username: string | null
-  acebet_linked_at: string | null
+  // AceBet (legacy — replaced by Roobet)
+  legacy_acebet_id: string | null
+  legacy_acebet_id_suffix: string | null
+  legacy_acebet_username: string | null
+  legacy_acebet_linked_at: string | null
   // LuxDrop
   luxdrop_username: string | null
   luxdrop_linked_at: string | null
@@ -83,12 +83,6 @@ function AccountPageContent() {
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
-  // Acebet link state
-  const [acebetInput, setAcebetInput] = useState('')
-  const [acebetLoading, setAcebetLoading] = useState(false)
-  const [acebetError, setAcebetError] = useState<string | null>(null)
-  const [acebetSuccess, setAcebetSuccess] = useState<string | null>(null)
-
   // LuxDrop link state
   const [luxdropInput, setLuxdropInput] = useState('')
   const [luxdropLoading, setLuxdropLoading] = useState(false)
@@ -142,33 +136,6 @@ function AccountPageContent() {
     navigator.clipboard.writeText(profile.account_id)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }
-
-  const linkAcebet = async () => {
-    if (!acebetInput.trim()) return
-    setAcebetLoading(true)
-    setAcebetError(null)
-    setAcebetSuccess(null)
-    try {
-      const suffix = acebetInput.trim().replace(/^AB-/i, '')
-      const res = await fetch('/api/account/connections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ acebet_id_suffix: suffix }),
-      })
-      const json = await res.json()
-      if (!res.ok) {
-        setAcebetError(json.error ?? 'Failed to link Acebet account.')
-      } else {
-        setAcebetSuccess(`Linked as ${json.acebet_id} (${json.acebet_username ?? 'username pending'})`)
-        setAcebetInput('')
-        await loadProfile()
-      }
-    } catch {
-      setAcebetError('Network error. Please try again.')
-    } finally {
-      setAcebetLoading(false)
-    }
   }
 
   const linkLuxdrop = async () => {
@@ -395,71 +362,24 @@ function AccountPageContent() {
               )}
             </div>
 
-            {/* ── Acebet ─────────────────────────────────────────────── */}
-            <div className="py-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">A</div>
-                  <div>
-                    <p className="text-sm font-medium">Acebet</p>
-                    {profile.acebet_id ? (
-                      <p className="text-sm text-muted-foreground">{profile.acebet_id} · {profile.acebet_username ?? 'username pending'}</p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Not linked</p>
-                    )}
-                  </div>
-                </div>
-                <span className={`text-xs rounded-full px-2.5 py-0.5 font-medium border ${
-                  profile.acebet_id
-                    ? 'bg-green-500/10 text-green-500 border-green-500/20'
-                    : 'bg-muted text-muted-foreground border-border/40'
-                }`}>
-                  {profile.acebet_id ? 'Linked' : 'Not linked'}
-                </span>
-              </div>
-
-              {acebetSuccess && (
-                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-md px-3 py-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  {acebetSuccess}
-                </div>
-              )}
-              {acebetError && (
-                <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                  {acebetError}
-                </div>
-              )}
-
-              {!profile.acebet_id ? (
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">Enter your Acebet user ID (must have wagered under code R2K2):</p>
-                  <div className="flex gap-2">
-                    <div className="flex flex-1 items-center rounded-md border border-input bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
-                      <span className="pl-3 pr-1 text-sm font-mono font-semibold text-muted-foreground select-none">AB-</span>
-                      <input
-                        type="number"
-                        min={1}
-                        placeholder="000000"
-                        value={acebetInput}
-                        onChange={e => setAcebetInput(e.target.value)}
-                        disabled={acebetLoading}
-                        className="flex-1 bg-transparent py-2 pr-3 text-sm font-mono outline-none placeholder:text-muted-foreground/50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                        onKeyDown={e => { if (e.key === 'Enter') linkAcebet() }}
-                      />
+            {/* ── AceBet (legacy — replaced by Roobet) ──────────────────── */}
+            {profile.legacy_acebet_id && (
+              <div className="py-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">A</div>
+                    <div>
+                      <p className="text-sm font-medium">AceBet (legacy)</p>
+                      <p className="text-sm text-muted-foreground">{profile.legacy_acebet_id} · {profile.legacy_acebet_username ?? 'username pending'}</p>
                     </div>
-                    <Button
-                      size="sm"
-                      className="h-9 text-xs gap-1.5"
-                      disabled={acebetLoading || !acebetInput.trim()}
-                      onClick={linkAcebet}
-                    >
-                      {acebetLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
-                      {acebetLoading ? 'Linking...' : 'Link'}
-                    </Button>
                   </div>
+                  <span className="text-xs rounded-full px-2.5 py-0.5 font-medium border bg-muted text-muted-foreground border-border/40">
+                    Historical
+                  </span>
                 </div>
-              ) : (
+                <p className="text-xs text-muted-foreground">
+                  AceBet has been replaced by Roobet. This link is kept for historical reference only — link your Roobet account below to keep earning rewards.
+                </p>
                 <Button
                   size="sm"
                   variant="outline"
@@ -468,10 +388,10 @@ function AccountPageContent() {
                   onClick={() => unlink('acebet')}
                 >
                   {unlinkLoading === 'acebet' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Unlink className="h-3 w-3" />}
-                  Unlink Acebet
+                  Remove
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* ── LuxDrop ────────────────────────────────────────────── */}
             <div className="py-4 space-y-3">
