@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     // Get accepted players for the active tournament
     const { data: entries, error } = await supabase
       .from("tournament_players")
-      .select("id, kick_username, acebet_username, status")
+      .select("id, kick_username, roobet_username, status")
       .eq("status", "registered")
       .order("registered_at", { ascending: false })
       .limit(50);

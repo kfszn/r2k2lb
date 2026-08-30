@@ -97,14 +97,14 @@ export async function POST(request: NextRequest) {
         .update({ status: "winner" })
         .eq("id", winnerId);
 
-      // Get winner's Acebet username and record in winners table
+      // Get winner's Roobet username and record in winners table
       const { data: winnerPlayer } = await supabase
         .from("tournament_players")
-        .select("acebet_username, kick_username")
+        .select("roobet_username, kick_username")
         .eq("id", winnerId)
         .single();
 
-      if (winnerPlayer?.acebet_username) {
+      if (winnerPlayer?.roobet_username) {
         // Get tournament details
         const { data: tournamentData } = await supabase
           .from("tournaments")
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
           .insert({
             tournament_id: match.tournament_id,
             tournament_name: tournamentData?.name || "Tournament",
-            acebet_username: winnerPlayer.acebet_username,
+            roobet_username: winnerPlayer.roobet_username,
             kick_username: winnerPlayer.kick_username,
             prize_amount: 0, // Will be updated later if needed
             won_at: new Date().toISOString(),

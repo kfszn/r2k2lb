@@ -49,11 +49,11 @@ interface Tournament {
 
 interface TournamentPlayer {
   id: string;
-  acebet_username: string;
+  roobet_username: string;
   kick_username: string;
   status: string;
-  acebet_wager: number;
-  acebet_active: boolean;
+  roobet_wager: number;
+  roobet_active: boolean;
 }
 
 interface TournamentDetailViewProps {
@@ -96,7 +96,7 @@ export function TournamentDetailView({
 }: TournamentDetailViewProps) {
   const supabase = createClient();
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [aceUsername, setAceUsername] = useState('');
+  const [roobetUsername, setRoobetUsername] = useState('');
   const [kickUsername, setKickUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -117,8 +117,8 @@ export function TournamentDetailView({
   );
 
   const handleAddPlayer = async () => {
-    if (!aceUsername.trim() && !kickUsername.trim()) {
-      setError('Enter either an Acebet or Kick username');
+    if (!roobetUsername.trim() && !kickUsername.trim()) {
+      setError('Enter either a Roobet or Kick username');
       return;
     }
     setIsLoading(true);
@@ -129,8 +129,8 @@ export function TournamentDetailView({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tournamentId: tournament.id,
-          acebetUsername: aceUsername.trim() || null,
-          kickUsername: kickUsername.trim() || aceUsername.trim(),
+          roobetUsername: roobetUsername.trim() || null,
+          kickUsername: kickUsername.trim() || roobetUsername.trim(),
         }),
       });
       const result = await response.json();
@@ -138,7 +138,7 @@ export function TournamentDetailView({
         setError(result.error || 'Failed to add player');
         return;
       }
-      setAceUsername('');
+      setRoobetUsername('');
       setKickUsername('');
       setShowAddDialog(false);
       refreshPlayers();
@@ -178,11 +178,11 @@ export function TournamentDetailView({
   };
 
   const totalWagers = (players as TournamentPlayer[]).reduce(
-    (sum, p) => sum + (p.acebet_wager || 0),
+    (sum, p) => sum + (p.roobet_wager || 0),
     0
   );
   const activePlayers = (players as TournamentPlayer[]).filter(
-    (p) => p.acebet_active
+    (p) => p.roobet_active
   ).length;
 
   const meta = STATUS_META[status] ?? STATUS_META.completed;
@@ -313,16 +313,16 @@ export function TournamentDetailView({
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                        player.acebet_active
+                        player.roobet_active
                           ? 'bg-green-500'
                           : 'bg-muted-foreground/30'
                       }`}
                     />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">
-                        {player.acebet_username || (
+                        {player.roobet_username || (
                           <span className="italic text-muted-foreground">
-                            No Acebet
+                            No Roobet
                           </span>
                         )}
                       </p>
@@ -334,16 +334,16 @@ export function TournamentDetailView({
                   <div className="flex items-center gap-3 flex-shrink-0 ml-4">
                     <div className="text-right hidden sm:block">
                       <p className="text-sm font-medium tabular-nums">
-                        {formatCurrency(player.acebet_wager)}
+                        {formatCurrency(player.roobet_wager)}
                       </p>
                       <div className="flex items-center justify-end gap-1 mt-0.5">
-                        {player.acebet_active ? (
+                        {player.roobet_active ? (
                           <CheckCircle2 className="h-3 w-3 text-green-500" />
                         ) : (
                           <XCircle className="h-3 w-3 text-muted-foreground/40" />
                         )}
                         <span className="text-[11px] text-muted-foreground">
-                          {player.acebet_active ? 'Active' : 'Inactive'}
+                          {player.roobet_active ? 'Active' : 'Inactive'}
                         </span>
                       </div>
                     </div>
@@ -405,7 +405,7 @@ export function TournamentDetailView({
           <DialogHeader>
             <DialogTitle>Add Player</DialogTitle>
             <DialogDescription>
-              Enter at least one username. Acebet stats will be verified if provided.
+              Enter at least one username. Roobet stats will be verified if provided.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
@@ -417,12 +417,12 @@ export function TournamentDetailView({
             )}
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Acebet Username</label>
+              <label className="text-sm font-medium">Roobet Username</label>
               <Input
-                placeholder="acebet_user"
-                value={aceUsername}
+                placeholder="roobet_user"
+                value={roobetUsername}
                 onChange={(e) => {
-                  setAceUsername(e.target.value);
+                  setRoobetUsername(e.target.value);
                   setError('');
                 }}
                 disabled={isLoading}
@@ -451,7 +451,7 @@ export function TournamentDetailView({
                 onClick={handleAddPlayer}
                 disabled={
                   isLoading ||
-                  (!aceUsername.trim() && !kickUsername.trim())
+                  (!roobetUsername.trim() && !kickUsername.trim())
                 }
               >
                 {isLoading ? 'Adding…' : 'Add Player'}

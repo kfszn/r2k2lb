@@ -71,7 +71,7 @@ export function QuickActions({ tournament, onUpdate, onViewEntrants, onCreateNew
         const winner = getFinalsWinner();
         if (winner) {
           winnerData = {
-            acebet_username: winner.acebet_username,
+            roobet_username: winner.roobet_username,
             kick_username: winner.kick_username,
             prize_amount: tournament.prize_pool || 0,
           };

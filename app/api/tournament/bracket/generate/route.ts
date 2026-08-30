@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // Fetch all registered players
     const { data: players, error: playersError } = await supabase
       .from("tournament_players")
-      .select("id, acebet_username, kick_username, seed_number")
+      .select("id, roobet_username, kick_username, seed_number")
       .eq("tournament_id", tournamentId)
       .eq("status", "registered");
 

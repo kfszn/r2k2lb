@@ -26,7 +26,7 @@ export async function GET() {
     : "LIVE";
 
   return new NextResponse(
-    `${tournament.name} | Status: ${statusText} | Players: ${playerCount}/${tournament.max_players} | Prize: $${tournament.prize_pool} | Enter: !enter YourAcebetName`,
+    `${tournament.name} | Status: ${statusText} | Players: ${playerCount}/${tournament.max_players} | Prize: $${tournament.prize_pool} | Enter: !enter YourRoobetName`,
     { status: 200 }
   );
 }
