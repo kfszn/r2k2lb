@@ -15,10 +15,10 @@ import {
 } from '@/components/leaderboard/leaderboard-ui'
 
 // ---------------------------------------------------------------------------
-// Config — rolling 7-day periods, must match app/api/cron/roobet-weekly-archive
+// Config — rolling 8-day periods, must match app/api/cron/roobet-weekly-archive
 // ---------------------------------------------------------------------------
-const PERIOD_ANCHOR = '2026-08-03'
-const PERIOD_DAYS = 7
+const PERIOD_ANCHOR = '2026-08-30'
+const PERIOD_DAYS = 8
 const PRIZE_TOTAL = 5000
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25]
 
