@@ -439,20 +439,20 @@ export function RaffleManager() {
         <p className="text-muted-foreground">Control raffle entries and spin winners</p>
       </div>
 
-      <Tabs defaultValue="acebet" className="w-full">
+      <Tabs defaultValue="roobet" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="acebet">AceBet</TabsTrigger>
-          <TabsTrigger value="luxdrop">LuxDrop</TabsTrigger>
           <TabsTrigger value="roobet">Roobet</TabsTrigger>
+          <TabsTrigger value="luxdrop">LuxDrop</TabsTrigger>
+          <TabsTrigger value="acebet">AceBet (legacy)</TabsTrigger>
         </TabsList>
-        <TabsContent value="acebet">
-          <RaffleAdminTab platform="acebet" />
+        <TabsContent value="roobet">
+          <RaffleAdminTab platform="roobet" />
         </TabsContent>
         <TabsContent value="luxdrop">
           <RaffleAdminTab platform="luxdrop" />
         </TabsContent>
-        <TabsContent value="roobet">
-          <RaffleAdminTab platform="roobet" />
+        <TabsContent value="acebet">
+          <RaffleAdminTab platform="acebet" />
         </TabsContent>
       </Tabs>
     </div>

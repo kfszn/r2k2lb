@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast'
 interface Claim {
   id: string
   user_id: string
-  acebet_username: string
+  roobet_username: string
   status: 'pending' | 'approved' | 'rejected'
   created_at: string
   updated_at: string
@@ -122,7 +122,7 @@ export function ClaimsManager() {
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                      <p className="font-semibold text-lg">{claim.acebet_username}</p>
+                      <p className="font-semibold text-lg">{claim.roobet_username}</p>
                       <Badge variant="secondary" className="bg-orange-500/20 text-orange-400 border-orange-500/30">
                         Pending
                       </Badge>
@@ -187,7 +187,7 @@ export function ClaimsManager() {
                   className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/30"
                 >
                   <div className="flex items-center gap-3">
-                    <p className="font-medium">{claim.acebet_username}</p>
+                    <p className="font-medium">{claim.roobet_username}</p>
                     <Badge
                       variant={claim.status === 'approved' ? 'default' : 'secondary'}
                       className={
