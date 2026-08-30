@@ -75,7 +75,7 @@ function Header() {
  }
 
   return (
-    <header className="border-b border-border/30 bg-card/70 backdrop-blur-xl sticky top-0 z-50">
+    <header className="border-b border-white/10 bg-background/60 backdrop-blur-2xl backdrop-saturate-150 sticky top-0 z-50 shadow-[0_8px_30px_-16px_oklch(0.05_0.02_265)]">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 md:gap-3">
           <Image 
