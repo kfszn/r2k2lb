@@ -402,80 +402,54 @@
 }
 
 /* ==========================================================================
-   Cloudy soft-glass system
+   Soft surface system — clean, gentle, modern (not literal fog/blur)
    ========================================================================== */
 
-/* Frosted glass surface — used by cards, panels, chrome */
+/* Soft card surface — solid, calm, hairline border, gentle shadow */
 .glass {
-  background:
-    linear-gradient(
-      180deg,
-      oklch(0.32 0.035 265 / 0.55),
-      oklch(0.2 0.03 265 / 0.45)
-    );
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border: 1px solid oklch(0.85 0.03 250 / 0.12);
+  background: oklch(0.23 0.03 265);
+  border: 1px solid oklch(0.85 0.03 250 / 0.1);
+  box-shadow:
+    0 1px 0 0 oklch(1 0 0 / 0.04) inset,
+    0 10px 30px -18px oklch(0.05 0.02 265 / 0.7);
+}
+
+/* Slightly brighter surface for hero / featured panels */
+.glass-strong {
+  background: oklch(0.27 0.032 265);
+  border: 1px solid oklch(0.9 0.03 245 / 0.14);
   box-shadow:
     0 1px 0 0 oklch(1 0 0 / 0.06) inset,
-    0 18px 50px -24px oklch(0.05 0.02 265 / 0.9);
+    0 16px 44px -22px oklch(0.05 0.02 265 / 0.75);
 }
 
-/* Stronger, brighter glass for hero / featured surfaces */
-.glass-strong {
-  background:
-    linear-gradient(
-      180deg,
-      oklch(0.4 0.05 260 / 0.6),
-      oklch(0.24 0.035 265 / 0.5)
-    );
-  backdrop-filter: blur(26px) saturate(150%);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
-  border: 1px solid oklch(0.9 0.03 245 / 0.16);
-  box-shadow:
-    0 1px 0 0 oklch(1 0 0 / 0.08) inset,
-    0 24px 70px -28px oklch(0.05 0.02 265 / 0.95);
-}
-
-/* Subtle lift on hover for interactive glass surfaces */
+/* Gentle lift on hover for interactive surfaces */
 .glass-hover {
   transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.3s ease, border-color 0.3s ease;
 }
 .glass-hover:hover {
-  transform: translateY(-4px);
-  border-color: oklch(0.78 0.12 245 / 0.35);
+  transform: translateY(-3px);
+  border-color: oklch(0.78 0.12 245 / 0.3);
   box-shadow:
-    0 1px 0 0 oklch(1 0 0 / 0.1) inset,
-    0 28px 70px -26px oklch(0.55 0.16 255 / 0.45);
+    0 1px 0 0 oklch(1 0 0 / 0.08) inset,
+    0 20px 46px -22px oklch(0.55 0.16 255 / 0.32);
 }
 
-/* Soft diffused cloud orb — atmospheric background element */
+/* Very subtle static ambient wash — soft color, no drifting fog */
 .cloud-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(70px);
-  opacity: 0.5;
+  filter: blur(90px);
+  opacity: 0.22;
   pointer-events: none;
-  will-change: transform;
 }
 
-@keyframes cloud-drift {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  33% { transform: translate3d(4%, -6%, 0) scale(1.12); }
-  66% { transform: translate3d(-5%, 4%, 0) scale(0.94); }
-}
-
-.animate-cloud-drift {
-  animation: cloud-drift 22s ease-in-out infinite;
-}
-
-/* Grain-free soft vignette wash to add depth over the cloud layer */
 .cloud-vignette {
   background: radial-gradient(
-    ellipse 120% 90% at 50% -10%,
-    oklch(0.7 0.15 255 / 0.14),
-    transparent 60%
+    ellipse 120% 80% at 50% -10%,
+    oklch(0.7 0.15 255 / 0.08),
+    transparent 55%
   );
 }
 
@@ -486,7 +460,6 @@
   .animate-glow-pulse,
   .animate-deal-in,
   .animate-tile-pop,
-  .animate-cloud-drift,
   .logo-bounce,
   .dot-pulse,
   .lb-grid,
