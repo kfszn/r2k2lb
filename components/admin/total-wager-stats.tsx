@@ -30,7 +30,7 @@ interface LeaderboardEntry {
 
 type SortField = 'name' | 'wagered' | 'deposited' | 'active' | 'earned'
 type SortDirection = 'asc' | 'desc'
-type Source = 'acebet'
+type Source = 'roobet'
 
 export function TotalWagerStats() {
   const [startDate, setStartDate] = useState('')
@@ -41,7 +41,7 @@ export function TotalWagerStats() {
   const [error, setError] = useState('')
   const [sortField, setSortField] = useState<SortField>('wagered')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const [source, setSource] = useState<Source>('acebet')
+  const [source, setSource] = useState<Source>('roobet')
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -90,13 +90,13 @@ export function TotalWagerStats() {
       let leaderboardData: any[]
       let formatted: LeaderboardEntry[]
 
-      if (source === 'acebet') {
+      if (source === 'roobet') {
         const end = new Date(endDate).toISOString().split('T')[0]
         const url = `/api/leaderboard?start_at=${start}&end_at=${end}`
         const response = await fetch(url)
-        if (!response.ok) throw new Error('Failed to fetch Acebet data')
+        if (!response.ok) throw new Error('Failed to fetch Roobet data')
         const data = await response.json()
-        if (!data.ok || !data.data) throw new Error('Invalid response from Acebet API')
+        if (!data.ok || !data.data) throw new Error('Invalid response from Roobet API')
         leaderboardData = data.data
         formatted = leaderboardData.map((p: any) => ({
           name: p.name || 'Unknown',
@@ -145,7 +145,7 @@ export function TotalWagerStats() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="acebet">Acebet</SelectItem>
+                    <SelectItem value="roobet">Roobet</SelectItem>
       
                   </SelectContent>
                 </Select>
@@ -198,7 +198,7 @@ export function TotalWagerStats() {
               </CardContent>
             </Card>
 
-            {source === 'acebet' && (
+            {source === 'roobet' && (
               <>
                 <Card>
                   <CardHeader>
@@ -256,7 +256,7 @@ export function TotalWagerStats() {
                             Wagered <SortIcon field="wagered" />
                           </button>
                         </th>
-                        {source === 'acebet' && (
+                        {source === 'roobet' && (
                           <>
                             <th className="text-right py-3 px-4 font-semibold">
                               <button
@@ -291,7 +291,7 @@ export function TotalWagerStats() {
                         <tr key={idx} className="border-b border-border/50 hover:bg-muted/50">
                           <td className="py-3 px-4 text-foreground">{entry.name}</td>
                           <td className="py-3 px-4 text-right text-green-500">${(entry.wagered / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                          {source === 'acebet' && (
+                          {source === 'roobet' && (
                             <>
                               <td className="py-3 px-4 text-right text-green-500">${(entry.deposited / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                               <td className="py-3 px-4 text-right">{entry.active ? <span className="text-green-500 font-medium">Yes</span> : <span className="text-muted-foreground">No</span>}</td>

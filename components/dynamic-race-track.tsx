@@ -15,7 +15,7 @@ interface LeaderboardEntry {
 }
 
 interface DynamicRaceTrackProps {
-  platform?: 'acebet'
+  platform?: 'acebet' | 'roobet'
   targetWager?: number
   showTop?: number
   autoRefresh?: number
@@ -26,7 +26,7 @@ interface DynamicRaceTrackProps {
 }
 
 export function DynamicRaceTrack({
-  platform = 'acebet',
+  platform = 'roobet',
   targetWager = 1000, // Target in dollars
   showTop = 10,
   autoRefresh = 5000,

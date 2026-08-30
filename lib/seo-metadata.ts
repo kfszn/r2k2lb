@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-// Updated July 2026: multi-platform leaderboards (Acebet + LuxDrop + Kick), R2Koins, 50/50, raffle, shop, games
+// Updated July 2026: multi-platform leaderboards (Roobet + LuxDrop + Kick), R2Koins, 50/50, raffle, shop, games
 const baseUrl = 'https://r2k2.gg'
 const brandName = 'R2K2'
 
@@ -11,12 +11,12 @@ export const defaultMetadata: Metadata = {
     template: `%s | ${brandName}`,
   },
   description:
-    'R2K2 is a multi-platform rewards community. Compete on Acebet, LuxDrop, and Kick leaderboards, earn R2Koins from wagers, play 50/50 draws, enter raffles, and redeem points in the shop.',
+    'R2K2 is a multi-platform rewards community. Compete on Roobet, LuxDrop, and Kick leaderboards, earn R2Koins from wagers, play 50/50 draws, enter raffles, and redeem points in the shop.',
   keywords: [
     'R2K2',
     'leaderboards',
     'rewards',
-    'Acebet',
+    'Roobet',
     'LuxDrop',
     'Kick leaderboard',
     'wager rewards',
@@ -37,7 +37,7 @@ export const defaultMetadata: Metadata = {
     siteName: brandName,
     title: `${brandName} — Leaderboards, Rewards & Exclusive Perks`,
     description:
-      'Compete on Acebet, LuxDrop, and Kick leaderboards, earn R2Koins, play 50/50 draws, enter raffles, and redeem points. Use code R2K2.',
+      'Compete on Roobet, LuxDrop, and Kick leaderboards, earn R2Koins, play 50/50 draws, enter raffles, and redeem points. Use code R2K2.',
   },
   twitter: {
     card: 'summary_large_image',
@@ -45,7 +45,7 @@ export const defaultMetadata: Metadata = {
     creator: '@r2ktwo',
     title: `${brandName} — Leaderboards, Rewards & Exclusive Perks`,
     description:
-      'Compete on Acebet, LuxDrop & Kick leaderboards. Earn R2Koins, play 50/50, enter raffles, redeem points. Code R2K2.',
+      'Compete on Roobet, LuxDrop & Kick leaderboards. Earn R2Koins, play 50/50, enter raffles, redeem points. Code R2K2.',
   },
   icons: {
     icon: '/assets/logo.png',
@@ -65,11 +65,11 @@ export const pageMetadata = {
   home: {
     title: 'R2K2 — Leaderboards, R2Koins, Raffles & Exclusive Perks',
     description:
-      'R2K2 is your hub for multi-platform leaderboard competitions on Acebet, LuxDrop, and Kick. Earn R2Koins from wagers, play 50/50 draws, enter raffles, redeem points, and compete in tournaments. Use code R2K2.',
+      'R2K2 is your hub for multi-platform leaderboard competitions on Roobet, LuxDrop, and Kick. Earn R2Koins from wagers, play 50/50 draws, enter raffles, redeem points, and compete in tournaments. Use code R2K2.',
     keywords: [
       'R2K2',
       'leaderboard',
-      'Acebet leaderboard',
+      'Roobet leaderboard',
       'LuxDrop leaderboard',
       'Kick leaderboard',
       'R2Koins',

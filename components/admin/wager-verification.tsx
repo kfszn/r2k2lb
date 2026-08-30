@@ -27,7 +27,7 @@ export function WagerVerification() {
 
   const handleSearch = async () => {
     if (!username.trim()) {
-      setError("Please enter an Acebet username");
+      setError("Please enter a Roobet username");
       return;
     }
     if (!startDate || !endDate) {
@@ -110,7 +110,7 @@ export function WagerVerification() {
         <div className="space-y-4">
           <div>
             <Label htmlFor="username" className="text-sm font-medium">
-              Acebet Username
+              Roobet Username
             </Label>
             <Input
               id="username"

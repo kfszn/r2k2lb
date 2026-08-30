@@ -43,7 +43,8 @@ function roobetCurrentPeriod(): { start: string; end: string } {
 /**
  * Leaderboard windows — these MUST match the per-platform leaderboard pages so
  * milestone progress "resets with the leaderboard".
- *   - AceBet:   app/api/leaderboard/route.js (DEFAULT_START/END)
+ *   - "acebet": legacy platform key — app/api/leaderboard/route.js
+ *     (DEFAULT_START/END). That route is now Roobet-backed under the hood.
  *   - LuxDrop:  app/leaderboard/luxdrop/page.tsx (START_DATE/END_DATE)
  *   - Roobet:   app/leaderboard/roobet/page.tsx (rolling 7-day period)
  */
@@ -89,7 +90,7 @@ function eq(a: string, b: string): boolean {
 
 export interface WagerLookup {
   username: string | null;
-  /** AceBet only — the numeric userId (acebet_id_suffix); the reliable match key. */
+  /** Legacy "acebet" platform key only — the numeric userId (legacy_acebet_id_suffix); the reliable match key. */
   acebetUserId?: string | null;
 }
 
@@ -115,18 +116,20 @@ export async function fetchWindowedWager(
 
   try {
     if (platform === "acebet") {
+      // Legacy platform key — /api/leaderboard is now backed by Roobet's
+      // affiliate API under the hood (see app/api/leaderboard/route.js).
       const url = `${origin}/api/leaderboard?start_at=${win.start}&end_at=${win.end}&fresh=1`;
       const r = await fetch(url, { cache: "no-store" });
       if (!r.ok) return null;
       const json = await r.json().catch(() => null);
       const rows = normalizeEntries(json?.data ?? json);
-      // Prefer exact userId match (acebet_id_suffix), fall back to name.
+      // Prefer exact userId match, fall back to name.
       const entry =
         (acebetUserId &&
           rows.find((e) => String(e?.userId ?? "") === acebetUserId)) ||
         (username && rows.find((e) => eq(entryName(e), username)));
       if (!entry) return "not_found";
-      // AceBet API returns wagered in CENTS → convert to dollars.
+      // The route normalizes to CENTS regardless of upstream provider → convert to dollars.
       return (Number(entry.wagered) || 0) / 100;
     }
 

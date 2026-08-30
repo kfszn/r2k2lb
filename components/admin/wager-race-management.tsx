@@ -14,7 +14,7 @@ import { Trash2, Plus, Edit2, Lock, Zap } from 'lucide-react'
 
 interface Race {
   id: string
-  platform: 'acebet'
+  platform: 'acebet' | 'roobet'
   period: 'weekly' | 'monthly'
   start_date: string
   end_date: string
@@ -52,7 +52,7 @@ export function WagerRaceManagement() {
 
   // Form states
   const [raceName, setRaceName] = useState('')
-  const [platform, setPlatform] = useState<'acebet'>('acebet')
+  const [platform, setPlatform] = useState<'acebet' | 'roobet'>('roobet')
   const [period, setPeriod] = useState<'weekly' | 'monthly'>('weekly')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -189,7 +189,7 @@ export function WagerRaceManagement() {
       console.log('[v0] Milestone created successfully')
 
       setRaceName('')
-      setPlatform('acebet')
+      setPlatform('roobet')
       setPeriod('weekly')
       setStartDate('')
       setEndDate('')
@@ -360,7 +360,8 @@ export function WagerRaceManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="acebet">AceBet</SelectItem>
+                    <SelectItem value="roobet">Roobet</SelectItem>
+                    <SelectItem value="acebet">AceBet (legacy)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
