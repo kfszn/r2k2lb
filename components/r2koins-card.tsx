@@ -51,7 +51,7 @@ export function R2KoinsCard() {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No platform accounts linked yet. Open a ticket in Discord to link your Acebet or LuxDrop
+            No platform accounts linked yet. Open a ticket in Discord to link your Roobet or LuxDrop
             account and start earning R2Koins from your wagers.
           </p>
         )}

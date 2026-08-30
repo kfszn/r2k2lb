@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const platform = request.nextUrl.searchParams.get('platform') || 'acebet';
+    const platform = request.nextUrl.searchParams.get('platform') || 'roobet';
     const supabase = await createClient();
 
     // Load config from admin panel

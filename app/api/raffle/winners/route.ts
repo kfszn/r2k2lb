@@ -12,7 +12,7 @@ function createServiceClient() {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const platform = searchParams.get('platform') || 'acebet';
+    const platform = searchParams.get('platform') || 'roobet';
     const limit = parseInt(searchParams.get('limit') || '50');
 
     const supabase = createServiceClient();

@@ -82,21 +82,6 @@ export const pageMetadata = {
     ],
     canonical: baseUrl,
   },
-  acebet: {
-    title: 'Acebet Leaderboard — Monthly Prizes with Code R2K2',
-    description:
-      'Compete on the R2K2 Acebet leaderboard for monthly cash prizes. Earn R2Koins on every wager, claim loss back, unlock tier rewards, and more. Sign up with code R2K2.',
-    keywords: [
-      'Acebet leaderboard',
-      'Acebet R2K2',
-      'Acebet code R2K2',
-      'Acebet monthly prizes',
-      'Acebet wager rewards',
-      'Acebet VIP',
-      'R2Koins Acebet',
-    ],
-    canonical: `${baseUrl}/leaderboard/acebet`,
-  },
   luxdrop: {
     title: 'LuxDrop Leaderboard — Monthly Prizes with Code R2K2',
     description:
@@ -159,11 +144,11 @@ export const pageMetadata = {
   wagerRaces: {
     title: 'Wager Races — Milestone Rewards on R2K2',
     description:
-      'Compete in R2K2 wager races on Acebet. Hit milestones to unlock exclusive cash rewards. Check active and upcoming races.',
+      'Compete in R2K2 wager races on Roobet. Hit milestones to unlock exclusive cash rewards. Check active and upcoming races.',
     keywords: [
       'wager races',
       'milestone rewards',
-      'Acebet wager race',
+      'Roobet wager race',
       'R2K2 races',
       'wager milestones',
     ],
@@ -209,45 +194,6 @@ export const pageMetadata = {
       'redeem rewards',
     ],
     canonical: `${baseUrl}/how-it-works`,
-  },
-  perksAcebetFirstDeposit: {
-    title: 'Acebet First Deposit Bonus — Exclusive with Code R2K2',
-    description:
-      'Claim your first deposit bonus on Acebet with code R2K2. Exclusive welcome offer for new players. Find out the requirements and how to claim.',
-    keywords: [
-      'Acebet first deposit bonus',
-      'Acebet welcome bonus',
-      'Acebet new player',
-      'Acebet code R2K2',
-      'first deposit bonus',
-    ],
-    canonical: `${baseUrl}/perks/acebet/first-deposit`,
-  },
-  perksAcebetLossBack: {
-    title: 'Acebet Loss Back — R2K2 Exclusive Cashback',
-    description:
-      'Get loss back on Acebet with R2K2 code. Recover a percentage of your losses automatically. Exclusive cashback benefit for R2K2 members.',
-    keywords: [
-      'Acebet loss back',
-      'Acebet cashback',
-      'Acebet R2K2 bonus',
-      'gambling cashback',
-      'loss recovery',
-    ],
-    canonical: `${baseUrl}/perks/acebet/loss-back`,
-  },
-  perksAcebetWagerRewards: {
-    title: 'Acebet Wager Rewards — Monthly Tier Bonuses',
-    description:
-      'Earn tier-based monthly wager rewards on Acebet with code R2K2. The more you wager, the bigger your reward. Claim your monthly bonus.',
-    keywords: [
-      'Acebet wager rewards',
-      'Acebet monthly bonus',
-      'Acebet tier rewards',
-      'wager bonus Acebet',
-      'R2K2 Acebet rewards',
-    ],
-    canonical: `${baseUrl}/perks/acebet/wager-rewards`,
   },
   perksRoobetWagerRewards: {
     title: 'Roobet Wager Rewards — Weighted Wager Tier Bonuses',
@@ -320,28 +266,14 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/fifty-fifty`,
   },
-  perksAcebetRewardMatch: {
-    title: 'Acebet Reward Match — Double Your Deposit | R2K2',
-    description:
-      'Get your Acebet deposit matched as a bonus with code R2K2. Exclusive reward match offer for R2K2 members. Learn how to claim and the requirements.',
-    keywords: [
-      'Acebet reward match',
-      'Acebet deposit match',
-      'Acebet bonus match',
-      'Acebet code R2K2',
-      'deposit bonus',
-      'reward match offer',
-    ],
-    canonical: `${baseUrl}/perks/acebet/reward-match`,
-  },
   wagerBonus: {
     title: 'Wager Bonus Info — R2K2 Rewards Program',
     description:
-      'Understand the R2K2 wager bonus program on Acebet. Learn how wager-based rewards are earned and claimed.',
+      'Understand the R2K2 wager bonus program on Roobet. Learn how wager-based rewards are earned and claimed.',
     keywords: [
       'wager bonus',
       'R2K2 wager rewards',
-      'Acebet bonus',
+      'Roobet bonus',
       'betting rewards program',
     ],
     canonical: `${baseUrl}/wagerbonus`,

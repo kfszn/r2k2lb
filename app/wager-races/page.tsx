@@ -11,7 +11,7 @@ import { format, parseISO } from 'date-fns'
 
 interface Race {
   id: string
-  platform: 'acebet'
+  platform: 'acebet' | 'roobet'
   period: 'weekly' | 'monthly'
   start_date: string
   end_date: string
