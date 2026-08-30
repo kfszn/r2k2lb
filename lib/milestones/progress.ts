@@ -8,7 +8,7 @@ export type MilestonePlatform = "acebet" | "luxdrop" | "roobet";
 // anchor date — mirrors app/leaderboard/roobet/page.tsx (PERIOD_ANCHOR/PERIOD_DAYS)
 // and app/api/cron/roobet-weekly-archive exactly, so milestone progress
 // resets in lockstep with the public leaderboard.
-const ROOBET_PERIOD_ANCHOR = "2026-08-29";
+const ROOBET_PERIOD_ANCHOR = "2026-08-28";
 const ROOBET_PERIOD_DAYS = 7;
 
 function addDays(dateStr: string, days: number): string {

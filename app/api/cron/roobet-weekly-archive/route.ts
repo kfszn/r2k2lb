@@ -14,7 +14,7 @@ function getSupabase() {
 // Roobet leaderboard: rolling 7-day periods.
 // PERIOD_ANCHOR is the start date (UTC) of the current cycle — every subsequent
 // period is an exact 7-day multiple offset from this anchor.
-const PERIOD_ANCHOR = "2026-08-29";
+const PERIOD_ANCHOR = "2026-08-28";
 const PERIOD_DAYS = 7;
 const PRIZE_TOTAL = 5000;
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25];

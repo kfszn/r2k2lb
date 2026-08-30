@@ -17,7 +17,7 @@ import {
 // ---------------------------------------------------------------------------
 // Config — rolling 7-day periods, must match app/api/cron/roobet-weekly-archive
 // ---------------------------------------------------------------------------
-const PERIOD_ANCHOR = '2026-08-29'
+const PERIOD_ANCHOR = '2026-08-28'
 const PERIOD_DAYS = 7
 const PRIZE_TOTAL = 5000
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25]
