@@ -122,6 +122,11 @@ function sortByWeightedWager(entries: RoobetEntry[]): RoobetEntry[] {
   return [...entries].sort((a, b) => getEntryWagered(b) - getEntryWagered(a))
 }
 function getEntryAvatar(e: RoobetEntry): string | null {
+  // Roobet has no badge art for rank level 0 (unranked) — its own API always
+  // returns an icon URL for that level ("levelcons/image0.png") that 404s.
+  // Skip it so those players get a distinct initials badge instead of every
+  // unranked player collapsing into the same broken-image fallback.
+  if (e.rankLevel === 0) return e.avatar ?? null
   return e.rankLevelImage ?? e.avatar ?? null
 }
 
@@ -239,12 +244,15 @@ export default function RoobetLeaderboard() {
     return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
   }
 
+  // Returns '' (no real avatar) when there's nothing usable, so PodiumCard/
+  // PlayerRow render a distinct per-player initials badge instead of every
+  // avatar-less player collapsing into the same generic fallback icon.
   const getAvatarUrl = (avatar: string | null): string => {
-    if (!avatar) return '/assets/roobet-icon.png'
+    if (!avatar) return ''
     if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
       return avatar.split('#')[0]
     }
-    return '/assets/roobet-icon.png'
+    return ''
   }
 
   const totalWagered = entries.reduce((sum, e) => sum + getEntryWagered(e), 0)
