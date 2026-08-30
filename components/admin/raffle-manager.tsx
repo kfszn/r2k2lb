@@ -21,7 +21,7 @@ interface RaffleConfig {
   end_date: string;
 }
 
-function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbattle' }) {
+function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet' }) {
   const [config, setConfig] = useState<RaffleConfig | null>(null);
   const [configForm, setConfigForm] = useState({
     min_wager: 50,
@@ -117,7 +117,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'csbatt
           });
         }
       } else {
-        // LuxDrop & CSBattle affiliate APIs return wager amounts already in dollars
+        // LuxDrop & Roobet affiliate APIs return wager amounts already in dollars
         const res = await fetch(
           `/api/${platform}/affiliates?startDate=${config.start_date}&endDate=${config.end_date}`,
           { cache: 'no-store' },
@@ -439,20 +439,20 @@ export function RaffleManager() {
         <p className="text-muted-foreground">Control raffle entries and spin winners</p>
       </div>
 
-      <Tabs defaultValue="acebet" className="w-full">
+      <Tabs defaultValue="roobet" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="acebet">AceBet</TabsTrigger>
+          <TabsTrigger value="roobet">Roobet</TabsTrigger>
           <TabsTrigger value="luxdrop">LuxDrop</TabsTrigger>
-          <TabsTrigger value="csbattle">CSBattle</TabsTrigger>
+          <TabsTrigger value="acebet">AceBet (legacy)</TabsTrigger>
         </TabsList>
-        <TabsContent value="acebet">
-          <RaffleAdminTab platform="acebet" />
+        <TabsContent value="roobet">
+          <RaffleAdminTab platform="roobet" />
         </TabsContent>
         <TabsContent value="luxdrop">
           <RaffleAdminTab platform="luxdrop" />
         </TabsContent>
-        <TabsContent value="csbattle">
-          <RaffleAdminTab platform="csbattle" />
+        <TabsContent value="acebet">
+          <RaffleAdminTab platform="acebet" />
         </TabsContent>
       </Tabs>
     </div>

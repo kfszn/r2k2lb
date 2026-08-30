@@ -18,12 +18,12 @@ export function HowToEnter({ minWager = 0, requireActive = true }: HowToEnterPro
         {[
           {
             step: "1",
-            title: "Sign up on Acebet",
+            title: "Sign up on Roobet",
             desc: (
               <>
                 Use code{" "}
                 <span className="font-bold text-primary">R2K2</span> when
-                signing up at acebet.co
+                signing up at roobet.com
               </>
             ),
           },
@@ -34,7 +34,7 @@ export function HowToEnter({ minWager = 0, requireActive = true }: HowToEnterPro
               <>
                 Be active under code{" "}
                 <span className="font-bold text-primary">R2K2</span> on
-                acebet.co and meet the specified wagered amount
+                roobet.com and meet the specified wagered amount
               </>
             ),
           },

@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // Fetch current values for audit log
   const { data: current } = await supabase
     .from('profiles')
-    .select('kick_id, kick_username, acebet_id, acebet_id_suffix, acebet_username, discord_id, discord_username')
+    .select('kick_id, kick_username, roobet_username, legacy_acebet_id, legacy_acebet_id_suffix, legacy_acebet_username, discord_id, discord_username')
     .eq('id', id)
     .maybeSingle()
 
@@ -47,19 +47,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   let old_value: string | null = null
   let new_value: string | null = null
 
-  if (provider === 'acebet') {
-    const rawSuffix = String(fields.acebet_id_suffix ?? '').trim().replace(/^AB-/i, '')
-    if (!rawSuffix) return NextResponse.json({ error: 'acebet_id_suffix required' }, { status: 400 })
-    const acebet_id = `AB-${rawSuffix}`
+  if (provider === 'roobet') {
+    const roobet_username = fields.roobet_username?.trim() || null
+    if (!roobet_username) return NextResponse.json({ error: 'roobet_username required' }, { status: 400 })
     updates = {
-      acebet_id,
-      acebet_id_suffix: rawSuffix,
-      acebet_username: fields.acebet_username?.trim() || null,
-      acebet_linked_at: new Date().toISOString(),
+      roobet_username,
+      roobet_linked_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-    old_value = current?.acebet_id ?? null
-    new_value = acebet_id
+    old_value = current?.roobet_username ?? null
+    new_value = roobet_username
+  } else if (provider === 'acebet') {
+    // AceBet is retired — admins may only edit the historical legacy record, not create new links.
+    updates = {
+      legacy_acebet_username: fields.acebet_username?.trim() || null,
+      updated_at: new Date().toISOString(),
+    }
+    old_value = current?.legacy_acebet_id ?? null
+    new_value = current?.legacy_acebet_id ?? null
   } else if (provider === 'kick') {
     updates = {
       kick_id: fields.kick_id?.trim() || null,
@@ -100,7 +105,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   const { data: current } = await supabase
     .from('profiles')
-    .select('kick_id, kick_username, acebet_id, discord_id')
+    .select('kick_id, kick_username, roobet_username, legacy_acebet_id, discord_id')
     .eq('id', id)
     .maybeSingle()
 
@@ -110,9 +115,12 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (provider === 'kick') {
     updates = { kick_id: null, kick_username: null, kick_avatar: null, kick_linked_at: null }
     old_value = current?.kick_username ?? null
+  } else if (provider === 'roobet') {
+    updates = { roobet_username: null, roobet_linked_at: null }
+    old_value = current?.roobet_username ?? null
   } else if (provider === 'acebet') {
-    updates = { acebet_id: null, acebet_id_suffix: null, acebet_username: null, acebet_linked_at: null }
-    old_value = current?.acebet_id ?? null
+    updates = { legacy_acebet_id: null, legacy_acebet_id_suffix: null, legacy_acebet_username: null, legacy_acebet_linked_at: null }
+    old_value = current?.legacy_acebet_id ?? null
   } else if (provider === 'discord') {
     updates = { discord_id: null, discord_username: null, discord_linked_at: null }
     old_value = current?.discord_id ?? null

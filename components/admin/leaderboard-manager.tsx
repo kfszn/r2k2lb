@@ -32,7 +32,7 @@ interface PrizePosition {
 interface LeaderboardConfig {
   id: string
   name: string
-  platform: 'acebet' | 'kick'
+  platform: 'roobet' | 'kick'
   start_date: string
   end_date: string
   is_active: boolean
@@ -41,12 +41,12 @@ interface LeaderboardConfig {
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
-  acebet: 'AceBet',
+  roobet: 'Roobet',
   kick: 'Kick',
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
-  acebet: 'bg-primary/20 border-primary/40 text-primary',
+  roobet: 'bg-primary/20 border-primary/40 text-primary',
   kick: 'bg-green-500/20 border-green-500/40 text-green-400',
 }
 
@@ -62,7 +62,7 @@ export function LeaderboardManager() {
   const [createOpen, setCreateOpen] = useState(false)
   const [form, setForm] = useState({
     name: '',
-    platform: 'kick' as 'acebet' | 'kick',
+    platform: 'kick' as 'roobet' | 'kick',
     start_date: '',
     end_date: '',
     is_active: false,
@@ -192,7 +192,7 @@ export function LeaderboardManager() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold">Leaderboard Manager</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Manage leaderboards for AceBet and Kick</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage leaderboards for Roobet and Kick</p>
         </div>
         <Button onClick={() => setCreateOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
@@ -204,7 +204,7 @@ export function LeaderboardManager() {
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="kick">Kick</TabsTrigger>
-          <TabsTrigger value="acebet">AceBet</TabsTrigger>
+          <TabsTrigger value="roobet">Roobet</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
@@ -311,7 +311,7 @@ export function LeaderboardManager() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="kick">Kick</SelectItem>
-                    <SelectItem value="acebet">AceBet</SelectItem>
+                    <SelectItem value="roobet">Roobet</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

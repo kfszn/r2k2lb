@@ -11,9 +11,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: '*.roobet.com',
+      },
+      {
+        protocol: 'https',
         hostname: 'acebet.co',
       },
-
     ],
   },
 }

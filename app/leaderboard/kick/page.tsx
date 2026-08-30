@@ -274,7 +274,7 @@ export default function KickLeaderboard() {
         </div>
       </section>
 
-      {/* Controls — matches acebet style */}
+      {/* Controls — matches roobet style */}
       <section className="py-6 border-b border-border/40">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap gap-3 justify-center items-center">

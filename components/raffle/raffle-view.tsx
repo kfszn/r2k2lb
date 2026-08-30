@@ -9,12 +9,12 @@ import { createClient } from '@/lib/supabase/client';
 import { assignTicketNumbers } from '@/lib/raffle/tickets';
 import { Trophy, Users, DollarSign, Clock, Ticket, Star, Radio } from 'lucide-react';
 
-export type RafflePlatform = 'acebet' | 'luxdrop' | 'csbattle';
+export type RafflePlatform = 'acebet' | 'luxdrop' | 'roobet';
 
 function maskName(name: string): string {
   if (!name) return '***';
-  if (name.length <= 4) return name[0] + '*'.repeat(name.length - 1);
-  return name.substring(0, 2) + '*'.repeat(name.length - 3) + name.substring(name.length - 1);
+  if (name.length <= 2) return name;
+  return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1];
 }
 
 interface RaffleConfig {
@@ -44,7 +44,7 @@ interface Winner {
 const PLATFORM_LABELS: Record<RafflePlatform, string> = {
   acebet: 'AceBet',
   luxdrop: 'LuxDrop',
-  csbattle: 'CSBattle',
+  roobet: 'Roobet',
 };
 
 // Max individual ticket chips to render per user (keeps the DOM light)
@@ -103,7 +103,7 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
             .filter((u: EligibleUser) => u.username);
         }
       } else {
-        // LuxDrop & CSBattle return wager amounts already in dollars
+        // LuxDrop & Roobet return wager amounts already in dollars
         const res = await fetch(
           `/api/${platform}/affiliates?startDate=${cfgData.start_date}&endDate=${cfgData.end_date}`,
           { cache: 'no-store' },

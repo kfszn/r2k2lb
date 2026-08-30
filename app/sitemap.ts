@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
-      url: '/leaderboard/acebet',
+      url: '/leaderboard/roobet',
       changeFrequency: 'daily' as const,
       priority: 0.9,
       lastModified: new Date(),
@@ -64,27 +64,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
       lastModified: new Date(),
     },
-    // Acebet Perks
+    // Roobet Perks
     {
-      url: '/perks/acebet/first-deposit',
+      url: '/perks/roobet/wager-rewards',
       changeFrequency: 'monthly' as const,
       priority: 0.7,
       lastModified: new Date(),
     },
     {
-      url: '/perks/acebet/loss-back',
+      url: '/perks/roobet/rank-up-match',
       changeFrequency: 'monthly' as const,
       priority: 0.7,
       lastModified: new Date(),
     },
     {
-      url: '/perks/acebet/wager-rewards',
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: '/perks/acebet/reward-match',
+      url: '/perks/roobet/challenges',
       changeFrequency: 'monthly' as const,
       priority: 0.7,
       lastModified: new Date(),

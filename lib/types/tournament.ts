@@ -25,10 +25,15 @@ export interface TournamentPlayer {
   id: string
   tournament_id: string
   kick_username: string
-  acebet_username: string | null
-  acebet_validated: boolean
-  acebet_wager: number | null
-  acebet_active: boolean | null
+  roobet_username: string | null
+  roobet_validated: boolean
+  roobet_wager: number | null
+  roobet_active: boolean | null
+  // Historical AceBet data, preserved for players who registered before the Roobet switch
+  legacy_acebet_username: string | null
+  legacy_acebet_validated: boolean
+  legacy_acebet_wager: number | null
+  legacy_acebet_active: boolean | null
   display_name: string | null
   seed_number: number | null
   status: 'registered' | 'active' | 'eliminated'
@@ -85,8 +90,8 @@ export interface ChatResponse {
   data?: Record<string, unknown>
 }
 
-// Acebet API types
-export interface AcebetValidationResponse {
+// Roobet API types
+export interface RoobetValidationResponse {
   success: boolean
   username?: string
   totalWagered?: number

@@ -34,7 +34,7 @@ export function BracketGenerator({ tournament }: { tournament: Tournament }) {
     async () => {
       const { data } = await supabase
         .from('tournament_players')
-        .select('id, acebet_username, kick_username')
+        .select('id, roobet_username, kick_username')
         .eq('tournament_id', tournament.id)
         .eq('status', 'registered');
       return data || [];

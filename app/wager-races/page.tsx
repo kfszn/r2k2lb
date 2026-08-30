@@ -11,7 +11,7 @@ import { format, parseISO } from 'date-fns'
 
 interface Race {
   id: string
-  platform: 'acebet'
+  platform: 'acebet' | 'roobet'
   period: 'weekly' | 'monthly'
   start_date: string
   end_date: string
@@ -88,8 +88,8 @@ export default function WagerRacesPage() {
   }
 
   const maskName = (name: string) => {
-    if (!name || name.length <= 3) return name
-    return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
+    if (!name || name.length <= 2) return name
+    return name[0] + '*'.repeat(name.length - 2) + name.slice(-1)
   }
 
   if (loading) {

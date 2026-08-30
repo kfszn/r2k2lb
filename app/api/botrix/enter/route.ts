@@ -1,86 +1,54 @@
 import { createApiClient } from "@/lib/supabase/api";
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/client"; // Import createClient
-import fetch from 'node-fetch';
-import { HttpsProxyAgent } from 'https-proxy-agent';
+import { fetchRoobetUserList } from "@/lib/r2koins/platforms";
 
-const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
-
-const ACEBET_API_URL = "https://api.acebet.co/affiliates/detailed-summary/v2";
-const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
-
-interface AcebetUser {
-  userId: number;
+interface RoobetUser {
   name: string;
-  avatar: string;
-  badge: string | null;
-  role: string;
-  active: boolean;
-  isPrivate: boolean;
-  premiumUntil: string | null;
   wagered: number;
-  deposited: number;
-  earned: number;
-  xp: number;
-  firstSeen: string;
-  lastSeen: string;
+  active: boolean;
 }
 
-interface AcebetResponse {
-  Users: AcebetUser[];
-}
-
-// Cache for Acebet users
-let cachedUsers: AcebetUser[] | null = null;
+// Cache for Roobet affiliate users
+let cachedUsers: RoobetUser[] | null = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-async function getAcebetUsers(): Promise<AcebetUser[]> {
+async function getRoobetUsers(): Promise<RoobetUser[]> {
   const now = Date.now();
-  
+
   if (cachedUsers && (now - cacheTimestamp) < CACHE_DURATION) {
     return cachedUsers;
   }
 
-  if (!ACEBET_TOKEN) {
-    return [];
-  }
-
-  try {
-    const response = await fetch(ACEBET_API_URL, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-        "Referer": "https://acebet.co/",
-        "Authorization": `Bearer ${ACEBET_TOKEN}`,
-      },
-      // @ts-ignore
-      agent: proxyAgent,
-    });
-
-    if (!response.ok) {
-      return cachedUsers || [];
-    }
-
-    const data: AcebetResponse = await response.json();
-    cachedUsers = data.Users || [];
-    cacheTimestamp = now;
-    return cachedUsers;
-  } catch {
+  const entries = await fetchRoobetUserList();
+  if (entries === null) {
     return cachedUsers || [];
   }
+
+  cachedUsers = entries
+    .filter((e) => e.username ?? e.name)
+    .map((e) => {
+      const wagered = Number(e.weightedWagered ?? e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0) || 0;
+      return {
+        name: String(e.username ?? e.name),
+        wagered,
+        active: wagered > 0,
+      };
+    });
+  cacheTimestamp = now;
+  return cachedUsers;
 }
 
 // GET endpoint for Botrix $(customapi) calls
-// URL: /api/botrix/enter?kick=KICKUSER&acebet=ACEBETUSER
+// URL: /api/botrix/enter?kick=KICKUSER&roobet=ROOBETUSER
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const kickUsername = searchParams.get("kick");
-    const acebetUsername = searchParams.get("acebet");
+    const roobetUsername = searchParams.get("roobet");
 
-    if (!kickUsername || !acebetUsername) {
-      return new NextResponse("Usage: !enter YourAcebetName", { status: 200 });
+    if (!kickUsername || !roobetUsername) {
+      return new NextResponse("Usage: !enter YourRoobetName", { status: 200 });
     }
 
     const supabase = createApiClient();
@@ -124,23 +92,21 @@ export async function GET(request: NextRequest) {
       return new NextResponse(`@${kickUsername} Tournament is full! (${count}/${tournament.max_players})`, { status: 200 });
     }
 
-    // Validate Acebet user (case insensitive)
-    const users = await getAcebetUsers();
-    const acebetUser = users.find(u => u.name.toLowerCase() === acebetUsername.toLowerCase());
+    // Validate Roobet user (case insensitive)
+    const users = await getRoobetUsers();
+    const roobetUser = users.find(u => u.name.toLowerCase() === roobetUsername.toLowerCase());
 
-    if (!acebetUser && ACEBET_TOKEN) {
-      return new NextResponse(`@${kickUsername} Entry DENIED - "${acebetUsername}" not found under code R2K2. Sign up at acebet.co with code R2K2!`, { status: 200 });
+    if (!roobetUser) {
+      return new NextResponse(`@${kickUsername} Entry DENIED - "${roobetUsername}" not found under code R2K2. Sign up at roobet.com with code R2K2!`, { status: 200 });
     }
 
     // Check requirements
-    if (acebetUser && ACEBET_TOKEN) {
-      if (tournament.require_active && !acebetUser.active) {
-        return new NextResponse(`@${kickUsername} Entry DENIED - You must be active under code R2K2.`, { status: 200 });
-      }
+    if (tournament.require_active && !roobetUser.active) {
+      return new NextResponse(`@${kickUsername} Entry DENIED - You must be active under code R2K2.`, { status: 200 });
+    }
 
-      if (tournament.min_wager && acebetUser.wagered < tournament.min_wager) {
-        return new NextResponse(`@${kickUsername} Entry DENIED - Need $${tournament.min_wager.toLocaleString()} wagered (you have $${acebetUser.wagered.toLocaleString()}).`, { status: 200 });
-      }
+    if (tournament.min_wager && roobetUser.wagered < tournament.min_wager) {
+      return new NextResponse(`@${kickUsername} Entry DENIED - Need $${tournament.min_wager.toLocaleString()} wagered (you have $${roobetUser.wagered.toLocaleString()}).`, { status: 200 });
     }
 
     // Register player
@@ -148,12 +114,12 @@ export async function GET(request: NextRequest) {
       .from("tournament_players")
       .insert({
         tournament_id: tournament.id,
-        acebet_username: acebetUser?.name || acebetUsername,
+        roobet_username: roobetUser.name || roobetUsername,
         kick_username: kickUsername,
         display_name: kickUsername,
         status: "registered",
-        acebet_wager: acebetUser?.wagered || 0,
-        acebet_active: acebetUser?.active || false,
+        roobet_wager: roobetUser.wagered || 0,
+        roobet_active: roobetUser.active || false,
       });
 
     if (insertError) {

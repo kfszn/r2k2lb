@@ -1,38 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import fetch from 'node-fetch';
-import { HttpsProxyAgent } from 'https-proxy-agent';
+import { fetchRoobetUserList } from "@/lib/r2koins/platforms";
 
-const proxyAgent = process.env.PROXY_URL ? new HttpsProxyAgent(process.env.PROXY_URL) : undefined;
-
-const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
-
-interface AcebetUser {
-  userId: number;
+interface RoobetUser {
   name: string;
-  avatar: string;
-  badge: string | null;
-  role: string;
-  active: boolean;
-  isPrivate: boolean;
-  premiumUntil: string | null;
   wagered: number;
-  deposited: number;
-  earned: number;
-  xp: number;
-  firstSeen: string;
-  lastSeen: string;
+  active: boolean;
 }
 
-// Cache the user list for 5 minutes
-let cachedUsers: AcebetUser[] | null = null;
+// Cache the affiliate list for 5 minutes
+let cachedUsers: RoobetUser[] | null = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 5 * 60 * 1000;
 
-// Start date for counting wagers: 12/26/2025 EST (12am UTC)
-const WAGER_WINDOW_START = "2025-12-26";
-
-async function fetchAcebetUsers(): Promise<AcebetUser[]> {
+async function fetchRoobetUsers(): Promise<RoobetUser[]> {
   const now = Date.now();
 
   // Return cached data if still valid
@@ -40,46 +21,29 @@ async function fetchAcebetUsers(): Promise<AcebetUser[]> {
     return cachedUsers;
   }
 
-  if (!ACEBET_TOKEN) {
-    console.error("[v0] ACEBET_API_TOKEN not configured");
-    return [];
-  }
-
-  try {
-    // Use the wager window start date to get cumulative wager data
-    const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${WAGER_WINDOW_START}`;
-
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-        "Referer": "https://acebet.co/",
-        "Authorization": `Bearer ${ACEBET_TOKEN}`,
-      },
-      // @ts-ignore
-      agent: proxyAgent,
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "");
-      console.error("[v0] Acebet API error:", response.status, errorText);
-      return cachedUsers || [];
-    }
-
-    const data = await response.json().catch(() => null);
-    cachedUsers = Array.isArray(data) ? data : [];
-    cacheTimestamp = now;
-    return cachedUsers;
-  } catch (error) {
-    console.error("[v0] Error fetching Acebet users:", error instanceof Error ? error.message : error);
+  const entries = await fetchRoobetUserList();
+  if (entries === null) {
+    console.error("[v0] Failed to fetch Roobet affiliate list");
     return cachedUsers || [];
   }
+
+  cachedUsers = entries
+    .filter((e) => e.username ?? e.name)
+    .map((e) => {
+      const wagered = Number(e.weightedWagered ?? e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0) || 0;
+      return {
+        name: String(e.username ?? e.name),
+        wagered,
+        active: wagered > 0,
+      };
+    });
+  cacheTimestamp = now;
+  return cachedUsers;
 }
 
-async function validateAcebetUser(username: string) {
+async function validateRoobetUser(username: string) {
   try {
-    const users = await fetchAcebetUsers();
+    const users = await fetchRoobetUsers();
 
     const user = users.find(
       (u) => u.name && u.name.toLowerCase() === username.toLowerCase()
@@ -99,12 +63,12 @@ async function validateAcebetUser(username: string) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tournamentId, acebetUsername, kickUsername } = body;
+    const { tournamentId, roobetUsername, kickUsername } = body;
 
     // At least one username must be provided
-    if (!tournamentId || (!acebetUsername && !kickUsername)) {
+    if (!tournamentId || (!roobetUsername && !kickUsername)) {
       return NextResponse.json(
-        { error: "At least one username (Acebet or Kick) is required" },
+        { error: "At least one username (Roobet or Kick) is required" },
         { status: 400 }
       );
     }
@@ -145,15 +109,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use Acebet username as unique identifier if provided, otherwise Kick username
-    const uniqueIdentifier = acebetUsername || kickUsername;
-
     // Check if player already registered
     const { data: existingPlayer, error: checkError } = await supabase
       .from("tournament_players")
       .select("id")
       .eq("tournament_id", tournamentId)
-      .or(`acebet_username.eq.${acebetUsername?.toLowerCase() || ''}, kick_username.eq.${kickUsername?.toLowerCase() || ''}`)
+      .or(`roobet_username.eq.${roobetUsername?.toLowerCase() || ''}, kick_username.eq.${kickUsername?.toLowerCase() || ''}`)
       .maybeSingle();
 
     if (checkError) {
@@ -167,23 +128,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If Acebet username provided, validate and get stats
-    let acebetStats = { wagered: 0, active: false };
-    let aceValidated = false;
+    // If Roobet username provided, validate and get stats
+    let roobetStats = { wagered: 0, active: false };
+    let roobetValidated = false;
 
-    if (acebetUsername) {
-      const { valid: isValid, user: acebetUser, error: validationError } = await validateAcebetUser(acebetUsername);
+    if (roobetUsername) {
+      const { valid: isValid, user: roobetUser, error: validationError } = await validateRoobetUser(roobetUsername);
       if (!isValid) {
         return NextResponse.json(
-          { error: `Invalid Acebet username - ${validationError || "user not found under R2K2 affiliate"}` },
+          { error: `Invalid Roobet username - ${validationError || "user not found under R2K2 affiliate"}` },
           { status: 400 }
         );
       }
-      acebetStats = {
-        wagered: acebetUser?.wagered || 0,
-        active: acebetUser?.active || false,
+      roobetStats = {
+        wagered: roobetUser?.wagered || 0,
+        active: roobetUser?.active || false,
       };
-      aceValidated = true;
+      roobetValidated = true;
     }
 
     // Add player
@@ -191,13 +152,13 @@ export async function POST(request: NextRequest) {
       .from("tournament_players")
       .insert({
         tournament_id: tournamentId,
-        acebet_username: acebetUsername ? acebetUsername.toLowerCase() : null,
-        kick_username: kickUsername?.toLowerCase() || acebetUsername?.toLowerCase(),
-        display_name: kickUsername || acebetUsername,
+        roobet_username: roobetUsername ? roobetUsername.toLowerCase() : null,
+        kick_username: kickUsername?.toLowerCase() || roobetUsername?.toLowerCase(),
+        display_name: kickUsername || roobetUsername,
         status: "registered",
-        acebet_wager: acebetStats.wagered,
-        acebet_active: acebetStats.active,
-        acebet_validated: aceValidated,
+        roobet_wager: roobetStats.wagered,
+        roobet_active: roobetStats.active,
+        roobet_validated: roobetValidated,
       })
       .select()
       .single();

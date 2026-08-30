@@ -19,7 +19,7 @@ export function LiveBracket({ matches, players }: LiveBracketProps) {
   const getPlayerName = (playerId: string | null): string => {
     if (!playerId) return "";
     const player = players.find((p) => p.id === playerId);
-    return player?.kick_username ?? player?.acebet_username ?? "TBD";
+    return player?.kick_username ?? player?.roobet_username ?? "TBD";
   };
 
   const rounds = matches.reduce<Record<number, BracketMatch[]>>((acc, match) => {

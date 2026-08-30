@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 
 export interface BracketPlayer {
   id: string;
-  acebet_username: string;
+  roobet_username: string;
   kick_username: string;
 }
 
@@ -59,7 +59,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
       const supabase = createClient();
       const { data } = await supabase
         .from('tournament_players')
-        .select('id, acebet_username, kick_username')
+        .select('id, roobet_username, kick_username')
         .eq('tournament_id', activeTournamentId);
 
       if (data) {
@@ -121,7 +121,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
       // Also load entrants
       const { data: players } = await supabase
         .from('tournament_players')
-        .select('id, acebet_username, kick_username')
+        .select('id, roobet_username, kick_username')
         .eq('tournament_id', tournamentId);
 
       if (players) {
@@ -421,7 +421,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
       }
       
       await supabase.from('tournament_winners').insert({
-        acebet_username: winner.acebet_username,
+        roobet_username: winner.roobet_username,
         kick_username: winner.kick_username,
         tournament_id: tournamentId,
         tournament_name: tournamentName || 'Tournament',
@@ -478,7 +478,7 @@ export function BracketProvider({ children }: { children: React.ReactNode }) {
   const getPlayerName = useCallback((id: string | null): string => {
     if (!id) return '';
     const player = entrantMap[id];
-    return player?.kick_username || player?.acebet_username || '';
+    return player?.kick_username || player?.roobet_username || '';
   }, []);
 
   return (

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-// Updated July 2026: multi-platform leaderboards (Acebet + LuxDrop + Kick), R2Koins, 50/50, raffle, shop, games
+// Updated July 2026: multi-platform leaderboards (Roobet + LuxDrop + Kick), R2Koins, 50/50, raffle, shop, games
 const baseUrl = 'https://r2k2.gg'
 const brandName = 'R2K2'
 
@@ -11,12 +11,12 @@ export const defaultMetadata: Metadata = {
     template: `%s | ${brandName}`,
   },
   description:
-    'R2K2 is a multi-platform rewards community. Compete on Acebet, LuxDrop, and Kick leaderboards, earn R2Koins from wagers, play 50/50 draws, enter raffles, and redeem points in the shop.',
+    'R2K2 is a multi-platform rewards community. Compete on Roobet, LuxDrop, and Kick leaderboards, earn R2Koins from wagers, play 50/50 draws, enter raffles, and redeem points in the shop.',
   keywords: [
     'R2K2',
     'leaderboards',
     'rewards',
-    'Acebet',
+    'Roobet',
     'LuxDrop',
     'Kick leaderboard',
     'wager rewards',
@@ -37,7 +37,7 @@ export const defaultMetadata: Metadata = {
     siteName: brandName,
     title: `${brandName} — Leaderboards, Rewards & Exclusive Perks`,
     description:
-      'Compete on Acebet, LuxDrop, and Kick leaderboards, earn R2Koins, play 50/50 draws, enter raffles, and redeem points. Use code R2K2.',
+      'Compete on Roobet, LuxDrop, and Kick leaderboards, earn R2Koins, play 50/50 draws, enter raffles, and redeem points. Use code R2K2.',
   },
   twitter: {
     card: 'summary_large_image',
@@ -45,7 +45,7 @@ export const defaultMetadata: Metadata = {
     creator: '@r2ktwo',
     title: `${brandName} — Leaderboards, Rewards & Exclusive Perks`,
     description:
-      'Compete on Acebet, LuxDrop & Kick leaderboards. Earn R2Koins, play 50/50, enter raffles, redeem points. Code R2K2.',
+      'Compete on Roobet, LuxDrop & Kick leaderboards. Earn R2Koins, play 50/50, enter raffles, redeem points. Code R2K2.',
   },
   icons: {
     icon: '/assets/logo.png',
@@ -65,11 +65,11 @@ export const pageMetadata = {
   home: {
     title: 'R2K2 — Leaderboards, R2Koins, Raffles & Exclusive Perks',
     description:
-      'R2K2 is your hub for multi-platform leaderboard competitions on Acebet, LuxDrop, and Kick. Earn R2Koins from wagers, play 50/50 draws, enter raffles, redeem points, and compete in tournaments. Use code R2K2.',
+      'R2K2 is your hub for multi-platform leaderboard competitions on Roobet, LuxDrop, and Kick. Earn R2Koins from wagers, play 50/50 draws, enter raffles, redeem points, and compete in tournaments. Use code R2K2.',
     keywords: [
       'R2K2',
       'leaderboard',
-      'Acebet leaderboard',
+      'Roobet leaderboard',
       'LuxDrop leaderboard',
       'Kick leaderboard',
       'R2Koins',
@@ -81,21 +81,6 @@ export const pageMetadata = {
       'wager competition',
     ],
     canonical: baseUrl,
-  },
-  acebet: {
-    title: 'Acebet Leaderboard — Monthly Prizes with Code R2K2',
-    description:
-      'Compete on the R2K2 Acebet leaderboard for monthly cash prizes. Earn R2Koins on every wager, claim loss back, unlock tier rewards, and more. Sign up with code R2K2.',
-    keywords: [
-      'Acebet leaderboard',
-      'Acebet R2K2',
-      'Acebet code R2K2',
-      'Acebet monthly prizes',
-      'Acebet wager rewards',
-      'Acebet VIP',
-      'R2Koins Acebet',
-    ],
-    canonical: `${baseUrl}/leaderboard/acebet`,
   },
   luxdrop: {
     title: 'LuxDrop Leaderboard — Monthly Prizes with Code R2K2',
@@ -112,20 +97,21 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/leaderboard/luxdrop`,
   },
-  csbattle: {
-    title: 'CSBattle Leaderboard — Monthly Coin Prizes with Code R2K2',
+  roobet: {
+    title: 'Roobet Leaderboard — Weekly $5,000 Prize Pool with Code R2K2',
     description:
-      'Compete on the R2K2 CSBattle leaderboard for a 3,000 coin prize pool. Use code R2K2 on CSBattle and every wager counts toward your placement and R2Koins balance.',
+      'Compete on the R2K2 Roobet weekly leaderboard for a $5,000 prize pool. Use code R2K2 on Roobet — every wager counts toward your placement, resetting every 7 days.',
     keywords: [
-      'CSBattle leaderboard',
-      'CSBattle R2K2',
-      'CSBattle code R2K2',
-      'CSBattle monthly prizes',
-      'CSBattle rewards',
-      'CSBattle wager competition',
-      'R2Koins CSBattle',
+      'Roobet leaderboard',
+      'Roobet R2K2',
+      'Roobet code R2K2',
+      'Roobet weekly leaderboard',
+      'Roobet $5000 prize pool',
+      'Roobet rewards',
+      'Roobet wager competition',
+      'R2Koins Roobet',
     ],
-    canonical: `${baseUrl}/leaderboard/csbattle`,
+    canonical: `${baseUrl}/leaderboard/roobet`,
   },
   kick: {
     title: 'Kick Leaderboard — Top Chatters & Subscribers | R2K2',
@@ -158,11 +144,11 @@ export const pageMetadata = {
   wagerRaces: {
     title: 'Wager Races — Milestone Rewards on R2K2',
     description:
-      'Compete in R2K2 wager races on Acebet. Hit milestones to unlock exclusive cash rewards. Check active and upcoming races.',
+      'Compete in R2K2 wager races on Roobet. Hit milestones to unlock exclusive cash rewards. Check active and upcoming races.',
     keywords: [
       'wager races',
       'milestone rewards',
-      'Acebet wager race',
+      'Roobet wager race',
       'R2K2 races',
       'wager milestones',
     ],
@@ -209,44 +195,29 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/how-it-works`,
   },
-  perksAcebetFirstDeposit: {
-    title: 'Acebet First Deposit Bonus — Exclusive with Code R2K2',
+  perksRoobetWagerRewards: {
+    title: 'Roobet Wager Rewards — Weighted Wager Tier Bonuses',
     description:
-      'Claim your first deposit bonus on Acebet with code R2K2. Exclusive welcome offer for new players. Find out the requirements and how to claim.',
+      'Earn tier-based rewards on Roobet with code R2K2 — $150 per $100,000 weighted wagered. The more you wager, the bigger your reward. Claim your bonus.',
     keywords: [
-      'Acebet first deposit bonus',
-      'Acebet welcome bonus',
-      'Acebet new player',
-      'Acebet code R2K2',
-      'first deposit bonus',
+      'Roobet wager rewards',
+      'Roobet tier rewards',
+      'weighted wager bonus',
+      'wager bonus Roobet',
+      'R2K2 Roobet rewards',
     ],
-    canonical: `${baseUrl}/perks/acebet/first-deposit`,
+    canonical: `${baseUrl}/perks/roobet/wager-rewards`,
   },
-  perksAcebetLossBack: {
-    title: 'Acebet Loss Back — R2K2 Exclusive Cashback',
+  perksRoobetRankUpMatch: {
+    title: 'Roobet Rank Up Match — R2K2',
     description:
-      'Get loss back on Acebet with R2K2 code. Recover a percentage of your losses automatically. Exclusive cashback benefit for R2K2 members.',
+      'R2K2 matches your Roobet rank ups. Play under code R2K2 and get rewarded every time you level up.',
     keywords: [
-      'Acebet loss back',
-      'Acebet cashback',
-      'Acebet R2K2 bonus',
-      'gambling cashback',
-      'loss recovery',
+      'Roobet rank up match',
+      'Roobet rank rewards',
+      'R2K2 Roobet perks',
     ],
-    canonical: `${baseUrl}/perks/acebet/loss-back`,
-  },
-  perksAcebetWagerRewards: {
-    title: 'Acebet Wager Rewards — Monthly Tier Bonuses',
-    description:
-      'Earn tier-based monthly wager rewards on Acebet with code R2K2. The more you wager, the bigger your reward. Claim your monthly bonus.',
-    keywords: [
-      'Acebet wager rewards',
-      'Acebet monthly bonus',
-      'Acebet tier rewards',
-      'wager bonus Acebet',
-      'R2K2 Acebet rewards',
-    ],
-    canonical: `${baseUrl}/perks/acebet/wager-rewards`,
+    canonical: `${baseUrl}/perks/roobet/rank-up-match`,
   },
   account: {
     title: 'My Account — R2K2 Dashboard',
@@ -295,28 +266,14 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/fifty-fifty`,
   },
-  perksAcebetRewardMatch: {
-    title: 'Acebet Reward Match — Double Your Deposit | R2K2',
-    description:
-      'Get your Acebet deposit matched as a bonus with code R2K2. Exclusive reward match offer for R2K2 members. Learn how to claim and the requirements.',
-    keywords: [
-      'Acebet reward match',
-      'Acebet deposit match',
-      'Acebet bonus match',
-      'Acebet code R2K2',
-      'deposit bonus',
-      'reward match offer',
-    ],
-    canonical: `${baseUrl}/perks/acebet/reward-match`,
-  },
   wagerBonus: {
     title: 'Wager Bonus Info — R2K2 Rewards Program',
     description:
-      'Understand the R2K2 wager bonus program on Acebet. Learn how wager-based rewards are earned and claimed.',
+      'Understand the R2K2 wager bonus program on Roobet. Learn how wager-based rewards are earned and claimed.',
     keywords: [
       'wager bonus',
       'R2K2 wager rewards',
-      'Acebet bonus',
+      'Roobet bonus',
       'betting rewards program',
     ],
     canonical: `${baseUrl}/wagerbonus`,
@@ -359,43 +316,41 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/perks/luxdrop/wager-milestones`,
   },
-  perksCsbattleFirstDeposit: {
-    title: 'CSBattle First Deposit Bonus — 20% Flat with Code R2K2',
+  perksRoobetWagerRewards: {
+    title: 'Roobet Wager Rewards — Coming Soon | R2K2',
     description:
-      'Claim a flat 20% first deposit bonus on CSBattle with code R2K2. No maximum cap. Learn the 2x playthrough requirement and how to claim.',
+      'Roobet wager reward tiers with code R2K2 are coming soon. Check back for tiered bonuses based on your total wager volume.',
     keywords: [
-      'CSBattle first deposit bonus',
-      'CSBattle welcome bonus',
-      'CSBattle code R2K2',
-      'CSBattle deposit match',
-      'first deposit bonus',
+      'Roobet wager rewards',
+      'Roobet wager tiers',
+      'Roobet bonus',
+      'R2K2 Roobet rewards',
     ],
-    canonical: `${baseUrl}/perks/csbattle/first-deposit`,
+    canonical: `${baseUrl}/perks/roobet/wager-rewards`,
   },
-  perksCsbattleLossBack: {
-    title: 'CSBattle Loss Back — 10% R2K2 Exclusive Cashback',
+  perksRoobetChallenges: {
+    title: 'Roobet Challenges — Coming Soon | R2K2',
     description:
-      'Get a flat 10% loss back on CSBattle with code R2K2. No maximum cap. Recover a percentage of your monthly losses via ticket.',
+      'Roobet challenges with code R2K2 are coming soon. Complete challenges to unlock exclusive rewards.',
     keywords: [
-      'CSBattle loss back',
-      'CSBattle cashback',
-      'CSBattle R2K2 bonus',
-      'gambling cashback',
-      'loss recovery',
+      'Roobet challenges',
+      'Roobet R2K2 challenges',
+      'Roobet bonus',
+      'R2K2 Roobet rewards',
     ],
-    canonical: `${baseUrl}/perks/csbattle/loss-back`,
+    canonical: `${baseUrl}/perks/roobet/challenges`,
   },
-  perksCsbattleWagerMilestones: {
-    title: 'CSBattle Wager Milestones — Coming Soon | R2K2',
+  perksRoobetRewardMatch: {
+    title: 'Roobet Reward Match — Coming Soon | R2K2',
     description:
-      'CSBattle wager milestone rewards with code R2K2 are coming soon. Check back for tiered bonuses based on your total wager volume.',
+      'Roobet reward match offer with code R2K2 is coming soon. Check back for deposit match details.',
     keywords: [
-      'CSBattle wager milestones',
-      'CSBattle wager rewards',
-      'CSBattle bonus',
-      'R2K2 CSBattle rewards',
+      'Roobet reward match',
+      'Roobet deposit match',
+      'Roobet bonus',
+      'R2K2 Roobet rewards',
     ],
-    canonical: `${baseUrl}/perks/csbattle/wager-milestones`,
+    canonical: `${baseUrl}/perks/roobet/reward-match`,
   },
   games: {
     title: 'Provably Fair Games — Play with R2K2 Points',

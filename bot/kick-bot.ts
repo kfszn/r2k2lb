@@ -2,7 +2,7 @@
  * R2K2 Tournament Kick Chat Bot
  * 
  * This bot listens to Kick chat and handles tournament commands:
- * - !enter <acebet_username> - Register for the tournament
+ * - !enter <roobet_username> - Register for the tournament
  * - !slot <slot_name> <super/regular> - Submit slot call for your match
  * - !status - Get current tournament status
  * - !bracket - View remaining players
@@ -183,10 +183,10 @@ class KickTournamentBot {
     }
   }
 
-  private async handleEnter(kickUsername: string, acebetUsername?: string) {
-    if (!acebetUsername) {
-      console.log(`[Bot] ${kickUsername} tried to enter without Acebet username`);
-      this.sendChatMessage(`@${kickUsername} Usage: !enter YourAcebetName`);
+  private async handleEnter(kickUsername: string, roobetUsername?: string) {
+    if (!roobetUsername) {
+      console.log(`[Bot] ${kickUsername} tried to enter without Roobet username`);
+      this.sendChatMessage(`@${kickUsername} Usage: !enter YourRoobetName`);
       return;
     }
 
@@ -196,7 +196,7 @@ class KickTournamentBot {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           kickUsername,
-          acebetUsername,
+          roobetUsername,
           botSecret: BOT_SECRET,
         }),
       });

@@ -66,11 +66,11 @@ export function LossbackManagement() {
 
         if (lbError) throw lbError
         
-        const loadedClaims: LossbackClaim[] = lbData.map((item: any) => ({
-          id: item.id,
-          username: item.acebet_username,
-          monthlyWagers: item.monthly_wagers,
-          netLoss: item.net_loss,
+  const loadedClaims: LossbackClaim[] = lbData.map((item: any) => ({
+  id: item.id,
+  username: item.legacy_acebet_username,
+  monthlyWagers: item.monthly_wagers,
+  netLoss: item.net_loss,
           tier: item.tier,
           percentage: item.percentage,
           claimAmount: item.claim_amount,
@@ -126,7 +126,7 @@ export function LossbackManagement() {
       const { error } = await supabase
         .from('lossback_claims')
         .insert({
-          acebet_username: username,
+          legacy_acebet_username: username,
           monthly_wagers: monthlyWagersNum,
           net_loss: netLossNum,
           tier: 1,
@@ -151,7 +151,7 @@ export function LossbackManagement() {
       if (data) {
         const loadedClaims: LossbackClaim[] = data.map((item: any) => ({
           id: item.id,
-          username: item.acebet_username,
+          username: item.legacy_acebet_username,
           monthlyWagers: item.monthly_wagers,
           netLoss: item.net_loss,
           tier: item.tier,
@@ -313,7 +313,7 @@ export function LossbackManagement() {
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Acebet Username</Label>
+                  <Label htmlFor="username">AceBet Username (legacy)</Label>
                   <Input
                     id="username"
                     placeholder="e.g., player123"
@@ -462,7 +462,7 @@ export function LossbackManagement() {
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="wager-username">Acebet Username</Label>
+                  <Label htmlFor="wager-username">Roobet Username</Label>
                   <Input
                     id="wager-username"
                     placeholder="e.g., player123"

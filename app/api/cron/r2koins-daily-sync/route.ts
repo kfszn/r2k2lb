@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAcebetUserList, fetchLuxdropUserList, fetchCsbattleUserList } from "@/lib/r2koins/platforms";
+import { fetchLuxdropUserList, fetchRoobetUserList } from "@/lib/r2koins/platforms";
 
 export const maxDuration = 300;
 
@@ -60,13 +60,22 @@ export async function GET(request: NextRequest) {
   const platformData = new Map<string, Map<string, number> | null>();
 
   for (const platform of platforms) {
-    if (platform === "acebet") {
-      const users = await fetchAcebetUserList();
+    if (platform === "roobet") {
+      const entries = await fetchRoobetUserList();
       platformData.set(
         platform,
-        users === null
+        entries === null
           ? null
-          : new Map(users.filter((u) => u.name).map((u) => [u.name.toLowerCase(), Number(u.wagered) || 0]))
+          : new Map(
+              entries
+                .filter((e) => e.username ?? e.name)
+                .map((e) => [
+                  String(e.username ?? e.name).toLowerCase(),
+                  // Roobet's weighted-wager value is already in dollars (NOT cents) —
+                  // mirrors fetchPlatformWagerTotal()'s roobet branch.
+                  Number(e.weightedWagered ?? e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0) || 0,
+                ])
+            )
       );
     } else if (platform === "luxdrop") {
       const entries = await fetchLuxdropUserList();
@@ -81,22 +90,6 @@ export async function GET(request: NextRequest) {
                   String(e.username ?? e.name).toLowerCase(),
                   // LuxDrop wagered is in cents — convert to dollars
                   Number(e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0) / 100,
-                ])
-            )
-      );
-    } else if (platform === "csbattle") {
-      const entries = await fetchCsbattleUserList();
-      platformData.set(
-        platform,
-        entries === null
-          ? null
-          : new Map(
-              entries
-                .filter((e) => e.username ?? e.name)
-                .map((e) => [
-                  String(e.username ?? e.name).toLowerCase(),
-                  // CSBattle wager is already in dollars
-                  Number(e.wager ?? e.wagered ?? e.totalWagered ?? 0),
                 ])
             )
       );

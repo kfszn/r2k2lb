@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
   fetchWindowedWager,
-  LEADERBOARD_WINDOWS,
+  getLeaderboardWindow,
   type MilestonePlatform,
 } from "@/lib/milestones/progress";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const VALID: MilestonePlatform[] = ["acebet", "luxdrop", "csbattle"];
+const VALID: MilestonePlatform[] = ["acebet", "luxdrop", "roobet"];
 
-// GET /api/milestones/progress?platform=acebet|luxdrop|csbattle
+// GET /api/milestones/progress?platform=acebet|luxdrop|roobet
 // Returns the signed-in user's linked username + wager for the platform's
 // current leaderboard window.
 export async function GET(request: NextRequest) {
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "invalid_platform" }, { status: 400 });
   }
 
-  const window = LEADERBOARD_WINDOWS[platform];
+  const window = getLeaderboardWindow(platform);
 
   const supabase = await createClient();
   const {
@@ -34,8 +34,10 @@ export async function GET(request: NextRequest) {
   }
 
   // Resolve the linked platform username. linked_accounts (admin/Discord link)
-  // is canonical for all three platforms; AceBet also supports self-serve
-  // linking on the account page via profiles.acebet_username + acebet_id_suffix.
+  // is canonical for all three platforms; Roobet also supports self-serve
+  // linking on the account page via profiles.roobet_username. The legacy
+  // "acebet" platform key only has historical data under profiles.legacy_acebet_*
+  // (self-serve AceBet linking has been retired).
   let username: string | null = null;
   let acebetUserId: string | null = null;
 
@@ -51,13 +53,22 @@ export async function GET(request: NextRequest) {
   if (platform === "acebet") {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("acebet_username, acebet_id_suffix")
+      .select("legacy_acebet_username, legacy_acebet_id_suffix")
       .eq("id", user.id)
       .maybeSingle();
-    // Self-serve AceBet link stores the exact userId suffix — the reliable
-    // match key — plus the resolved display name.
-    acebetUserId = profile?.acebet_id_suffix ?? null;
-    if (!username) username = profile?.acebet_username ?? null;
+    // Legacy self-serve AceBet link stored the exact userId suffix — the
+    // reliable match key — plus the resolved display name.
+    acebetUserId = profile?.legacy_acebet_id_suffix ?? null;
+    if (!username) username = profile?.legacy_acebet_username ?? null;
+  }
+
+  if (platform === "roobet" && !username) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("roobet_username")
+      .eq("id", user.id)
+      .maybeSingle();
+    username = profile?.roobet_username ?? null;
   }
 
   if (!username && !acebetUserId) {

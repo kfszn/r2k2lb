@@ -45,11 +45,6 @@ type User = {
   kick_username: string | null
   kick_avatar: string | null
   kick_linked_at: string | null
-  // Acebet
-  acebet_id: string | null
-  acebet_id_suffix: string | null
-  acebet_username: string | null
-  acebet_linked_at: string | null
   // Discord
   discord_id: string | null
   discord_username: string | null
@@ -58,7 +53,7 @@ type User = {
 
 type EditingConnection = {
   userId: string
-  provider: 'acebet' | 'kick' | 'discord'
+  provider: 'kick' | 'discord'
   fields: Record<string, string>
 }
 
@@ -160,12 +155,11 @@ function AccountsTab() {
   const filtered = users.filter(u => {
     const q = search.toLowerCase()
     if (!q) return true
-    return [
-      u.email, u.account_id,
-      u.kick_id, u.kick_username,
-      u.acebet_id, u.acebet_id_suffix, u.acebet_username,
-      u.discord_id, u.discord_username,
-    ].some(v => v?.toLowerCase().includes(q))
+  return [
+  u.email, u.account_id,
+  u.kick_id, u.kick_username,
+  u.discord_id, u.discord_username,
+  ].some(v => v?.toLowerCase().includes(q))
   })
 
   const toggleExpand = (id: string) => {
@@ -223,16 +217,6 @@ function AccountsTab() {
     }
   }
 
-  const refreshAcebet = async (userId: string) => {
-    const key = `${userId}:acebet:refresh`
-    setActionLoading(key)
-    try {
-      await fetch(`/api/admin/users/${userId}/refresh-acebet`, { method: 'POST' })
-      mutate()
-    } finally {
-      setActionLoading(null)
-    }
-  }
 
   const isLoading = (userId: string, provider: string, action: string) =>
     actionLoading === `${userId}:${provider}:${action}`
@@ -248,7 +232,7 @@ function AccountsTab() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-9"
-            placeholder="Search by email, account ID, Kick, Acebet, or Discord..."
+            placeholder="Search by email, account ID, Kick, or Discord..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -275,11 +259,6 @@ function AccountsTab() {
                           <span className="font-mono text-xs bg-muted rounded px-1.5 py-0.5">{user.account_id}</span>
                           {user.kick_username && (
                             <Badge variant="secondary" className="text-xs">Kick: @{user.kick_username}</Badge>
-                          )}
-                          {user.acebet_id && (
-                            <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-400 border-green-500/20">
-                              {user.acebet_id}
-                            </Badge>
                           )}
                           {user.discord_username && (
                             <Badge variant="secondary" className="text-xs bg-[#5865F2]/10 text-[#5865F2] border-[#5865F2]/20">
@@ -404,81 +383,6 @@ function AccountsTab() {
                                 {isLoading(user.id, 'kick', 'unlink') ? <Loader2 className="h-3 w-3 animate-spin" /> : <Unlink className="h-3 w-3" />}
                                 Unlink
                               </Button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Acebet */}
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Acebet</p>
-                        <div className="grid grid-cols-2 gap-1.5 text-xs">
-                          <span className="text-muted-foreground">acebet_id</span>
-                          <span className="font-mono">{user.acebet_id ?? '—'}</span>
-                          <span className="text-muted-foreground">acebet_id_suffix</span>
-                          <span className="font-mono">{user.acebet_id_suffix ?? '—'}</span>
-                          <span className="text-muted-foreground">acebet_username</span>
-                          <span className="font-mono">{user.acebet_username ?? '—'}</span>
-                          <span className="text-muted-foreground">linked_at</span>
-                          <span className="font-mono">{user.acebet_linked_at ? new Date(user.acebet_linked_at).toLocaleString() : '—'}</span>
-                        </div>
-                        {editing?.userId === user.id && editing.provider === 'acebet' ? (
-                          <div className="space-y-2 pt-1">
-                            <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
-                              <span className="pl-3 pr-1 text-xs font-mono font-semibold text-muted-foreground select-none">AB-</span>
-                              <input
-                                type="number"
-                                min={1}
-                                placeholder="000000"
-                                value={editing.fields.acebet_id_suffix ?? ''}
-                                onChange={e => setEditing(v => v && ({ ...v, fields: { ...v.fields, acebet_id_suffix: e.target.value } }))}
-                                className="flex-1 bg-transparent py-1.5 pr-3 text-xs font-mono outline-none placeholder:text-muted-foreground/50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                              />
-                            </div>
-                            <Input
-                              placeholder="acebet_username (optional)"
-                              value={editing.fields.acebet_username ?? ''}
-                              onChange={e => setEditing(v => v && ({ ...v, fields: { ...v.fields, acebet_username: e.target.value } }))}
-                              className="h-7 text-xs font-mono"
-                            />
-                            <div className="flex gap-2">
-                              <Button size="sm" className="h-7 text-xs gap-1" onClick={saveConnection} disabled={!!actionLoading}>
-                                {actionLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-                                Save
-                              </Button>
-                              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setEditing(null)}>
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex gap-2 pt-1">
-                            <Button
-                              size="sm" variant="outline" className="h-7 text-xs gap-1"
-                              onClick={() => setEditing({ userId: user.id, provider: 'acebet', fields: { acebet_id_suffix: user.acebet_id_suffix ?? '', acebet_username: user.acebet_username ?? '' } })}
-                            >
-                              <Link2 className="h-3 w-3" />
-                              {user.acebet_id ? 'Edit' : 'Link'}
-                            </Button>
-                            {user.acebet_id && (
-                              <>
-                                <Button
-                                  size="sm" variant="outline" className="h-7 text-xs gap-1"
-                                  disabled={isLoading(user.id, 'acebet', 'refresh')}
-                                  onClick={() => refreshAcebet(user.id)}
-                                >
-                                  {isLoading(user.id, 'acebet', 'refresh') ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                                  Refresh Username
-                                </Button>
-                                <Button
-                                  size="sm" variant="outline" className="h-7 text-xs gap-1 text-destructive hover:text-destructive border-destructive/30"
-                                  disabled={isLoading(user.id, 'acebet', 'unlink')}
-                                  onClick={() => unlinkProvider(user.id, 'acebet')}
-                                >
-                                  {isLoading(user.id, 'acebet', 'unlink') ? <Loader2 className="h-3 w-3 animate-spin" /> : <Unlink className="h-3 w-3" />}
-                                  Unlink
-                                </Button>
-                              </>
                             )}
                           </div>
                         )}
@@ -743,17 +647,14 @@ function LinksTab() {
 
   const [userSearch, setUserSearch] = useState('')
   const [selectedUserId, setSelectedUserId] = useState('')
-  const [platform, setPlatform] = useState('acebet')
+  const [platform, setPlatform] = useState('roobet')
   const [platformUsername, setPlatformUsername] = useState('')
-  const [acebetMode, setAcebetMode] = useState<'id' | 'username'>('id')
-  const [acebetId, setAcebetId] = useState('')
   const [ticketRef, setTicketRef] = useState('')
   const [linkLoading, setLinkLoading] = useState(false)
   const [linkError, setLinkError] = useState<string | null>(null)
   const [linkSuccess, setLinkSuccess] = useState<string | null>(null)
 
-  const usingAcebetId = platform === 'acebet' && acebetMode === 'id'
-  const linkIdentifierReady = usingAcebetId ? acebetId.trim() !== '' : platformUsername.trim() !== ''
+  const linkIdentifierReady = platformUsername.trim() !== ''
 
   const users = usersData?.users ?? []
   const filteredUsers = userSearch.trim()
@@ -769,14 +670,13 @@ function LinksTab() {
     if (!selectedUserId || !linkIdentifierReady) return
     setLinkLoading(true); setLinkError(null); setLinkSuccess(null)
     try {
-      const acebetIdSuffix = acebetId.trim().replace(/^AB-/i, '')
       const res = await fetch('/api/admin/r2koins/links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           kick_user_id: selectedUserId,
           platform,
-          ...(usingAcebetId ? { acebet_id: `AB-${acebetIdSuffix}` } : { platform_username: platformUsername.trim() }),
+          platform_username: platformUsername.trim(),
           discord_ticket_ref: ticketRef.trim() || null,
           linked_by_admin: 'admin',
         }),
@@ -784,9 +684,8 @@ function LinksTab() {
       const json = await res.json()
       if (!res.ok) { setLinkError(json.error ?? 'Failed to create link') }
       else {
-        const who = usingAcebetId ? `AB-${acebetIdSuffix}` : platformUsername
-        setLinkSuccess(`Linked ${who} on ${platform} — baseline $${Number(json.baseline).toLocaleString(undefined, { maximumFractionDigits: 2 })}`)
-        setSelectedUserId(''); setUserSearch(''); setPlatformUsername(''); setAcebetId(''); setTicketRef('')
+        setLinkSuccess(`Linked ${platformUsername} on ${platform} — baseline $${Number(json.baseline).toLocaleString(undefined, { maximumFractionDigits: 2 })}`)
+        setSelectedUserId(''); setUserSearch(''); setPlatformUsername(''); setTicketRef('')
         mutateLinks()
       }
     } catch { setLinkError('Network error. Please try again.') }
@@ -859,30 +758,8 @@ function LinksTab() {
               </Select>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <Label>{usingAcebetId ? 'AceBet ID' : 'Platform Username'}</Label>
-                {platform === 'acebet' && (
-                  <div className="flex items-center rounded-md border border-border/60 p-0.5 text-[11px]">
-                    {(['id', 'username'] as const).map(m => (
-                      <button key={m} type="button" onClick={() => setAcebetMode(m)}
-                        className={`px-2 py-0.5 rounded-sm font-medium transition-colors ${acebetMode === m ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                      >
-                        {m === 'id' ? 'By ID' : 'By Name'}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {usingAcebetId ? (
-                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 ring-offset-background">
-                  <span className="pl-3 pr-1 text-sm font-mono font-semibold text-muted-foreground select-none">AB-</span>
-                  <input type="number" min={1} placeholder="000000" value={acebetId} onChange={e => setAcebetId(e.target.value)}
-                    className="flex-1 bg-transparent py-2 pr-3 text-sm font-mono outline-none placeholder:text-muted-foreground/50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  />
-                </div>
-              ) : (
-                <Input placeholder="Exact username on the platform" value={platformUsername} onChange={e => setPlatformUsername(e.target.value)} />
-              )}
+              <Label>Platform Username</Label>
+              <Input placeholder="Exact username on the platform" value={platformUsername} onChange={e => setPlatformUsername(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Discord Ticket Ref (optional)</Label>
@@ -1070,14 +947,14 @@ function RatesTab() {
             Add Platform
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Seed a new platform (e.g. <span className="font-mono">csbattle</span>) into the rate table. Use lowercase.
+            Seed a new platform (e.g. <span className="font-mono">roobet</span>) into the rate table. Use lowercase.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Platform key (lowercase)</Label>
-              <Input placeholder="e.g. csbattle" value={newPlatform}
+              <Input placeholder="e.g. roobet" value={newPlatform}
                 onChange={e => { setNewPlatform(e.target.value); setAddError(null); setAddSuccess(null) }} />
               {existingPlatforms.size > 0 && (
                 <p className="text-xs text-muted-foreground">Existing: {[...existingPlatforms].join(', ')}</p>

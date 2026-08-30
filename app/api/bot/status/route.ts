@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     if (tournament.status === "registration") {
       return NextResponse.json({
         success: true,
-        message: `${tournament.name} - Registration OPEN! ${count}/${tournament.max_players} players | Prize Pool: ${formatCurrency(tournament.prize_pool)} | Type !join <acebet_username> to enter!`,
+        message: `${tournament.name} - Registration OPEN! ${count}/${tournament.max_players} players | Prize Pool: ${formatCurrency(tournament.prize_pool)} | Type !join <roobet_username> to enter!`,
       });
     }
 

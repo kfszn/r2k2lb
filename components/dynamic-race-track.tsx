@@ -15,7 +15,7 @@ interface LeaderboardEntry {
 }
 
 interface DynamicRaceTrackProps {
-  platform?: 'acebet'
+  platform?: 'acebet' | 'roobet'
   targetWager?: number
   showTop?: number
   autoRefresh?: number
@@ -26,7 +26,7 @@ interface DynamicRaceTrackProps {
 }
 
 export function DynamicRaceTrack({
-  platform = 'acebet',
+  platform = 'roobet',
   targetWager = 1000, // Target in dollars
   showTop = 10,
   autoRefresh = 5000,
@@ -106,10 +106,10 @@ export function DynamicRaceTrack({
     return `$${dollars.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
-  // Mask player names for privacy (show first 2 chars + asterisks + last char)
+  // Mask player names for privacy (show first char + asterisks + last char)
   const maskName = (name: string): string => {
-    if (!name || name.length <= 3) return name
-    return name.slice(0, 2) + '*'.repeat(name.length - 3) + name.slice(-1)
+    if (!name || name.length <= 2) return name
+    return name[0] + '*'.repeat(name.length - 2) + name.slice(-1)
   }
 
   if (loading) {

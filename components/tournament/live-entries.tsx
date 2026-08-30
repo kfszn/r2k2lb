@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface TournamentEntry {
   id: string;
   kick_username: string;
-  acebet_username: string;
+  roobet_username: string;
   status: "registered" | "accepted" | "denied" | "pending";
   created_at?: string;
 }
@@ -87,9 +87,9 @@ export function LiveEntries() {
                       <p className="text-xs font-medium text-foreground truncate">
                         {entry.kick_username}
                       </p>
-                      {entry.acebet_username && (
+                      {entry.roobet_username && (
                         <p className="text-[11px] text-muted-foreground/70 truncate">
-                          {entry.acebet_username}
+                          {entry.roobet_username}
                         </p>
                       )}
                     </div>

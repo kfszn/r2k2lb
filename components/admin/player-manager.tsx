@@ -40,20 +40,20 @@ interface PlayerManagerProps {
 export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [aceUsername, setAceUsername] = useState("");
+  const [roobetUsername, setRoobetUsername] = useState("");
   const [kickUsername, setKickUsername] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredPlayers = tournament.players.filter(
     (player) =>
       player.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      player.acebet_username.toLowerCase().includes(searchQuery.toLowerCase())
+      player.roobet_username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddPlayer = async () => {
     // At least one username is required
-    if (!aceUsername.trim() && !kickUsername.trim()) {
-      alert("Please enter either an Acebet username or Kick username");
+    if (!roobetUsername.trim() && !kickUsername.trim()) {
+      alert("Please enter either a Roobet username or Kick username");
       return;
     }
 
@@ -64,8 +64,8 @@ export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tournamentId: tournament.id,
-          acebetUsername: aceUsername.trim() || null,
-          kickUsername: kickUsername.trim() || aceUsername.trim(),
+          roobetUsername: roobetUsername.trim() || null,
+          kickUsername: kickUsername.trim() || roobetUsername.trim(),
         }),
       });
 
@@ -74,7 +74,7 @@ export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
         throw new Error(data.error || "Failed to add player");
       }
 
-      setAceUsername("");
+      setRoobetUsername("");
       setKickUsername("");
       setShowAddDialog(false);
       onUpdate();
@@ -193,12 +193,12 @@ export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="ace-username">Acebet Username</Label>
+              <Label htmlFor="ace-username">Roobet Username</Label>
               <Input
                 id="ace-username"
-                placeholder="Enter Acebet username"
-                value={aceUsername}
-                onChange={(e) => setAceUsername(e.target.value)}
+                placeholder="Enter Roobet username"
+                value={roobetUsername}
+                onChange={(e) => setRoobetUsername(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 Optional - if provided, stats will be pulled from API
@@ -223,7 +223,7 @@ export function PlayerManager({ tournament, onUpdate }: PlayerManagerProps) {
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddPlayer} disabled={isLoading || (!aceUsername.trim() && !kickUsername.trim())}>
+            <Button onClick={handleAddPlayer} disabled={isLoading || (!roobetUsername.trim() && !kickUsername.trim())}>
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -270,7 +270,7 @@ function PlayerRow({ player, onRemove, onSetSeed, canEdit, isLoading }: PlayerRo
         </div>
         <div>
           <p className="font-medium">{player.display_name}</p>
-          <p className="text-xs text-muted-foreground">@{player.acebet_username}</p>
+          <p className="text-xs text-muted-foreground">@{player.roobet_username}</p>
         </div>
       </div>
 

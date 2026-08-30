@@ -1,73 +1,31 @@
 import fetch from "node-fetch";
 import { HttpsProxyAgent } from "https-proxy-agent";
 
-// Same proxy-agent pattern as /app/api/acebet/validate/route.ts —
-// routes outbound calls through the whitelisted static IP.
+// Routes outbound calls through the whitelisted static IP.
 const proxyAgent = process.env.PROXY_URL
   ? new HttpsProxyAgent(process.env.PROXY_URL)
   : undefined;
 
-const ACEBET_TOKEN = process.env.ACEBET_API_TOKEN;
 const LUXDROP_API_KEY = process.env.LUXDROP_API_KEY;
 const LUXDROP_AFFILIATE_CODES = process.env.LUXDROP_AFFILIATE_CODES ?? "R2K2";
-const CSBATTLE_LEADERBOARD_ID =
-  process.env.CSBATTLE_LEADERBOARD_ID ?? "a450042c-7dde-4fc3-9656-dca50d671cd8";
-const CSBATTLE_API_KEY = process.env.CSBATTLE_API_KEY;
+const ROOBET_API_KEY = process.env.ROOBET_API_KEY;
 
-// Acebet detailed-summary from the earliest date = lifetime totals under the affiliate
-const ACEBET_LIFETIME_START = "2025-12-26";
 // LuxDrop lifetime window start (before the affiliate program existed)
 const LUXDROP_LIFETIME_START = "2024-01-01";
+// Roobet lifetime window start (before the affiliate program existed)
+const ROOBET_LIFETIME_START = "2024-01-01";
 
-interface AcebetUser {
-  userId: number | string;
-  name: string;
-  wagered: number;
-  active: boolean;
-}
+// Same official "Affiliate Stats API" endpoint used by app/api/roobet/affiliates/route.ts
+const ROOBET_ENDPOINT = "https://roobetconnect.com/affiliate/v2/stats";
+const ROOBET_AFFILIATE_USER_ID = "51b44ea5-f07c-41c8-9daf-9a35718b459e";
 
 interface LuxdropEntry {
   username?: string;
   name?: string;
   wagered?: number;
+  weightedWagered?: number;
   wagerAmount?: number;
   totalWagered?: number;
-}
-
-interface CsbattleEntry {
-  username?: string;
-  name?: string;
-  /** CSBattle returns wager in dollars (not cents) */
-  wager?: number;
-  wagered?: number;
-  totalWagered?: number;
-}
-
-/**
- * Fetch the full Acebet affiliate user list (lifetime window).
- * Returns null on failure so callers can distinguish "API down" from "user not found".
- */
-export async function fetchAcebetUserList(): Promise<AcebetUser[] | null> {
-  if (!ACEBET_TOKEN) return null;
-  try {
-    const url = `https://api.acebet.co/affiliates/detailed-summary/v2/${ACEBET_LIFETIME_START}`;
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        Accept: "application/json",
-        Referer: "https://acebet.co/",
-        Authorization: `Bearer ${ACEBET_TOKEN}`,
-      },
-      // @ts-ignore node-fetch agent typing
-      agent: proxyAgent,
-    });
-    if (!response.ok) return null;
-    const data = await response.json().catch(() => null);
-    return Array.isArray(data) ? (data as AcebetUser[]) : null;
-  } catch {
-    return null;
-  }
 }
 
 /**
@@ -107,71 +65,40 @@ export async function fetchLuxdropUserList(): Promise<LuxdropEntry[] | null> {
 }
 
 /**
- * Fetch the full CSBattle affiliate leaderboard (lifetime window, from 2024-01-01 to today).
- * CSBattle's public leaderboard API requires no auth but honours x-api-key if provided.
- * Wager amounts are already in DOLLARS (no cents conversion needed).
+ * Fetch the full Roobet affiliate entry list (lifetime window), via the same
+ * official "Affiliate Stats API" the leaderboard route calls.
  * Returns null on failure.
  */
-export async function fetchCsbattleUserList(): Promise<CsbattleEntry[] | null> {
+export async function fetchRoobetUserList(): Promise<LuxdropEntry[] | null> {
+  if (!ROOBET_API_KEY) return null;
   try {
-    const from = encodeURIComponent("2024-01-01 00:00:00");
-    const to = encodeURIComponent(
-      new Date().toISOString().slice(0, 10) + " 23:59:59"
-    );
-    const url =
-      `https://api.csbattle.com/leaderboards/affiliates/${CSBATTLE_LEADERBOARD_ID}` +
-      `?from=${from}&to=${to}`;
+    const endDate = new Date().toISOString().slice(0, 10);
+    const upstream = new URL(ROOBET_ENDPOINT);
+    upstream.searchParams.set("userId", ROOBET_AFFILIATE_USER_ID);
+    upstream.searchParams.set("startDate", `${ROOBET_LIFETIME_START}T00:00:00.000Z`);
+    upstream.searchParams.set("endDate", `${endDate}T23:59:59.999Z`);
 
-    const response = await fetch(url, {
-      method: "GET",
+    const response = await fetch(upstream.toString(), {
       headers: {
+        Authorization: `Bearer ${ROOBET_API_KEY}`,
         Accept: "application/json",
-        ...(CSBATTLE_API_KEY ? { "x-api-key": CSBATTLE_API_KEY } : {}),
       },
-      cache: "no-store",
+      // @ts-ignore node-fetch agent typing
+      agent: proxyAgent,
     });
-
     if (!response.ok) return null;
     const raw = await response.json().catch(() => null);
-    if (!raw) return null;
-
-    // API returns { users: [...] }
-    const rows: unknown[] = Array.isArray(raw)
-      ? raw
-      : Array.isArray(raw?.users)
-      ? raw.users
-      : [];
-
-    return rows as CsbattleEntry[];
+    if (Array.isArray(raw)) return raw as LuxdropEntry[];
+    if (raw && typeof raw === "object") {
+      const obj = raw as Record<string, unknown>;
+      for (const key of ["data", "affiliates", "results", "leaderboard", "entries"]) {
+        if (Array.isArray(obj[key])) return obj[key] as LuxdropEntry[];
+      }
+    }
+    return null;
   } catch {
     return null;
   }
-}
-
-/**
- * Resolve an Acebet user by their numeric account ID (the `AB-<userId>` suffix).
- * This is the reliable link key — display names can differ or collide, but the
- * userId is unique. Use this to avoid "user not found" errors when the display
- * name doesn't match exactly.
- *
- * Returns:
- *  - { username, wagered } → matched (wagered in dollars, same as name lookup)
- *  - "not_found" → API reached, no user with that ID under the affiliate
- *  - null → API failure
- */
-export async function fetchAcebetByUserId(
-  userIdSuffix: string
-): Promise<{ username: string; wagered: number } | "not_found" | null> {
-  const suffix = String(userIdSuffix).trim().replace(/^AB-/i, "");
-  if (!/^\d+$/.test(suffix)) return "not_found";
-
-  const users = await fetchAcebetUserList();
-  if (users === null) return null;
-
-  const user = users.find((u) => String(u.userId) === suffix);
-  if (!user) return "not_found";
-
-  return { username: user.name ?? `AB-${suffix}`, wagered: Number(user.wagered) || 0 };
 }
 
 /**
@@ -187,15 +114,6 @@ export async function fetchPlatformWagerTotal(
 ): Promise<number | "not_found" | null> {
   const uname = platformUsername.toLowerCase();
 
-  if (platform === "acebet") {
-    const users = await fetchAcebetUserList();
-    if (users === null) return null;
-    const user = users.find((u) => u.name && u.name.toLowerCase() === uname);
-    if (!user) return "not_found";
-    // Acebet wagered is already in dollars
-    return Number(user.wagered) || 0;
-  }
-
   if (platform === "luxdrop") {
     const entries = await fetchLuxdropUserList();
     if (entries === null) return null;
@@ -209,16 +127,17 @@ export async function fetchPlatformWagerTotal(
     return cents / 100;
   }
 
-  if (platform === "csbattle") {
-    const entries = await fetchCsbattleUserList();
+  if (platform === "roobet") {
+    const entries = await fetchRoobetUserList();
     if (entries === null) return null;
     const entry = entries.find((e) => {
       const name = e.username ?? e.name;
       return name && name.toLowerCase() === uname;
     });
     if (!entry) return "not_found";
-    // CSBattle wager is already in dollars
-    return Number(entry.wager ?? entry.wagered ?? entry.totalWagered ?? 0);
+    // Roobet's weighted-wager value is already in dollars (NOT cents) —
+    // mirrors app/leaderboard/roobet/page.tsx's getEntryWagered().
+    return Number(entry.weightedWagered ?? entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
   }
 
   return null;

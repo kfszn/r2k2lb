@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     // Find the player by kick username
     const { data: player, error: playerError } = await supabase
       .from("tournament_players")
-      .select("id, acebet_username, status")
+      .select("id, roobet_username, status")
       .eq("tournament_id", tournament.id)
       .eq("kick_username", kickUsername.toLowerCase())
       .single();

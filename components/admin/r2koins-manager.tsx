@@ -394,20 +394,14 @@ function LinksTab() {
 
   const [userSearch, setUserSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [platform, setPlatform] = useState("acebet");
+  const [platform, setPlatform] = useState("roobet");
   const [platformUsername, setPlatformUsername] = useState("");
-  // AceBet-only: link by AB-<id> instead of display name (reliable, avoids "not found")
-  const [acebetMode, setAcebetMode] = useState<"id" | "username">("id");
-  const [acebetId, setAcebetId] = useState("");
   const [ticketRef, setTicketRef] = useState("");
   const [linkLoading, setLinkLoading] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [linkSuccess, setLinkSuccess] = useState<string | null>(null);
 
-  const usingAcebetId = platform === "acebet" && acebetMode === "id";
-  const linkIdentifierReady = usingAcebetId
-    ? acebetId.trim() !== ""
-    : platformUsername.trim() !== "";
+  const linkIdentifierReady = platformUsername.trim() !== "";
 
   const users = usersData?.users ?? [];
   const filteredUsers = userSearch.trim()
@@ -426,17 +420,13 @@ function LinksTab() {
     setLinkError(null);
     setLinkSuccess(null);
     try {
-      const acebetIdSuffix = acebetId.trim().replace(/^AB-/i, "");
       const res = await fetch("/api/admin/r2koins/links", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           kick_user_id: selectedUserId,
           platform,
-          // For AceBet ID mode, send acebet_id (username resolved server-side).
-          ...(usingAcebetId
-            ? { acebet_id: `AB-${acebetIdSuffix}` }
-            : { platform_username: platformUsername.trim() }),
+          platform_username: platformUsername.trim(),
           discord_ticket_ref: ticketRef.trim() || null,
           linked_by_admin: "admin",
         }),
@@ -445,14 +435,12 @@ function LinksTab() {
       if (!res.ok) {
         setLinkError(json.error ?? "Failed to create link");
       } else {
-        const who = usingAcebetId ? `AB-${acebetIdSuffix}` : platformUsername;
         setLinkSuccess(
-          `Linked ${who} on ${platform} — baseline captured at $${Number(json.baseline).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+          `Linked ${platformUsername} on ${platform} — baseline captured at $${Number(json.baseline).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
         );
         setSelectedUserId("");
         setUserSearch("");
         setPlatformUsername("");
-        setAcebetId("");
         setTicketRef("");
         mutateLinks();
       }
@@ -550,56 +538,12 @@ function LinksTab() {
               </Select>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <Label>{usingAcebetId ? "AceBet ID" : "Platform Username"}</Label>
-                {platform === "acebet" && (
-                  <div className="flex items-center rounded-md border border-border/60 p-0.5 text-[11px]">
-                    <button
-                      type="button"
-                      onClick={() => setAcebetMode("id")}
-                      className={`px-2 py-0.5 rounded-sm font-medium transition-colors ${
-                        acebetMode === "id"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      By ID
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAcebetMode("username")}
-                      className={`px-2 py-0.5 rounded-sm font-medium transition-colors ${
-                        acebetMode === "username"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      By Name
-                    </button>
-                  </div>
-                )}
-              </div>
-              {usingAcebetId ? (
-                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 ring-offset-background">
-                  <span className="pl-3 pr-1 text-sm font-mono font-semibold text-muted-foreground select-none">
-                    AB-
-                  </span>
-                  <input
-                    type="number"
-                    min={1}
-                    placeholder="000000"
-                    value={acebetId}
-                    onChange={(e) => setAcebetId(e.target.value)}
-                    className="flex-1 bg-transparent py-2 pr-3 text-sm font-mono outline-none placeholder:text-muted-foreground/50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  />
-                </div>
-              ) : (
-                <Input
-                  placeholder="Exact username on the platform"
-                  value={platformUsername}
-                  onChange={(e) => setPlatformUsername(e.target.value)}
-                />
-              )}
+              <Label>Platform Username</Label>
+              <Input
+                placeholder="Exact username on the platform"
+                value={platformUsername}
+                onChange={(e) => setPlatformUsername(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label>Discord Ticket Ref (optional)</Label>
@@ -876,7 +820,7 @@ function RatesTab() {
             Add Platform
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Seed a new platform (e.g. <span className="font-mono">csbattle</span>) into the
+            Seed a new platform (e.g. <span className="font-mono">roobet</span>) into the
             conversion-rate table so the daily sync and account-linking can use it. Use lowercase.
           </p>
         </CardHeader>
@@ -885,7 +829,7 @@ function RatesTab() {
             <div className="space-y-2">
               <Label>Platform key (lowercase)</Label>
               <Input
-                placeholder="e.g. csbattle"
+                placeholder="e.g. roobet"
                 value={newPlatform}
                 onChange={(e) => { setNewPlatform(e.target.value); setAddError(null); setAddSuccess(null); }}
               />

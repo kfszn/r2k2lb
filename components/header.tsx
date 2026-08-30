@@ -17,9 +17,8 @@ import {
 
 function Header() {
   const [open, setOpen] = useState(false)
-  const [mobileAcebet, setMobileAcebet] = useState(false)
   const [mobileLuxdrop, setMobileLuxdrop] = useState(false)
-  const [mobileCsbattle, setMobileCsbattle] = useState(false)
+  const [mobileRoobet, setMobileRoobet] = useState(false)
   const [mobilePoints, setMobilePoints] = useState(false)
   const [mobileKick, setMobileKick] = useState(false)
   const [user, setUser] = useState<any>(null)
@@ -67,17 +66,16 @@ function Header() {
 
   const isAdmin = user?.email === 'business.r2k2@gmail.com'
 
-  const closeMobile = () => {
-    setOpen(false)
-    setMobileAcebet(false)
-    setMobileLuxdrop(false)
-    setMobileCsbattle(false)
-    setMobilePoints(false)
-    setMobileKick(false)
-  }
+ const closeMobile = () => {
+ setOpen(false)
+ setMobileLuxdrop(false)
+ setMobileRoobet(false)
+ setMobilePoints(false)
+ setMobileKick(false)
+ }
 
   return (
-    <header className="border-b border-border/30 bg-card/70 backdrop-blur-xl sticky top-0 z-50">
+    <header className="border-b border-white/10 bg-background/60 backdrop-blur-2xl backdrop-saturate-150 sticky top-0 z-50 shadow-[0_8px_30px_-16px_oklch(0.05_0.02_265)]">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 md:gap-3">
           <Image 
@@ -96,27 +94,27 @@ function Header() {
             Home
           </Link>
 
-          {/* Acebet Dropdown */}
+          {/* Roobet Dropdown */}
           <div className="relative group">
             <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
-              AceBet
+              Roobet
               <ChevronDown className="h-4 w-4" />
             </button>
             <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
-              <Link 
-                href="/leaderboard/acebet" 
+              <Link
+                href="/leaderboard/roobet"
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Leaderboard
               </Link>
-              <Link 
-                href="/tournament" 
+              <Link
+                href="/tournament"
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Tournament
               </Link>
-              <Link 
-                href="/raffle" 
+              <Link
+                href="/raffle"
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Raffle
@@ -125,33 +123,21 @@ function Header() {
               <div className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
                 Code Perks
               </div>
-              <Link 
-                href="/perks/acebet/wager-rewards" 
+              <Link
+                href="/perks/roobet/wager-rewards"
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Wager Rewards
               </Link>
-              <Link 
-                href="/perks/acebet/reward-match" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center gap-2"
+              <Link
+                href="/perks/roobet/rank-up-match"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center justify-between gap-2"
               >
-                <span className="text-amber-400 text-xs font-bold">2x</span>
-                Reward Match
+                Rank Up Match
+                <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
               </Link>
-              <Link 
-                href="/perks/acebet/first-deposit" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                First Time Deposit Bonus
-              </Link>
-              <Link 
-                href="/perks/acebet/loss-back" 
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Loss-back
-              </Link>
-              <Link 
-                href="/perks/acebet/challenges" 
+              <Link
+                href="/perks/roobet/challenges"
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Challenges
@@ -197,51 +183,6 @@ function Header() {
               </Link>
               <Link
                 href="/perks/luxdrop/loss-back"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Loss-back
-              </Link>
-            </div>
-          </div>
-
-          {/* CSBattle Dropdown */}
-          <div className="relative group">
-            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
-              CSBattle
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[220px] z-50 py-1">
-              <Link
-                href="/leaderboard/csbattle"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Leaderboard
-              </Link>
-              <Link
-                href="/raffle/csbattle"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Raffle
-              </Link>
-              <div className="h-px bg-border/20 mx-2 my-1" />
-              <div className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
-                Code Perks
-              </div>
-              <Link
-                href="/perks/csbattle/wager-milestones"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center justify-between gap-2"
-              >
-                Wager Milestones
-                <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
-              </Link>
-              <Link
-                href="/perks/csbattle/first-deposit"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                First Time Deposit Bonus
-              </Link>
-              <Link
-                href="/perks/csbattle/loss-back"
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Loss-back
@@ -374,18 +315,18 @@ function Header() {
                   Home
                 </Link>
 
-                {/* Mobile Acebet */}
+                {/* Mobile Roobet */}
                 <div className="space-y-1">
-                  <button 
-                    onClick={() => setMobileAcebet(!mobileAcebet)}
+                  <button
+                    onClick={() => { setMobileRoobet(!mobileRoobet); setMobileLuxdrop(false); setMobileKick(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
-                    AceBet
-                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileAcebet ? 'rotate-180' : ''}`} />
+                    Roobet
+                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileRoobet ? 'rotate-180' : ''}`} />
                   </button>
-                  {mobileAcebet && (
+                  {mobileRoobet && (
                     <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
-                      <Link href="/leaderboard/acebet" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                      <Link href="/leaderboard/roobet" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Leaderboard
                       </Link>
                       <Link href="/tournament" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
@@ -396,20 +337,14 @@ function Header() {
                       </Link>
                       <div className="h-px bg-border/20 my-1" />
                       <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
-                      <Link href="/perks/acebet/wager-rewards" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                      <Link href="/perks/roobet/wager-rewards" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Wager Rewards
                       </Link>
-                      <Link href="/perks/acebet/reward-match" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
-                        <span className="text-amber-400 text-xs font-bold">2x</span>
-                        Reward Match
+                      <Link href="/perks/roobet/rank-up-match" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
+                        Rank Up Match
+                        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
                       </Link>
-                      <Link href="/perks/acebet/first-deposit" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        First Time Deposit Bonus
-                      </Link>
-                      <Link href="/perks/acebet/loss-back" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Loss-back
-                      </Link>
-                      <Link href="/perks/acebet/challenges" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
+                      <Link href="/perks/roobet/challenges" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Challenges
                       </Link>
                     </div>
@@ -419,7 +354,7 @@ function Header() {
                 {/* Mobile LuxDrop */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileAcebet(false); setMobileCsbattle(false); setMobileKick(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileRoobet(false); setMobileKick(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     LuxDrop
@@ -449,43 +384,11 @@ function Header() {
                   )}
                 </div>
 
-                {/* Mobile CSBattle */}
-                <div className="space-y-1">
-                  <button
-                    onClick={() => { setMobileCsbattle(!mobileCsbattle); setMobileAcebet(false); setMobileLuxdrop(false); setMobileKick(false); setMobilePoints(false) }}
-                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
-                  >
-                    CSBattle
-                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileCsbattle ? 'rotate-180' : ''}`} />
-                  </button>
-                  {mobileCsbattle && (
-                    <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
-                      <Link href="/leaderboard/csbattle" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Leaderboard
-                      </Link>
-                      <Link href="/raffle/csbattle" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Raffle
-                      </Link>
-                      <div className="h-px bg-border/20 my-1" />
-                      <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
-                      <Link href="/perks/csbattle/wager-milestones" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
-                        Wager Milestones
-                        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
-                      </Link>
-                      <Link href="/perks/csbattle/first-deposit" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        First Time Deposit Bonus
-                      </Link>
-                      <Link href="/perks/csbattle/loss-back" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Loss-back
-                      </Link>
-                    </div>
-                  )}
-                </div>
 
                 {/* Mobile Kick */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileKick(!mobileKick); setMobileAcebet(false); setMobileLuxdrop(false); setMobileCsbattle(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileKick(!mobileKick); setMobileLuxdrop(false); setMobileRoobet(false); setMobilePoints(false) }}
                     className="text-base font-medium hover:text-[#53fc18] transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Kick
@@ -516,7 +419,7 @@ function Header() {
                 {/* Mobile R2Koins */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobilePoints(!mobilePoints); setMobileAcebet(false); setMobileLuxdrop(false); setMobileCsbattle(false); setMobileKick(false) }}
+                    onClick={() => { setMobilePoints(!mobilePoints); setMobileLuxdrop(false); setMobileRoobet(false); setMobileKick(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     R2Koins

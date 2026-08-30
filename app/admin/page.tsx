@@ -31,8 +31,8 @@ import { UsersManager } from "@/components/admin/users-manager";
 import { RewardsSettings } from "@/components/admin/rewards-settings";
 import { GamesManager } from "@/components/admin/games-manager";
 import { LeaderboardManager } from "@/components/admin/leaderboard-manager";
-import { AcebetUserLookup } from "@/components/admin/acebet-user-lookup";
-import { ChallengesManager } from "@/components/admin/challenges-manager";
+
+import { RoobetChallengesManager } from "@/components/admin/roobet-challenges-manager";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
@@ -131,10 +131,10 @@ export default function AdminPage() {
       { view: "stream-games", title: "Stream Games", description: "Manage stream games and interactive content for viewers", icon: <Gamepad2 className="h-6 w-6" /> },
       { view: "raffle", title: "Weekly Raffle", description: "Configure raffle settings and select winners", icon: <Ticket className="h-6 w-6" /> },
       { view: "shop", title: "Rewards Shop", description: "Manage shop items, fulfill redemptions, and configure point settings", icon: <Settings className="h-6 w-6" /> },
-      { view: "challenges", title: "Challenges", description: "Create and manage AceBet challenges — add images, set prize amounts, and toggle visibility", icon: <Flame className="h-6 w-6" /> },
+      { view: "challenges", title: "Challenges", description: "Create and manage Roobet challenges — add images, set prize amounts, and toggle visibility", icon: <Flame className="h-6 w-6" /> },
       { view: "users", title: "Users", description: "Manage accounts, R2Koin balances, platform links, conversion rates, and email verification", icon: <Users className="h-6 w-6" /> },
       { view: "games", title: "Games Analytics", description: "View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko", icon: <BarChart3 className="h-6 w-6" /> },
-      { view: "leaderboards", title: "Leaderboard Manager", description: "Create and manage leaderboards for AceBet and Kick with custom prize structures", icon: <ListOrdered className="h-6 w-6" /> },
+      { view: "leaderboards", title: "Leaderboard Manager", description: "Create and manage leaderboards for Roobet and Kick with custom prize structures", icon: <ListOrdered className="h-6 w-6" /> },
       { href: "/admin/fifty-fifty", title: "50/50 Raffle", description: "Open rounds, view live stats, trigger draws, and review round history", icon: <Ticket className="h-6 w-6" /> },
       { view: "website", title: "Affiliate Analytics", description: "Verify individual wagers and view total affiliate statistics", icon: <LineChart className="h-6 w-6" /> },
     ];
@@ -259,7 +259,7 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold tracking-tight mb-6">Affiliate Analytics</h1>
 
           <Tabs defaultValue="wager" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 border border-border/40 bg-card/60 backdrop-blur-xl">
+            <TabsList className="grid w-full grid-cols-2 border border-border/40 bg-card/60 backdrop-blur-xl">
               <TabsTrigger value="wager" className="gap-2">
                 <Zap className="h-4 w-4" />
                 Individual Wager Verification
@@ -267,10 +267,6 @@ export default function AdminPage() {
               <TabsTrigger value="total-wager" className="gap-2">
                 <Trophy className="h-4 w-4" />
                 Total Statistics
-              </TabsTrigger>
-              <TabsTrigger value="user-info" className="gap-2">
-                <Users className="h-4 w-4" />
-                User Info
               </TabsTrigger>
             </TabsList>
 
@@ -290,10 +286,6 @@ export default function AdminPage() {
                   <TotalWagerStats />
                 </CardContent>
               </Card>
-            </TabsContent>
-
-            <TabsContent value="user-info" className="mt-6">
-              <AcebetUserLookup />
             </TabsContent>
           </Tabs>
         </div>
@@ -330,8 +322,10 @@ export default function AdminPage() {
         <Header />
         <div className="container mx-auto px-4 py-6">
           <AdminNav current="challenges" onNavigate={(v) => setCurrentView(v as AdminView)} />
-          <h1 className="text-3xl font-bold tracking-tight mb-6">AceBet Challenges</h1>
-          <ChallengesManager />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Challenges</h1>
+          <div className="space-y-8">
+            <RoobetChallengesManager />
+          </div>
         </div>
       </main>
     );

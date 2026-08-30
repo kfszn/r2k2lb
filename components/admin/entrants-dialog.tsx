@@ -31,7 +31,7 @@ interface EntrantsDialogProps {
 
 export function EntrantsDialog({ open, onOpenChange, tournament, onRefresh }: EntrantsDialogProps) {
   const [kickUsername, setKickUsername] = useState("");
-  const [acebetUsername, setAcebetUsername] = useState("");
+  const [roobetUsername, setRoobetUsername] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -41,7 +41,7 @@ export function EntrantsDialog({ open, onOpenChange, tournament, onRefresh }: En
   });
 
   const handleAddPlayer = async () => {
-    if (!kickUsername.trim() || !acebetUsername.trim()) {
+    if (!kickUsername.trim() || !roobetUsername.trim()) {
       setError("Both usernames are required");
       return;
     }
@@ -56,7 +56,7 @@ export function EntrantsDialog({ open, onOpenChange, tournament, onRefresh }: En
         body: JSON.stringify({
           tournamentId: tournament.id,
           kickUsername: kickUsername.trim(),
-          acebetUsername: acebetUsername.trim(),
+          roobetUsername: roobetUsername.trim(),
         }),
       });
 
@@ -68,7 +68,7 @@ export function EntrantsDialog({ open, onOpenChange, tournament, onRefresh }: En
       }
 
       setKickUsername("");
-      setAcebetUsername("");
+      setRoobetUsername("");
       onRefresh();
     } catch (err) {
       setError("Failed to add player");
@@ -122,9 +122,9 @@ export function EntrantsDialog({ open, onOpenChange, tournament, onRefresh }: En
               className="flex-1"
             />
             <Input
-              placeholder="Acebet Username"
-              value={acebetUsername}
-              onChange={(e) => setAcebetUsername(e.target.value)}
+              placeholder="Roobet Username"
+              value={roobetUsername}
+              onChange={(e) => setRoobetUsername(e.target.value)}
               className="flex-1"
             />
             <Button onClick={handleAddPlayer} disabled={isAdding} className="gap-2">
@@ -154,7 +154,7 @@ export function EntrantsDialog({ open, onOpenChange, tournament, onRefresh }: En
                 <TableRow>
                   <TableHead className="w-12">#</TableHead>
                   <TableHead>Kick User</TableHead>
-                  <TableHead>Acebet User</TableHead>
+                  <TableHead>Roobet User</TableHead>
                   <TableHead className="text-right">Wager</TableHead>
                   <TableHead className="text-center">Active</TableHead>
                   <TableHead className="text-center">Status</TableHead>
@@ -171,13 +171,13 @@ export function EntrantsDialog({ open, onOpenChange, tournament, onRefresh }: En
                       {player.kick_username}
                     </TableCell>
                     <TableCell className="text-primary">
-                      {player.acebet_username}
+                      {player.roobet_username}
                     </TableCell>
                     <TableCell className="text-right font-mono">
-                      ${(player.acebet_wager || 0).toLocaleString()}
+                      ${(player.roobet_wager || 0).toLocaleString()}
                     </TableCell>
                     <TableCell className="text-center">
-                      {player.acebet_active ? (
+                      {player.roobet_active ? (
                         <CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
                       ) : (
                         <XCircle className="h-5 w-5 text-red-500 mx-auto" />

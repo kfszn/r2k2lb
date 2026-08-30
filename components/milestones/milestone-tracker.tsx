@@ -16,7 +16,7 @@ type Progress = {
 }
 
 interface MilestoneTrackerProps {
-  platform: 'acebet' | 'luxdrop' | 'csbattle'
+  platform: 'acebet' | 'luxdrop' | 'roobet'
   sponsor: string
   tiers: MilestoneTier[]
   discordUrl: string
@@ -74,12 +74,15 @@ export function MilestoneTracker({ platform, sponsor, tiers, discordUrl }: Miles
 
       {/* ── Tier table ─────────────────────────────────────────────────── */}
       <div className="rounded-2xl border border-border/50 bg-gradient-to-b from-card/70 to-card/30 overflow-hidden shadow-[0_0_50px_-24px_rgba(0,0,0,0.7)]">
-        <div className="flex items-center gap-4 px-4 sm:px-5 py-3 border-b border-border/50 bg-muted/20">
-          <div className="w-12 sm:w-14 shrink-0" />
-          <p className="w-24 sm:w-28 shrink-0 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tier</p>
+        <div className="hidden items-center gap-4 px-5 py-3 border-b border-border/50 bg-muted/20 sm:flex">
+          <div className="w-14 shrink-0" />
+          <p className="w-28 shrink-0 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tier</p>
           <p className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Wager Required</p>
-          <p className="w-24 sm:w-28 shrink-0 text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Reward</p>
-          <div className="shrink-0 ml-1 sm:ml-2 w-[110px] sm:w-[130px]" />
+          <p className="w-28 shrink-0 text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Reward</p>
+          <div className="shrink-0 ml-2 w-[130px]" />
+        </div>
+        <div className="flex items-center px-4 py-2.5 border-b border-border/50 bg-muted/20 sm:hidden">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Milestone Tiers</p>
         </div>
 
         {sorted.map((tier, i) => (
@@ -165,13 +168,13 @@ function MilestoneStatusCard({
           <div>
             <p className="text-sm font-semibold text-foreground">No {sponsor} account linked</p>
             <p className="text-sm text-muted-foreground">
-              {platform === 'acebet'
-                ? 'Link your AceBet account to track your milestone progress automatically.'
+              {platform === 'acebet' || platform === 'roobet'
+                ? `Link your ${sponsor} account to track your milestone progress automatically.`
                 : `Link your ${sponsor} account in Discord to track your milestone progress automatically.`}
             </p>
           </div>
         </div>
-        {platform === 'acebet' ? (
+        {platform === 'acebet' || platform === 'roobet' ? (
           <Link
             href="/account"
             className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-foreground transition-all hover:bg-muted/50 active:scale-95"

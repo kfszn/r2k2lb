@@ -22,8 +22,8 @@ export async function GET(
       .select(
         `
         *,
-        player1:player1_id(id, kick_username, acebet_username),
-        player2:player2_id(id, kick_username, acebet_username)
+        player1:player1_id(id, kick_username, roobet_username),
+        player2:player2_id(id, kick_username, roobet_username)
         `
       )
       .eq("tournament_id", tournamentId)

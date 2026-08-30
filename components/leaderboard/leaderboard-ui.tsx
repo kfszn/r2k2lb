@@ -115,6 +115,49 @@ export function StatCard({
 }
 
 // ---------------------------------------------------------------------------
+// Deterministic initials avatar — used whenever a player has no real rank
+// badge to show (e.g. Roobet's own API has no icon art for level-0/unranked
+// players), so every player still gets a distinct, identity-linked badge
+// instead of every unranked player collapsing into the same generic icon.
+// ---------------------------------------------------------------------------
+const INITIALS_GRADIENTS = [
+  'from-primary/70 to-accent/70',
+  'from-amber-400/70 to-orange-600/70',
+  'from-sky-400/70 to-blue-600/70',
+  'from-fuchsia-400/70 to-purple-600/70',
+  'from-emerald-400/70 to-teal-600/70',
+  'from-rose-400/70 to-red-600/70',
+]
+
+function hashSeed(seed: string): number {
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash)
+}
+
+function getInitialsGradient(seed: string): string {
+  return INITIALS_GRADIENTS[hashSeed(seed) % INITIALS_GRADIENTS.length]
+}
+
+function getInitials(name: string): string {
+  const clean = name.replace(/\*/g, '').trim()
+  return clean.slice(0, 2).toUpperCase() || '?'
+}
+
+function InitialsAvatar({ name, className = '' }: { name: string; className?: string }) {
+  return (
+    <div
+      className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br font-black text-background ${getInitialsGradient(name)} ${className}`}
+    >
+      {getInitials(name)}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Podium card (top 3)
 // ---------------------------------------------------------------------------
 export function PodiumCard({
@@ -137,6 +180,7 @@ export function PodiumCard({
   const [imgError, setImgError] = useState(false)
   const tier = TIER[rank]
   const isFirst = rank === 1
+  const hasRealAvatar = Boolean(avatar) && !imgError
 
   const avatarSize = size === 'lg' ? 'h-24 w-24' : size === 'sm' ? 'h-14 w-14' : 'h-16 w-16'
   const pad = size === 'lg' ? 'p-6 pt-8' : size === 'sm' ? 'p-4 pt-6' : 'p-5 pt-7'
@@ -158,14 +202,20 @@ export function PodiumCard({
           {tier.label} Place
         </div>
 
-        <div className={`relative ${avatarSize} overflow-hidden rounded-full ring-2 ${tier.ring}`}>
-          <img
-            src={imgError ? fallback : avatar}
-            alt={name}
-            className="absolute inset-0 h-full w-full object-cover"
-            crossOrigin="anonymous"
-            onError={() => setImgError(true)}
-          />
+        <div className={`relative ${avatarSize}`}>
+          {hasRealAvatar ? (
+            <img
+              src={avatar}
+              alt={name}
+              className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
+              crossOrigin="anonymous"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="absolute inset-0 overflow-hidden [clip-path:polygon(25%_2%,75%_2%,100%_50%,75%_98%,25%_98%,0%_50%)]">
+              <InitialsAvatar name={name} className={size === 'lg' ? 'text-xl' : 'text-sm'} />
+            </div>
+          )}
         </div>
 
         <p className={`w-full truncate font-bold text-foreground ${size === 'lg' ? 'text-xl' : 'text-sm'}`}>{name}</p>
@@ -204,6 +254,7 @@ export function PlayerRow({
   fallback: string
 }) {
   const [imgError, setImgError] = useState(false)
+  const hasRealAvatar = Boolean(avatar) && !imgError
   return (
     <div className="group relative grid grid-cols-[56px_1fr_130px_100px] items-center px-4 py-3 transition-colors hover:bg-primary/5">
       {/* hover accent line */}
@@ -212,14 +263,20 @@ export function PlayerRow({
         <RankBadge rank={rank} />
       </div>
       <div className="flex min-w-0 items-center gap-3">
-        <div className="relative h-9 w-9 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-primary/30">
-          <img
-            src={imgError ? fallback : avatar}
-            alt={name}
-            className="absolute inset-0 h-full w-full object-cover"
-            crossOrigin="anonymous"
-            onError={() => setImgError(true)}
-          />
+        <div className="relative h-9 w-9 flex-shrink-0">
+          {hasRealAvatar ? (
+            <img
+              src={avatar}
+              alt={name}
+              className="absolute inset-0 h-full w-full object-contain"
+              crossOrigin="anonymous"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="absolute inset-0 overflow-hidden [clip-path:polygon(25%_2%,75%_2%,100%_50%,75%_98%,25%_98%,0%_50%)]">
+              <InitialsAvatar name={name} className="text-xs" />
+            </div>
+          )}
         </div>
         <p className="truncate text-sm font-semibold">{name}</p>
       </div>
