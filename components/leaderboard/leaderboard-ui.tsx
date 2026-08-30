@@ -202,17 +202,19 @@ export function PodiumCard({
           {tier.label} Place
         </div>
 
-        <div className={`relative ${avatarSize} overflow-hidden rounded-full ring-2 ${tier.ring}`}>
+        <div className={`relative ${avatarSize}`}>
           {hasRealAvatar ? (
             <img
               src={avatar}
               alt={name}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
               crossOrigin="anonymous"
               onError={() => setImgError(true)}
             />
           ) : (
-            <InitialsAvatar name={name} className={size === 'lg' ? 'text-xl' : 'text-sm'} />
+            <div className="absolute inset-0 overflow-hidden [clip-path:polygon(25%_2%,75%_2%,100%_50%,75%_98%,25%_98%,0%_50%)]">
+              <InitialsAvatar name={name} className={size === 'lg' ? 'text-xl' : 'text-sm'} />
+            </div>
           )}
         </div>
 
@@ -261,17 +263,19 @@ export function PlayerRow({
         <RankBadge rank={rank} />
       </div>
       <div className="flex min-w-0 items-center gap-3">
-        <div className="relative h-9 w-9 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-primary/30">
+        <div className="relative h-9 w-9 flex-shrink-0">
           {hasRealAvatar ? (
             <img
               src={avatar}
               alt={name}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-contain"
               crossOrigin="anonymous"
               onError={() => setImgError(true)}
             />
           ) : (
-            <InitialsAvatar name={name} className="text-xs" />
+            <div className="absolute inset-0 overflow-hidden [clip-path:polygon(25%_2%,75%_2%,100%_50%,75%_98%,25%_98%,0%_50%)]">
+              <InitialsAvatar name={name} className="text-xs" />
+            </div>
           )}
         </div>
         <p className="truncate text-sm font-semibold">{name}</p>

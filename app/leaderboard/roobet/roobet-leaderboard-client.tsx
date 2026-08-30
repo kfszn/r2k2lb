@@ -692,8 +692,8 @@ export default function RoobetLeaderboardClient() {
                               <div key={getEntryId(entry)} className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/20 px-4 py-3">
                                 <div className="flex items-center gap-3">
                                   <span className="text-sm font-bold text-primary">#{rank}</span>
-                                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary/30">
-                                    <img src={getAvatarUrl(getEntryAvatar(entry))} alt={getEntryName(entry)} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/roobet-icon.png' }} />
+                                  <div className="relative w-8 h-8">
+                                    <img src={getAvatarUrl(getEntryAvatar(entry))} alt={getEntryName(entry)} className="absolute inset-0 w-full h-full object-contain" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/roobet-icon.png' }} />
                                   </div>
                                   <span className="font-semibold text-sm text-foreground">{maskName(getEntryName(entry))}</span>
                                 </div>
