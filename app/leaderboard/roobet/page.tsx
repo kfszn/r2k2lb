@@ -22,10 +22,21 @@ const PERIOD_DAYS = 7
 const PRIZE_TOTAL = 5000
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25]
 
+// One-off end-date override — the cycle starting on PERIOD_ANCHOR runs long and
+// ends exactly 9/5/2026 6:00 PM ET instead of the standard 7-day cadence.
+// Every subsequent period resumes the normal cadence starting the day after.
+const PERIOD_END_OVERRIDES: Record<string, string> = {
+  '2026-08-28': '2026-09-05',
+}
+
 function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr + 'T00:00:00Z')
   d.setUTCDate(d.getUTCDate() + days)
   return d.toISOString().slice(0, 10)
+}
+
+function periodEndFor(start: string): string {
+  return PERIOD_END_OVERRIDES[start] ?? addDays(start, PERIOD_DAYS - 1)
 }
 
 function formatDisplay(start: string, end: string): string {
@@ -35,14 +46,14 @@ function formatDisplay(start: string, end: string): string {
   return `${fmt(s)} – ${fmt(e)}, ${e.getUTCFullYear()}`
 }
 
-// Compute the current (in-progress) 7-day period from the anchor date
+// Compute the current (in-progress) period from the anchor date
 function currentPeriod(): { start: string; end: string } {
   const today = new Date().toISOString().slice(0, 10)
   let start = PERIOD_ANCHOR
-  let end = addDays(start, PERIOD_DAYS - 1)
+  let end = periodEndFor(start)
   while (addDays(end, 1) <= today) {
     start = addDays(end, 1)
-    end = addDays(start, PERIOD_DAYS - 1)
+    end = periodEndFor(start)
   }
   return { start, end }
 }
@@ -50,6 +61,11 @@ function currentPeriod(): { start: string; end: string } {
 const CURRENT = currentPeriod()
 const CURRENT_START = CURRENT.start
 const CURRENT_END = CURRENT.end
+// The current cycle's exact end moment (used for the countdown). Ends at
+// 6:00 PM ET (22:00 UTC — EDT is UTC-4 in September) when overridden;
+// otherwise it ends at the normal end-of-day UTC.
+const CURRENT_END_TIMESTAMP =
+  CURRENT_END === '2026-09-05' ? '2026-09-05T22:00:00Z' : `${CURRENT_END}T23:59:59Z`
 const CURRENT_DISPLAY = formatDisplay(CURRENT_START, CURRENT_END)
 
 // ---------------------------------------------------------------------------
@@ -189,7 +205,7 @@ export default function RoobetLeaderboard() {
   // ---------------------------------------------------------------------------
   const computeTimeRemaining = (period: string) => {
     if (period !== 'current') return 'Ended'
-    const end = new Date(CURRENT_END + 'T23:59:59Z').getTime()
+    const end = new Date(CURRENT_END_TIMESTAMP).getTime()
     const diff = end - Date.now()
     if (diff <= 0) return 'Ended'
     const days = Math.floor(diff / 86400000)

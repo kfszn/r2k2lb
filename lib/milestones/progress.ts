@@ -11,19 +11,31 @@ export type MilestonePlatform = "acebet" | "luxdrop" | "roobet";
 const ROOBET_PERIOD_ANCHOR = "2026-08-28";
 const ROOBET_PERIOD_DAYS = 7;
 
+// One-off end-date override — mirrors app/leaderboard/roobet/page.tsx and
+// app/api/cron/roobet-weekly-archive exactly. The cycle starting on
+// ROOBET_PERIOD_ANCHOR runs long and ends 9/5/2026 instead of the standard
+// 7-day cadence. Every subsequent period resumes the normal cadence.
+const ROOBET_PERIOD_END_OVERRIDES: Record<string, string> = {
+  "2026-08-28": "2026-09-05",
+};
+
 function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr + "T00:00:00Z");
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
 
+function roobetPeriodEndFor(start: string): string {
+  return ROOBET_PERIOD_END_OVERRIDES[start] ?? addDays(start, ROOBET_PERIOD_DAYS - 1);
+}
+
 function roobetCurrentPeriod(): { start: string; end: string } {
   const today = new Date().toISOString().slice(0, 10);
   let start = ROOBET_PERIOD_ANCHOR;
-  let end = addDays(start, ROOBET_PERIOD_DAYS - 1);
+  let end = roobetPeriodEndFor(start);
   while (addDays(end, 1) <= today) {
     start = addDays(end, 1);
-    end = addDays(start, ROOBET_PERIOD_DAYS - 1);
+    end = roobetPeriodEndFor(start);
   }
   return { start, end };
 }

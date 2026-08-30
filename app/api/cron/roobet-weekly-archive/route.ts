@@ -19,12 +19,23 @@ const PERIOD_DAYS = 7;
 const PRIZE_TOTAL = 5000;
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25];
 
+// One-off end-date override — mirrors app/leaderboard/roobet/page.tsx exactly.
+// The cycle starting on PERIOD_ANCHOR runs long and ends 9/5/2026 instead of
+// the standard 7-day cadence. Every subsequent period resumes normal cadence.
+const PERIOD_END_OVERRIDES: Record<string, string> = {
+  "2026-08-28": "2026-09-05",
+};
+
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"];
 
 function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr + "T00:00:00Z");
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
+}
+
+function periodEndFor(start: string): string {
+  return PERIOD_END_OVERRIDES[start] ?? addDays(start, PERIOD_DAYS - 1);
 }
 
 function monthLabel(dateStr: string): string {
@@ -45,7 +56,7 @@ function romanIndexForPeriod(periodStart: string): number {
       lastMonth = month;
     }
     indexInMonth++;
-    cursor = addDays(cursor, PERIOD_DAYS);
+    cursor = addDays(periodEndFor(cursor), 1);
   }
   // one more increment for the period we stopped on
   const month = monthLabel(cursor);
@@ -60,19 +71,26 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Determine the most recently completed period ending at/before today (UTC)
+  // Determine the most recently completed period ending at/before today (UTC).
+  // Walk forward from the anchor, tracking the previous period, so the step
+  // back to "the period that just ended" is correct even when a period's
+  // length was overridden (contiguous periods — prev end = current start - 1).
   const today = new Date().toISOString().slice(0, 10);
   let periodStart = PERIOD_ANCHOR;
-  let periodEnd = addDays(periodStart, PERIOD_DAYS - 1);
+  let periodEnd = periodEndFor(periodStart);
+  let prevStart = periodStart;
+  let prevEnd = periodEnd;
 
   while (addDays(periodEnd, 1) <= today) {
+    prevStart = periodStart;
+    prevEnd = periodEnd;
     periodStart = addDays(periodEnd, 1);
-    periodEnd = addDays(periodStart, PERIOD_DAYS - 1);
+    periodEnd = periodEndFor(periodStart);
   }
   // Step back one period — the one that JUST ended (end date < today)
   if (periodEnd >= today) {
-    periodEnd = addDays(periodStart, -1);
-    periodStart = addDays(periodStart, -PERIOD_DAYS);
+    periodStart = prevStart;
+    periodEnd = prevEnd;
   }
 
   const supabase = getSupabase();
