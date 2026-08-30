@@ -122,12 +122,16 @@ function sortByWeightedWager(entries: RoobetEntry[]): RoobetEntry[] {
   return [...entries].sort((a, b) => getEntryWagered(b) - getEntryWagered(a))
 }
 function getEntryAvatar(e: RoobetEntry): string | null {
-  // Roobet has no badge art for rank level 0 (unranked) — its own API always
-  // returns an icon URL for that level ("levelcons/image0.png") that 404s.
-  // Skip it so those players get a distinct initials badge instead of every
-  // unranked player collapsing into the same broken-image fallback.
-  if (e.rankLevel === 0) return e.avatar ?? null
-  return e.rankLevelImage ?? e.avatar ?? null
+  const rankImage = e.rankLevelImage ?? null
+  // Roobet's API returns a broken filename for the rank-0 (unranked) icon —
+  // ".../levelcons/image0.png" 404s — but the real asset exists in the same
+  // directory under a corrected filename: ".../levelcons/level0.png".
+  // Remap just that one broken case so unranked players still get their
+  // real rank badge instead of falling back to a generic/initials avatar.
+  if (rankImage && e.rankLevel === 0) {
+    return rankImage.replace(/\/image0\.png(?=$|[?#])/, '/level0.png')
+  }
+  return rankImage ?? e.avatar ?? null
 }
 
 export default function RoobetLeaderboardClient() {
