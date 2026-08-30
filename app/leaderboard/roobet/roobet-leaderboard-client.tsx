@@ -364,6 +364,16 @@ export default function RoobetLeaderboardClient() {
             />
           )}
         </div>
+        {!showPrevious && (
+          <div className="max-w-4xl mx-auto mt-3">
+            <GoalTracker
+              current={totalWagered}
+              goal={2_000_000}
+              formatMoney={formatMoney}
+              label="Wager Goal"
+            />
+          </div>
+        )}
       </section>
 
       {/* Current / Previous controls */}
