@@ -4,12 +4,12 @@
 
 export type MilestonePlatform = "acebet" | "luxdrop" | "roobet";
 
-// Roobet's leaderboard runs on a rolling 8-day period computed from an
+// Roobet's leaderboard runs on a rolling 7-day period computed from an
 // anchor date — mirrors app/leaderboard/roobet/page.tsx (PERIOD_ANCHOR/PERIOD_DAYS)
 // and app/api/cron/roobet-weekly-archive exactly, so milestone progress
 // resets in lockstep with the public leaderboard.
-const ROOBET_PERIOD_ANCHOR = "2026-08-30";
-const ROOBET_PERIOD_DAYS = 8;
+const ROOBET_PERIOD_ANCHOR = "2026-08-29";
+const ROOBET_PERIOD_DAYS = 7;
 
 function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr + "T00:00:00Z");
