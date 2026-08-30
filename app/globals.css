@@ -117,31 +117,31 @@
   --font-sans: 'Geist', 'Geist Fallback';
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
 
-  /* Soft "cloudy" dark palette — desaturated blue-slate base with an airy sky accent */
-  --color-background: oklch(0.16 0.028 265);
-  --color-foreground: oklch(0.96 0.008 260);
-  --color-card: oklch(0.24 0.032 265);
-  --color-card-foreground: oklch(0.96 0.008 260);
-  --color-popover: oklch(0.2 0.03 265);
-  --color-popover-foreground: oklch(0.96 0.008 260);
-  --color-primary: oklch(0.7 0.15 255);
+  /* Soft dark palette with a vibrant blue → purple identity */
+  --color-background: oklch(0.16 0.03 270);
+  --color-foreground: oklch(0.96 0.01 275);
+  --color-card: oklch(0.23 0.035 272);
+  --color-card-foreground: oklch(0.96 0.01 275);
+  --color-popover: oklch(0.2 0.035 272);
+  --color-popover-foreground: oklch(0.96 0.01 275);
+  --color-primary: oklch(0.62 0.22 268);
   --color-primary-foreground: oklch(0.99 0 0);
-  --color-secondary: oklch(0.28 0.032 265);
-  --color-secondary-foreground: oklch(0.96 0.008 260);
-  --color-muted: oklch(0.26 0.028 265);
-  --color-muted-foreground: oklch(0.72 0.02 262);
-  --color-accent: oklch(0.78 0.12 220);
-  --color-accent-foreground: oklch(0.18 0.03 265);
+  --color-secondary: oklch(0.28 0.04 275);
+  --color-secondary-foreground: oklch(0.96 0.01 275);
+  --color-muted: oklch(0.26 0.035 273);
+  --color-muted-foreground: oklch(0.72 0.03 278);
+  --color-accent: oklch(0.6 0.24 305);
+  --color-accent-foreground: oklch(0.99 0 0);
   --color-destructive: oklch(0.62 0.19 20);
   --color-destructive-foreground: oklch(0.99 0 0);
-  --color-border: oklch(0.42 0.04 265);
-  --color-input: oklch(0.3 0.03 265);
-  --color-ring: oklch(0.7 0.15 255);
-  --color-chart-1: oklch(0.7 0.15 255);
-  --color-chart-2: oklch(0.78 0.12 220);
-  --color-chart-3: oklch(0.75 0.13 160);
-  --color-chart-4: oklch(0.78 0.14 60);
-  --color-chart-5: oklch(0.68 0.16 320);
+  --color-border: oklch(0.42 0.05 278);
+  --color-input: oklch(0.3 0.04 275);
+  --color-ring: oklch(0.62 0.22 268);
+  --color-chart-1: oklch(0.62 0.22 268);
+  --color-chart-2: oklch(0.6 0.24 305);
+  --color-chart-3: oklch(0.68 0.18 240);
+  --color-chart-4: oklch(0.66 0.2 330);
+  --color-chart-5: oklch(0.7 0.16 210);
 
   /* Rounder, softer corners for the cloud aesthetic */
   --radius-sm: 0.5rem;

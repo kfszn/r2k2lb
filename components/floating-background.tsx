@@ -15,14 +15,14 @@ export default function FloatingBackground() {
         }}
       />
 
-      {/* Two faint ambient color pools for soft depth */}
+      {/* Two faint ambient color pools for soft depth — blue and purple */}
       <div
         className="cloud-orb h-[40rem] w-[40rem] -top-52 -left-40"
-        style={{ background: "oklch(0.7 0.15 255)" }}
+        style={{ background: "oklch(0.62 0.22 268)" }}
       />
       <div
         className="cloud-orb h-[36rem] w-[36rem] bottom-[-12rem] -right-40"
-        style={{ background: "oklch(0.78 0.12 220)" }}
+        style={{ background: "oklch(0.6 0.24 305)" }}
       />
 
       {/* Soft top highlight for depth */}
