@@ -13,8 +13,8 @@ export type RafflePlatform = 'acebet' | 'luxdrop' | 'roobet';
 
 function maskName(name: string): string {
   if (!name) return '***';
-  if (name.length <= 4) return name[0] + '*'.repeat(name.length - 1);
-  return name.substring(0, 2) + '*'.repeat(name.length - 3) + name.substring(name.length - 1);
+  if (name.length <= 2) return name;
+  return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1];
 }
 
 interface RaffleConfig {
