@@ -278,21 +278,21 @@ export default function RoobetLeaderboardClient() {
       <Header />
 
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 md:py-24">
+      <section className="relative overflow-hidden py-16">
         <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto text-center space-y-8">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-5 py-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary animate-fade-in-up">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary animate-fade-in-up">
               Live Competition
             </span>
             <img
               src="/assets/roobet.png"
               alt="Roobet"
-              className="h-16 md:h-20 w-auto mx-auto object-contain animate-fade-in-up animation-delay-100 drop-shadow-[0_0_25px_rgba(0,231,1,0.35)]"
+              className="h-24 md:h-32 w-auto mx-auto object-contain animate-fade-in-up animation-delay-100 drop-shadow-[0_0_25px_rgba(0,231,1,0.35)]"
             />
-            <div className="flex justify-center animate-fade-in-up animation-delay-200 scale-110 md:scale-125">
+            <div className="flex justify-center animate-fade-in-up animation-delay-200">
               <PrizePool total={`$${activeTotal.toLocaleString()}`} />
             </div>
-            <h1 className="text-6xl md:text-8xl font-black leading-[0.95] text-balance animate-fade-in-up animation-delay-200 tracking-tight">
+            <h1 className="text-4xl md:text-6xl font-black leading-tight text-balance animate-fade-in-up animation-delay-200 tracking-tight">
               Weekly <span className="neon-text text-primary">Leaderboard</span>
             </h1>
             <div className="flex justify-center">
@@ -300,13 +300,13 @@ export default function RoobetLeaderboardClient() {
                 href="https://roobet.com/?ref=R2K2"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 px-8 py-4 text-lg rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-semibold shadow-[0_0_30px_-8px_rgba(0,231,1,0.7)] hover:shadow-[0_0_40px_-6px_rgba(0,231,1,0.9)]"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-semibold shadow-[0_0_30px_-8px_rgba(0,231,1,0.7)] hover:shadow-[0_0_40px_-6px_rgba(0,231,1,0.9)]"
               >
-                <Trophy className="h-5 w-5" />
+                <Trophy className="h-4 w-4" />
                 Sign up on Roobet
               </a>
             </div>
-            <p className="text-lg md:text-xl text-muted-foreground text-pretty">
+            <p className="text-lg text-muted-foreground text-pretty">
               Every <strong>wager</strong> on Roobet under Code{' '}
               <strong className="text-primary">R2K2</strong> counts towards your score.
               <br />
