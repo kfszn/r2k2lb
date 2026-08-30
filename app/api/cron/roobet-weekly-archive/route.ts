@@ -20,10 +20,10 @@ const PRIZE_TOTAL = 5000;
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25];
 
 // One-off end-date override — mirrors app/leaderboard/roobet/page.tsx exactly.
-// The cycle starting on PERIOD_ANCHOR runs long and ends 9/5/2026 instead of
+// The cycle starting on PERIOD_ANCHOR runs long and ends 9/6/2026 instead of
 // the standard 7-day cadence. Every subsequent period resumes normal cadence.
 const PERIOD_END_OVERRIDES: Record<string, string> = {
-  "2026-08-28": "2026-09-05",
+  "2026-08-28": "2026-09-06",
 };
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"];

@@ -23,10 +23,10 @@ const PRIZE_TOTAL = 5000
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25]
 
 // One-off end-date override — the cycle starting on PERIOD_ANCHOR runs long and
-// ends exactly 9/5/2026 6:00 PM ET instead of the standard 7-day cadence.
+// ends exactly 9/6/2026 6:00 PM ET instead of the standard 7-day cadence.
 // Every subsequent period resumes the normal cadence starting the day after.
 const PERIOD_END_OVERRIDES: Record<string, string> = {
-  '2026-08-28': '2026-09-05',
+  '2026-08-28': '2026-09-06',
 }
 
 function addDays(dateStr: string, days: number): string {
@@ -65,7 +65,7 @@ const CURRENT_END = CURRENT.end
 // 6:00 PM ET (22:00 UTC — EDT is UTC-4 in September) when overridden;
 // otherwise it ends at the normal end-of-day UTC.
 const CURRENT_END_TIMESTAMP =
-  CURRENT_END === '2026-09-05' ? '2026-09-05T22:00:00Z' : `${CURRENT_END}T23:59:59Z`
+  CURRENT_END === '2026-09-06' ? '2026-09-06T22:00:00Z' : `${CURRENT_END}T23:59:59Z`
 const CURRENT_DISPLAY = formatDisplay(CURRENT_START, CURRENT_END)
 
 // ---------------------------------------------------------------------------
