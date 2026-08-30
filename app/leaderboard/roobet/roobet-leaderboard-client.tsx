@@ -458,7 +458,7 @@ export default function RoobetLeaderboardClient() {
       {/* Leaderboard */}
       <section className="py-8 pb-24">
         <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto space-y-6">
+          <div className="max-w-6xl mx-auto space-y-6">
 
             {activeTab === 'rules' && (
               <div className="space-y-6">
@@ -630,9 +630,9 @@ export default function RoobetLeaderboardClient() {
                         </div>
                       </div>
 
-                      <div className="hidden md:flex items-end justify-center gap-4">
+                      <div className="hidden md:flex items-end justify-center gap-6">
                         {entries[1] && (
-                          <div className="flex-1 max-w-[220px]">
+                          <div className="flex-1 max-w-[280px]">
                             <PodiumCard
                               rank={2}
                               size="md"
@@ -645,7 +645,7 @@ export default function RoobetLeaderboardClient() {
                           </div>
                         )}
                         {entries[0] && (
-                          <div className="flex-1 max-w-[280px]">
+                          <div className="flex-1 max-w-[340px]">
                             <PodiumCard
                               rank={1}
                               size="lg"
@@ -658,7 +658,7 @@ export default function RoobetLeaderboardClient() {
                           </div>
                         )}
                         {entries[2] && (
-                          <div className="flex-1 max-w-[220px]">
+                          <div className="flex-1 max-w-[280px]">
                             <PodiumCard
                               rank={3}
                               size="md"
