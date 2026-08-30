@@ -61,6 +61,8 @@ interface RoobetEntry {
   username?: string
   name?: string
   avatar?: string | null
+  rankLevel?: number
+  rankLevelImage?: string | null
   wagered?: number
   weightedWagered?: number
   wagerAmount?: number
@@ -104,7 +106,7 @@ function sortByWeightedWager(entries: RoobetEntry[]): RoobetEntry[] {
   return [...entries].sort((a, b) => getEntryWagered(b) - getEntryWagered(a))
 }
 function getEntryAvatar(e: RoobetEntry): string | null {
-  return e.avatar ?? null
+  return e.rankLevelImage ?? e.avatar ?? null
 }
 
 export default function RoobetLeaderboard() {
