@@ -95,7 +95,13 @@ function getEntryName(e: RoobetEntry): string {
   return e.username ?? e.name ?? 'Unknown'
 }
 function getEntryWagered(e: RoobetEntry): number {
-  return e.weightedWagered ?? e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0
+  const weighted = Number(e.weightedWagered)
+  if (Number.isFinite(weighted)) return weighted
+  return Number(e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0) || 0
+}
+
+function sortByWeightedWager(entries: RoobetEntry[]): RoobetEntry[] {
+  return [...entries].sort((a, b) => getEntryWagered(b) - getEntryWagered(a))
 }
 function getEntryAvatar(e: RoobetEntry): string | null {
   return e.avatar ?? null
@@ -143,7 +149,7 @@ export default function RoobetLeaderboard() {
     try {
       if (period !== 'current') {
         const found = archivedPeriods.find(p => p.label === period)
-        setEntries(normalizeEntries(found?.entries ?? []))
+        setEntries(sortByWeightedWager(normalizeEntries(found?.entries ?? [])))
         return
       }
 
@@ -156,7 +162,7 @@ export default function RoobetLeaderboard() {
         setError(`${json.error ?? 'Failed to load leaderboard'}${json.detail ? ` — ${json.detail}` : ''}`)
         return
       }
-      setEntries(normalizeEntries(json))
+      setEntries(sortByWeightedWager(normalizeEntries(json)))
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error'
       setError(`Failed to fetch leaderboard — ${msg}`)
@@ -307,7 +313,7 @@ export default function RoobetLeaderboard() {
       <section className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-4xl mx-auto">
           <StatCard
-            label="Total Wagered"
+            label="Total Weighted Wager"
             value={formatMoney(totalWagered)}
             icon={<TrendingUp className="h-5 w-5" />}
             tone="primary"
@@ -634,7 +640,7 @@ export default function RoobetLeaderboard() {
                                 </div>
                                 <div className="flex items-center gap-4 text-sm">
                                   <div className="text-right">
-                                    <p className="text-xs text-muted-foreground">Wagered</p>
+                                    <p className="text-xs text-muted-foreground">Weighted Wager</p>
                                     <p className="font-bold text-foreground">{formatMoney(getEntryWagered(entry))}</p>
                                   </div>
                                   <div className="text-right">
