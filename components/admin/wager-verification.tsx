@@ -5,16 +5,46 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Search, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Loader2, Search, AlertCircle, Download } from "lucide-react";
 
-interface WagerData {
-  userId: string;
-  name: string;
+interface LineItem {
+  date: string;
+  found: boolean;
+  userId?: string | null;
   wagered: number;
   deposited: number;
   earned: number;
-  firstSeen: string;
-  lastSeen: string;
+  xp?: number;
+}
+
+interface LineItemsResponse {
+  ok: boolean;
+  username: string;
+  start: string;
+  end: string;
+  days: number;
+  partialUpstreamError: boolean;
+  totals: {
+    wagered: number;
+    deposited: number;
+    earned: number;
+    activeDays: number;
+  };
+  lineItems: LineItem[];
+  error?: string;
+  detail?: string;
+}
+
+function formatMoney(n: number) {
+  return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export function WagerVerification() {
@@ -22,7 +52,7 @@ export function WagerVerification() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [wagerData, setWagerData] = useState<WagerData | null>(null);
+  const [result, setResult] = useState<LineItemsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async () => {
@@ -36,53 +66,25 @@ export function WagerVerification() {
     }
 
     setError(null);
-    setWagerData(null);
+    setResult(null);
     setIsLoading(true);
 
     try {
-      // Ensure dates are in YYYY-MM-DD format
-      const start = new Date(startDate).toISOString().split('T')[0];
-      const end = new Date(endDate).toISOString().split('T')[0];
-      
-      const url = `/api/leaderboard?start_at=${start}&end_at=${end}`;
-      
+      const url = `/api/roobet/wager-line-items?username=${encodeURIComponent(
+        username.trim()
+      )}&start=${startDate}&end=${endDate}`;
+
       const response = await fetch(url);
+      const data: LineItemsResponse = await response.json();
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch leaderboard data");
+      if (!response.ok || !data.ok) {
+        throw new Error(data.detail || data.error || "Failed to fetch wager line items");
       }
 
-      const data = await response.json();
-
-      if (!data.ok || !data.data) {
-        throw new Error("Invalid response from leaderboard API");
-      }
-
-      // Find the user by username (case-insensitive)
-      const user = data.data.find(
-        (u: WagerData) => u.name?.toLowerCase() === username.toLowerCase()
-      );
-
-      if (!user) {
-        setError(
-          `No data found for username "${username}" in the selected date range (${start} to ${end})`
-        );
-        setWagerData(null);
-      } else {
-        // Convert from cents to dollars (divide by 100)
-        const convertedUser = {
-          ...user,
-          wagered: user.wagered / 100,
-          deposited: user.deposited / 100,
-          earned: user.earned / 100,
-        };
-        setWagerData(convertedUser);
-      }
+      setResult(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An error occurred while fetching data"
-      );
-      setWagerData(null);
+      setError(err instanceof Error ? err.message : "An error occurred while fetching data");
+      setResult(null);
     } finally {
       setIsLoading(false);
     }
@@ -94,6 +96,24 @@ export function WagerVerification() {
     }
   };
 
+  const handleExportCsv = () => {
+    if (!result) return;
+    const header = "date,found,wagered,deposited,earned,xp\n";
+    const rows = result.lineItems
+      .map(
+        (item) =>
+          `${item.date},${item.found},${item.wagered},${item.deposited},${item.earned},${item.xp ?? 0}`
+      )
+      .join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${result.username}_${result.start}_to_${result.end}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card className="border-primary/20 bg-card/50">
       <CardHeader>
@@ -102,7 +122,8 @@ export function WagerVerification() {
           Wager Verification
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-2">
-          Look up player wager statistics by username and date range for reward verification
+          Look up every daily line item Roobet's API returns for a player across a date range, for
+          reward verification.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -114,7 +135,7 @@ export function WagerVerification() {
             </Label>
             <Input
               id="username"
-              placeholder="Enter referral username..."
+              placeholder="Enter Roobet username..."
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -151,21 +172,21 @@ export function WagerVerification() {
               />
             </div>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Roobet's API only returns one aggregate per query, so we query day-by-day across the
+            range and show every day as its own line item. Max range: 92 days.
+          </p>
 
-          <Button
-            onClick={handleSearch}
-            disabled={isLoading}
-            className="w-full gap-2"
-          >
+          <Button onClick={handleSearch} disabled={isLoading} className="w-full gap-2">
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Searching...
+                Fetching line items...
               </>
             ) : (
               <>
                 <Search className="h-4 w-4" />
-                Verify Wagers
+                Get Line Items
               </>
             )}
           </Button>
@@ -182,76 +203,98 @@ export function WagerVerification() {
         )}
 
         {/* Results Section */}
-        {wagerData && (
-          <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-sm">Player Found</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {wagerData.name} (ID: {wagerData.userId})
+        {result && (
+          <div className="space-y-4">
+            {result.partialUpstreamError && (
+              <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3 flex gap-3">
+                <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-destructive">
+                  One or more days failed to load from Roobet's API — those days show as $0 / not
+                  found below and may be incomplete.
                 </p>
               </div>
-            </div>
+            )}
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-primary/10">
+            {/* Totals summary */}
+            <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Wagered ({startDate} to {endDate})
+                  Total Wagered
                 </p>
-                <p className="text-2xl font-bold text-primary">
-                  ${wagerData.wagered.toFixed(2)}
-                </p>
+                <p className="text-xl font-bold text-primary">{formatMoney(result.totals.wagered)}</p>
               </div>
-
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Total Deposited
                 </p>
-                <p className="text-2xl font-bold text-foreground">
-                  ${wagerData.deposited.toFixed(2)}
-                </p>
+                <p className="text-xl font-bold text-foreground">{formatMoney(result.totals.deposited)}</p>
               </div>
-
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Net Earnings
                 </p>
                 <p
-                  className={`text-2xl font-bold ${
-                    wagerData.earned >= 0 ? "text-green-500" : "text-red-500"
+                  className={`text-xl font-bold ${
+                    result.totals.earned >= 0 ? "text-green-500" : "text-red-500"
                   }`}
                 >
-                  ${wagerData.earned.toFixed(2)}
+                  {formatMoney(result.totals.earned)}
                 </p>
               </div>
-
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Activity Window
+                  Active Days
                 </p>
-                <p className="text-sm font-medium">
-                  {wagerData.firstSeen} to {wagerData.lastSeen}
+                <p className="text-xl font-bold text-foreground">
+                  {result.totals.activeDays} / {result.days}
                 </p>
               </div>
             </div>
 
-            {/* Copy Button for Verification */}
-            <div className="pt-2 border-t border-primary/10">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const text = `${wagerData.name}: $${wagerData.wagered.toFixed(
-                    2
-                  )} wagered (${startDate} to ${endDate})`;
-                  navigator.clipboard.writeText(text);
-                }}
-                className="w-full"
-              >
-                Copy Verification
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">
+                {result.username} — {result.start} to {result.end} ({result.days} line items)
+              </p>
+              <Button variant="outline" size="sm" onClick={handleExportCsv} className="gap-2">
+                <Download className="h-4 w-4" />
+                Export CSV
               </Button>
+            </div>
+
+            {/* Line items table */}
+            <div className="rounded-lg border border-border max-h-[480px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Wagered</TableHead>
+                    <TableHead className="text-right">Deposited</TableHead>
+                    <TableHead className="text-right">Earned</TableHead>
+                    <TableHead className="text-right">Activity</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {result.lineItems.map((item) => (
+                    <TableRow key={item.date} className={!item.found ? "opacity-50" : undefined}>
+                      <TableCell className="font-mono text-xs">{item.date}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatMoney(item.wagered)}
+                      </TableCell>
+                      <TableCell className="text-right">{formatMoney(item.deposited)}</TableCell>
+                      <TableCell
+                        className={`text-right ${
+                          item.earned >= 0 ? "text-green-500" : "text-red-500"
+                        }`}
+                      >
+                        {formatMoney(item.earned)}
+                      </TableCell>
+                      <TableCell className="text-right text-xs text-muted-foreground">
+                        {item.found ? "Active" : "No data"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}
