@@ -21,10 +21,10 @@ const REWARDS: number[] = [8000, 4000, 2400, 1600, 1200, 1000, 800, 600, 300, 10
 
 // One-off end-date override — mirrors app/leaderboard/roobet/page.tsx exactly.
 // The cycle starting on PERIOD_ANCHOR is extended into a monthly-length
-// competition and ends 9/29/2026 instead of the standard 7-day cadence.
-// Every subsequent period resumes normal cadence.
+// competition and ends on the last day of September (9/30/2026) instead of
+// the standard 7-day cadence. Every subsequent period resumes normal cadence.
 const PERIOD_END_OVERRIDES: Record<string, string> = {
-  "2026-08-28": "2026-09-29",
+  "2026-08-28": "2026-09-30",
 };
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"];
