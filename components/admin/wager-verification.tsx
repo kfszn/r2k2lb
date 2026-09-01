@@ -20,9 +20,13 @@ interface LineItem {
   found: boolean;
   userId?: string | null;
   wagered: number;
-  deposited: number;
-  earned: number;
-  xp?: number;
+  weightedWagered: number;
+  favoriteGameId?: string | null;
+  favoriteGameTitle?: string | null;
+  rankLevel?: string | number | null;
+  rankLevelImage?: string | null;
+  highestMultiplier?: number | null;
+  highestMultiplierGame?: string | null;
 }
 
 interface LineItemsResponse {
@@ -34,9 +38,11 @@ interface LineItemsResponse {
   partialUpstreamError: boolean;
   totals: {
     wagered: number;
-    deposited: number;
-    earned: number;
+    weightedWagered: number;
     activeDays: number;
+    highestMultiplier: number;
+    highestMultiplierGame: string | null;
+    highestMultiplierDate: string | null;
   };
   lineItems: LineItem[];
   error?: string;
@@ -45,6 +51,11 @@ interface LineItemsResponse {
 
 function formatMoney(n: number) {
   return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatMultiplier(n?: number | null) {
+  if (n == null) return "—";
+  return `${n.toLocaleString(undefined, { maximumFractionDigits: 2 })}x`;
 }
 
 export function WagerVerification() {
@@ -98,11 +109,16 @@ export function WagerVerification() {
 
   const handleExportCsv = () => {
     if (!result) return;
-    const header = "date,found,wagered,deposited,earned,xp\n";
+    const header =
+      "date,found,wagered,weightedWagered,favoriteGameTitle,rankLevel,highestMultiplier,highestMultiplierGame\n";
     const rows = result.lineItems
       .map(
         (item) =>
-          `${item.date},${item.found},${item.wagered},${item.deposited},${item.earned},${item.xp ?? 0}`
+          `${item.date},${item.found},${item.wagered},${item.weightedWagered},"${
+            item.favoriteGameTitle ?? ""
+          }",${item.rankLevel ?? ""},${item.highestMultiplier ?? ""},"${
+            item.highestMultiplierGame ?? ""
+          }"`
       )
       .join("\n");
     const blob = new Blob([header + rows], { type: "text/csv" });
@@ -219,26 +235,29 @@ export function WagerVerification() {
             <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Total Wagered
+                  Total Wagered (raw)
                 </p>
-                <p className="text-xl font-bold text-primary">{formatMoney(result.totals.wagered)}</p>
+                <p className="text-xl font-bold text-foreground">{formatMoney(result.totals.wagered)}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Total Deposited
+                  Total Weighted Wagered
                 </p>
-                <p className="text-xl font-bold text-foreground">{formatMoney(result.totals.deposited)}</p>
+                <p className="text-xl font-bold text-primary">
+                  {formatMoney(result.totals.weightedWagered)}
+                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Net Earnings
+                  Highest Multiplier
                 </p>
-                <p
-                  className={`text-xl font-bold ${
-                    result.totals.earned >= 0 ? "text-green-500" : "text-red-500"
-                  }`}
-                >
-                  {formatMoney(result.totals.earned)}
+                <p className="text-xl font-bold text-foreground">
+                  {formatMultiplier(result.totals.highestMultiplier)}
+                  {result.totals.highestMultiplierGame && (
+                    <span className="block text-xs font-normal text-muted-foreground mt-0.5">
+                      {result.totals.highestMultiplierGame} · {result.totals.highestMultiplierDate}
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="space-y-1">
@@ -250,6 +269,11 @@ export function WagerVerification() {
                 </p>
               </div>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Roobet's Affiliate Stats API doesn't return deposit or earnings data — only wagered
+              amounts (raw and game-weighted), favorite game, rank level, and highest multiplier per
+              day. These are exactly the fields the API sends.
+            </p>
 
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">
@@ -267,9 +291,11 @@ export function WagerVerification() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Wagered</TableHead>
-                    <TableHead className="text-right">Deposited</TableHead>
-                    <TableHead className="text-right">Earned</TableHead>
+                    <TableHead className="text-right">Wagered (raw)</TableHead>
+                    <TableHead className="text-right">Weighted Wagered</TableHead>
+                    <TableHead>Favorite Game</TableHead>
+                    <TableHead>Rank Level</TableHead>
+                    <TableHead className="text-right">Highest Multiplier</TableHead>
                     <TableHead className="text-right">Activity</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -280,13 +306,22 @@ export function WagerVerification() {
                       <TableCell className="text-right font-medium">
                         {formatMoney(item.wagered)}
                       </TableCell>
-                      <TableCell className="text-right">{formatMoney(item.deposited)}</TableCell>
-                      <TableCell
-                        className={`text-right ${
-                          item.earned >= 0 ? "text-green-500" : "text-red-500"
-                        }`}
-                      >
-                        {formatMoney(item.earned)}
+                      <TableCell className="text-right text-primary font-medium">
+                        {formatMoney(item.weightedWagered)}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {item.favoriteGameTitle ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {item.rankLevel ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-right text-xs">
+                        {formatMultiplier(item.highestMultiplier)}
+                        {item.highestMultiplierGame && (
+                          <span className="block text-muted-foreground">
+                            {item.highestMultiplierGame}
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right text-xs text-muted-foreground">
                         {item.found ? "Active" : "No data"}

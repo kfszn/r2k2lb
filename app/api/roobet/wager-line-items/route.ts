@@ -59,10 +59,14 @@ function normalizeEntries(raw: unknown): any[] {
   return [];
 }
 
-function getEntryWagered(e: any): number {
+function getRawWagered(e: any): number {
+  return Number(e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0) || 0;
+}
+
+function getWeightedWagered(e: any): number {
   const weighted = Number(e.weightedWagered);
   if (Number.isFinite(weighted)) return weighted;
-  return Number(e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0) || 0;
+  return getRawWagered(e);
 }
 
 async function fetchDay(dayISO: string) {
@@ -167,21 +171,42 @@ export async function GET(request: NextRequest) {
       return {
         date: day,
         found: false,
+        userId: null,
         wagered: 0,
-        deposited: 0,
-        earned: 0,
-        xp: 0,
+        weightedWagered: 0,
+        favoriteGameId: null,
+        favoriteGameTitle: null,
+        rankLevel: null,
+        rankLevelImage: null,
+        highestMultiplier: null,
+        highestMultiplierGame: null,
       };
     }
+
+    // Roobet sends highestMultiplier as a nested object:
+    // { multiplier, wagered, payout, gameId, gameTitle }
+    const hm = row.highestMultiplier;
+    const highestMultiplier =
+      hm && typeof hm === "object" && Number.isFinite(Number(hm.multiplier))
+        ? Number(hm.multiplier)
+        : Number.isFinite(Number(hm))
+          ? Number(hm)
+          : null;
+    const highestMultiplierGame =
+      hm && typeof hm === "object" ? hm.gameTitle ?? hm.gameId ?? null : null;
 
     return {
       date: day,
       found: true,
-      userId: row.userId ?? row.id ?? null,
-      wagered: getEntryWagered(row),
-      deposited: Number(row.deposited) || 0,
-      earned: Number(row.earned) || 0,
-      xp: Number(row.xp ?? 0),
+      userId: row.userId ?? row.uid ?? row.id ?? null,
+      wagered: getRawWagered(row),
+      weightedWagered: getWeightedWagered(row),
+      favoriteGameId: row.favoriteGameId ?? null,
+      favoriteGameTitle: row.favoriteGameTitle ?? null,
+      rankLevel: row.rankLevel ?? null,
+      rankLevelImage: row.rankLevelImage ?? null,
+      highestMultiplier,
+      highestMultiplierGame,
       raw: row,
     };
   });
@@ -189,12 +214,23 @@ export async function GET(request: NextRequest) {
   const totals = lineItems.reduce(
     (acc, item) => {
       acc.wagered += item.wagered;
-      acc.deposited += item.deposited;
-      acc.earned += item.earned;
+      acc.weightedWagered += item.weightedWagered;
       acc.activeDays += item.found ? 1 : 0;
+      if (item.highestMultiplier != null && item.highestMultiplier > acc.highestMultiplier) {
+        acc.highestMultiplier = item.highestMultiplier;
+        acc.highestMultiplierGame = item.highestMultiplierGame;
+        acc.highestMultiplierDate = item.date;
+      }
       return acc;
     },
-    { wagered: 0, deposited: 0, earned: 0, activeDays: 0 }
+    {
+      wagered: 0,
+      weightedWagered: 0,
+      activeDays: 0,
+      highestMultiplier: 0,
+      highestMultiplierGame: null as string | null,
+      highestMultiplierDate: null as string | null,
+    }
   );
 
   return NextResponse.json(
