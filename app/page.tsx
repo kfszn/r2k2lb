@@ -71,8 +71,8 @@ export default function HomePage() {
                 href="/leaderboard/roobet"
                 signupUrl="https://roobet.com/?ref=r2k2"
                 rewards={[
-                  "$5,000 Weekly Leaderboard",
-                  "Resets Every 7 Days",
+                  "$20,000 Monthly Leaderboard",
+                  "$8,000 to 1st Place",
                   "Top Positions Paid",
                   "Compete with Code R2K2",
                   "Every Wager Counts"
