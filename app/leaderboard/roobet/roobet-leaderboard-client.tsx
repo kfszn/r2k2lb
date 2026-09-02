@@ -262,6 +262,19 @@ export default function RoobetLeaderboardClient() {
 
   const totalWagered = entries.reduce((sum, e) => sum + getEntryWagered(e), 0)
 
+  // Goal tracking — the weekly goal is this week's weighted-wager total toward
+  // $500K; the monthly goal ($2M) is the sum of the last 4 weekly totals (this
+  // live week + the 3 most recent archived weeks).
+  const WEEKLY_GOAL = 500_000
+  const MONTHLY_GOAL = 2_000_000
+  const archivedPeriodTotal = (p: ArchivedPeriod) =>
+    normalizeEntries(p.entries).reduce((sum, e) => sum + getEntryWagered(e), 0)
+  const recentArchivedTotal = [...archivedPeriods]
+    .sort((a, b) => b.end_date.localeCompare(a.end_date))
+    .slice(0, 3)
+    .reduce((sum, p) => sum + archivedPeriodTotal(p), 0)
+  const monthlyTotal = totalWagered + recentArchivedTotal
+
   const prizeLabel = (rank: number): string => {
     if (activeRewards[rank - 1] != null && activeRewards[rank - 1] > 0) {
       return `$${activeRewards[rank - 1].toLocaleString()}`
@@ -342,16 +355,22 @@ export default function RoobetLeaderboardClient() {
             />
           )}
         </div>
-        {!showPrevious && (
-          <div className="max-w-4xl mx-auto mt-3">
-            <GoalTracker
-              current={totalWagered}
-              goal={2_000_000}
-              formatMoney={formatMoney}
-              label="Wager Goal"
-            />
-          </div>
-        )}
+            {!showPrevious && (
+              <div className="max-w-4xl mx-auto mt-3 grid gap-3 md:grid-cols-2">
+                <GoalTracker
+                  current={totalWagered}
+                  goal={WEEKLY_GOAL}
+                  formatMoney={formatMoney}
+                  label="Weekly Wager Goal"
+                />
+                <GoalTracker
+                  current={monthlyTotal}
+                  goal={MONTHLY_GOAL}
+                  formatMoney={formatMoney}
+                  label="Monthly Wager Goal"
+                />
+              </div>
+            )}
       </section>
 
       {/* Current / Previous controls */}
