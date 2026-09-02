@@ -263,17 +263,26 @@ export default function RoobetLeaderboardClient() {
   const totalWagered = entries.reduce((sum, e) => sum + getEntryWagered(e), 0)
 
   // Goal tracking — the weekly goal is this week's weighted-wager total toward
-  // $500K; the monthly goal ($2M) is the sum of the last 4 weekly totals (this
-  // live week + the 3 most recent archived weeks).
+  // $500K; the monthly goal ($2M) is the sum of every weekly leaderboard that
+  // belongs to the current month. A week is attributed to the month it ends
+  // (pays out) in, so September's weeks (I, II, III, IIII) roll up together.
+  // This is the first weekly leaderboard, so there's no prior history — the
+  // monthly total equals this live week now and grows as each week archives.
   const WEEKLY_GOAL = 500_000
   const MONTHLY_GOAL = 2_000_000
+  const currentMonthKey = CURRENT_END.slice(0, 7) // e.g. "2026-09"
   const archivedPeriodTotal = (p: ArchivedPeriod) =>
     normalizeEntries(p.entries).reduce((sum, e) => sum + getEntryWagered(e), 0)
-  const recentArchivedTotal = [...archivedPeriods]
-    .sort((a, b) => b.end_date.localeCompare(a.end_date))
-    .slice(0, 3)
+  const archivedMonthTotal = archivedPeriods
+    .filter(
+      (p) =>
+        // Only genuinely completed weeks of this month: they must end within
+        // the current month AND end before the current live period started, so
+        // stale/overlapping archives never double-count the live week.
+        p.end_date.slice(0, 7) === currentMonthKey && p.end_date < CURRENT_START
+    )
     .reduce((sum, p) => sum + archivedPeriodTotal(p), 0)
-  const monthlyTotal = totalWagered + recentArchivedTotal
+  const monthlyTotal = totalWagered + archivedMonthTotal
 
   const prizeLabel = (rank: number): string => {
     if (activeRewards[rank - 1] != null && activeRewards[rank - 1] > 0) {
