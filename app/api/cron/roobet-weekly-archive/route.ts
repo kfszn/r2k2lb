@@ -16,16 +16,13 @@ function getSupabase() {
 // period is an exact 7-day multiple offset from this anchor.
 const PERIOD_ANCHOR = "2026-08-28";
 const PERIOD_DAYS = 7;
-const PRIZE_TOTAL = 20000;
-const REWARDS: number[] = [8000, 4000, 2400, 1600, 1200, 1000, 800, 600, 300, 100];
+const PRIZE_TOTAL = 5000;
+const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25];
 
 // One-off end-date override — mirrors app/leaderboard/roobet/page.tsx exactly.
-// The cycle starting on PERIOD_ANCHOR is extended into a monthly-length
-// competition and ends on the last day of September (9/30/2026) instead of
-// the standard 7-day cadence. Every subsequent period resumes normal cadence.
-const PERIOD_END_OVERRIDES: Record<string, string> = {
-  "2026-08-28": "2026-09-30",
-};
+// The monthly-length extension has been reverted; the leaderboard is back to
+// the standard 7-day cadence with no override periods active.
+const PERIOD_END_OVERRIDES: Record<string, string> = {};
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"];
 
