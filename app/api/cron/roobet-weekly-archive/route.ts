@@ -20,9 +20,12 @@ const PRIZE_TOTAL = 5000;
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25];
 
 // One-off end-date override — mirrors app/leaderboard/roobet/page.tsx exactly.
-// The monthly-length extension has been reverted; the leaderboard is back to
-// the standard 7-day cadence with no override periods active.
-const PERIOD_END_OVERRIDES: Record<string, string> = {};
+// The cycle starting on PERIOD_ANCHOR runs a few days long and ends 9/6/2026
+// instead of its normal 7-day end date. Every subsequent period resumes the
+// standard weekly cadence.
+const PERIOD_END_OVERRIDES: Record<string, string> = {
+  "2026-08-28": "2026-09-06",
+};
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"];
 

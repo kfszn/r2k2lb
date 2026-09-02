@@ -22,12 +22,13 @@ const PERIOD_DAYS = 7
 const PRIZE_TOTAL = 5000
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25]
 
-// One-off end-date override — the cycle starting on PERIOD_ANCHOR ran long as
-// a monthly-length competition. It's been reverted back to the standard
-// 7-day cadence, so the anchor period itself is now shortened to end 9/3/2026
-// (its normal 7-day end date) and every subsequent period resumes the usual
-// weekly cadence starting the day after.
-const PERIOD_END_OVERRIDES: Record<string, string> = {}
+// One-off end-date override — the cycle starting on PERIOD_ANCHOR runs a few
+// days long and ends exactly 9/6/2026 6:00 PM ET instead of its normal 7-day
+// end date. Every subsequent period resumes the usual weekly cadence starting
+// the day after.
+const PERIOD_END_OVERRIDES: Record<string, string> = {
+  '2026-08-28': '2026-09-06',
+}
 
 function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr + 'T00:00:00Z')
@@ -62,8 +63,10 @@ const CURRENT = currentPeriod()
 const CURRENT_START = CURRENT.start
 const CURRENT_END = CURRENT.end
 // The current cycle's exact end moment (used for the countdown). Ends at
-// normal end-of-day UTC — no override periods active.
-const CURRENT_END_TIMESTAMP = `${CURRENT_END}T23:59:59Z`
+// 6:00 PM ET (22:00 UTC — EDT is UTC-4 in September) when overridden;
+// otherwise it ends at the normal end-of-day UTC.
+const CURRENT_END_TIMESTAMP =
+  CURRENT_END === '2026-09-06' ? '2026-09-06T22:00:00Z' : `${CURRENT_END}T23:59:59Z`
 const CURRENT_DISPLAY = formatDisplay(CURRENT_START, CURRENT_END)
 
 // ---------------------------------------------------------------------------
