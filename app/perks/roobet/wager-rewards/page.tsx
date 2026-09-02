@@ -14,24 +14,24 @@ const SIGNUP_URL = 'https://roobet.com/?ref=R2K2'
 const DISCORD_URL = 'https://discord.gg/DwpA8vaGPj'
 const SPONSOR = 'Roobet'
 
-// $150 per $100,000 weighted wagered — cumulative payout = weightedWager / 100,000 * 150
+// $100 per $100,000 weighted wagered — cumulative payout = weightedWager / 100,000 * 100
 // claimable = this tier's payout minus the previous tier's payout (delta paid out)
 // Rewards do not stack — the difference from your last claim is what gets paid.
 const TIERS: MilestoneTier[] = [
-  { tier: 1,  label: 'Beginner I',   wager:    100_000, payout:    150, claimable:    150 },
-  { tier: 2,  label: 'Beginner II',  wager:    250_000, payout:    375, claimable:    225 },
-  { tier: 3,  label: 'Beginner III', wager:    500_000, payout:    750, claimable:    375 },
-  { tier: 4,  label: 'Casual I',     wager:  1_000_000, payout:  1_500, claimable:    750 },
-  { tier: 5,  label: 'Casual II',    wager:  2_500_000, payout:  3_750, claimable:  2_250 },
-  { tier: 6,  label: 'Casual III',   wager:  3_500_000, payout:  5_250, claimable:  1_500 },
-  { tier: 7,  label: 'Roller I',     wager:  5_000_000, payout:  7_500, claimable:  2_250 },
-  { tier: 8,  label: 'Roller II',    wager:  7_500_000, payout: 11_250, claimable:  3_750 },
-  { tier: 9,  label: 'Degen I',      wager: 10_000_000, payout: 15_000, claimable:  3_750 },
-  { tier: 10, label: 'Degen II',     wager: 12_500_000, payout: 18_750, claimable:  3_750 },
-  { tier: 11, label: 'Whale I',      wager: 15_000_000, payout: 22_500, claimable:  3_750 },
-  { tier: 12, label: 'Whale II',     wager: 20_000_000, payout: 30_000, claimable:  7_500 },
-  { tier: 13, label: 'Elite',        wager: 30_000_000, payout: 45_000, claimable: 15_000 },
-  { tier: 14, label: 'Legend',       wager: 50_000_000, payout: 75_000, claimable: 30_000 },
+  { tier: 1,  label: 'Beginner I',   wager:    100_000, payout:    100, claimable:    100 },
+  { tier: 2,  label: 'Beginner II',  wager:    250_000, payout:    250, claimable:    150 },
+  { tier: 3,  label: 'Beginner III', wager:    500_000, payout:    500, claimable:    250 },
+  { tier: 4,  label: 'Casual I',     wager:  1_000_000, payout:  1_000, claimable:    500 },
+  { tier: 5,  label: 'Casual II',    wager:  2_500_000, payout:  2_500, claimable:  1_500 },
+  { tier: 6,  label: 'Casual III',   wager:  3_500_000, payout:  3_500, claimable:  1_000 },
+  { tier: 7,  label: 'Roller I',     wager:  5_000_000, payout:  5_000, claimable:  1_500 },
+  { tier: 8,  label: 'Roller II',    wager:  7_500_000, payout:  7_500, claimable:  2_500 },
+  { tier: 9,  label: 'Degen I',      wager: 10_000_000, payout: 10_000, claimable:  2_500 },
+  { tier: 10, label: 'Degen II',     wager: 12_500_000, payout: 12_500, claimable:  2_500 },
+  { tier: 11, label: 'Whale I',      wager: 15_000_000, payout: 15_000, claimable:  2_500 },
+  { tier: 12, label: 'Whale II',     wager: 20_000_000, payout: 20_000, claimable:  5_000 },
+  { tier: 13, label: 'Elite',        wager: 30_000_000, payout: 30_000, claimable: 10_000 },
+  { tier: 14, label: 'Legend',       wager: 50_000_000, payout: 50_000, claimable: 20_000 },
 ]
 
 export default function RoobetWagerRewardsPage() {
@@ -49,7 +49,7 @@ export default function RoobetWagerRewardsPage() {
               <h1 className="text-3xl font-bold tracking-tight">Wager Rewards</h1>
             </div>
             <p className="text-muted-foreground">
-              Earn <span className="text-foreground font-medium">$150 per $100,000 weighted wagered</span> on {SPONSOR} with code{' '}
+              Earn <span className="text-foreground font-medium">$100 per $100,000 weighted wagered</span> on {SPONSOR} with code{' '}
               <span className="text-primary font-mono font-bold">R2K2</span>. Hit a milestone, open a Discord ticket to
               claim your reward.
             </p>
