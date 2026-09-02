@@ -19,15 +19,15 @@ import {
 // ---------------------------------------------------------------------------
 const PERIOD_ANCHOR = '2026-08-28'
 const PERIOD_DAYS = 7
-const PRIZE_TOTAL = 20000
-const REWARDS: number[] = [8000, 4000, 2400, 1600, 1200, 1000, 800, 600, 300, 100]
+const PRIZE_TOTAL = 5000
+const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25]
 
-// One-off end-date override — the cycle starting on PERIOD_ANCHOR is extended
-// into a monthly-length competition and ends exactly on the last day of
-// September (9/30/2026) 6:00 PM ET instead of the standard 7-day cadence.
-// Every subsequent period resumes the normal cadence starting the day after.
+// One-off end-date override — the cycle starting on PERIOD_ANCHOR runs a few
+// days long and ends exactly 9/6/2026 6:00 PM ET instead of its normal 7-day
+// end date. Every subsequent period resumes the usual weekly cadence starting
+// the day after.
 const PERIOD_END_OVERRIDES: Record<string, string> = {
-  '2026-08-28': '2026-09-30',
+  '2026-08-28': '2026-09-06',
 }
 
 function addDays(dateStr: string, days: number): string {
@@ -63,10 +63,10 @@ const CURRENT = currentPeriod()
 const CURRENT_START = CURRENT.start
 const CURRENT_END = CURRENT.end
 // The current cycle's exact end moment (used for the countdown). Ends at
-// 6:00 PM ET (22:00 UTC — EDT is still in effect through early November)
-// when overridden; otherwise it ends at the normal end-of-day UTC.
+// 6:00 PM ET (22:00 UTC — EDT is UTC-4 in September) when overridden;
+// otherwise it ends at the normal end-of-day UTC.
 const CURRENT_END_TIMESTAMP =
-  CURRENT_END === '2026-09-30' ? '2026-09-30T22:00:00Z' : `${CURRENT_END}T23:59:59Z`
+  CURRENT_END === '2026-09-06' ? '2026-09-06T22:00:00Z' : `${CURRENT_END}T23:59:59Z`
 const CURRENT_DISPLAY = formatDisplay(CURRENT_START, CURRENT_END)
 
 // ---------------------------------------------------------------------------
@@ -262,6 +262,28 @@ export default function RoobetLeaderboardClient() {
 
   const totalWagered = entries.reduce((sum, e) => sum + getEntryWagered(e), 0)
 
+  // Goal tracking — the weekly goal is this week's weighted-wager total toward
+  // $500K; the monthly goal ($2M) is the sum of every weekly leaderboard that
+  // belongs to the current month. A week is attributed to the month it ends
+  // (pays out) in, so September's weeks (I, II, III, IIII) roll up together.
+  // This is the first weekly leaderboard, so there's no prior history — the
+  // monthly total equals this live week now and grows as each week archives.
+  const WEEKLY_GOAL = 500_000
+  const MONTHLY_GOAL = 2_000_000
+  const currentMonthKey = CURRENT_END.slice(0, 7) // e.g. "2026-09"
+  const archivedPeriodTotal = (p: ArchivedPeriod) =>
+    normalizeEntries(p.entries).reduce((sum, e) => sum + getEntryWagered(e), 0)
+  const archivedMonthTotal = archivedPeriods
+    .filter(
+      (p) =>
+        // Only genuinely completed weeks of this month: they must end within
+        // the current month AND end before the current live period started, so
+        // stale/overlapping archives never double-count the live week.
+        p.end_date.slice(0, 7) === currentMonthKey && p.end_date < CURRENT_START
+    )
+    .reduce((sum, p) => sum + archivedPeriodTotal(p), 0)
+  const monthlyTotal = totalWagered + archivedMonthTotal
+
   const prizeLabel = (rank: number): string => {
     if (activeRewards[rank - 1] != null && activeRewards[rank - 1] > 0) {
       return `$${activeRewards[rank - 1].toLocaleString()}`
@@ -294,7 +316,7 @@ export default function RoobetLeaderboardClient() {
               <PrizePool total={`$${activeTotal.toLocaleString()}`} />
             </div>
             <h1 className="text-4xl md:text-6xl font-black leading-tight text-balance animate-fade-in-up animation-delay-200 tracking-tight">
-              Monthly <span className="neon-text text-primary">Leaderboard</span>
+              Weekly <span className="neon-text text-primary">Leaderboard</span>
             </h1>
             <div className="flex justify-center">
               <a
@@ -342,16 +364,22 @@ export default function RoobetLeaderboardClient() {
             />
           )}
         </div>
-        {!showPrevious && (
-          <div className="max-w-4xl mx-auto mt-3">
-            <GoalTracker
-              current={totalWagered}
-              goal={2_000_000}
-              formatMoney={formatMoney}
-              label="Wager Goal"
-            />
-          </div>
-        )}
+            {!showPrevious && (
+              <div className="max-w-4xl mx-auto mt-3 grid gap-3 md:grid-cols-2">
+                <GoalTracker
+                  current={totalWagered}
+                  goal={WEEKLY_GOAL}
+                  formatMoney={formatMoney}
+                  label="Weekly Wager Goal"
+                />
+                <GoalTracker
+                  current={monthlyTotal}
+                  goal={MONTHLY_GOAL}
+                  formatMoney={formatMoney}
+                  label="Monthly Wager Goal"
+                />
+              </div>
+            )}
       </section>
 
       {/* Current / Previous controls */}
@@ -453,7 +481,7 @@ export default function RoobetLeaderboardClient() {
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     The Roobet leaderboard tracks your wagering activity on{' '}
                     <a href="https://roobet.com/?ref=R2K2" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">roobet.com</a>{' '}
-                    using code <strong className="text-primary">R2K2</strong>, over the current monthly-length period. Each period resets automatically and is archived once it ends.
+                    using code <strong className="text-primary">R2K2</strong>, over a rolling 7-day period. Each week resets automatically and is archived once it ends.
                   </p>
                 </div>
 
@@ -513,7 +541,7 @@ export default function RoobetLeaderboardClient() {
                   <ul className="text-sm text-muted-foreground space-y-1.5">
                     <li>• You must be registered on Roobet using referral code <strong className="text-primary">R2K2</strong>.</li>
                     <li>• Wagers must be placed within the leaderboard period: <strong className="text-foreground">{activeDisplay}</strong>.</li>
-                    <li>• Prizes are distributed at the end of each leaderboard period.</li>
+                    <li>• Prizes are distributed at the end of each weekly period.</li>
                     <li>• R2K2 reserves the right to disqualify accounts suspected of abuse or multi-accounting.</li>
                   </ul>
                 </div>
