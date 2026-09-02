@@ -51,6 +51,23 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto justify-items-center">
             <div className="w-full max-w-sm">
               <PlatformCard
+                name="Roobet"
+                logo="/assets/roobet.png"
+                href="/leaderboard/roobet"
+                signupUrl="https://roobet.com/?ref=r2k2"
+                rewards={[
+                  "$5,000 Weekly Leaderboard",
+                  "10-20% Lossback",
+                  "VIP Host / Transfers",
+                  "Double Rank-Up Bonuses",
+                  "Deposit Bonuses",
+                  "Weekly Raffles",
+                  "VIP Deals"
+                ]}
+              />
+            </div>
+            <div className="w-full max-w-sm">
+              <PlatformCard
                 name="LuxDrop"
                 logo="/assets/luxdrop.png"
                 href="/leaderboard/luxdrop"
@@ -59,21 +76,6 @@ export default function HomePage() {
                   "$2,500 Monthly Leaderboard",
                   "Top 10 Positions Paid",
                   "$1,000 First Place Prize",
-                  "Compete with Code R2K2",
-                  "Every Wager Counts"
-                ]}
-              />
-            </div>
-            <div className="w-full max-w-sm">
-              <PlatformCard
-                name="Roobet"
-                logo="/assets/roobet.png"
-                href="/leaderboard/roobet"
-                signupUrl="https://roobet.com/?ref=r2k2"
-                rewards={[
-                  "$5,000 Weekly Leaderboard",
-                  "Resets Every 7 Days",
-                  "Top Positions Paid",
                   "Compete with Code R2K2",
                   "Every Wager Counts"
                 ]}

@@ -1,8 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import useSWR from 'swr'
-import { Loader2, LogIn, Link2, AlertTriangle, Trophy, Target } from 'lucide-react'
+import { Loader2, LogIn, Link2, AlertTriangle, Trophy, Target, ChevronDown, Lock, ListChecks } from 'lucide-react'
 import { MilestoneTierRow, type MilestoneTier } from './milestone-tier-row'
 
 type Progress = {
@@ -44,6 +45,7 @@ export function MilestoneTracker({ platform, sponsor, tiers, discordUrl }: Miles
     fetcher,
     { revalidateOnFocus: false }
   )
+  const [expanded, setExpanded] = useState(false)
 
   // Whether we have a real wager number to drive per-tier unlocked state.
   const hasWager =
@@ -72,28 +74,85 @@ export function MilestoneTracker({ platform, sponsor, tiers, discordUrl }: Miles
         resetDate={resetDate}
       />
 
-      {/* ── Tier table ─────────────────────────────────────────────────── */}
+      {/* ── Tier list — collapsed summary by default, expands on demand ── */}
       <div className="rounded-2xl border border-border/50 bg-gradient-to-b from-card/70 to-card/30 overflow-hidden shadow-[0_0_50px_-24px_rgba(0,0,0,0.7)]">
-        <div className="hidden items-center gap-4 px-5 py-3 border-b border-border/50 bg-muted/20 sm:flex">
-          <div className="w-14 shrink-0" />
-          <p className="w-28 shrink-0 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tier</p>
-          <p className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Wager Required</p>
-          <p className="w-28 shrink-0 text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Reward</p>
-          <div className="shrink-0 ml-2 w-[130px]" />
-        </div>
-        <div className="flex items-center px-4 py-2.5 border-b border-border/50 bg-muted/20 sm:hidden">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Milestone Tiers</p>
-        </div>
+        {hasWager ? (
+          <>
+            {/* Collapsed summary — always visible; toggles the full tier list below */}
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+              className="flex w-full items-center gap-4 px-4 py-4 text-left transition-colors hover:bg-muted/20 sm:px-5"
+            >
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 ring-1 ring-blue-400/30">
+                <ListChecks className="h-5 w-5 text-blue-300" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  {reachedTiers.length} of {sorted.length} milestones unlocked
+                </p>
+                <p className="truncate text-sm text-muted-foreground">
+                  {nextTier ? (
+                    <>
+                      Next: <span className="text-foreground font-medium">{nextTier.label}</span> —{' '}
+                      <span className="text-emerald-400 font-medium">
+                        +{fmt(nextTier.claimable ?? nextTier.wager)}
+                      </span>{' '}
+                      at {fmt(nextTier.wager)} wagered
+                    </>
+                  ) : (
+                    <span className="text-emerald-400 font-medium">All milestones unlocked — max tier reached</span>
+                  )}
+                </p>
+              </div>
+              <span className="hidden shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:inline">
+                {expanded ? 'Hide Tiers' : 'View All Tiers'}
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+              />
+            </button>
 
-        {sorted.map((tier, i) => (
-          <MilestoneTierRow
-            key={tier.tier}
-            tier={tier}
-            discordUrl={discordUrl}
-            isLast={i === sorted.length - 1}
-            reached={hasWager ? wagered >= tier.wager : undefined}
-          />
-        ))}
+            {expanded && (
+              <div className="border-t border-border/50">
+                <div className="hidden items-center gap-4 px-5 py-3 border-b border-border/50 bg-muted/20 sm:flex">
+                  <div className="w-14 shrink-0" />
+                  <p className="w-28 shrink-0 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tier</p>
+                  <p className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Wager Required</p>
+                  <p className="w-28 shrink-0 text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Reward</p>
+                  <div className="shrink-0 ml-2 w-[130px]" />
+                </div>
+                <div className="flex items-center px-4 py-2.5 border-b border-border/50 bg-muted/20 sm:hidden">
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Milestone Tiers</p>
+                </div>
+
+                {sorted.map((tier, i) => (
+                  <MilestoneTierRow
+                    key={tier.tier}
+                    tier={tier}
+                    discordUrl={discordUrl}
+                    isLast={i === sorted.length - 1}
+                    reached={wagered >= tier.wager}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          // Not signed in / not linked yet — tiers stay hidden behind a locked summary.
+          <div className="flex items-center gap-4 px-4 py-4 sm:px-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted/40 ring-1 ring-border/50">
+              <Lock className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">{sorted.length} milestone tiers available</p>
+              <p className="text-sm text-muted-foreground">
+                Sign in and link your {sponsor} account above to view tier details and track your progress.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
