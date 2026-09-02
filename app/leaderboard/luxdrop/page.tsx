@@ -21,8 +21,8 @@ import {
 // Query start pulled back 1 day to make sure wagers near the boundary/timezone
 // edge are captured. Displayed range stays the actual start day.
 const CURRENT_START = '2026-08-08'
-const CURRENT_END = '2026-09-08'
-const CURRENT_DISPLAY = 'Aug 9 – Sep 8, 2026'
+const CURRENT_END = '2026-09-06'
+const CURRENT_DISPLAY = 'Aug 9 – Sep 6, 2026'
 const PRIZE_TOTAL = 2500
 const WAGER_GOAL = 65000
 
@@ -164,7 +164,8 @@ export default function LuxdropLeaderboard() {
   // ---------------------------------------------------------------------------
   const computeTimeRemaining = (period: string) => {
     if (period !== 'current') return 'Ended'
-    const end = new Date(CURRENT_END + 'T23:59:59Z').getTime()
+    // 6:00 PM Eastern on September 6 is 22:00 UTC while daylight time is active.
+    const end = new Date(CURRENT_END === '2026-09-06' ? '2026-09-06T22:00:00Z' : CURRENT_END + 'T23:59:59Z').getTime()
     const diff = end - Date.now()
     if (diff <= 0) return 'Ended'
     const days    = Math.floor(diff / 86400000)
