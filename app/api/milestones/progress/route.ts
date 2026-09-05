@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
   fetchWindowedWager,
-  getLeaderboardWindow,
+  getMilestoneWindow,
+  type MilestoneCycle,
   type MilestonePlatform,
 } from "@/lib/milestones/progress";
 
@@ -11,17 +12,19 @@ export const revalidate = 0;
 
 const VALID: MilestonePlatform[] = ["acebet", "luxdrop", "roobet"];
 
-// GET /api/milestones/progress?platform=acebet|luxdrop|roobet
+// GET /api/milestones/progress?platform=acebet|luxdrop|roobet&cycle=leaderboard|rewards
 // Returns the signed-in user's linked username + wager for the platform's
-// current leaderboard window.
+// current tracking window. "cycle" defaults to the weekly leaderboard window;
+// pass cycle=rewards for Roobet's independent 30-day Wager Rewards cycle.
 export async function GET(request: NextRequest) {
   const platform = request.nextUrl.searchParams.get("platform") as MilestonePlatform | null;
+  const cycle = (request.nextUrl.searchParams.get("cycle") as MilestoneCycle | null) ?? "leaderboard";
 
   if (!platform || !VALID.includes(platform)) {
     return NextResponse.json({ error: "invalid_platform" }, { status: 400 });
   }
 
-  const window = getLeaderboardWindow(platform);
+  const window = getMilestoneWindow(platform, cycle);
 
   const supabase = await createClient();
   const {
@@ -79,7 +82,8 @@ export async function GET(request: NextRequest) {
   const wager = await fetchWindowedWager(
     platform,
     { username, acebetUserId },
-    origin
+    origin,
+    window
   );
 
   return NextResponse.json({

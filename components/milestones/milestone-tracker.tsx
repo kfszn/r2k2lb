@@ -21,6 +21,9 @@ interface MilestoneTrackerProps {
   sponsor: string
   tiers: MilestoneTier[]
   discordUrl: string
+  /** "leaderboard" (default) resets weekly with the leaderboard; "rewards" is
+   *  Roobet's independent 30-day Wager Rewards cycle. */
+  cycle?: 'leaderboard' | 'rewards'
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -39,9 +42,9 @@ function fmtDate(iso: string) {
   })
 }
 
-export function MilestoneTracker({ platform, sponsor, tiers, discordUrl }: MilestoneTrackerProps) {
+export function MilestoneTracker({ platform, sponsor, tiers, discordUrl, cycle = 'leaderboard' }: MilestoneTrackerProps) {
   const { data, isLoading } = useSWR<Progress>(
-    `/api/milestones/progress?platform=${platform}`,
+    `/api/milestones/progress?platform=${platform}&cycle=${cycle}`,
     fetcher,
     { revalidateOnFocus: false }
   )
@@ -67,6 +70,7 @@ export function MilestoneTracker({ platform, sponsor, tiers, discordUrl }: Miles
         data={data}
         sponsor={sponsor}
         platform={platform}
+        cycle={cycle}
         hasWager={hasWager}
         wagered={wagered}
         currentTier={currentTier}
@@ -163,6 +167,7 @@ function MilestoneStatusCard({
   data,
   sponsor,
   platform,
+  cycle,
   hasWager,
   wagered,
   currentTier,
@@ -173,6 +178,7 @@ function MilestoneStatusCard({
   data: Progress | undefined
   sponsor: string
   platform: string
+  cycle: 'leaderboard' | 'rewards'
   hasWager: boolean
   wagered: number
   currentTier: MilestoneTier | null
@@ -335,8 +341,17 @@ function MilestoneStatusCard({
 
       {resetDate && (
         <p className="mt-4 text-xs text-muted-foreground">
-          Progress resets with the {sponsor} leaderboard on{' '}
-          <span className="text-foreground font-medium">{resetDate}</span>.
+          {cycle === 'rewards' ? (
+            <>
+              Progress resets on this 30-day cycle&apos;s end date,{' '}
+              <span className="text-foreground font-medium">{resetDate}</span>.
+            </>
+          ) : (
+            <>
+              Progress resets with the {sponsor} leaderboard on{' '}
+              <span className="text-foreground font-medium">{resetDate}</span>.
+            </>
+          )}
         </p>
       )}
     </div>
