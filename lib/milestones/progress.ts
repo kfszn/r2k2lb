@@ -58,6 +58,38 @@ export function getLeaderboardWindow(platform: MilestonePlatform): { start: stri
   return STATIC_WINDOWS[platform];
 }
 
+// Roobet's Wager Rewards page tracks progress on its own rolling 30-day
+// cycle — separate from the weekly leaderboard — so a player's tier progress
+// accumulates across all ~4 weekly leaderboard periods in that span instead
+// of resetting every 7 days. Anchored on the same start date as the
+// leaderboard for simplicity; the two cycles run independently after that.
+const ROOBET_REWARDS_ANCHOR = "2026-08-28";
+const ROOBET_REWARDS_CYCLE_DAYS = 30;
+
+function roobetRewardsPeriod(): { start: string; end: string } {
+  const today = new Date().toISOString().slice(0, 10);
+  let start = ROOBET_REWARDS_ANCHOR;
+  let end = addDays(start, ROOBET_REWARDS_CYCLE_DAYS - 1);
+  while (addDays(end, 1) <= today) {
+    start = addDays(end, 1);
+    end = addDays(start, ROOBET_REWARDS_CYCLE_DAYS - 1);
+  }
+  return { start, end };
+}
+
+export type MilestoneCycle = "leaderboard" | "rewards";
+
+// Resolves the correct tracking window for a given cycle type. Only Roobet
+// currently has a distinct "rewards" cycle (30 days); every other
+// platform/cycle combination falls back to the leaderboard window.
+export function getMilestoneWindow(
+  platform: MilestonePlatform,
+  cycle: MilestoneCycle = "leaderboard"
+): { start: string; end: string } {
+  if (platform === "roobet" && cycle === "rewards") return roobetRewardsPeriod();
+  return getLeaderboardWindow(platform);
+}
+
 // Backward-compatible static snapshot (roobet resolved at import time — prefer
 // getLeaderboardWindow(platform) for anything that needs the live value).
 export const LEADERBOARD_WINDOWS: Record<
@@ -105,9 +137,9 @@ export interface WagerLookup {
 export async function fetchWindowedWager(
   platform: MilestonePlatform,
   lookup: WagerLookup,
-  origin: string
+  origin: string,
+  win: { start: string; end: string } = getLeaderboardWindow(platform)
 ): Promise<number | "not_found" | null> {
-  const win = getLeaderboardWindow(platform);
   if (!win) return null;
 
   const username = (lookup.username ?? "").trim();
