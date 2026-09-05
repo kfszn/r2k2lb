@@ -18,20 +18,14 @@ const SPONSOR = 'Roobet'
 // claimable = this tier's payout minus the previous tier's payout (delta paid out)
 // Rewards do not stack — the difference from your last claim is what gets paid.
 const TIERS: MilestoneTier[] = [
-  { tier: 1,  label: 'Beginner I',   wager:    100_000, payout:      500, claimable:      500 },
-  { tier: 2,  label: 'Beginner II',  wager:    250_000, payout:    1_250, claimable:      750 },
-  { tier: 3,  label: 'Beginner III', wager:    500_000, payout:    2_500, claimable:    1_250 },
-  { tier: 4,  label: 'Casual I',     wager:  1_000_000, payout:    5_000, claimable:    2_500 },
-  { tier: 5,  label: 'Casual II',    wager:  2_500_000, payout:   12_500, claimable:    7_500 },
-  { tier: 6,  label: 'Casual III',   wager:  3_500_000, payout:   17_500, claimable:    5_000 },
-  { tier: 7,  label: 'Roller I',     wager:  5_000_000, payout:   25_000, claimable:    7_500 },
-  { tier: 8,  label: 'Roller II',    wager:  7_500_000, payout:   37_500, claimable:   12_500 },
-  { tier: 9,  label: 'Degen I',      wager: 10_000_000, payout:   50_000, claimable:   12_500 },
-  { tier: 10, label: 'Degen II',     wager: 12_500_000, payout:   62_500, claimable:   12_500 },
-  { tier: 11, label: 'Whale I',      wager: 15_000_000, payout:   75_000, claimable:   12_500 },
-  { tier: 12, label: 'Whale II',     wager: 20_000_000, payout:  100_000, claimable:   25_000 },
-  { tier: 13, label: 'Elite',        wager: 30_000_000, payout:  150_000, claimable:   50_000 },
-  { tier: 14, label: 'Legend',       wager: 50_000_000, payout:  250_000, claimable:  100_000 },
+  { tier: 1, label: 'Beginner I',   wager:     10_000, payout:     50, claimable:     50 },
+  { tier: 2, label: 'Beginner II',  wager:     25_000, payout:    125, claimable:     75 },
+  { tier: 3, label: 'Beginner III', wager:     50_000, payout:    250, claimable:    125 },
+  { tier: 4, label: 'Casual I',     wager:    100_000, payout:    500, claimable:    250 },
+  { tier: 5, label: 'Casual II',    wager:    150_000, payout:    750, claimable:    250 },
+  { tier: 6, label: 'Roller I',     wager:    200_000, payout:  1_000, claimable:    250 },
+  { tier: 7, label: 'Whale I',      wager:    500_000, payout:  2_500, claimable:  1_500 },
+  { tier: 8, label: 'Legend',       wager:  1_000_000, payout:  5_000, claimable:  2_500 },
 ]
 
 export default function RoobetWagerRewardsPage() {
