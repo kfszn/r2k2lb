@@ -152,6 +152,7 @@ export default function RoobetLeaderboardClient() {
       if (period !== 'current') {
         const found = archivedPeriods.find(p => p.label === period)
         setEntries(sortByWeightedWager(normalizeEntries(found?.entries ?? [])))
+        setLoading(false)
         return
       }
 
