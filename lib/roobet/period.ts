@@ -25,6 +25,12 @@ const FIRST_PERIOD_START_DATE_ET = '2026-08-28'
 // over at ROOBET_CUTOFF_HOUR_ET ET.
 const FIRST_PERIOD_END_DATE_ET = '2026-09-09'
 
+// The live leaderboard was reset at 6:00 PM ET on September 6, 2026.
+// Keep the corrected August 28–September 9 archive above intact, but use this
+// explicit live-week anchor for the current leaderboard and its countdown.
+const LIVE_PERIOD_START_DATE_ET = '2026-09-06'
+const LIVE_PERIOD_END_DATE_ET = '2026-09-13'
+
 export interface RoobetPeriod {
   /** ET calendar date the period starts on (for display/labeling only) */
   startDate: string
@@ -114,6 +120,16 @@ export function getFirstRoobetPeriod(): RoobetPeriod {
 
 /** The period in progress right now (start <= now < end). */
 export function getCurrentRoobetPeriod(now: Date = new Date()): RoobetPeriod {
+  const liveStart = nyWallClockToUtc(LIVE_PERIOD_START_DATE_ET, ROOBET_CUTOFF_HOUR_ET)
+  if (now.getTime() >= liveStart.getTime()) {
+    let period = periodFromEndDate(liveStart.toISOString(), LIVE_PERIOD_END_DATE_ET)
+    while (new Date(period.endISO).getTime() <= now.getTime()) {
+      const nextEndDate = addDaysToDateString(period.endDate, ROOBET_PERIOD_DAYS)
+      period = periodFromEndDate(period.endISO, nextEndDate)
+    }
+    return period
+  }
+
   let period = periodFromEndDate(FIRST_PERIOD_START_ISO, FIRST_PERIOD_END_DATE_ET)
   while (new Date(period.endISO).getTime() <= now.getTime()) {
     const nextEndDate = addDaysToDateString(period.endDate, ROOBET_PERIOD_DAYS)
