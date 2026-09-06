@@ -45,12 +45,16 @@ function roobetCurrentPeriod(): { start: string; end: string } {
  * milestone progress "resets with the leaderboard".
  *   - "acebet": legacy platform key — app/api/leaderboard/route.js
  *     (DEFAULT_START/END). That route is now Roobet-backed under the hood.
- *   - LuxDrop:  app/leaderboard/luxdrop/page.tsx (START_DATE/END_DATE)
+ *   - LuxDrop:  app/leaderboard/luxdrop/page.tsx (CURRENT_START/CURRENT_END)
  *   - Roobet:   app/leaderboard/roobet/page.tsx (rolling 7-day period)
+ *
+ * NOTE: these are updated by hand whenever the leaderboard page's dates
+ * change — keep them in sync or milestone progress will silently query the
+ * wrong period.
  */
 const STATIC_WINDOWS: Record<"acebet" | "luxdrop", { start: string; end: string }> = {
   acebet: { start: "2026-07-30", end: "2026-08-31" },
-  luxdrop: { start: "2026-07-07", end: "2026-08-08" },
+  luxdrop: { start: "2026-08-08", end: "2026-09-06" },
 };
 
 export function getLeaderboardWindow(platform: MilestonePlatform): { start: string; end: string } {
