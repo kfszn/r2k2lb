@@ -2,42 +2,28 @@
 // the public leaderboards use, so a user's tracked wager always matches what
 // they see on the leaderboard. We do NOT re-implement upstream fetching here.
 
+import { getCurrentRoobetPeriod } from "@/lib/roobet/period";
+
 export type MilestonePlatform = "acebet" | "luxdrop" | "roobet";
 
-// Roobet's leaderboard runs on a rolling 7-day period computed from an
-// anchor date — mirrors app/leaderboard/roobet/page.tsx (PERIOD_ANCHOR/PERIOD_DAYS)
-// and app/api/cron/roobet-weekly-archive exactly, so milestone progress
-// resets in lockstep with the public leaderboard.
-const ROOBET_PERIOD_ANCHOR = "2026-08-28";
-const ROOBET_PERIOD_DAYS = 7;
-
-// One-off end-date override — mirrors app/leaderboard/roobet/page.tsx and
-// app/api/cron/roobet-weekly-archive exactly. The cycle starting on
-// ROOBET_PERIOD_ANCHOR runs long and ends 9/5/2026 instead of the standard
-// 7-day cadence. Every subsequent period resumes the normal cadence.
-const ROOBET_PERIOD_END_OVERRIDES: Record<string, string> = {
-  "2026-08-28": "2026-09-05",
-};
-
+// Roobet's leaderboard cuts over at exactly 6:00 PM Eastern every 7 days —
+// lib/roobet/period.ts is the single source of truth for that boundary math
+// (shared with app/leaderboard/roobet and app/api/cron/roobet-weekly-archive)
+// so milestone progress resets in lockstep with the public leaderboard,
+// down to the exact cutover instant.
 function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr + "T00:00:00Z");
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
 
-function roobetPeriodEndFor(start: string): string {
-  return ROOBET_PERIOD_END_OVERRIDES[start] ?? addDays(start, ROOBET_PERIOD_DAYS - 1);
-}
-
+// Returns the current Roobet period as exact UTC ISO instants (not
+// date-only strings) — /api/roobet/affiliates accepts full ISO timestamps,
+// which is what lets this line up with the leaderboard's 6pm ET cutover
+// instead of a plain midnight-UTC boundary.
 function roobetCurrentPeriod(): { start: string; end: string } {
-  const today = new Date().toISOString().slice(0, 10);
-  let start = ROOBET_PERIOD_ANCHOR;
-  let end = roobetPeriodEndFor(start);
-  while (addDays(end, 1) <= today) {
-    start = addDays(end, 1);
-    end = roobetPeriodEndFor(start);
-  }
-  return { start, end };
+  const period = getCurrentRoobetPeriod();
+  return { start: period.startISO, end: period.endISO };
 }
 
 /**
@@ -182,7 +168,8 @@ export async function fetchWindowedWager(
     }
 
     if (platform === "roobet") {
-      const url = `${origin}/api/roobet/affiliates?startDate=${win.start}&endDate=${win.end}`;
+      // win.start/win.end are exact ISO instants for roobet (see roobetCurrentPeriod above) — encode them.
+      const url = `${origin}/api/roobet/affiliates?startDate=${encodeURIComponent(win.start)}&endDate=${encodeURIComponent(win.end)}`;
       const r = await fetch(url, { cache: "no-store" });
       if (!r.ok) return null;
       const json = await r.json().catch(() => null);

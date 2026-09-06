@@ -33,8 +33,12 @@ export async function GET(request: NextRequest) {
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
 
-  const isoStart = startDate ? `${startDate}T00:00:00.000Z` : undefined;
-  const isoEnd = endDate ? `${endDate}T23:59:59.999Z` : undefined;
+  // Callers may pass either a plain date (YYYY-MM-DD — defaults to that day's
+  // UTC boundaries) or a full ISO instant (e.g. an exact 6:00 PM ET cutover
+  // converted to UTC) when they need sub-day precision. Roobet's upstream API
+  // respects the time component, so pass exact instants straight through.
+  const isoStart = startDate ? (startDate.includes("T") ? startDate : `${startDate}T00:00:00.000Z`) : undefined;
+  const isoEnd = endDate ? (endDate.includes("T") ? endDate : `${endDate}T23:59:59.999Z`) : undefined;
 
   console.log("[v0] Roobet date range:", isoStart, "→", isoEnd);
 
