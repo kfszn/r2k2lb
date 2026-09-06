@@ -13,32 +13,16 @@ import {
   TableHeader,
   PrizePool,
 } from '@/components/leaderboard/leaderboard-ui'
+import { getCurrentRoobetPeriod } from '@/lib/roobet/period'
 
 // ---------------------------------------------------------------------------
-// Config — rolling 7-day periods, must match app/api/cron/roobet-weekly-archive
+// Config — rolling 7-day periods that cut over at exactly 6:00 PM Eastern.
+// Period boundaries themselves live in lib/roobet/period.ts (shared with
+// app/api/cron/roobet-weekly-archive and lib/milestones/progress) so the
+// leaderboard, the archive, and milestone tracking can never drift apart.
 // ---------------------------------------------------------------------------
-const PERIOD_ANCHOR = '2026-08-28'
-const PERIOD_DAYS = 7
 const PRIZE_TOTAL = 5000
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25]
-
-// One-off end-date override — the cycle starting on PERIOD_ANCHOR runs a few
-// days long and ends exactly 9/6/2026 6:00 PM ET instead of its normal 7-day
-// end date. Every subsequent period resumes the usual weekly cadence starting
-// the day after.
-const PERIOD_END_OVERRIDES: Record<string, string> = {
-  '2026-08-28': '2026-09-06',
-}
-
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + 'T00:00:00Z')
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
-}
-
-function periodEndFor(start: string): string {
-  return PERIOD_END_OVERRIDES[start] ?? addDays(start, PERIOD_DAYS - 1)
-}
 
 function formatDisplay(start: string, end: string): string {
   const s = new Date(start + 'T00:00:00Z')
@@ -47,26 +31,16 @@ function formatDisplay(start: string, end: string): string {
   return `${fmt(s)} – ${fmt(e)}, ${e.getUTCFullYear()}`
 }
 
-// Compute the current (in-progress) period from the anchor date
-function currentPeriod(): { start: string; end: string } {
-  const today = new Date().toISOString().slice(0, 10)
-  let start = PERIOD_ANCHOR
-  let end = periodEndFor(start)
-  while (addDays(end, 1) <= today) {
-    start = addDays(end, 1)
-    end = periodEndFor(start)
-  }
-  return { start, end }
-}
-
-const CURRENT = currentPeriod()
-const CURRENT_START = CURRENT.start
-const CURRENT_END = CURRENT.end
-// The current cycle's exact end moment (used for the countdown). Ends at
-// 6:00 PM ET (22:00 UTC — EDT is UTC-4 in September) when overridden;
-// otherwise it ends at the normal end-of-day UTC.
-const CURRENT_END_TIMESTAMP =
-  CURRENT_END === '2026-09-06' ? '2026-09-06T22:00:00Z' : `${CURRENT_END}T23:59:59Z`
+const CURRENT = getCurrentRoobetPeriod()
+// ET calendar dates — display/labeling only.
+const CURRENT_START = CURRENT.startDate
+const CURRENT_END = CURRENT.endDate
+// Exact UTC instants — these bound the live wager query and drive the
+// countdown, so wagers before the last 6:00 PM ET cutover never leak into
+// this period's total, and the countdown hits zero at the same moment the
+// query boundary rolls over.
+const CURRENT_START_ISO = CURRENT.startISO
+const CURRENT_END_ISO = CURRENT.endISO
 const CURRENT_DISPLAY = formatDisplay(CURRENT_START, CURRENT_END)
 
 // ---------------------------------------------------------------------------
@@ -182,7 +156,7 @@ export default function RoobetLeaderboardClient() {
       }
 
       const res = await fetch(
-        `/api/roobet/affiliates?startDate=${CURRENT_START}&endDate=${CURRENT_END}`,
+        `/api/roobet/affiliates?startDate=${encodeURIComponent(CURRENT_START_ISO)}&endDate=${encodeURIComponent(CURRENT_END_ISO)}`,
         { cache: 'no-store' }
       )
       const json = await res.json()
@@ -215,7 +189,7 @@ export default function RoobetLeaderboardClient() {
   // ---------------------------------------------------------------------------
   const computeTimeRemaining = (period: string) => {
     if (period !== 'current') return 'Ended'
-    const end = new Date(CURRENT_END_TIMESTAMP).getTime()
+    const end = new Date(CURRENT_END_ISO).getTime()
     const diff = end - Date.now()
     if (diff <= 0) return 'Ended'
     const days = Math.floor(diff / 86400000)

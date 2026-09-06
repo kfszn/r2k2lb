@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { addDaysToDateString, getFirstRoobetPeriod, getPreviousRoobetPeriod, ROOBET_PERIOD_DAYS } from "@/lib/roobet/period";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -11,42 +12,28 @@ function getSupabase() {
   );
 }
 
-// Roobet leaderboard: rolling 7-day periods.
-// PERIOD_ANCHOR is the start date (UTC) of the current cycle — every subsequent
-// period is an exact 7-day multiple offset from this anchor.
-const PERIOD_ANCHOR = "2026-08-28";
-const PERIOD_DAYS = 7;
+// Roobet leaderboard: rolling periods that cut over at exactly 6:00 PM
+// Eastern every ROOBET_PERIOD_DAYS days. Boundary math (including the DST
+// handling and the one-off first-period length) lives in lib/roobet/period —
+// this cron just asks it "what period most recently ended?" and archives
+// that period's exact-cutoff wager snapshot.
 const PRIZE_TOTAL = 5000;
 const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25];
 
-// One-off end-date override — mirrors app/leaderboard/roobet/page.tsx exactly.
-// The cycle starting on PERIOD_ANCHOR runs a few days long and ends 9/6/2026
-// instead of its normal 7-day end date. Every subsequent period resumes the
-// standard weekly cadence.
-const PERIOD_END_OVERRIDES: Record<string, string> = {
-  "2026-08-28": "2026-09-06",
-};
-
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"];
-
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + "T00:00:00Z");
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-function periodEndFor(start: string): string {
-  return PERIOD_END_OVERRIDES[start] ?? addDays(start, PERIOD_DAYS - 1);
-}
 
 function monthLabel(dateStr: string): string {
   return new Date(dateStr + "T00:00:00Z").toLocaleString("en-US", { month: "long", timeZone: "UTC" });
 }
 
-// Given a period start date, compute its Roman-numeral index within its
-// calendar month (I, II, III, ... resets each month).
-function romanIndexForPeriod(periodStart: string): number {
-  let cursor = PERIOD_ANCHOR;
+// Given a period's (ET) start date, compute its Roman-numeral index within
+// its calendar month (I, II, III, ... resets each month). Walks the same
+// fixed-length cadence used everywhere else, seeded from the first period's
+// actual boundaries so a one-off first-period length doesn't throw off the
+// month-relative count.
+function romanIndexForPeriod(periodStart: string, firstPeriodStart: string, firstPeriodEnd: string): number {
+  let cursor = firstPeriodStart;
+  let cursorEnd = firstPeriodEnd;
   let indexInMonth = 0;
   let lastMonth = monthLabel(cursor);
 
@@ -57,7 +44,8 @@ function romanIndexForPeriod(periodStart: string): number {
       lastMonth = month;
     }
     indexInMonth++;
-    cursor = addDays(periodEndFor(cursor), 1);
+    cursor = addDaysToDateString(cursorEnd, 1);
+    cursorEnd = addDaysToDateString(cursor, ROOBET_PERIOD_DAYS - 1);
   }
   // one more increment for the period we stopped on
   const month = monthLabel(cursor);
@@ -72,27 +60,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Determine the most recently completed period ending at/before today (UTC).
-  // Walk forward from the anchor, tracking the previous period, so the step
-  // back to "the period that just ended" is correct even when a period's
-  // length was overridden (contiguous periods — prev end = current start - 1).
-  const today = new Date().toISOString().slice(0, 10);
-  let periodStart = PERIOD_ANCHOR;
-  let periodEnd = periodEndFor(periodStart);
-  let prevStart = periodStart;
-  let prevEnd = periodEnd;
-
-  while (addDays(periodEnd, 1) <= today) {
-    prevStart = periodStart;
-    prevEnd = periodEnd;
-    periodStart = addDays(periodEnd, 1);
-    periodEnd = periodEndFor(periodStart);
+  const previous = getPreviousRoobetPeriod();
+  if (!previous) {
+    return NextResponse.json({ message: "No period has ended yet" });
   }
-  // Step back one period — the one that JUST ended (end date < today)
-  if (periodEnd >= today) {
-    periodStart = prevStart;
-    periodEnd = prevEnd;
-  }
+  const { startDate: periodStart, endDate: periodEnd, startISO, endISO } = previous;
 
   const supabase = getSupabase();
 
@@ -108,12 +80,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ message: "Period already archived", periodStart, periodEnd });
   }
 
-  // Pull the final snapshot for the completed period
+  // Pull the final snapshot for the completed period, using the exact
+  // 6:00 PM ET cutover instants so wagers from the NEXT (already-live) period
+  // never leak into this archived total.
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   let entries: unknown[] = [];
   try {
     const res = await fetch(
-      `${origin}/api/roobet/affiliates?startDate=${periodStart}&endDate=${periodEnd}`,
+      `${origin}/api/roobet/affiliates?startDate=${encodeURIComponent(startISO)}&endDate=${encodeURIComponent(endISO)}`,
       { cache: "no-store" }
     );
     const json = await res.json();
@@ -125,7 +99,11 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const romanIndex = romanIndexForPeriod(periodStart);
+  // The very first period's own start/end date anchor the month-relative
+  // Roman-numeral count for every period after it.
+  const firstPeriod = getFirstRoobetPeriod();
+  const romanIndex = romanIndexForPeriod(periodStart, firstPeriod.startDate, firstPeriod.endDate);
+
   const label = `${monthLabel(periodStart)} ${ROMAN[romanIndex - 1] ?? romanIndex}`;
 
   const { error: insertError } = await supabase.from("roobet_leaderboard_archive").insert({
