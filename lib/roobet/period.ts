@@ -23,7 +23,7 @@ const FIRST_PERIOD_START_DATE_ET = '2026-08-28'
 // The ET calendar date the first period ends on, at ROOBET_CUTOFF_HOUR_ET.
 // Every subsequent period is exactly ROOBET_PERIOD_DAYS later, also cutting
 // over at ROOBET_CUTOFF_HOUR_ET ET.
-const FIRST_PERIOD_END_DATE_ET = '2026-09-06'
+const FIRST_PERIOD_END_DATE_ET = '2026-09-09'
 
 export interface RoobetPeriod {
   /** ET calendar date the period starts on (for display/labeling only) */
