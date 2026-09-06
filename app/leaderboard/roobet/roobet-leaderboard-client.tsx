@@ -13,7 +13,7 @@ import {
   TableHeader,
   PrizePool,
 } from '@/components/leaderboard/leaderboard-ui'
-import { getCurrentRoobetPeriod } from '@/lib/roobet/period'
+import type { RoobetPeriod } from '@/lib/roobet/period'
 
 // ---------------------------------------------------------------------------
 // Config — rolling 7-day periods that cut over at exactly 6:00 PM Eastern.
@@ -31,17 +31,16 @@ function formatDisplay(start: string, end: string): string {
   return `${fmt(s)} – ${fmt(e)}, ${e.getUTCFullYear()}`
 }
 
-const CURRENT = getCurrentRoobetPeriod()
-// ET calendar dates — display/labeling only.
-const CURRENT_START = CURRENT.startDate
-const CURRENT_END = CURRENT.endDate
-// Exact UTC instants — these bound the live wager query and drive the
-// countdown, so wagers before the last 6:00 PM ET cutover never leak into
-// this period's total, and the countdown hits zero at the same moment the
-// query boundary rolls over.
-const CURRENT_START_ISO = CURRENT.startISO
-const CURRENT_END_ISO = CURRENT.endISO
-const CURRENT_DISPLAY = formatDisplay(CURRENT_START, CURRENT_END)
+// The server computes this once and passes it through so SSR and hydration
+// use the identical period boundary values.
+function getPeriodConfig(period: RoobetPeriod) {
+  const CURRENT_START = period.startDate
+  const CURRENT_END = period.endDate
+  const CURRENT_START_ISO = period.startISO
+  const CURRENT_END_ISO = period.endISO
+  const CURRENT_DISPLAY = formatDisplay(CURRENT_START, CURRENT_END)
+  return { CURRENT_START, CURRENT_END, CURRENT_START_ISO, CURRENT_END_ISO, CURRENT_DISPLAY }
+}
 
 // ---------------------------------------------------------------------------
 // Types — normalize whatever shape the Roobet API returns
@@ -109,7 +108,8 @@ function getEntryAvatar(e: RoobetEntry): string | null {
   return rankImage ?? e.avatar ?? null
 }
 
-export default function RoobetLeaderboardClient() {
+export default function RoobetLeaderboardClient({ initialPeriod }: { initialPeriod: RoobetPeriod }) {
+  const { CURRENT_START, CURRENT_END, CURRENT_START_ISO, CURRENT_END_ISO, CURRENT_DISPLAY } = getPeriodConfig(initialPeriod)
   const [activeTab, setActiveTab] = useState<'leaderboard' | 'rules'>('leaderboard')
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current')
   const [dropdownOpen, setDropdownOpen] = useState(false)

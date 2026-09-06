@@ -1,13 +1,12 @@
 import RoobetLeaderboardClient from './roobet-leaderboard-client'
+import { getCurrentRoobetPeriod } from '@/lib/roobet/period'
 
-// This page computes the current leaderboard period from "today's" date at
-// module scope. Without forcing dynamic rendering, Next.js would statically
-// prerender it once at build time, freezing that date into the server HTML —
-// which then mismatches whatever the client (correctly) computes at
-// hydration time on a later day. Rendering on every request keeps the
-// server and client in agreement.
+// Compute the period once on the server and pass the serialized value into the
+// client component. Computing it independently at module scope on both sides
+// can cross a 6pm ET boundary between SSR and hydration and produce different
+// text, which causes React hydration to fail.
 export const dynamic = 'force-dynamic'
 
 export default function RoobetLeaderboardPage() {
-  return <RoobetLeaderboardClient />
+  return <RoobetLeaderboardClient initialPeriod={getCurrentRoobetPeriod()} />
 }
