@@ -20,9 +20,12 @@ import {
 // ---------------------------------------------------------------------------
 // Query start pulled back 1 day to make sure wagers near the boundary/timezone
 // edge are captured. Displayed range stays the actual start day.
-const CURRENT_START = '2026-08-08'
-const CURRENT_END = '2026-09-06'
-const CURRENT_DISPLAY = 'Aug 9 – Sep 6, 2026'
+const CURRENT_START = '2026-09-05'
+const CURRENT_END = '2026-10-06'
+// Exact UTC instant for the 6:00 PM ET cutover that ends this period — drives
+// the countdown timer below.
+const CURRENT_END_ISO = '2026-10-06T22:00:00Z'
+const CURRENT_DISPLAY = 'Sep 6 – Oct 6, 2026'
 const PRIZE_TOTAL = 2500
 const WAGER_GOAL = 65000
 
@@ -46,6 +49,14 @@ interface PeriodConfig {
 
 // Previous leaderboard periods
 const PREVIOUS_PERIODS: PeriodConfig[] = [
+  {
+    label: 'August',
+    start_at: '2026-08-08',
+    end_at: '2026-09-06',
+    display: 'Aug 9 – Sep 6, 2026',
+    rewards: [1000, 500, 300, 175, 125, 100, 100, 75, 75, 50],
+    total: 2500,
+  },
   {
     label: 'July',
     start_at: '2026-07-07',
@@ -164,8 +175,7 @@ export default function LuxdropLeaderboard() {
   // ---------------------------------------------------------------------------
   const computeTimeRemaining = (period: string) => {
     if (period !== 'current') return 'Ended'
-    // 6:00 PM Eastern on September 6 is 22:00 UTC while daylight time is active.
-    const end = new Date(CURRENT_END === '2026-09-06' ? '2026-09-06T22:00:00Z' : CURRENT_END + 'T23:59:59Z').getTime()
+    const end = new Date(CURRENT_END_ISO).getTime()
     const diff = end - Date.now()
     if (diff <= 0) return 'Ended'
     const days    = Math.floor(diff / 86400000)
