@@ -252,9 +252,13 @@ export default function RoobetLeaderboardClient({ initialPeriod }: { initialPeri
     .filter(
       (p) =>
         // Only genuinely completed weeks of this month: they must end within
-        // the current month AND end before the current live period started, so
-        // stale/overlapping archives never double-count the live week.
-        p.end_date.slice(0, 7) === currentMonthKey && p.end_date < CURRENT_START
+        // the current month AND end no later than the current live period
+        // started, so stale/overlapping archives never double-count the live
+        // week. Periods are contiguous (one ends exactly when the next
+        // begins at the same 6pm ET cutover), so an archived week's end_date
+        // legitimately equals the live period's start_date on the same day —
+        // use <= here, not <, or that week silently drops out of the total.
+        p.end_date.slice(0, 7) === currentMonthKey && p.end_date <= CURRENT_START
     )
     .reduce((sum, p) => sum + archivedPeriodTotal(p), 0)
   const monthlyTotal = totalWagered + archivedMonthTotal
