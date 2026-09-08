@@ -26,13 +26,13 @@ const CURRENT_END = '2026-10-06'
 // the countdown timer below.
 const CURRENT_END_ISO = '2026-10-06T22:00:00Z'
 const CURRENT_DISPLAY = 'Sep 6 – Oct 6, 2026'
-const PRIZE_TOTAL = 2500
-const WAGER_GOAL = 65000
+const PRIZE_TOTAL = 1500
+const WAGER_GOAL = 45000
 
-// Top 10 prize breakdown — $2,500 total pool
-// 1st $1,000 · 2nd $500 · 3rd $300 · 4th $175 · 5th $125
-// 6th $100 · 7th $100 · 8th $75 · 9th $75 · 10th $50
-const REWARDS: number[] = [1000, 500, 300, 175, 125, 100, 100, 75, 75, 50]
+// Top 10 prize breakdown — $1,500 total pool
+// 1st $600 · 2nd $300 · 3rd $180 · 4th $105 · 5th $75
+// 6th $60 · 7th $60 · 8th $45 · 9th $45 · 10th $30
+const REWARDS: number[] = [600, 300, 180, 105, 75, 60, 60, 45, 45, 30]
 const REWARD_LABELS: (string | null)[] = REWARDS.map(
   (amt) => `$${amt.toLocaleString()}`
 )
