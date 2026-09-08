@@ -27,7 +27,7 @@ const CURRENT_END = '2026-10-06'
 const CURRENT_END_ISO = '2026-10-06T22:00:00Z'
 const CURRENT_DISPLAY = 'Sep 6 – Oct 6, 2026'
 const PRIZE_TOTAL = 1500
-const WAGER_GOAL = 65000
+const WAGER_GOAL = 45000
 
 // Top 10 prize breakdown — $1,500 total pool
 // 1st $600 · 2nd $300 · 3rd $180 · 4th $105 · 5th $75
