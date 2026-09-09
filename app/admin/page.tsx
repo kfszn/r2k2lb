@@ -14,11 +14,12 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Settings, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3, Flame, Zap } from "lucide-react";
+import { Loader2, Trophy, Users, Settings, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3, Flame, Zap, Gift } from "lucide-react";
 import Link from "next/link";
 import { AdminNav, type AdminNavView } from "@/components/admin/admin-nav";
 import { Input } from "@/components/ui/input";
-import { ClaimsManager } from "@/components/admin/claims-manager";
+import { RewardClaimsManager } from "@/components/admin/reward-claims-manager";
+import { WagerMilestoneTiersManager } from "@/components/admin/wager-milestone-tiers-manager";
 import { WagerVerification } from "@/components/admin/wager-verification";
 import { AllTournamentsManager } from "@/components/admin/all-tournaments-manager";
 import { TournamentSelector } from "@/components/admin/tournament-selector";
@@ -36,7 +37,7 @@ import { RoobetChallengesManager } from "@/components/admin/roobet-challenges-ma
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards" | "challenges";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards" | "challenges" | "rewards";
 
 export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -132,6 +133,7 @@ export default function AdminPage() {
       { view: "raffle", title: "Weekly Raffle", description: "Configure raffle settings and select winners", icon: <Ticket className="h-6 w-6" /> },
       { view: "shop", title: "Rewards Shop", description: "Manage shop items, fulfill redemptions, and configure point settings", icon: <Settings className="h-6 w-6" /> },
       { view: "challenges", title: "Challenges", description: "Create and manage Roobet challenges — add images, set prize amounts, and toggle visibility", icon: <Flame className="h-6 w-6" /> },
+      { view: "rewards", title: "Rewards", description: "Track wager milestones, lossback, tournament, deposit bonus, giveaway, and raffle claims for Roobet and LuxDrop players", icon: <Gift className="h-6 w-6" /> },
       { view: "users", title: "Users", description: "Manage accounts, R2Koin balances, platform links, conversion rates, and email verification", icon: <Users className="h-6 w-6" /> },
       { view: "games", title: "Games Analytics", description: "View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko", icon: <BarChart3 className="h-6 w-6" /> },
       { view: "leaderboards", title: "Leaderboard Manager", description: "Create and manage leaderboards for Roobet and Kick with custom prize structures", icon: <ListOrdered className="h-6 w-6" /> },
@@ -325,6 +327,24 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold tracking-tight mb-6">Challenges</h1>
           <div className="space-y-8">
             <RoobetChallengesManager />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Rewards View
+  if (currentView === "rewards") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <AdminNav current="rewards" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Rewards</h1>
+          <div className="space-y-8">
+            <RewardClaimsManager />
+            <WagerMilestoneTiersManager />
           </div>
         </div>
       </main>

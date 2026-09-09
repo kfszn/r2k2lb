@@ -12,6 +12,7 @@ import {
   ListOrdered,
   LineChart,
   Flame,
+  Gift,
 } from 'lucide-react'
 
 export type AdminNavView =
@@ -25,6 +26,7 @@ export type AdminNavView =
   | 'games'
   | 'leaderboards'
   | 'website'
+  | 'rewards'
 
 const NAV_ITEMS: { view: AdminNavView; label: string; icon: React.ReactNode }[] = [
   { view: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -33,6 +35,7 @@ const NAV_ITEMS: { view: AdminNavView; label: string; icon: React.ReactNode }[] 
   { view: 'raffle', label: 'Raffle', icon: <Ticket className="h-4 w-4" /> },
   { view: 'shop', label: 'Shop', icon: <Settings className="h-4 w-4" /> },
   { view: 'challenges', label: 'Challenges', icon: <Flame className="h-4 w-4" /> },
+  { view: 'rewards', label: 'Rewards', icon: <Gift className="h-4 w-4" /> },
   { view: 'users', label: 'Users', icon: <Users className="h-4 w-4" /> },
   { view: 'games', label: 'Games', icon: <BarChart3 className="h-4 w-4" /> },
   { view: 'leaderboards', label: 'Leaderboards', icon: <ListOrdered className="h-4 w-4" /> },

@@ -14,17 +14,18 @@ import {
   TableHeader,
   PrizePool,
 } from '@/components/leaderboard/leaderboard-ui'
+import { CURRENT_LUXDROP_PERIOD } from '@/lib/luxdrop/period'
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 // Query start pulled back 1 day to make sure wagers near the boundary/timezone
 // edge are captured. Displayed range stays the actual start day.
-const CURRENT_START = '2026-09-05'
-const CURRENT_END = '2026-10-06'
-// Exact UTC instant for the 6:00 PM ET cutover that ends this period — drives
-// the countdown timer below.
-const CURRENT_END_ISO = '2026-10-06T22:00:00Z'
+// Period boundaries live in lib/luxdrop/period.ts (shared with the account
+// rewards API's milestone-eligibility calculation) so they never drift apart.
+const CURRENT_START = CURRENT_LUXDROP_PERIOD.startDate
+const CURRENT_END = CURRENT_LUXDROP_PERIOD.endDate
+const CURRENT_END_ISO = CURRENT_LUXDROP_PERIOD.endISO
 const CURRENT_DISPLAY = 'Sep 6 – Oct 6, 2026'
 const PRIZE_TOTAL = 1500
 const WAGER_GOAL = 45000
