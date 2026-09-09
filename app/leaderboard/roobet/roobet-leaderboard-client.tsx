@@ -489,7 +489,7 @@ export default function RoobetLeaderboardClient({ initialPeriod }: { initialPeri
                     </li>
                   </ul>
                   <p className="text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-4">
-                    Only <strong className="text-foreground">Slots</strong> and <strong className="text-foreground">House Games</strong> (Probability Fair) count. <strong className="text-foreground">Dice is excluded.</strong>
+                    Only <strong className="text-foreground">Slots</strong> and <strong className="text-foreground">House Games</strong> (Probability Fair) count.
                   </p>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Any abuse found by <strong className="text-foreground">R2K2</strong> or Roobet may result in your prize being forfeit.
