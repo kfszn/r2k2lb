@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
-import { type MilestoneTier } from '@/components/milestones/milestone-tier-row'
 import { MilestoneTracker } from '@/components/milestones/milestone-tracker'
+import { getMilestoneTiers } from '@/lib/milestones/tiers'
 import { TrendingUp } from 'lucide-react'
 
 export const metadata: Metadata = generatePageMetadata('perksRoobetWagerRewards')
@@ -14,21 +14,14 @@ const SIGNUP_URL = 'https://roobet.com/?ref=R2K2'
 const DISCORD_URL = 'https://discord.gg/DwpA8vaGPj'
 const SPONSOR = 'Roobet'
 
-// $50 per $10,000 weighted wagered — cumulative payout = weightedWager / 10,000 * 50
-// claimable = this tier's payout minus the previous tier's payout (delta paid out)
-// Rewards do not stack — the difference from your last claim is what gets paid.
-const TIERS: MilestoneTier[] = [
-  { tier: 1, label: 'Beginner I',   wager:     10_000, payout:     50, claimable:     50 },
-  { tier: 2, label: 'Beginner II',  wager:     25_000, payout:    125, claimable:     75 },
-  { tier: 3, label: 'Beginner III', wager:     50_000, payout:    250, claimable:    125 },
-  { tier: 4, label: 'Casual I',     wager:    100_000, payout:    500, claimable:    250 },
-  { tier: 5, label: 'Casual II',    wager:    150_000, payout:    750, claimable:    250 },
-  { tier: 6, label: 'Roller I',     wager:    200_000, payout:  1_000, claimable:    250 },
-  { tier: 7, label: 'Whale I',      wager:    500_000, payout:  2_500, claimable:  1_500 },
-  { tier: 8, label: 'Legend',       wager:  1_000_000, payout:  5_000, claimable:  2_500 },
-]
+export default async function RoobetWagerRewardsPage() {
+  // Tiers are admin-editable — see wager_milestone_tiers in /admin's Rewards
+  // tab. $50 per $10,000 weighted wagered is the current default shape;
+  // claimable = this tier's payout minus the previous tier's payout (delta
+  // paid out). Rewards do not stack — the difference from your last claim
+  // is what gets paid.
+  const TIERS = await getMilestoneTiers('roobet')
 
-export default function RoobetWagerRewardsPage() {
   return (
     <div className="min-h-screen bg-background">
       <GiveawayCounter />

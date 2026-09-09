@@ -37,6 +37,8 @@ interface PlatformProgress {
   nextTier: Tier | null
   amountToNextTier: number | null
   periodLabel: string
+  currentPeriodReward: number
+  allTimeReward: number
 }
 
 interface RewardsData {
@@ -83,7 +85,7 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
     )
   }
 
-  const { wagerTotal, currentTier, nextTier, amountToNextTier, periodLabel } = progress
+  const { wagerTotal, currentTier, nextTier, amountToNextTier, periodLabel, currentPeriodReward, allTimeReward } = progress
   const rangeStart = currentTier?.wager_threshold ?? 0
   const rangeEnd = nextTier?.wager_threshold ?? Math.max(rangeStart, wagerTotal)
   const pct = rangeEnd > rangeStart ? Math.min(100, ((wagerTotal - rangeStart) / (rangeEnd - rangeStart)) * 100) : 100
@@ -115,6 +117,17 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
       ) : (
         <p className="text-xs text-muted-foreground">All available tiers unlocked for this period.</p>
       )}
+
+      <div className="grid grid-cols-2 gap-2 border-t border-border/30 pt-3">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">This Period</p>
+          <p className="text-sm font-semibold text-foreground">{formatMoney(currentPeriodReward)}</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">All Time</p>
+          <p className="text-sm font-semibold text-foreground">{formatMoney(allTimeReward)}</p>
+        </div>
+      </div>
     </div>
   )
 }

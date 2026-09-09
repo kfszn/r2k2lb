@@ -27,6 +27,7 @@ interface Tier {
   tier_name: string
   wager_threshold: number
   reward_amount: number
+  claimable_amount: number | null
   sort_order: number
   active: boolean
 }
@@ -36,6 +37,7 @@ const EMPTY_FORM = {
   tier_name: '',
   wager_threshold: 0,
   reward_amount: 0,
+  claimable_amount: null as number | null,
   sort_order: 0,
   active: true,
 }
@@ -65,6 +67,7 @@ export function WagerMilestoneTiersManager() {
       tier_name: t.tier_name,
       wager_threshold: t.wager_threshold,
       reward_amount: t.reward_amount,
+      claimable_amount: t.claimable_amount,
       sort_order: t.sort_order,
       active: t.active,
     })
@@ -202,6 +205,24 @@ export function WagerMilestoneTiersManager() {
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <Label>Claimable Delta ($) — optional</Label>
+              <Input
+                type="number"
+                placeholder="Leave blank to hide the +$X claim line"
+                value={form.claimable_amount ?? ''}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    claimable_amount: e.target.value === '' ? null : parseFloat(e.target.value) || 0,
+                  }))
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Shown as &ldquo;+$X claim&rdquo; on this tier&apos;s row (this tier&apos;s reward minus the previous tier&apos;s reward). Roobet uses this; LuxDrop leaves it blank.
+              </p>
+            </div>
+
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-3">
                 <Switch
@@ -260,6 +281,9 @@ export function WagerMilestoneTiersManager() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     ${t.wager_threshold.toLocaleString()} wagered → ${t.reward_amount.toLocaleString()} reward
+                    {t.claimable_amount != null && (
+                      <span className="text-emerald-500"> (+${t.claimable_amount.toLocaleString()} claim)</span>
+                    )}
                   </p>
                 </div>
 
