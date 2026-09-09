@@ -138,6 +138,34 @@ export function getCurrentRoobetPeriod(now: Date = new Date()): RoobetPeriod {
   return period
 }
 
+/**
+ * The UTC instant the current calendar month's wager tracking begins — the
+ * start of the earliest weekly period whose end date falls in the same
+ * month as the currently live period (mirrors the "attribute a week to the
+ * month it pays out in" rule used by the leaderboard's monthly goal). Used
+ * to compute a single player's monthly wager total for milestone
+ * eligibility, the same way the leaderboard sums monthly totals across
+ * archived weeks.
+ */
+export function getCurrentRoobetMonthStartISO(now: Date = new Date()): string {
+  let period = getCurrentRoobetPeriod(now)
+  const monthKey = period.endDate.slice(0, 7)
+
+  for (;;) {
+    // Walk one period backward. The period immediately before `period`
+    // ends exactly when `period` starts (contiguous 6pm-ET cutovers).
+    const prevEndDate = period.startDate
+    if (prevEndDate.slice(0, 7) !== monthKey) return period.startISO
+    // Reconstruct the previous period from its end date.
+    const prevStartDate = addDaysToDateString(prevEndDate, -ROOBET_PERIOD_DAYS)
+    const prevStartISO =
+      prevStartDate === FIRST_PERIOD_START_DATE_ET ? FIRST_PERIOD_START_ISO : nyWallClockToUtc(prevStartDate, ROOBET_CUTOFF_HOUR_ET).toISOString()
+    const prev = periodFromEndDate(prevStartISO, prevEndDate)
+    if (prev.endDate.slice(0, 7) !== monthKey) return period.startISO
+    period = prev
+  }
+}
+
 /** The most recently fully-completed period (end <= now), or null if the first period hasn't ended yet. */
 export function getPreviousRoobetPeriod(now: Date = new Date()): RoobetPeriod | null {
   let period = periodFromEndDate(FIRST_PERIOD_START_ISO, FIRST_PERIOD_END_DATE_ET)

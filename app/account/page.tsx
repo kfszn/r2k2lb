@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { R2KoinsCard } from '@/components/r2koins-card'
+import { RewardsPanel } from '@/components/account/rewards-panel'
 import { Copy, Check, ExternalLink, Zap, Loader2, Link2, Unlink, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 type Profile = {
@@ -281,6 +282,9 @@ function AccountPageContent() {
         {/* R2Koins */}
         <R2KoinsCard />
 
+        {/* Rewards */}
+        <RewardsPanel />
+
         {/* Connections */}
         <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
           <CardHeader>
@@ -393,7 +397,7 @@ function AccountPageContent() {
               </div>
             )}
 
-            {/* ── LuxDrop ────────────────────────────────────────────── */}
+            {/* ── LuxDrop ───────────────────────────────────────��────── */}
             <div className="py-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

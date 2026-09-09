@@ -102,6 +102,102 @@ export async function fetchRoobetUserList(): Promise<LuxdropEntry[] | null> {
 }
 
 /**
+ * Fetch a single platform's affiliate entry list for an explicit date range
+ * (as opposed to fetchLuxdropUserList/fetchRoobetUserList's fixed lifetime
+ * window). Used to compute a single user's wager total for a specific
+ * leaderboard period — e.g. the current month for milestone eligibility.
+ * Returns null on failure.
+ */
+async function fetchPlatformEntriesForRange(
+  platform: string,
+  startISO: string,
+  endISO: string
+): Promise<LuxdropEntry[] | null> {
+  try {
+    if (platform === "luxdrop") {
+      if (!LUXDROP_API_KEY) return null;
+      const upstream = new URL("https://api.luxdrop.com/external/affiliates");
+      upstream.searchParams.set("codes", LUXDROP_AFFILIATE_CODES);
+      upstream.searchParams.set("startDate", startISO);
+      upstream.searchParams.set("endDate", endISO);
+      const response = await fetch(upstream.toString(), {
+        headers: { "x-api-key": LUXDROP_API_KEY, Accept: "application/json" },
+        // @ts-ignore node-fetch agent typing
+        agent: proxyAgent,
+      });
+      if (!response.ok) return null;
+      const raw = await response.json().catch(() => null);
+      return normalizeAffiliateEntries(raw);
+    }
+
+    if (platform === "roobet") {
+      if (!ROOBET_API_KEY) return null;
+      const upstream = new URL(ROOBET_ENDPOINT);
+      upstream.searchParams.set("userId", ROOBET_AFFILIATE_USER_ID);
+      upstream.searchParams.set("startDate", startISO);
+      upstream.searchParams.set("endDate", endISO);
+      const response = await fetch(upstream.toString(), {
+        headers: { Authorization: `Bearer ${ROOBET_API_KEY}`, Accept: "application/json" },
+        // @ts-ignore node-fetch agent typing
+        agent: proxyAgent,
+      });
+      if (!response.ok) return null;
+      const raw = await response.json().catch(() => null);
+      return normalizeAffiliateEntries(raw);
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeAffiliateEntries(raw: unknown): LuxdropEntry[] | null {
+  if (Array.isArray(raw)) return raw as LuxdropEntry[];
+  if (raw && typeof raw === "object") {
+    const obj = raw as Record<string, unknown>;
+    for (const key of ["data", "affiliates", "results", "leaderboard", "entries"]) {
+      if (Array.isArray(obj[key])) return obj[key] as LuxdropEntry[];
+    }
+  }
+  return null;
+}
+
+/**
+ * Look up a single user's wager total in DOLLARS on a platform for an
+ * explicit date range (e.g. the current month for Roobet, the current
+ * leaderboard period for LuxDrop) — used for live milestone eligibility.
+ * Returns:
+ *  - number  → the wager total in dollars for that range
+ *  - "not_found" → API reached, user not in the affiliate list for that range
+ *  - null    → API failure (do not treat as zero)
+ */
+export async function fetchPlatformWagerRangeTotal(
+  platform: string,
+  platformUsername: string,
+  startISO: string,
+  endISO: string
+): Promise<number | "not_found" | null> {
+  const uname = platformUsername.toLowerCase();
+  const entries = await fetchPlatformEntriesForRange(platform, startISO, endISO);
+  if (entries === null) return null;
+  const entry = entries.find((e) => {
+    const name = e.username ?? e.name;
+    return name && name.toLowerCase() === uname;
+  });
+  if (!entry) return "not_found";
+
+  if (platform === "luxdrop") {
+    // LuxDrop wagered is in cents — convert to dollars
+    const cents = Number(entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0);
+    return cents / 100;
+  }
+
+  // Roobet's weighted-wager value is already in dollars (NOT cents)
+  return Number(entry.weightedWagered ?? entry.wagered ?? entry.wagerAmount ?? entry.totalWagered ?? 0) || 0;
+}
+
+/**
  * Look up a single user's lifetime wager total in DOLLARS on a platform.
  * Returns:
  *  - number  → the wager total in dollars
