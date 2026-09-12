@@ -157,6 +157,38 @@ export async function GET() {
     }
   }
 
+  // Aggregate totals across every claim ever recorded for this player's
+  // linked usernames — powers the "Rewards Summary" panel on the account page.
+  const aggregates = { earned: 0, paidOut: 0, claimable: 0, pending: 0 }
+  for (const claim of claims as { status: 'pending' | 'approved' | 'paid'; amount: number }[]) {
+    const amount = Number(claim.amount) || 0
+    aggregates.earned += amount
+    if (claim.status === 'paid') aggregates.paidOut += amount
+    else if (claim.status === 'approved') aggregates.claimable += amount
+    else if (claim.status === 'pending') aggregates.pending += amount
+  }
+
+  // All-time wager total across every platform the player has linked —
+  // reuses the same fetch helper as milestone progress, just without a
+  // start bound, so it sums every wager ever recorded for that username.
+  const allTimeWagerByPlatform: Record<'roobet' | 'luxdrop', number | null> = { roobet: null, luxdrop: null }
+  const allTimeWagerPromises: Promise<void>[] = []
+  if (roobetUsername) {
+    allTimeWagerPromises.push(
+      fetchPlatformWagerRangeTotal('roobet', roobetUsername, '2000-01-01T00:00:00.000Z', new Date().toISOString()).then((r) => {
+        allTimeWagerByPlatform.roobet = r === 'not_found' ? 0 : r
+      })
+    )
+  }
+  if (luxdropUsername) {
+    allTimeWagerPromises.push(
+      fetchPlatformWagerRangeTotal('luxdrop', luxdropUsername, '2000-01-01T00:00:00.000Z', new Date().toISOString()).then((r) => {
+        allTimeWagerByPlatform.luxdrop = r === 'not_found' ? 0 : r
+      })
+    )
+  }
+  await Promise.all(allTimeWagerPromises)
+
   const progress: { roobet: PlatformProgress | null; luxdrop: PlatformProgress | null } = {
     roobet: null,
     luxdrop: null,
@@ -179,5 +211,5 @@ export async function GET() {
   }
   await Promise.all(progressPromises)
 
-  return NextResponse.json({ claims, progress })
+  return NextResponse.json({ claims, progress, aggregates, allTimeWagerByPlatform })
 }

@@ -12,7 +12,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 interface Claim {
   id: string
   platform: 'roobet' | 'luxdrop'
-  category: 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle'
+  category: 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard'
   title: string
   amount: number
   status: 'pending' | 'approved' | 'paid'
@@ -54,6 +54,7 @@ const CATEGORY_LABELS: Record<Claim['category'], string> = {
   deposit_bonus: 'Deposit Bonus',
   giveaway: 'Giveaway',
   raffle: 'Raffle',
+  leaderboard: 'Leaderboard Prize',
 }
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as Claim['category'][]

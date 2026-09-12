@@ -11,7 +11,23 @@ import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { R2KoinsCard } from '@/components/r2koins-card'
 import { RewardsPanel } from '@/components/account/rewards-panel'
-import { Copy, Check, ExternalLink, Zap, Loader2, Link2, Unlink, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { RewardsSummary } from '@/components/account/rewards-summary'
+import { LeaderboardStats } from '@/components/account/leaderboard-stats'
+import { CollapsiblePanel } from '@/components/account/collapsible-panel'
+import {
+  Copy,
+  Check,
+  Zap,
+  Loader2,
+  Link2,
+  Unlink,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle2,
+  Settings,
+  Gift,
+  BarChart3,
+} from 'lucide-react'
 
 type Profile = {
   id: string
@@ -265,7 +281,8 @@ function AccountPageContent() {
           </CardContent>
         </Card>
 
-        {/* R2Koins Balance */}
+        {/* R2Koins Balance — disabled for now, keep code for future re-enable */}
+        {/*
         <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground font-semibold">R2Koins Balance</CardTitle>
@@ -278,14 +295,21 @@ function AccountPageContent() {
             <p className="text-xs text-muted-foreground mt-1">Spend R2Koins in the Shop to redeem exclusive rewards</p>
           </CardContent>
         </Card>
+        */}
 
-        {/* R2Koins */}
-        <R2KoinsCard />
+        {/* R2Koins — disabled for now, keep code for future re-enable */}
+        {/* <R2KoinsCard /> */}
 
-        {/* Rewards */}
-        <RewardsPanel />
+        {/* Live leaderboard stats — auto-settles into Rewards & Claims once each period is archived */}
+        <LeaderboardStats roobetUsername={profile.roobet_username} luxdropUsername={profile.luxdrop_username} />
 
-        {/* Connections */}
+        {/* Profile Settings — connected accounts + basic account info */}
+        <CollapsiblePanel
+          icon={<Settings className="h-4 w-4" />}
+          title="Profile Settings"
+          accent="amber"
+          triggerLabel="View & edit settings"
+        >
         <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground font-semibold">Connected Accounts</CardTitle>
@@ -547,7 +571,7 @@ function AccountPageContent() {
               )}
             </div>
 
-            {/* ── Discord ────────────────────────────────────────────── */}
+            {/* ── Discord ───────────────────────────────��────────────── */}
             <div className="py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -583,6 +607,35 @@ function AccountPageContent() {
             </div>
           </CardContent>
         </Card>
+        </CollapsiblePanel>
+
+        {/*
+          Room for future account panels in this same collapsible style —
+          e.g. Discord Roles progress and a Refer a Friend panel — once
+          those features exist. They'd slot in here between Profile
+          Settings and Rewards & Claims.
+        */}
+
+        {/* Rewards & Claims */}
+        <CollapsiblePanel
+          icon={<Gift className="h-4 w-4" />}
+          title="Rewards & Claims"
+          accent="green"
+          triggerLabel="View rewards & claims"
+          defaultOpen
+        >
+          <RewardsPanel />
+        </CollapsiblePanel>
+
+        {/* Rewards Summary */}
+        <CollapsiblePanel
+          icon={<BarChart3 className="h-4 w-4" />}
+          title="Rewards Summary"
+          accent="blue"
+          triggerLabel="View reward totals"
+        >
+          <RewardsSummary />
+        </CollapsiblePanel>
 
         {/* Actions */}
         <div className="flex gap-3 justify-between">
