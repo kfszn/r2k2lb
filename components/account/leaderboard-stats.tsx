@@ -6,6 +6,7 @@ import { getCurrentRoobetPeriod } from '@/lib/roobet/period'
 import { CURRENT_LUXDROP_PERIOD } from '@/lib/luxdrop/period'
 import { roobetPrizeForRank } from '@/lib/roobet/leaderboard-rewards'
 import { luxdropPrizeForRank } from '@/lib/luxdrop/leaderboard-rewards'
+import { normalizeRoobetEntries, findRoobetRank, getEntryWagered } from '@/lib/roobet/rank'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -40,18 +41,20 @@ function MiniStat({ label, value, icon, tone }: MiniStatProps) {
 
 function RoobetLeaderboardStats({ username }: { username: string }) {
   const period = getCurrentRoobetPeriod()
-  const { data } = useSWR<{ data?: { name?: string; username?: string; wagered?: number }[] }>(
-    `/api/leaderboard?start_at=${period.startDate}&end_at=${period.endDate}&fresh=0`,
+  // Fetch the same raw affiliate stats — and the same date window — that the
+  // public Roobet leaderboard page renders from, then rank with the shared
+  // lib/roobet/rank helpers. Deriving rank from a different (rounded) source
+  // than the public page previously caused this stat card to disagree with
+  // the actual leaderboard for players near a tie.
+  const { data } = useSWR(
+    `/api/roobet/affiliates?startDate=${encodeURIComponent(period.startISO)}&endDate=${encodeURIComponent(period.endISO)}`,
     fetcher
   )
 
-  const entries = data?.data ?? []
-  const sorted = [...entries].sort((a, b) => (b.wagered ?? 0) - (a.wagered ?? 0))
-  const rankIndex = sorted.findIndex((e) => (e.name ?? e.username ?? '').toLowerCase() === username.toLowerCase())
-  const entry = rankIndex >= 0 ? sorted[rankIndex] : null
-  // Roobet's "wagered" units here are penny-equivalent (see /api/leaderboard) — convert back to dollars.
-  const wagerDollars = entry ? (entry.wagered ?? 0) / 100 : 0
-  const rank = rankIndex >= 0 ? rankIndex + 1 : null
+  const entries = normalizeRoobetEntries(data)
+  const result = findRoobetRank(entries, username)
+  const wagerDollars = result ? getEntryWagered(result.entry) : 0
+  const rank = result?.rank ?? null
   const prize = rank ? roobetPrizeForRank(rank) : 0
 
   return (
