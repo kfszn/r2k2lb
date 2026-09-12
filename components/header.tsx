@@ -19,7 +19,6 @@ function Header() {
   const [open, setOpen] = useState(false)
   const [mobileLuxdrop, setMobileLuxdrop] = useState(false)
   const [mobileRoobet, setMobileRoobet] = useState(false)
-  const [mobilePoints, setMobilePoints] = useState(false)
   const [mobileKick, setMobileKick] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [kickAvatar, setKickAvatar] = useState<string | null>(null)
@@ -70,7 +69,6 @@ function Header() {
  setOpen(false)
  setMobileLuxdrop(false)
  setMobileRoobet(false)
- setMobilePoints(false)
  setMobileKick(false)
  }
 
@@ -190,64 +188,31 @@ function Header() {
             </div>
           </div>
 
-          {/* Kick Dropdown */}
+          {/* Socials Dropdown */}
           <div className="relative group">
-            <button className="text-sm font-medium hover:text-[#53fc18] transition-colors flex items-center gap-1 py-2">
-              Kick
+            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
+              Socials
               <ChevronDown className="h-4 w-4" />
             </button>
             <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[180px] z-50 py-1">
-              <Link
-                href="/leaderboard/kick"
-                className="block px-4 py-2 text-sm font-medium hover:text-[#53fc18] hover:bg-secondary/50 transition-colors"
+              <a
+                href="https://discord.gg/r2k2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
-                Chatter Leaderboard
-              </Link>
-              <div className="flex items-center justify-between px-4 py-2 cursor-default">
-                <span className="text-sm font-medium text-muted-foreground/50 select-none">50/50 Raffle</span>
-                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">Soon</span>
-              </div>
+                Discord
+              </a>
               <a
                 href="https://kick.com/r2ktwo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block px-4 py-2 text-sm font-medium hover:text-[#53fc18] hover:bg-secondary/50 transition-colors"
               >
-                Watch Live
+                Kick
               </a>
             </div>
           </div>
-
-          {/* R2Koins Dropdown */}
-          <div className="relative group">
-            <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 py-2">
-              R2Koins
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <div className="absolute left-0 top-full hidden group-hover:block bg-card border border-border/40 rounded-lg shadow-lg min-w-[180px] z-50 py-1">
-              <Link
-                href="/shop"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                Shop
-              </Link>
-              <div className="flex items-center justify-between px-4 py-2 cursor-default select-none">
-                <span className="text-sm font-medium text-muted-foreground/40">Games</span>
-                <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-wider">Soon</span>
-              </div>
-              <div className="h-px bg-border/20 mx-2 my-1" />
-              <Link
-                href="/how-it-works"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
-              >
-                How It Works
-              </Link>
-            </div>
-          </div>
-          
-          <a href="https://discord.gg/r2k2" target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary transition-colors">
-            Discord
-          </a>
 
           {isAdmin && (
             <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors text-yellow-600">
@@ -318,7 +283,7 @@ function Header() {
                 {/* Mobile Roobet */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileRoobet(!mobileRoobet); setMobileLuxdrop(false); setMobileKick(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileRoobet(!mobileRoobet); setMobileLuxdrop(false); setMobileKick(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     Roobet
@@ -354,7 +319,7 @@ function Header() {
                 {/* Mobile LuxDrop */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileRoobet(false); setMobileKick(false); setMobilePoints(false) }}
+                    onClick={() => { setMobileLuxdrop(!mobileLuxdrop); setMobileRoobet(false); setMobileKick(false) }}
                     className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
                     LuxDrop
@@ -385,24 +350,26 @@ function Header() {
                 </div>
 
 
-                {/* Mobile Kick */}
+                {/* Mobile Socials */}
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setMobileKick(!mobileKick); setMobileLuxdrop(false); setMobileRoobet(false); setMobilePoints(false) }}
-                    className="text-base font-medium hover:text-[#53fc18] transition-colors py-2 flex items-center justify-center gap-1 w-full"
+                    onClick={() => { setMobileKick(!mobileKick); setMobileLuxdrop(false); setMobileRoobet(false) }}
+                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
                   >
-                    Kick
+                    Socials
                     <ChevronDown className={`h-4 w-4 transition-transform ${mobileKick ? 'rotate-180' : ''}`} />
                   </button>
                   {mobileKick && (
                     <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
-                      <Link href="/leaderboard/kick" className="text-sm font-medium hover:text-[#53fc18] transition-colors py-2 text-center" onClick={closeMobile}>
-                        Chatter Leaderboard
-                      </Link>
-                      <div className="flex items-center justify-center gap-2 py-2 cursor-default select-none">
-                        <span className="text-sm font-medium text-muted-foreground/40">50/50 Raffle</span>
-                        <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-wider">Coming Soon</span>
-                      </div>
+                      <a
+                        href="https://discord.gg/r2k2"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium hover:text-primary transition-colors py-2 text-center"
+                        onClick={closeMobile}
+                      >
+                        Discord
+                      </a>
                       <a
                         href="https://kick.com/r2ktwo"
                         target="_blank"
@@ -410,46 +377,11 @@ function Header() {
                         className="text-sm font-medium hover:text-[#53fc18] transition-colors py-2 text-center"
                         onClick={closeMobile}
                       >
-                        Watch Live
+                        Kick
                       </a>
                     </div>
                   )}
                 </div>
-
-                {/* Mobile R2Koins */}
-                <div className="space-y-1">
-                  <button
-                    onClick={() => { setMobilePoints(!mobilePoints); setMobileLuxdrop(false); setMobileRoobet(false); setMobileKick(false) }}
-                    className="text-base font-medium hover:text-primary transition-colors py-2 flex items-center justify-center gap-1 w-full"
-                  >
-                    R2Koins
-                    <ChevronDown className={`h-4 w-4 transition-transform ${mobilePoints ? 'rotate-180' : ''}`} />
-                  </button>
-                  {mobilePoints && (
-                    <div className="flex flex-col gap-1 bg-secondary/30 rounded-lg p-3">
-                      <Link href="/shop" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        Shop
-                      </Link>
-                      <div className="flex items-center justify-center gap-2 py-2 cursor-default select-none">
-                        <span className="text-sm font-medium text-muted-foreground/40">Games</span>
-                        <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-wider">Soon</span>
-                      </div>
-                      <div className="h-px bg-border/20 my-1" />
-                      <Link href="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
-                        How It Works
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                <a 
-                  href="https://discord.gg/r2k2" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-base font-medium hover:text-primary transition-colors py-2 text-center"
-                >
-                  Discord
-                </a>
 
                 {isAdmin && (
                   <Link href="/admin" className="text-base font-medium hover:text-primary transition-colors py-2 text-center text-yellow-600" onClick={closeMobile}>

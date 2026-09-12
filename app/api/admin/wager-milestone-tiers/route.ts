@@ -24,7 +24,7 @@ export async function GET() {
 // POST — create a wager milestone tier
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const { platform, tier_name, wager_threshold, reward_amount, sort_order, active } = body
+  const { platform, tier_name, wager_threshold, reward_amount, claimable_amount, sort_order, active } = body
 
   if (!platform || !['roobet', 'luxdrop'].includes(platform)) {
     return NextResponse.json({ error: 'platform must be "roobet" or "luxdrop"' }, { status: 400 })
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
       tier_name: tier_name.trim(),
       wager_threshold,
       reward_amount,
+      claimable_amount: claimable_amount ?? null,
       sort_order: sort_order ?? 0,
       active: active ?? true,
     })

@@ -29,12 +29,17 @@ interface PlatformProgress {
   nextTier: TierRow | null
   amountToNextTier: number | null
   periodLabel: string
+  /** Cumulative reward unlocked this cycle (current tier's payout, or 0). */
+  currentPeriodReward: number
+  /** Sum of all paid/approved wager-milestone claims ever recorded for this platform. */
+  allTimeReward: number
 }
 
 async function buildPlatformProgress(
   platform: 'roobet' | 'luxdrop',
   username: string,
-  tiers: TierRow[]
+  tiers: TierRow[],
+  allTimeReward: number
 ): Promise<PlatformProgress> {
   let startISO: string
   let endISO: string
@@ -83,6 +88,8 @@ async function buildPlatformProgress(
     nextTier,
     amountToNextTier,
     periodLabel,
+    currentPeriodReward: currentTier?.reward_amount ?? 0,
+    allTimeReward,
   }
 }
 
@@ -141,6 +148,15 @@ export async function GET() {
     claims = claimsData ?? []
   }
 
+  // Sum every wager-milestone claim ever recorded per platform — this is
+  // the "all time" reward total shown next to the current cycle's progress.
+  const allTimeRewardByPlatform: Record<'roobet' | 'luxdrop', number> = { roobet: 0, luxdrop: 0 }
+  for (const claim of claims as { platform: 'roobet' | 'luxdrop'; category: string; amount: number }[]) {
+    if (claim.category === 'wager_milestone') {
+      allTimeRewardByPlatform[claim.platform] += Number(claim.amount) || 0
+    }
+  }
+
   const progress: { roobet: PlatformProgress | null; luxdrop: PlatformProgress | null } = {
     roobet: null,
     luxdrop: null,
@@ -149,14 +165,14 @@ export async function GET() {
   const progressPromises: Promise<void>[] = []
   if (roobetUsername) {
     progressPromises.push(
-      buildPlatformProgress('roobet', roobetUsername, tiers).then((p) => {
+      buildPlatformProgress('roobet', roobetUsername, tiers, allTimeRewardByPlatform.roobet).then((p) => {
         progress.roobet = p
       })
     )
   }
   if (luxdropUsername) {
     progressPromises.push(
-      buildPlatformProgress('luxdrop', luxdropUsername, tiers).then((p) => {
+      buildPlatformProgress('luxdrop', luxdropUsername, tiers, allTimeRewardByPlatform.luxdrop).then((p) => {
         progress.luxdrop = p
       })
     )
