@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const platform = searchParams.get('platform') || 'roobet';
+    const raffleCategory = searchParams.get('raffleCategory') || 'wager';
     const limit = parseInt(searchParams.get('limit') || '50');
 
     const supabase = createServiceClient();
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
       .from('raffle_winners')
       .select('*')
       .eq('platform', platform)
+      .eq('raffle_category', raffleCategory)
       .order('won_date', { ascending: false })
       .limit(limit);
 
@@ -39,7 +41,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { platform, username, prizeAmount, weekStart } = body;
+    const { platform, username, prizeAmount, weekStart, raffleCategory } = body;
 
     if (!platform || !username || !prizeAmount) {
       return NextResponse.json(
@@ -58,7 +60,8 @@ export async function POST(request: NextRequest) {
         prize_amount: prizeAmount,
         // week_start is NOT NULL in the DB — fall back to today's date
         week_start: weekStart || new Date().toISOString().slice(0, 10),
-        raffle_type: 'Weekly',
+        raffle_type: raffleCategory === 'multiplier' ? 'Highest Multi' : 'Weekly',
+        raffle_category: raffleCategory || 'wager',
         won_date: new Date().toISOString(),
       })
       .select();

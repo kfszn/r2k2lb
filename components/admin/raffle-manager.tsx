@@ -9,25 +9,43 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RaffleSpinner } from '@/components/raffle/raffle-spinner';
 import { createClient } from '@/lib/supabase/client';
-import { assignTicketNumbers, pickWinningTicket, type TicketUser } from '@/lib/raffle/tickets';
+import {
+  assignTicketNumbers,
+  pickWinningTicket,
+  parseMultiplierEligibility,
+  type TicketUser,
+} from '@/lib/raffle/tickets';
+
+type RaffleType = 'wager' | 'multiplier';
 
 interface RaffleConfig {
   platform: string;
+  raffle_type: RaffleType;
   min_wager: number;
   prize_amount: number;
   max_entries: number;
   tickets_per_wager: number;
+  multiplier_threshold: number;
+  min_bet_size: number;
   start_date: string;
   end_date: string;
 }
 
-function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet' }) {
+function RaffleAdminTab({
+  platform,
+  raffleType = 'wager',
+}: {
+  platform: 'acebet' | 'luxdrop' | 'roobet';
+  raffleType?: RaffleType;
+}) {
   const [config, setConfig] = useState<RaffleConfig | null>(null);
   const [configForm, setConfigForm] = useState({
     min_wager: 50,
     prize_amount: 1000,
     max_entries: 10000,
     tickets_per_wager: 2500,
+    multiplier_threshold: 200,
+    min_bet_size: 1,
     start_date: '2026-02-14',
     end_date: '2026-02-21',
   });
@@ -43,21 +61,27 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
   const [spinComplete, setSpinComplete] = useState(false);
   const [spinKey, setSpinKey] = useState(0); // increment to re-trigger spin animation
 
-  // Realtime broadcast channel — pushes the live draw to the public /raffle pages
+  const isMultiplier = raffleType === 'multiplier';
+
+  // Realtime broadcast channel — pushes the live draw to the public /raffle pages.
+  // Keep the wager channel name unchanged for backwards compatibility; give the
+  // multiplier raffle its own channel so the two draws never cross-broadcast.
+  const channelName =
+    raffleType === 'wager' ? `raffle-draw-${platform}` : `raffle-draw-${platform}-${raffleType}`;
   const channelRef = useRef<RealtimeChannel | null>(null);
   const [isLiveConnected, setIsLiveConnected] = useState(false);
 
   useEffect(() => {
     fetchConfig();
-  }, [platform]);
+  }, [platform, raffleType]);
 
   // Open a broadcast channel for this platform so viewers on /raffle see the draw live
   useEffect(() => {
     const supabase = createClient();
-    const channel = supabase.channel(`raffle-draw-${platform}`, {
+    const channel = supabase.channel(channelName, {
       config: { broadcast: { self: false } },
     });
-    channel.subscribe((status) => {
+    channel.subscribe((status: string) => {
       setIsLiveConnected(status === 'SUBSCRIBED');
     });
     channelRef.current = channel;
@@ -65,7 +89,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
       supabase.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [platform]);
+  }, [channelName]);
 
   useEffect(() => {
     if (config) fetchEligible();
@@ -73,7 +97,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch(`/api/raffle/config?platform=${platform}`);
+      const res = await fetch(`/api/raffle/config?platform=${platform}&raffleType=${raffleType}`);
       if (!res.ok) return;
       const data = await res.json();
       setConfig(data);
@@ -82,6 +106,8 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
         prize_amount: data.prize_amount || 1000,
         max_entries: data.max_entries || 10000,
         tickets_per_wager: data.tickets_per_wager || 2500,
+        multiplier_threshold: data.multiplier_threshold || 200,
+        min_bet_size: data.min_bet_size || 1,
         start_date: data.start_date || '2026-02-14',
         end_date: data.end_date || '2026-02-21',
       });
@@ -94,32 +120,14 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
     if (!config) return;
     setIsLoadingEntries(true);
     try {
-      // Build per-user ticket counts: 1 ticket per tickets_per_wager wagered
-      const ticketsPerWager = config.tickets_per_wager || 2500;
       const users: TicketUser[] = [];
 
-      if (platform === 'acebet') {
-        const lbRes = await fetch(
-          `/api/leaderboard?start_at=${config.start_date}&end_at=${config.end_date}`,
-        );
-        if (lbRes.ok) {
-          const lbData = await lbRes.json();
-          (lbData.data || []).forEach((u: any) => {
-            const wagerAmount = (u.wagered || 0) / 100;
-            if (wagerAmount < config.min_wager) return;
-            const name = u.name || '';
-            if (!name) return;
-            users.push({
-              username: name,
-              wager_amount: wagerAmount,
-              tickets: Math.max(1, Math.floor(wagerAmount / ticketsPerWager)),
-            });
-          });
-        }
-      } else {
-        // LuxDrop & Roobet affiliate APIs return wager amounts already in dollars
+      if (isMultiplier) {
+        // Highest Multi Raffle: qualify once the player's highest single-bet
+        // multiplier during the period clears the threshold, with the
+        // qualifying bet's stake meeting the min bet size.
         const res = await fetch(
-          `/api/${platform}/affiliates?startDate=${config.start_date}&endDate=${config.end_date}`,
+          `/api/roobet/affiliates?startDate=${config.start_date}&endDate=${config.end_date}`,
           { cache: 'no-store' },
         );
         if (res.ok) {
@@ -127,17 +135,59 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
           const rows = Array.isArray(json)
             ? json
             : json?.users || json?.data || json?.affiliates || json?.results || json?.leaderboard || json?.entries || [];
-          rows.forEach((u: any) => {
-            const wagerAmount = u.wager ?? u.wagered ?? u.wagerAmount ?? u.totalWagered ?? 0;
-            if (wagerAmount < config.min_wager) return;
-            const name = u.username ?? u.name ?? '';
-            if (!name) return;
-            users.push({
-              username: name,
-              wager_amount: wagerAmount,
-              tickets: Math.max(1, Math.floor(wagerAmount / ticketsPerWager)),
+          users.push(
+            ...parseMultiplierEligibility(
+              rows,
+              config.multiplier_threshold || 200,
+              config.min_bet_size || 1,
+            ),
+          );
+        }
+      } else {
+        // Build per-user ticket counts: 1 ticket per tickets_per_wager wagered
+        const ticketsPerWager = config.tickets_per_wager || 2500;
+
+        if (platform === 'acebet') {
+          const lbRes = await fetch(
+            `/api/leaderboard?start_at=${config.start_date}&end_at=${config.end_date}`,
+          );
+          if (lbRes.ok) {
+            const lbData = await lbRes.json();
+            (lbData.data || []).forEach((u: any) => {
+              const wagerAmount = (u.wagered || 0) / 100;
+              if (wagerAmount < config.min_wager) return;
+              const name = u.name || '';
+              if (!name) return;
+              users.push({
+                username: name,
+                wager_amount: wagerAmount,
+                tickets: Math.max(1, Math.floor(wagerAmount / ticketsPerWager)),
+              });
             });
-          });
+          }
+        } else {
+          // LuxDrop & Roobet affiliate APIs return wager amounts already in dollars
+          const res = await fetch(
+            `/api/${platform}/affiliates?startDate=${config.start_date}&endDate=${config.end_date}`,
+            { cache: 'no-store' },
+          );
+          if (res.ok) {
+            const json = await res.json();
+            const rows = Array.isArray(json)
+              ? json
+              : json?.users || json?.data || json?.affiliates || json?.results || json?.leaderboard || json?.entries || [];
+            rows.forEach((u: any) => {
+              const wagerAmount = u.wager ?? u.wagered ?? u.wagerAmount ?? u.totalWagered ?? 0;
+              if (wagerAmount < config.min_wager) return;
+              const name = u.username ?? u.name ?? '';
+              if (!name) return;
+              users.push({
+                username: name,
+                wager_amount: wagerAmount,
+                tickets: Math.max(1, Math.floor(wagerAmount / ticketsPerWager)),
+              });
+            });
+          }
         }
       }
       setEligible(users);
@@ -146,7 +196,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
     } finally {
       setIsLoadingEntries(false);
     }
-  }, [config, platform]);
+  }, [config, platform, isMultiplier]);
 
   const handleSaveConfig = async () => {
     setIsSavingConfig(true);
@@ -154,7 +204,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
       const response = await fetch('/api/raffle/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ platform, ...configForm }),
+        body: JSON.stringify({ platform, raffle_type: raffleType, ...configForm }),
       });
       if (response.ok) {
         const data = await response.json();
@@ -215,6 +265,7 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
           username: selectedWinner,
           prizeAmount: config.prize_amount,
           weekStart: config.start_date,
+          raffleCategory: raffleType,
         }),
       });
       const data = await response.json();
@@ -259,16 +310,61 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Minimum Wager ($)</label>
-              <Input
-                type="number"
-                value={configForm.min_wager || 0}
-                onChange={(e) =>
-                  setConfigForm({ ...configForm, min_wager: parseFloat(e.target.value) || 0 })
-                }
-              />
-            </div>
+            {isMultiplier ? (
+              <>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Multiplier Threshold (x)</label>
+                  <Input
+                    type="number"
+                    value={configForm.multiplier_threshold || 0}
+                    onChange={(e) =>
+                      setConfigForm({
+                        ...configForm,
+                        multiplier_threshold: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Min Bet Size ($)</label>
+                  <Input
+                    type="number"
+                    value={configForm.min_bet_size || 0}
+                    onChange={(e) =>
+                      setConfigForm({ ...configForm, min_bet_size: parseFloat(e.target.value) || 0 })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Players qualify once their highest multiplier hits the threshold. Tickets = floor(highest
+                    multiplier &divide; threshold).
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Minimum Wager ($)</label>
+                  <Input
+                    type="number"
+                    value={configForm.min_wager || 0}
+                    onChange={(e) =>
+                      setConfigForm({ ...configForm, min_wager: parseFloat(e.target.value) || 0 })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Wager per Ticket ($)</label>
+                  <Input
+                    type="number"
+                    value={configForm.tickets_per_wager || 2500}
+                    onChange={(e) =>
+                      setConfigForm({ ...configForm, tickets_per_wager: parseFloat(e.target.value) || 2500 })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">1 ticket earned per ${(configForm.tickets_per_wager || 2500).toLocaleString()} wagered</p>
+                </div>
+              </>
+            )}
             <div>
               <label className="text-sm font-medium mb-2 block">Prize Amount ($)</label>
               <Input
@@ -278,17 +374,6 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
                   setConfigForm({ ...configForm, prize_amount: parseFloat(e.target.value) || 0 })
                 }
               />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Wager per Ticket ($)</label>
-              <Input
-                type="number"
-                value={configForm.tickets_per_wager || 2500}
-                onChange={(e) =>
-                  setConfigForm({ ...configForm, tickets_per_wager: parseFloat(e.target.value) || 2500 })
-                }
-              />
-              <p className="text-xs text-muted-foreground mt-1">1 ticket earned per ${(configForm.tickets_per_wager || 2500).toLocaleString()} wagered</p>
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Max Entries</label>
@@ -344,13 +429,15 @@ function RaffleAdminTab({ platform }: { platform: 'acebet' | 'luxdrop' | 'roobet
         <CardContent>
           {eligible.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No eligible entries found. Users need to wager at least ${configForm.min_wager.toLocaleString()} to qualify. Each ${(configForm.tickets_per_wager || 2500).toLocaleString()} wagered earns 1 ticket.
+              {isMultiplier
+                ? `No eligible entries found. Users need a highest multiplier of at least ${configForm.multiplier_threshold}x (on a bet of at least $${configForm.min_bet_size}) to qualify.`
+                : `No eligible entries found. Users need to wager at least $${configForm.min_wager.toLocaleString()} to qualify. Each $${(configForm.tickets_per_wager || 2500).toLocaleString()} wagered earns 1 ticket.`}
             </p>
           ) : (
             <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
               {assignTicketNumbers(eligible).holders.map((h) => (
                 <Badge key={h.username} variant="secondary" className="text-xs font-mono">
-                  {h.username} &middot; {h.tickets.toLocaleString()} {h.tickets === 1 ? 'ticket' : 'tickets'}
+                  {h.username} &middot; {isMultiplier ? `${h.wager_amount.toLocaleString()}x` : `$${h.wager_amount.toLocaleString()}`} &middot; {h.tickets.toLocaleString()} {h.tickets === 1 ? 'ticket' : 'tickets'}
                 </Badge>
               ))}
             </div>
@@ -446,7 +533,18 @@ export function RaffleManager() {
           <TabsTrigger value="acebet">AceBet (legacy)</TabsTrigger>
         </TabsList>
         <TabsContent value="roobet">
-          <RaffleAdminTab platform="roobet" />
+          <Tabs defaultValue="wager" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="wager">Wager Raffle</TabsTrigger>
+              <TabsTrigger value="multiplier">Highest Multi Raffle</TabsTrigger>
+            </TabsList>
+            <TabsContent value="wager" className="mt-4">
+              <RaffleAdminTab platform="roobet" raffleType="wager" />
+            </TabsContent>
+            <TabsContent value="multiplier" className="mt-4">
+              <RaffleAdminTab platform="roobet" raffleType="multiplier" />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
         <TabsContent value="luxdrop">
           <RaffleAdminTab platform="luxdrop" />

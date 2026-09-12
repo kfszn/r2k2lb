@@ -12,6 +12,7 @@ function createServiceClient() {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const platform = searchParams.get('platform');
+  const raffleType = searchParams.get('raffleType') || 'wager';
 
   try {
     const supabase = await createClient();
@@ -21,14 +22,28 @@ export async function GET(request: NextRequest) {
         .from('raffle_config')
         .select('*')
         .eq('platform', platform)
+        .eq('raffle_type', raffleType)
         .maybeSingle();
 
       if (error) throw error;
-      
+
       // Return default config if not found
       if (!data) {
+        if (raffleType === 'multiplier') {
+          return NextResponse.json({
+            platform,
+            raffle_type: 'multiplier',
+            multiplier_threshold: 200,
+            min_bet_size: 1,
+            prize_amount: 1000,
+            max_entries: 10000,
+            start_date: '2026-02-14',
+            end_date: '2026-02-21',
+          });
+        }
         return NextResponse.json({
           platform,
+          raffle_type: 'wager',
           min_wager: 50,
           prize_amount: 1000,
           max_entries: 10000,
@@ -37,7 +52,7 @@ export async function GET(request: NextRequest) {
           end_date: '2026-02-21',
         });
       }
-      
+
       return NextResponse.json(data);
     } else {
       const { data, error } = await supabase
@@ -58,7 +73,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { platform, min_wager, prize_amount, max_entries, tickets_per_wager, start_date, end_date } = await request.json();
+    const {
+      platform,
+      raffle_type,
+      min_wager,
+      prize_amount,
+      max_entries,
+      tickets_per_wager,
+      multiplier_threshold,
+      min_bet_size,
+      start_date,
+      end_date,
+    } = await request.json();
 
     if (!platform) {
       return NextResponse.json(
@@ -67,20 +93,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const raffleType = raffle_type || 'wager';
     const supabase = createServiceClient();
 
     const { data, error } = await supabase
       .from('raffle_config')
       .upsert({
         platform,
+        raffle_type: raffleType,
         min_wager: min_wager || 50,
         prize_amount: prize_amount || 1000,
         max_entries: max_entries || 10000,
         tickets_per_wager: tickets_per_wager || 2500,
+        multiplier_threshold: multiplier_threshold || 200,
+        min_bet_size: min_bet_size || 1,
         start_date: start_date || '2026-02-14',
         end_date: end_date || '2026-02-21',
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'platform' })
+      }, { onConflict: 'platform,raffle_type' })
       .select()
       .single();
 
