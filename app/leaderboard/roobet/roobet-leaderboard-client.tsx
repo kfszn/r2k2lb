@@ -14,6 +14,13 @@ import {
   PrizePool,
 } from '@/components/leaderboard/leaderboard-ui'
 import type { RoobetPeriod } from '@/lib/roobet/period'
+import {
+  normalizeRoobetEntries,
+  getEntryName,
+  getEntryWagered,
+  sortByWeightedWager,
+  type RoobetLeaderboardEntry,
+} from '@/lib/roobet/rank'
 
 // ---------------------------------------------------------------------------
 // Config — rolling 7-day periods that cut over at exactly 6:00 PM Eastern.
@@ -43,20 +50,15 @@ function getPeriodConfig(period: RoobetPeriod) {
 }
 
 // ---------------------------------------------------------------------------
-// Types — normalize whatever shape the Roobet API returns
+// Types — normalize whatever shape the Roobet API returns. Name/wager
+// weighting and sort order come from lib/roobet/rank so this page and any
+// other place that ranks these same entries (e.g. the account page's live
+// stat card) can never disagree on placement.
 // ---------------------------------------------------------------------------
-interface RoobetEntry {
-  userId?: number | string
-  id?: number | string
-  username?: string
-  name?: string
+interface RoobetEntry extends RoobetLeaderboardEntry {
   avatar?: string | null
   rankLevel?: number
   rankLevelImage?: string | null
-  wagered?: number
-  weightedWagered?: number
-  wagerAmount?: number
-  totalWagered?: number
 }
 
 interface ArchivedPeriod {
@@ -70,30 +72,11 @@ interface ArchivedPeriod {
 }
 
 function normalizeEntries(raw: unknown): RoobetEntry[] {
-  if (Array.isArray(raw)) return raw as RoobetEntry[]
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>
-    for (const key of ['data', 'affiliates', 'results', 'leaderboard', 'entries']) {
-      if (Array.isArray(obj[key])) return obj[key] as RoobetEntry[]
-    }
-  }
-  return []
+  return normalizeRoobetEntries(raw) as RoobetEntry[]
 }
 
 function getEntryId(e: RoobetEntry): string {
   return String(e.userId ?? e.id ?? Math.random())
-}
-function getEntryName(e: RoobetEntry): string {
-  return e.username ?? e.name ?? 'Unknown'
-}
-function getEntryWagered(e: RoobetEntry): number {
-  const weighted = Number(e.weightedWagered)
-  if (Number.isFinite(weighted)) return weighted
-  return Number(e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0) || 0
-}
-
-function sortByWeightedWager(entries: RoobetEntry[]): RoobetEntry[] {
-  return [...entries].sort((a, b) => getEntryWagered(b) - getEntryWagered(a))
 }
 function getEntryAvatar(e: RoobetEntry): string | null {
   const rankImage = e.rankLevelImage ?? null
