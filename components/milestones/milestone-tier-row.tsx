@@ -13,6 +13,14 @@ export interface MilestoneTier {
   /** Amount claimable at this tier = payout minus previous tier's payout */
   claimable?: number
   payoutLabel?: string
+  /**
+   * Whether this tier has already been claimed this cycle, based on the
+   * player's approved/paid reward_claims history.
+   *  - undefined → not tracked (visitor not signed in / not linked)
+   *  - true      → already claimed — Claim Ticket button is replaced with a "Claimed" indicator
+   *  - false     → not yet claimed
+   */
+  claimed?: boolean
 }
 
 interface Palette {
@@ -129,6 +137,7 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
   const tracking = reached !== undefined
   const isUnlocked = reached === true
   const isLocked = reached === false
+  const isClaimed = tier.claimed === true
 
   return (
     <div
@@ -140,7 +149,7 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
       <span
         className={`absolute left-0 top-1/2 w-[3px] -translate-y-1/2 rounded-r-full transition-all duration-300 ${
           isUnlocked
-            ? 'h-[62%] bg-emerald-400 opacity-100'
+            ? `h-[62%] opacity-100 ${isClaimed ? 'bg-blue-400' : 'bg-emerald-400'}`
             : `h-0 ${palette.accent} opacity-0 group-hover:h-[62%] group-hover:opacity-100`
         }`}
         aria-hidden="true"
@@ -161,7 +170,12 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
           <p className="text-sm sm:text-base font-black uppercase tracking-wide text-foreground leading-tight">
             {tier.label}
           </p>
-          {isUnlocked ? (
+          {isClaimed ? (
+            <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-blue-400/30 bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-300">
+              <Check className="h-3 w-3" strokeWidth={3} />
+              Claimed
+            </span>
+          ) : isUnlocked ? (
             <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
               <Check className="h-3 w-3" strokeWidth={3} />
               Unlocked
@@ -213,7 +227,15 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
       {/* Claim Ticket — gradient blue pill with glow. Locked when tracking a
           user who hasn't reached this tier yet. Full-width on mobile, fixed-width on desktop. */}
       <div className="w-full shrink-0 sm:ml-2 sm:w-[130px]">
-        {isLocked ? (
+        {isClaimed ? (
+          <div
+            className="flex items-center justify-center gap-1.5 rounded-full border border-blue-400/25 bg-blue-500/10 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-blue-300 whitespace-nowrap sm:text-[12px]"
+            aria-label="Already claimed this cycle"
+          >
+            <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={3} />
+            Claimed
+          </div>
+        ) : isLocked ? (
           <div
             className="flex items-center justify-center gap-1.5 rounded-full border border-border/50 bg-muted/30 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap sm:text-[12px]"
             aria-label="Locked — milestone not yet reached"

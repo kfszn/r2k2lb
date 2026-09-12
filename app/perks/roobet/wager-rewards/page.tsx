@@ -6,6 +6,7 @@ import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { MilestoneTracker } from '@/components/milestones/milestone-tracker'
 import { getMilestoneTiers } from '@/lib/milestones/tiers'
+import { createClient } from '@/lib/supabase/server'
 import { TrendingUp } from 'lucide-react'
 
 export const metadata: Metadata = generatePageMetadata('perksRoobetWagerRewards')
@@ -15,12 +16,37 @@ const DISCORD_URL = 'https://discord.gg/DwpA8vaGPj'
 const SPONSOR = 'Roobet'
 
 export default async function RoobetWagerRewardsPage() {
+  // Resolve the signed-in player's linked Roobet username the same way
+  // /api/milestones/progress does — linked_accounts first, self-serve
+  // profiles.roobet_username fallback — so tier "Claimed" status lines up
+  // exactly with the account it tracks live progress for.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  let username: string | null = null
+  if (user) {
+    const { data: link } = await supabase
+      .from('linked_accounts')
+      .select('platform_username')
+      .eq('kick_user_id', user.id)
+      .eq('platform', 'roobet')
+      .maybeSingle()
+    username = link?.platform_username ?? null
+    if (!username) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('roobet_username')
+        .eq('id', user.id)
+        .maybeSingle()
+      username = profile?.roobet_username ?? null
+    }
+  }
+
   // Tiers are admin-editable — see wager_milestone_tiers in /admin's Rewards
   // tab. $50 per $10,000 weighted wagered is the current default shape;
   // claimable = this tier's payout minus the previous tier's payout (delta
   // paid out). Rewards do not stack — the difference from your last claim
   // is what gets paid.
-  const TIERS = await getMilestoneTiers('roobet')
+  const TIERS = await getMilestoneTiers('roobet', username, 'rewards')
 
   return (
     <div className="min-h-screen bg-background">
