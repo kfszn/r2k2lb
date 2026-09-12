@@ -1,6 +1,7 @@
 import { GiveawayCounter } from '@/components/giveaway-counter';
 import { Header } from '@/components/header';
 import { RaffleView } from '@/components/raffle/raffle-view';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function RafflePage() {
   return (
@@ -14,11 +15,22 @@ export default function RafflePage() {
             Weekly Raffle
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto text-balance">
-            Wager during the raffle period to automatically earn your entry. One winner takes all.
+            Two ways to win. Wager for automatic entries, or land a huge multiplier for bonus tickets.
           </p>
         </div>
 
-        <RaffleView platform="roobet" />
+        <Tabs defaultValue="wager" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="wager">Wager Raffle</TabsTrigger>
+            <TabsTrigger value="multiplier">Highest Multi Raffle</TabsTrigger>
+          </TabsList>
+          <TabsContent value="wager">
+            <RaffleView platform="roobet" raffleType="wager" />
+          </TabsContent>
+          <TabsContent value="multiplier">
+            <RaffleView platform="roobet" raffleType="multiplier" />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

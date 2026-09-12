@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { CountdownTimer } from '@/components/raffle/countdown-timer';
 import { RaffleSpinner } from '@/components/raffle/raffle-spinner';
 import { createClient } from '@/lib/supabase/client';
-import { assignTicketNumbers } from '@/lib/raffle/tickets';
-import { Trophy, Users, DollarSign, Clock, Ticket, Star, Radio } from 'lucide-react';
+import { assignTicketNumbers, parseMultiplierEligibility } from '@/lib/raffle/tickets';
+import { Trophy, Users, DollarSign, Clock, Ticket, Star, Radio, Zap } from 'lucide-react';
 
 export type RafflePlatform = 'acebet' | 'luxdrop' | 'roobet';
+export type RaffleType = 'wager' | 'multiplier';
 
 function maskName(name: string): string {
   if (!name) return '***';
@@ -22,6 +23,8 @@ interface RaffleConfig {
   prize_amount: number;
   max_entries: number;
   tickets_per_wager: number;
+  multiplier_threshold: number;
+  min_bet_size: number;
   start_date: string;
   end_date: string;
 }
@@ -62,12 +65,20 @@ function normalizeEntries(raw: unknown): any[] {
   return [];
 }
 
-export function RaffleView({ platform }: { platform: RafflePlatform }) {
+export function RaffleView({
+  platform,
+  raffleType = 'wager',
+}: {
+  platform: RafflePlatform;
+  raffleType?: RaffleType;
+}) {
   const [config, setConfig] = useState<RaffleConfig | null>(null);
   const [eligible, setEligible] = useState<EligibleUser[]>([]);
   const [winners, setWinners] = useState<Winner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPeriodWinner, setCurrentPeriodWinner] = useState<string | null>(null);
+
+  const isMultiplier = raffleType === 'multiplier';
 
   // Live-draw state (driven by admin broadcasts over Supabase Realtime)
   const [liveWinner, setLiveWinner] = useState<string | null>(null);
@@ -78,56 +89,74 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
 
   const fetchData = useCallback(async () => {
     try {
-      const configRes = await fetch(`/api/raffle/config?platform=${platform}`);
+      const configRes = await fetch(`/api/raffle/config?platform=${platform}&raffleType=${raffleType}`);
       if (!configRes.ok) throw new Error('Config fetch failed');
       const cfgData: RaffleConfig = await configRes.json();
       setConfig(cfgData);
 
       let users: EligibleUser[] = [];
-      const ticketsPerWager = cfgData.tickets_per_wager || 2500;
 
-      if (platform === 'acebet') {
-        const lbRes = await fetch(`/api/leaderboard?start_at=${cfgData.start_date}&end_at=${cfgData.end_date}`);
-        if (lbRes.ok) {
-          const lbData = await lbRes.json();
-          users = (lbData.data || [])
-            .filter((u: any) => ((u.wagered || 0) / 100) >= cfgData.min_wager)
-            .map((u: any) => {
-              const wager_amount = (u.wagered || 0) / 100;
-              return {
-                username: u.name || '',
-                wager_amount,
-                tickets: Math.max(1, Math.floor(wager_amount / ticketsPerWager)),
-              };
-            })
-            .filter((u: EligibleUser) => u.username);
-        }
-      } else {
-        // LuxDrop & Roobet return wager amounts already in dollars
+      if (isMultiplier) {
+        // Highest Multi Raffle (Roobet only): qualify on highest single-bet
+        // multiplier during the period, gated by that bet's own stake size.
         const res = await fetch(
-          `/api/${platform}/affiliates?startDate=${cfgData.start_date}&endDate=${cfgData.end_date}`,
+          `/api/roobet/affiliates?startDate=${cfgData.start_date}&endDate=${cfgData.end_date}`,
           { cache: 'no-store' },
         );
         if (res.ok) {
           const json = await res.json();
-          users = normalizeEntries(json)
-            .map((u: any) => {
-              const wager_amount = u.wager ?? u.wagered ?? u.wagerAmount ?? u.totalWagered ?? 0;
-              const username = u.username ?? u.name ?? '';
-              return {
-                username,
-                wager_amount,
-                tickets: Math.max(1, Math.floor(wager_amount / ticketsPerWager)),
-              };
-            })
-            .filter((u: EligibleUser) => u.username && u.wager_amount >= cfgData.min_wager);
+          users = parseMultiplierEligibility(
+            normalizeEntries(json),
+            cfgData.multiplier_threshold || 200,
+            cfgData.min_bet_size || 1,
+          );
+        }
+      } else {
+        const ticketsPerWager = cfgData.tickets_per_wager || 2500;
+
+        if (platform === 'acebet') {
+          const lbRes = await fetch(`/api/leaderboard?start_at=${cfgData.start_date}&end_at=${cfgData.end_date}`);
+          if (lbRes.ok) {
+            const lbData = await lbRes.json();
+            users = (lbData.data || [])
+              .filter((u: any) => ((u.wagered || 0) / 100) >= cfgData.min_wager)
+              .map((u: any) => {
+                const wager_amount = (u.wagered || 0) / 100;
+                return {
+                  username: u.name || '',
+                  wager_amount,
+                  tickets: Math.max(1, Math.floor(wager_amount / ticketsPerWager)),
+                };
+              })
+              .filter((u: EligibleUser) => u.username);
+          }
+        } else {
+          // LuxDrop & Roobet return wager amounts already in dollars
+          const res = await fetch(
+            `/api/${platform}/affiliates?startDate=${cfgData.start_date}&endDate=${cfgData.end_date}`,
+            { cache: 'no-store' },
+          );
+          if (res.ok) {
+            const json = await res.json();
+            users = normalizeEntries(json)
+              .map((u: any) => {
+                const wager_amount = u.wager ?? u.wagered ?? u.wagerAmount ?? u.totalWagered ?? 0;
+                const username = u.username ?? u.name ?? '';
+                return {
+                  username,
+                  wager_amount,
+                  tickets: Math.max(1, Math.floor(wager_amount / ticketsPerWager)),
+                };
+              })
+              .filter((u: EligibleUser) => u.username && u.wager_amount >= cfgData.min_wager);
+          }
         }
       }
 
       setEligible(users);
 
       try {
-        const winnersRes = await fetch(`/api/raffle/winners?platform=${platform}`);
+        const winnersRes = await fetch(`/api/raffle/winners?platform=${platform}&raffleCategory=${raffleType}`);
         if (winnersRes.ok) {
           const winnersData = await winnersRes.json();
           const newWinners: Winner[] = winnersData.winners || [];
@@ -144,7 +173,7 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
     } finally {
       setIsLoading(false);
     }
-  }, [platform]);
+  }, [platform, raffleType, isMultiplier]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -153,10 +182,13 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  // Subscribe to the admin's live-draw broadcasts for this platform.
+  // Subscribe to the admin's live-draw broadcasts for this platform + raffle type.
+  // Channel naming matches the admin panel exactly: the wager channel keeps its
+  // original name for backwards compatibility, multiplier gets its own suffix.
+  const channelName = raffleType === 'wager' ? `raffle-draw-${platform}` : `raffle-draw-${platform}-${raffleType}`;
   useEffect(() => {
     const supabase = createClient();
-    const channel: RealtimeChannel = supabase.channel(`raffle-draw-${platform}`, {
+    const channel: RealtimeChannel = supabase.channel(channelName, {
       config: { broadcast: { self: false } },
     });
 
@@ -228,7 +260,7 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-5">
               <Trophy className="w-4 h-4 text-primary" />
               <span className="text-xs uppercase tracking-widest text-primary font-semibold">
-                {PLATFORM_LABELS[platform]} Raffle
+                {PLATFORM_LABELS[platform]} {isMultiplier ? 'Highest Multi Raffle' : 'Raffle'}
               </span>
             </div>
             <p className="text-sm text-muted-foreground mb-2">Total Prize Pool</p>
@@ -248,20 +280,41 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
               <p className="text-2xl font-bold text-foreground">{eligible.length}</p>
               <p className="text-xs text-muted-foreground mt-0.5">Participants</p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-background/40 border border-border/40">
-              <div className="flex justify-center mb-2">
-                <DollarSign className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">${(config?.min_wager || 0).toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Min Wager</p>
-            </div>
-            <div className="text-center p-3 rounded-xl bg-background/40 border border-border/40">
-              <div className="flex justify-center mb-2">
-                <Ticket className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">${(config?.tickets_per_wager || 2500).toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Per Ticket</p>
-            </div>
+            {isMultiplier ? (
+              <>
+                <div className="text-center p-3 rounded-xl bg-background/40 border border-border/40">
+                  <div className="flex justify-center mb-2">
+                    <Zap className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{(config?.multiplier_threshold || 200).toLocaleString()}x</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Min Multiplier</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-background/40 border border-border/40">
+                  <div className="flex justify-center mb-2">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">${(config?.min_bet_size || 1).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Min Bet Size</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-center p-3 rounded-xl bg-background/40 border border-border/40">
+                  <div className="flex justify-center mb-2">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">${(config?.min_wager || 0).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Min Wager</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-background/40 border border-border/40">
+                  <div className="flex justify-center mb-2">
+                    <Ticket className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">${(config?.tickets_per_wager || 2500).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Per Ticket</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -343,7 +396,9 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
               </div>
               <p className="text-muted-foreground text-sm">No entries yet.</p>
               <p className="text-muted-foreground/60 text-xs mt-1">
-                Wager at least ${(config?.min_wager || 0).toLocaleString()} to enter. 1 ticket per ${(config?.tickets_per_wager || 2500).toLocaleString()} wagered.
+                {isMultiplier
+                  ? `Hit at least ${(config?.multiplier_threshold || 200).toLocaleString()}x on a bet of $${(config?.min_bet_size || 1).toLocaleString()}+ to enter. 1 ticket per full ${(config?.multiplier_threshold || 200).toLocaleString()}x cleared.`
+                  : `Wager at least $${(config?.min_wager || 0).toLocaleString()} to enter. 1 ticket per $${(config?.tickets_per_wager || 2500).toLocaleString()} wagered.`}
               </p>
             </div>
           ) : (
@@ -376,7 +431,9 @@ export function RaffleView({ platform }: { platform: RafflePlatform }) {
                           </p>
                           <span className="sr-only">Hidden participant</span>
                           <p className="text-xs text-muted-foreground">
-                            ${user.wager_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} wagered
+                            {isMultiplier
+                              ? `${user.wager_amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}x hit`
+                              : `$${user.wager_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} wagered`}
                           </p>
                         </div>
                       </div>
