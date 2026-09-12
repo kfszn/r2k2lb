@@ -4,6 +4,7 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Gift, Trophy, AlertCircle } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -119,13 +120,13 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
       )}
 
       <div className="grid grid-cols-2 gap-2 border-t border-border/30 pt-3">
-        <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">This Period</p>
-          <p className="text-sm font-semibold text-foreground">{formatMoney(currentPeriodReward)}</p>
+        <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">This Period Claimed</p>
+          <p className="text-lg font-bold text-foreground">{formatMoney(currentPeriodReward)}</p>
         </div>
-        <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">All Time</p>
-          <p className="text-sm font-semibold text-foreground">{formatMoney(allTimeReward)}</p>
+        <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">All Time Claimed</p>
+          <p className="text-lg font-bold text-foreground">{formatMoney(allTimeReward)}</p>
         </div>
       </div>
     </div>
@@ -168,34 +169,19 @@ export function RewardsPanel() {
         <div className="space-y-3 border-t border-border/30 pt-4">
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Claim History</p>
-          </div>
-
-          <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
-            <button
-              type="button"
-              onClick={() => setActiveCategory('all')}
-              className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
-                activeCategory === 'all'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-transparent text-muted-foreground border-border/40 hover:text-foreground'
-              }`}
-            >
-              All
-            </button>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setActiveCategory(cat)}
-                className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
-                  activeCategory === cat
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-transparent text-muted-foreground border-border/40 hover:text-foreground'
-                }`}
-              >
-                {CATEGORY_LABELS[cat]}
-              </button>
-            ))}
+            <Select value={activeCategory} onValueChange={(v) => setActiveCategory(v as Claim['category'] | 'all')}>
+              <SelectTrigger size="sm" className="w-[150px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {CATEGORY_LABELS[cat]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {filteredClaims.length === 0 ? (
