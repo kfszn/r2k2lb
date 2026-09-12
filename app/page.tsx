@@ -30,7 +30,7 @@ export default function HomePage() {
               Compete on Our <span className="text-primary">Leaderboards</span>
             </h1>
             <p className="text-2xl font-bold text-primary mt-2 animate-fade-in-up animation-delay-200">
-              $30,000+ in Monthly Rewards Including $20,000 Monthly Leaderboard
+              $5,000 Weekly &amp; $1,500 Monthly Leaderboards
             </p>
             <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto animate-fade-in-up animation-delay-300">
               Compete on the Roobet leaderboard, earn wager bonuses, loss back, and more with code R2K2.
@@ -73,7 +73,7 @@ export default function HomePage() {
                 href="/leaderboard/luxdrop"
                 signupUrl="https://luxdrop.com/r/R2K2"
                 rewards={[
-                  "$2,500 Monthly Leaderboard",
+                  "$1,500 Monthly Leaderboard",
                   "Top 10 Positions Paid",
                   "$1,000 First Place Prize",
                   "Compete with Code R2K2",
