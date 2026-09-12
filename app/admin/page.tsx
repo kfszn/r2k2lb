@@ -19,6 +19,7 @@ import Link from "next/link";
 import { AdminNav, type AdminNavView } from "@/components/admin/admin-nav";
 import { Input } from "@/components/ui/input";
 import { RewardClaimsManager } from "@/components/admin/reward-claims-manager";
+import { LuxdropFinalizeAction } from "@/components/admin/luxdrop-finalize-action";
 import { WagerMilestoneTiersManager } from "@/components/admin/wager-milestone-tiers-manager";
 import { WagerVerification } from "@/components/admin/wager-verification";
 import { AllTournamentsManager } from "@/components/admin/all-tournaments-manager";
@@ -344,6 +345,7 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold tracking-tight mb-6">Rewards</h1>
           <div className="space-y-8">
             <RewardClaimsManager />
+            <LuxdropFinalizeAction />
             <WagerMilestoneTiersManager />
           </div>
         </div>

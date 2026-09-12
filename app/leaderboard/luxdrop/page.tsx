@@ -15,6 +15,7 @@ import {
   PrizePool,
 } from '@/components/leaderboard/leaderboard-ui'
 import { CURRENT_LUXDROP_PERIOD } from '@/lib/luxdrop/period'
+import { LUXDROP_PRIZE_TOTAL, LUXDROP_REWARDS } from '@/lib/luxdrop/leaderboard-rewards'
 
 // ---------------------------------------------------------------------------
 // Config
@@ -27,13 +28,14 @@ const CURRENT_START = CURRENT_LUXDROP_PERIOD.startDate
 const CURRENT_END = CURRENT_LUXDROP_PERIOD.endDate
 const CURRENT_END_ISO = CURRENT_LUXDROP_PERIOD.endISO
 const CURRENT_DISPLAY = 'Sep 6 – Oct 6, 2026'
-const PRIZE_TOTAL = 1500
 const WAGER_GOAL = 45000
 
-// Top 10 prize breakdown — $1,500 total pool
-// 1st $600 · 2nd $300 · 3rd $180 · 4th $105 · 5th $75
-// 6th $60 · 7th $60 · 8th $45 · 9th $45 · 10th $30
-const REWARDS: number[] = [600, 300, 180, 105, 75, 60, 60, 45, 45, 30]
+// Top 10 prize breakdown for the current period — shared with
+// lib/luxdrop/leaderboard-rewards.ts so the account page's live
+// leaderboard stat card and the LuxDrop finalize-period admin action
+// always agree with what's shown here.
+const PRIZE_TOTAL = LUXDROP_PRIZE_TOTAL
+const REWARDS: number[] = LUXDROP_REWARDS
 const REWARD_LABELS: (string | null)[] = REWARDS.map(
   (amt) => `$${amt.toLocaleString()}`
 )

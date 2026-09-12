@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { addDaysToDateString, getFirstRoobetPeriod, getPreviousRoobetPeriod, ROOBET_PERIOD_DAYS } from "@/lib/roobet/period";
+import { ROOBET_PRIZE_TOTAL, ROOBET_REWARDS, roobetPrizeForRank } from "@/lib/roobet/leaderboard-rewards";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -16,9 +17,11 @@ function getSupabase() {
 // Eastern every ROOBET_PERIOD_DAYS days. Boundary math (including the DST
 // handling and the one-off first-period length) lives in lib/roobet/period —
 // this cron just asks it "what period most recently ended?" and archives
-// that period's exact-cutoff wager snapshot.
-const PRIZE_TOTAL = 5000;
-const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25];
+// that period's exact-cutoff wager snapshot. Prize amounts live in
+// lib/roobet/leaderboard-rewards so the live account-page stat card and this
+// archive/payout step never disagree on numbers.
+const PRIZE_TOTAL = ROOBET_PRIZE_TOTAL;
+const REWARDS: number[] = ROOBET_REWARDS;
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"];
 
@@ -119,11 +122,62 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
+  // Automatically post leaderboard prizes to reward_claims for every ranked
+  // player who has this platform linked, so payouts show up in their
+  // account's Rewards & Claims panel without any manual entry. Idempotent
+  // per (platform, username, category, period_label) — safe if this cron
+  // ever reruns for the same already-archived period.
+  const rankedEntries = (entries as { username?: string; name?: string; wagered?: number; wagerAmount?: number; totalWagered?: number }[])
+    .map((e) => ({
+      username: e.username ?? e.name ?? "",
+      wagered: e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0,
+    }))
+    .filter((e) => e.username)
+    .sort((a, b) => b.wagered - a.wagered)
+    .slice(0, REWARDS.length);
+
+  const claimErrors: string[] = [];
+  for (let i = 0; i < rankedEntries.length; i++) {
+    const rank = i + 1;
+    const prize = roobetPrizeForRank(rank);
+    if (prize <= 0) continue;
+    const { username } = rankedEntries[i];
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("roobet_username")
+      .ilike("roobet_username", username)
+      .maybeSingle();
+    if (!profile) continue;
+
+    const { data: existingClaim } = await supabase
+      .from("reward_claims")
+      .select("id")
+      .eq("platform", "roobet")
+      .ilike("username", username)
+      .eq("category", "leaderboard")
+      .eq("period_label", label)
+      .maybeSingle();
+    if (existingClaim) continue;
+
+    const { error: claimError } = await supabase.from("reward_claims").insert({
+      platform: "roobet",
+      username,
+      category: "leaderboard",
+      title: `Weekly Leaderboard — Rank #${rank}`,
+      amount: prize,
+      status: "pending",
+      period_label: label,
+    });
+    if (claimError) claimErrors.push(`${username}: ${claimError.message}`);
+  }
+
   return NextResponse.json({
     message: "Archived Roobet leaderboard period",
     label,
     periodStart,
     periodEnd,
     entryCount: entries.length,
+    claimErrors: claimErrors.length > 0 ? claimErrors : undefined,
   });
 }

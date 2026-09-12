@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   if (!username?.trim()) {
     return NextResponse.json({ error: 'username is required' }, { status: 400 })
   }
-  const validCategories = ['wager_milestone', 'lossback', 'tournament', 'deposit_bonus', 'giveaway', 'raffle']
+  const validCategories = ['wager_milestone', 'lossback', 'tournament', 'deposit_bonus', 'giveaway', 'raffle', 'leaderboard']
   if (!category || !validCategories.includes(category)) {
     return NextResponse.json({ error: `category must be one of ${validCategories.join(', ')}` }, { status: 400 })
   }
