@@ -281,7 +281,8 @@ function AccountPageContent() {
           </CardContent>
         </Card>
 
-        {/* R2Koins Balance */}
+        {/* R2Koins Balance — disabled for now, keep code for future re-enable */}
+        {/*
         <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground font-semibold">R2Koins Balance</CardTitle>
@@ -294,9 +295,10 @@ function AccountPageContent() {
             <p className="text-xs text-muted-foreground mt-1">Spend R2Koins in the Shop to redeem exclusive rewards</p>
           </CardContent>
         </Card>
+        */}
 
-        {/* R2Koins */}
-        <R2KoinsCard />
+        {/* R2Koins — disabled for now, keep code for future re-enable */}
+        {/* <R2KoinsCard /> */}
 
         {/* Live leaderboard stats — auto-settles into Rewards & Claims once each period is archived */}
         <LeaderboardStats roobetUsername={profile.roobet_username} luxdropUsername={profile.luxdrop_username} />
