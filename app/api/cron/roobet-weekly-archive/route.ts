@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { addDaysToDateString, getFirstRoobetPeriod, getPreviousRoobetPeriod, ROOBET_PERIOD_DAYS } from "@/lib/roobet/period";
 import { ROOBET_PRIZE_TOTAL, ROOBET_REWARDS, roobetPrizeForRank } from "@/lib/roobet/leaderboard-rewards";
+import { getEntryName, normalizeRoobetEntries, sortByWeightedWager } from "@/lib/roobet/rank";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -97,7 +98,7 @@ export async function GET(request: NextRequest) {
       { cache: "no-store" }
     );
     const json = await res.json();
-    entries = Array.isArray(json) ? json : (json?.data ?? json?.affiliates ?? json?.results ?? []);
+    entries = normalizeRoobetEntries(json);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch Roobet snapshot", detail: error instanceof Error ? error.message : String(error) },
@@ -130,13 +131,13 @@ export async function GET(request: NextRequest) {
   // account's Rewards & Claims panel without any manual entry. Idempotent
   // per (platform, username, category, period_label) — safe if this cron
   // ever reruns for the same already-archived period.
-  const rankedEntries = (entries as { username?: string; name?: string; wagered?: number; wagerAmount?: number; totalWagered?: number }[])
-    .map((e) => ({
-      username: e.username ?? e.name ?? "",
-      wagered: e.wagered ?? e.wagerAmount ?? e.totalWagered ?? 0,
-    }))
-    .filter((e) => e.username)
-    .sort((a, b) => b.wagered - a.wagered)
+  // Rank with the SAME shared weighted-wager sort the public leaderboard and
+  // account stat card use, so the username attached to each rank here always
+  // matches the placement players actually see. Previously this sorted by raw
+  // wager, which produced a different order and mis-labeled payouts.
+  const rankedEntries = sortByWeightedWager(normalizeRoobetEntries(entries))
+    .map((e) => ({ username: getEntryName(e) }))
+    .filter((e) => e.username && e.username !== "Unknown")
     .slice(0, REWARDS.length);
 
   const claimErrors: string[] = [];
