@@ -11,6 +11,14 @@
     {
       "path": "/api/cron/roobet-weekly-archive",
       "schedule": "10 0 * * *"
+    },
+    {
+      "path": "/api/cron/roobet-weekly-archive",
+      "schedule": "5 22 * * *"
+    },
+    {
+      "path": "/api/cron/roobet-weekly-archive",
+      "schedule": "5 23 * * *"
     }
   ]
 }
