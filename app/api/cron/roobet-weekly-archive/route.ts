@@ -29,29 +29,32 @@ function monthLabel(dateStr: string): string {
   return new Date(dateStr + "T00:00:00Z").toLocaleString("en-US", { month: "long", timeZone: "UTC" });
 }
 
-// Given a period's (ET) start date, compute its Roman-numeral index within
-// its calendar month (I, II, III, ... resets each month). Walks the same
-// fixed-length cadence used everywhere else, seeded from the first period's
-// actual boundaries so a one-off first-period length doesn't throw off the
-// month-relative count.
-function romanIndexForPeriod(periodStart: string, firstPeriodStart: string, firstPeriodEnd: string): number {
-  let cursor = firstPeriodStart;
+// Given a period's (ET) END date, compute its Roman-numeral index within
+// its calendar month (I, II, III, ... resets each month). Periods are
+// attributed to the month they END in / pay out in — the same convention
+// used by lib/roobet/period.ts's monthly-total helper — NOT the month they
+// start in, since a period can start in one month and pay out in the next
+// (e.g. Aug 28 - Sep 6 counts as a September period). Walks the same
+// fixed-length cadence used everywhere else (periods are contiguous: the
+// next period starts at the exact instant the previous one ends), seeded
+// from the first period's actual boundaries so its one-off length doesn't
+// throw off the month-relative count.
+function romanIndexForPeriod(periodEnd: string, firstPeriodStart: string, firstPeriodEnd: string): number {
   let cursorEnd = firstPeriodEnd;
   let indexInMonth = 0;
-  let lastMonth = monthLabel(cursor);
+  let lastMonth = monthLabel(cursorEnd);
 
-  while (cursor < periodStart) {
-    const month = monthLabel(cursor);
+  while (cursorEnd < periodEnd) {
+    const month = monthLabel(cursorEnd);
     if (month !== lastMonth) {
       indexInMonth = 0;
       lastMonth = month;
     }
     indexInMonth++;
-    cursor = addDaysToDateString(cursorEnd, 1);
-    cursorEnd = addDaysToDateString(cursor, ROOBET_PERIOD_DAYS - 1);
+    cursorEnd = addDaysToDateString(cursorEnd, ROOBET_PERIOD_DAYS);
   }
   // one more increment for the period we stopped on
-  const month = monthLabel(cursor);
+  const month = monthLabel(cursorEnd);
   if (month !== lastMonth) indexInMonth = 0;
   indexInMonth++;
   return indexInMonth;
@@ -105,9 +108,9 @@ export async function GET(request: NextRequest) {
   // The very first period's own start/end date anchor the month-relative
   // Roman-numeral count for every period after it.
   const firstPeriod = getFirstRoobetPeriod();
-  const romanIndex = romanIndexForPeriod(periodStart, firstPeriod.startDate, firstPeriod.endDate);
+  const romanIndex = romanIndexForPeriod(periodEnd, firstPeriod.startDate, firstPeriod.endDate);
 
-  const label = `${monthLabel(periodStart)} ${ROMAN[romanIndex - 1] ?? romanIndex}`;
+  const label = `${monthLabel(periodEnd)} ${ROMAN[romanIndex - 1] ?? romanIndex}`;
 
   const { error: insertError } = await supabase.from("roobet_leaderboard_archive").insert({
     label,
