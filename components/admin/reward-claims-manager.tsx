@@ -15,9 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Loader2, Trash2, Pencil, X, Check, Gift } from 'lucide-react'
+import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
+
+interface AdminUser {
+  id: string
+  roobet_username: string | null
+  luxdrop_username: string | null
+}
 
 type Platform = 'roobet' | 'luxdrop'
 type Category = 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle'
@@ -51,6 +57,38 @@ const STATUS_STYLES: Record<Status, string> = {
   paid: 'bg-green-500/10 text-green-500 border-green-500/20',
 }
 
+function PayoutAddressRow({ label, address }: { label: string; address: string | null }) {
+  const [copied, setCopied] = useState(false)
+
+  const copy = () => {
+    if (!address) return
+    navigator.clipboard.writeText(address)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span className="font-medium text-foreground shrink-0 w-10">{label}</span>
+      {address ? (
+        <>
+          <span className="font-mono text-muted-foreground truncate flex-1 min-w-0">{address}</span>
+          <button
+            type="button"
+            onClick={copy}
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={`Copy ${label} address`}
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+          </button>
+        </>
+      ) : (
+        <span className="text-muted-foreground/60 italic">Not saved</span>
+      )}
+    </div>
+  )
+}
+
 const EMPTY_FORM = {
   platform: 'roobet' as Platform,
   username: '',
@@ -66,6 +104,11 @@ export function RewardClaimsManager() {
   const { data, mutate } = useSWR<{ claims: Claim[] }>('/api/admin/reward-claims', fetcher)
   const claims = data?.claims ?? []
 
+  // Player list — powers the Username dropdown so admins pick a player
+  // instead of typing (and mistyping) their name for every claim.
+  const { data: usersData } = useSWR<{ users: AdminUser[] }>('/api/admin/users', fetcher)
+  const players = usersData?.users ?? []
+
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -73,12 +116,87 @@ export function RewardClaimsManager() {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all')
+  const [usernameManual, setUsernameManual] = useState(false)
+
+  const usernameOptions = (() => {
+    const key = form.platform === 'roobet' ? 'roobet_username' : 'luxdrop_username'
+    const seen = new Set<string>()
+    const opts: string[] = []
+    for (const u of players) {
+      const name = u[key]
+      if (name && !seen.has(name.toLowerCase())) {
+        seen.add(name.toLowerCase())
+        opts.push(name)
+      }
+    }
+    return opts.sort((a, b) => a.localeCompare(b))
+  })()
+
+  // Payout address lookup — auto-fills when a username matches a saved
+  // profile so admins have the wallet address on hand without asking.
+  const [payoutAddresses, setPayoutAddresses] = useState<{ usdt_address: string | null; sol_address: string | null } | null>(null)
+  const [payoutLookupLoading, setPayoutLookupLoading] = useState(false)
+
+  const lookupPayoutAddress = async (username: string, platform: Platform) => {
+    if (!username.trim()) {
+      setPayoutAddresses(null)
+      return
+    }
+    setPayoutLookupLoading(true)
+    try {
+      const res = await fetch(`/api/admin/payout-address?username=${encodeURIComponent(username.trim())}&platform=${platform}`)
+      const json = await res.json()
+      setPayoutAddresses(json.found ? { usdt_address: json.usdt_address, sol_address: json.sol_address } : null)
+    } catch {
+      setPayoutAddresses(null)
+    } finally {
+      setPayoutLookupLoading(false)
+    }
+  }
+
+  // Wager Milestone eligibility lookup — shows how much of the reached tier
+  // is still unpaid (eligible total minus what's already approved/paid) so
+  // admins never re-pay a tier that's partially claimed.
+  const [wagerEligibility, setWagerEligibility] = useState<{
+    wagered: number
+    eligibleTotal: number
+    claimedTotal: number
+    available: number
+    tierLabel: string | null
+  } | null>(null)
+  const [wagerEligibilityLoading, setWagerEligibilityLoading] = useState(false)
+  const [wagerEligibilityError, setWagerEligibilityError] = useState<string | null>(null)
+
+  const lookupWagerEligibility = async (username: string, platform: Platform, category: Category) => {
+    if (category !== 'wager_milestone' || !username.trim()) {
+      setWagerEligibility(null)
+      setWagerEligibilityError(null)
+      return
+    }
+    setWagerEligibilityLoading(true)
+    setWagerEligibilityError(null)
+    try {
+      const res = await fetch(`/api/admin/wager-bonus-eligibility?username=${encodeURIComponent(username.trim())}&platform=${platform}`)
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Lookup failed')
+      setWagerEligibility(json)
+    } catch (err: unknown) {
+      setWagerEligibility(null)
+      setWagerEligibilityError(err instanceof Error ? err.message : 'Lookup failed')
+    } finally {
+      setWagerEligibilityLoading(false)
+    }
+  }
 
   const resetForm = () => {
     setForm(EMPTY_FORM)
     setEditingId(null)
     setShowForm(false)
     setError(null)
+    setPayoutAddresses(null)
+    setWagerEligibility(null)
+    setWagerEligibilityError(null)
+    setUsernameManual(false)
   }
 
   const openEdit = (c: Claim) => {
@@ -95,6 +213,9 @@ export function RewardClaimsManager() {
     setEditingId(c.id)
     setShowForm(true)
     setError(null)
+    setUsernameManual(true)
+    lookupPayoutAddress(c.username, c.platform)
+    lookupWagerEligibility(c.username, c.platform, c.category)
   }
 
   const handleSave = async () => {
@@ -172,7 +293,16 @@ export function RewardClaimsManager() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Platform</Label>
-                <Select value={form.platform} onValueChange={(v) => setForm((f) => ({ ...f, platform: v as Platform }))}>
+                <Select
+                  value={form.platform}
+                  onValueChange={(v) => {
+                    const platform = v as Platform
+                    setForm((f) => ({ ...f, platform, username: '' }))
+                    setPayoutAddresses(null)
+                    setWagerEligibility(null)
+                    setWagerEligibilityError(null)
+                  }}
+                >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="roobet">Roobet</SelectItem>
@@ -181,19 +311,131 @@ export function RewardClaimsManager() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Username</Label>
-                <Input
-                  placeholder="Platform username"
-                  value={form.username}
-                  onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-                />
+                <div className="flex items-center justify-between">
+                  <Label>Username</Label>
+                  <button
+                    type="button"
+                    onClick={() => setUsernameManual((m) => !m)}
+                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ListFilter className="h-3 w-3" />
+                    {usernameManual ? 'Pick from list' : 'Type manually'}
+                  </button>
+                </div>
+                {usernameManual ? (
+                  <Input
+                    placeholder="Platform username"
+                    value={form.username}
+                    onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
+                    onBlur={(e) => {
+                      lookupPayoutAddress(e.target.value, form.platform)
+                      lookupWagerEligibility(e.target.value, form.platform, form.category)
+                    }}
+                  />
+                ) : (
+                  <Select
+                    value={usernameOptions.includes(form.username) ? form.username : undefined}
+                    onValueChange={(v) => {
+                      setForm((f) => ({ ...f, username: v }))
+                      lookupPayoutAddress(v, form.platform)
+                      lookupWagerEligibility(v, form.platform, form.category)
+                    }}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select a player" /></SelectTrigger>
+                    <SelectContent>
+                      {usernameOptions.length === 0 ? (
+                        <div className="px-2 py-1.5 text-xs text-muted-foreground">No linked players yet</div>
+                      ) : (
+                        usernameOptions.map((name) => (
+                          <SelectItem key={name} value={name}>{name}</SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
+
+            {(payoutLookupLoading || payoutAddresses) && (
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Wallet className="h-3.5 w-3.5" />
+                  Saved Payout Addresses
+                </div>
+                {payoutLookupLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Looking up...
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <PayoutAddressRow label="USDT" address={payoutAddresses?.usdt_address ?? null} />
+                    <PayoutAddressRow label="SOL" address={payoutAddresses?.sol_address ?? null} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {form.category === 'wager_milestone' && form.username.trim() && (
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  Wager Bonus Eligibility
+                </div>
+                {wagerEligibilityLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Checking eligibility...
+                  </div>
+                ) : wagerEligibilityError ? (
+                  <p className="text-xs text-destructive">{wagerEligibilityError}</p>
+                ) : wagerEligibility ? (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        {wagerEligibility.tierLabel ? `Reached ${wagerEligibility.tierLabel}` : 'No tier reached yet'}
+                      </span>
+                      <span className="font-mono text-muted-foreground">
+                        ${wagerEligibility.wagered.toLocaleString()} wagered
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Eligible total</span>
+                      <span className="font-mono">${wagerEligibility.eligibleTotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Already claimed</span>
+                      <span className="font-mono">${wagerEligibility.claimedTotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-border/40">
+                      <span className="text-xs font-semibold text-foreground">Available now</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-emerald-400">${wagerEligibility.available.toLocaleString()}</span>
+                        {wagerEligibility.available > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, amount: wagerEligibility.available }))}
+                            className="text-[11px] font-medium text-primary hover:underline"
+                          >
+                            Use amount
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Category</Label>
-                <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as Category }))}>
+                <Select
+                  value={form.category}
+                  onValueChange={(v) => {
+                    const category = v as Category
+                    setForm((f) => ({ ...f, category }))
+                    lookupWagerEligibility(form.username, form.platform, category)
+                  }}
+                >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
