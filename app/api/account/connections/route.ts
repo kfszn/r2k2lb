@@ -24,7 +24,8 @@ export async function GET() {
       legacy_acebet_id, legacy_acebet_id_suffix, legacy_acebet_username, legacy_acebet_linked_at,
       luxdrop_username, luxdrop_linked_at,
       roobet_username, roobet_linked_at,
-      discord_id, discord_username, discord_linked_at
+      discord_id, discord_username, discord_linked_at,
+      usdt_address, sol_address
     `)
     .eq('id', session.user.id)
     .maybeSingle()
@@ -51,6 +52,32 @@ export async function POST(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
+  // ── USDT payout address ────────────────────────────────────────────────
+  if (typeof body.usdt_address === 'string') {
+    const usdtAddress = body.usdt_address.trim()
+
+    const { error } = await admin
+      .from('profiles')
+      .update({ usdt_address: usdtAddress || null, updated_at: new Date().toISOString() })
+      .eq('id', session.user.id)
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true, usdt_address: usdtAddress })
+  }
+
+  // ── SOL payout address ─────────────────────────────────────────────────
+  if (typeof body.sol_address === 'string') {
+    const solAddress = body.sol_address.trim()
+
+    const { error } = await admin
+      .from('profiles')
+      .update({ sol_address: solAddress || null, updated_at: new Date().toISOString() })
+      .eq('id', session.user.id)
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true, sol_address: solAddress })
+  }
 
   // ── LuxDrop self-serve link ───────────────────────────────────────────
   if (typeof body.luxdrop_username === 'string') {

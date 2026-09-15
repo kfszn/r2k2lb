@@ -27,6 +27,8 @@ import {
   Settings,
   Gift,
   BarChart3,
+  Wallet,
+  Save,
 } from 'lucide-react'
 
 type Profile = {
@@ -55,6 +57,9 @@ type Profile = {
   discord_id: string | null
   discord_username: string | null
   discord_linked_at: string | null
+  // Payout addresses
+  usdt_address: string | null
+  sol_address: string | null
 }
 
 function KickOAuthFeedback() {
@@ -115,6 +120,14 @@ function AccountPageContent() {
   // Unlink state
   const [unlinkLoading, setUnlinkLoading] = useState<string | null>(null)
 
+  // Payout address state
+  const [usdtInput, setUsdtInput] = useState('')
+  const [solInput, setSolInput] = useState('')
+  const [usdtSaving, setUsdtSaving] = useState(false)
+  const [solSaving, setSolSaving] = useState(false)
+  const [usdtStatus, setUsdtStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [solStatus, setSolStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -138,6 +151,8 @@ function AccountPageContent() {
     const raw = json.profile ?? null
     // Map DB `points` → r2koins in local state
     setProfile(raw ? { ...raw, r2koins: raw.points } : null)
+    setUsdtInput(raw?.usdt_address ?? '')
+    setSolInput(raw?.sol_address ?? '')
     setLoading(false)
   }
 
@@ -204,6 +219,52 @@ function AccountPageContent() {
       setRoobetError('Network error. Please try again.')
     } finally {
       setRoobetLoading(false)
+    }
+  }
+
+  const saveUsdtAddress = async () => {
+    setUsdtSaving(true)
+    setUsdtStatus(null)
+    try {
+      const res = await fetch('/api/account/connections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usdt_address: usdtInput.trim() }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setUsdtStatus({ type: 'error', message: json.error ?? 'Failed to save USDT address.' })
+      } else {
+        setUsdtStatus({ type: 'success', message: 'USDT address saved.' })
+        await loadProfile()
+      }
+    } catch {
+      setUsdtStatus({ type: 'error', message: 'Network error. Please try again.' })
+    } finally {
+      setUsdtSaving(false)
+    }
+  }
+
+  const saveSolAddress = async () => {
+    setSolSaving(true)
+    setSolStatus(null)
+    try {
+      const res = await fetch('/api/account/connections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sol_address: solInput.trim() }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setSolStatus({ type: 'error', message: json.error ?? 'Failed to save SOL address.' })
+      } else {
+        setSolStatus({ type: 'success', message: 'SOL address saved.' })
+        await loadProfile()
+      }
+    } catch {
+      setSolStatus({ type: 'error', message: 'Network error. Please try again.' })
+    } finally {
+      setSolSaving(false)
     }
   }
 
@@ -591,6 +652,93 @@ function AccountPageContent() {
               </div>
             </div>
 
+          </CardContent>
+        </Card>
+
+        {/* Payout Addresses */}
+        <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
+          <CardContent className="pt-6 divide-y divide-border/40">
+            <div className="pb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Wallet className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-sm font-medium">Payout Addresses</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Save your wallet addresses so we have them on file when processing your reward payouts.
+              </p>
+            </div>
+
+            {/* ── USDT ──────────────────────────────────────────────── */}
+            <div className="py-4 space-y-2">
+              <label htmlFor="usdt-address" className="text-sm font-medium">USDT Address</label>
+              {usdtStatus && (
+                <div className={`flex items-center gap-2 text-xs rounded-md px-3 py-2 border ${
+                  usdtStatus.type === 'success'
+                    ? 'text-green-400 bg-green-500/10 border-green-500/20'
+                    : 'text-destructive bg-destructive/10 border-destructive/20'
+                }`}>
+                  {usdtStatus.type === 'success' ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> : <AlertCircle className="h-3.5 w-3.5 shrink-0" />}
+                  {usdtStatus.message}
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  id="usdt-address"
+                  type="text"
+                  placeholder="Enter your USDT wallet address"
+                  value={usdtInput}
+                  onChange={e => setUsdtInput(e.target.value)}
+                  disabled={usdtSaving}
+                  className="flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                  onKeyDown={e => { if (e.key === 'Enter') saveUsdtAddress() }}
+                />
+                <Button
+                  size="sm"
+                  className="h-9 text-xs gap-1.5 shrink-0"
+                  disabled={usdtSaving || usdtInput.trim() === (profile.usdt_address ?? '')}
+                  onClick={saveUsdtAddress}
+                >
+                  {usdtSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                  {usdtSaving ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            </div>
+
+            {/* ── SOL ───────────────────────────────────────────────── */}
+            <div className="py-4 space-y-2">
+              <label htmlFor="sol-address" className="text-sm font-medium">SOL Address</label>
+              {solStatus && (
+                <div className={`flex items-center gap-2 text-xs rounded-md px-3 py-2 border ${
+                  solStatus.type === 'success'
+                    ? 'text-green-400 bg-green-500/10 border-green-500/20'
+                    : 'text-destructive bg-destructive/10 border-destructive/20'
+                }`}>
+                  {solStatus.type === 'success' ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> : <AlertCircle className="h-3.5 w-3.5 shrink-0" />}
+                  {solStatus.message}
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  id="sol-address"
+                  type="text"
+                  placeholder="Enter your SOL wallet address"
+                  value={solInput}
+                  onChange={e => setSolInput(e.target.value)}
+                  disabled={solSaving}
+                  className="flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                  onKeyDown={e => { if (e.key === 'Enter') saveSolAddress() }}
+                />
+                <Button
+                  size="sm"
+                  className="h-9 text-xs gap-1.5 shrink-0"
+                  disabled={solSaving || solInput.trim() === (profile.sol_address ?? '')}
+                  onClick={saveSolAddress}
+                >
+                  {solSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                  {solSaving ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
 

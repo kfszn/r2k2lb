@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Loader2, Trash2, Pencil, X, Check, Gift } from 'lucide-react'
+import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -51,6 +51,38 @@ const STATUS_STYLES: Record<Status, string> = {
   paid: 'bg-green-500/10 text-green-500 border-green-500/20',
 }
 
+function PayoutAddressRow({ label, address }: { label: string; address: string | null }) {
+  const [copied, setCopied] = useState(false)
+
+  const copy = () => {
+    if (!address) return
+    navigator.clipboard.writeText(address)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span className="font-medium text-foreground shrink-0 w-10">{label}</span>
+      {address ? (
+        <>
+          <span className="font-mono text-muted-foreground truncate flex-1 min-w-0">{address}</span>
+          <button
+            type="button"
+            onClick={copy}
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={`Copy ${label} address`}
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+          </button>
+        </>
+      ) : (
+        <span className="text-muted-foreground/60 italic">Not saved</span>
+      )}
+    </div>
+  )
+}
+
 const EMPTY_FORM = {
   platform: 'roobet' as Platform,
   username: '',
@@ -74,11 +106,34 @@ export function RewardClaimsManager() {
   const [error, setError] = useState<string | null>(null)
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all')
 
+  // Payout address lookup — auto-fills when a username matches a saved
+  // profile so admins have the wallet address on hand without asking.
+  const [payoutAddresses, setPayoutAddresses] = useState<{ usdt_address: string | null; sol_address: string | null } | null>(null)
+  const [payoutLookupLoading, setPayoutLookupLoading] = useState(false)
+
+  const lookupPayoutAddress = async (username: string, platform: Platform) => {
+    if (!username.trim()) {
+      setPayoutAddresses(null)
+      return
+    }
+    setPayoutLookupLoading(true)
+    try {
+      const res = await fetch(`/api/admin/payout-address?username=${encodeURIComponent(username.trim())}&platform=${platform}`)
+      const json = await res.json()
+      setPayoutAddresses(json.found ? { usdt_address: json.usdt_address, sol_address: json.sol_address } : null)
+    } catch {
+      setPayoutAddresses(null)
+    } finally {
+      setPayoutLookupLoading(false)
+    }
+  }
+
   const resetForm = () => {
     setForm(EMPTY_FORM)
     setEditingId(null)
     setShowForm(false)
     setError(null)
+    setPayoutAddresses(null)
   }
 
   const openEdit = (c: Claim) => {
@@ -95,6 +150,7 @@ export function RewardClaimsManager() {
     setEditingId(c.id)
     setShowForm(true)
     setError(null)
+    lookupPayoutAddress(c.username, c.platform)
   }
 
   const handleSave = async () => {
@@ -186,9 +242,29 @@ export function RewardClaimsManager() {
                   placeholder="Platform username"
                   value={form.username}
                   onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
+                  onBlur={(e) => lookupPayoutAddress(e.target.value, form.platform)}
                 />
               </div>
             </div>
+
+            {(payoutLookupLoading || payoutAddresses) && (
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Wallet className="h-3.5 w-3.5" />
+                  Saved Payout Addresses
+                </div>
+                {payoutLookupLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Looking up...
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <PayoutAddressRow label="USDT" address={payoutAddresses?.usdt_address ?? null} />
+                    <PayoutAddressRow label="SOL" address={payoutAddresses?.sol_address ?? null} />
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
