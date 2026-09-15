@@ -17,6 +17,7 @@ export async function GET() {
       id, account_id, email, points, created_at,
       kick_id, kick_username, kick_avatar, kick_linked_at,
       roobet_username, roobet_linked_at,
+      luxdrop_username, luxdrop_linked_at,
       legacy_acebet_id, legacy_acebet_id_suffix, legacy_acebet_username, legacy_acebet_linked_at,
       discord_id, discord_username, discord_linked_at
     `)
