@@ -470,9 +470,13 @@ export default function RoobetLeaderboardClient({ initialPeriod }: { initialPeri
                       <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                       <span>Games with an RTP of <strong className="text-foreground">99% and over</strong> → <strong className="text-primary">10%</strong> of wager is counted.</span>
                     </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      <span><strong className="text-foreground">Sportsbook</strong> wagers → <strong className="text-primary">10%</strong> of wager is counted.</span>
+                    </li>
                   </ul>
                   <p className="text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-4">
-                    <strong className="text-foreground">All games count</strong> toward the leaderboard — they are simply weighted by the RTP percentages above.
+                    <strong className="text-foreground">All games count</strong> toward the leaderboard — they are simply weighted by the percentages above.
                   </p>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Any abuse found by <strong className="text-foreground">R2K2</strong> or Roobet may result in your prize being forfeit.
