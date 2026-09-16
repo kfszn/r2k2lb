@@ -51,12 +51,43 @@ export async function GET(req: NextRequest) {
   const tiers = tiersRes.data ?? []
   const claimedTotal = (claimsRes.data ?? []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
 
+  // Tiers are checkpoints on a continuous reward curve (e.g. $50 per $10,000
+  // wagered), NOT discrete steps that only pay out once fully crossed. A
+  // player between two checkpoints — e.g. $193k wagered, between the $150k
+  // ($750) and $200k ($1,000) checkpoints — should be credited the linearly
+  // interpolated amount ($965), not snapped down to the last checkpoint they
+  // fully cleared ($750). Below the first checkpoint we interpolate from the
+  // origin (0, 0); above the last checkpoint we extrapolate using the slope
+  // of the final segment so the curve keeps scaling past the top tier.
   let eligibleTotal = 0
   let tierLabel: string | null = null
-  for (const t of tiers) {
-    if (wagered >= Number(t.wager_threshold) && Number(t.reward_amount) > eligibleTotal) {
-      eligibleTotal = Number(t.reward_amount)
-      tierLabel = t.tier_name
+  if (tiers.length > 0) {
+    const points = [{ wager_threshold: 0, reward_amount: 0, tier_name: null as string | null }, ...tiers]
+
+    let lower = points[0]
+    let upper = points[points.length - 1]
+    for (let i = 0; i < points.length - 1; i++) {
+      if (wagered >= Number(points[i].wager_threshold)) {
+        lower = points[i]
+        upper = points[i + 1]
+      }
+    }
+
+    const lowerWager = Number(lower.wager_threshold)
+    const upperWager = Number(upper.wager_threshold)
+    const lowerReward = Number(lower.reward_amount)
+    const upperReward = Number(upper.reward_amount)
+
+    if (upperWager > lowerWager) {
+      const rate = (upperReward - lowerReward) / (upperWager - lowerWager)
+      eligibleTotal = Math.max(0, lowerReward + (wagered - lowerWager) * rate)
+    } else {
+      eligibleTotal = lowerReward
+    }
+
+    // Label shows the highest checkpoint actually reached.
+    for (const t of tiers) {
+      if (wagered >= Number(t.wager_threshold)) tierLabel = t.tier_name
     }
   }
 
