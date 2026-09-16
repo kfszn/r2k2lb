@@ -8,7 +8,15 @@ import { roobetPrizeForRank } from '@/lib/roobet/leaderboard-rewards'
 import { luxdropPrizeForRank } from '@/lib/luxdrop/leaderboard-rewards'
 import { normalizeRoobetEntries, findRoobetRank, getEntryWagered } from '@/lib/roobet/rank'
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
+// Throw on a non-2xx response so SWR surfaces it as `error` instead of
+// resolving with the route's `{ error, detail }` payload — which would
+// otherwise silently normalize to an empty entries list and render
+// indistinguishably from a real "$0 wagered" player.
+const fetcher = (url: string) =>
+  fetch(url).then(async (r) => {
+    if (!r.ok) throw new Error(`Request failed: ${r.status}`)
+    return r.json()
+  })
 
 function formatMoney(amount: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount)
@@ -46,7 +54,7 @@ function RoobetLeaderboardStats({ username }: { username: string }) {
   // lib/roobet/rank helpers. Deriving rank from a different (rounded) source
   // than the public page previously caused this stat card to disagree with
   // the actual leaderboard for players near a tie.
-  const { data } = useSWR(
+  const { data, error, isLoading } = useSWR(
     `/api/roobet/affiliates?startDate=${encodeURIComponent(period.startISO)}&endDate=${encodeURIComponent(period.endISO)}`,
     fetcher
   )
@@ -66,17 +74,21 @@ function RoobetLeaderboardStats({ username }: { username: string }) {
           Live · {period.startDate} – {period.endDate}
         </span>
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        <MiniStat label="Wager" value={formatMoney(wagerDollars)} icon={<TrendingUp className="h-4 w-4" />} tone="primary" />
-        <MiniStat label="Rank" value={rank ? `#${rank}` : 'Unranked'} icon={<Trophy className="h-4 w-4" />} tone="amber" />
-        <MiniStat label="Leaderboard Prize" value={formatMoney(prize)} icon={<Gift className="h-4 w-4" />} tone="accent" />
-      </div>
+      {error ? (
+        <StatsUnavailableHint />
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          <MiniStat label="Wager" value={isLoading ? '—' : formatMoney(wagerDollars)} icon={<TrendingUp className="h-4 w-4" />} tone="primary" />
+          <MiniStat label="Rank" value={isLoading ? '—' : rank ? `#${rank}` : 'Unranked'} icon={<Trophy className="h-4 w-4" />} tone="amber" />
+          <MiniStat label="Leaderboard Prize" value={isLoading ? '—' : formatMoney(prize)} icon={<Gift className="h-4 w-4" />} tone="accent" />
+        </div>
+      )}
     </div>
   )
 }
 
 function LuxdropLeaderboardStats({ username }: { username: string }) {
-  const { data } = useSWR<
+  const { data, error, isLoading } = useSWR<
     { data?: { username?: string; name?: string; wagered?: number; wagerAmount?: number; totalWagered?: number }[] }
     | { username?: string; name?: string; wagered?: number; wagerAmount?: number; totalWagered?: number }[]
   >(
@@ -102,11 +114,15 @@ function LuxdropLeaderboardStats({ username }: { username: string }) {
           Live · {CURRENT_LUXDROP_PERIOD.startDate} – {CURRENT_LUXDROP_PERIOD.endDate}
         </span>
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        <MiniStat label="Wager" value={formatMoney(wagerDollars)} icon={<TrendingUp className="h-4 w-4" />} tone="primary" />
-        <MiniStat label="Rank" value={rank ? `#${rank}` : 'Unranked'} icon={<Trophy className="h-4 w-4" />} tone="amber" />
-        <MiniStat label="Leaderboard Prize" value={formatMoney(prize)} icon={<Gift className="h-4 w-4" />} tone="accent" />
-      </div>
+      {error ? (
+        <StatsUnavailableHint />
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          <MiniStat label="Wager" value={isLoading ? '—' : formatMoney(wagerDollars)} icon={<TrendingUp className="h-4 w-4" />} tone="primary" />
+          <MiniStat label="Rank" value={isLoading ? '—' : rank ? `#${rank}` : 'Unranked'} icon={<Trophy className="h-4 w-4" />} tone="amber" />
+          <MiniStat label="Leaderboard Prize" value={isLoading ? '—' : formatMoney(prize)} icon={<Gift className="h-4 w-4" />} tone="accent" />
+        </div>
+      )}
     </div>
   )
 }
@@ -116,6 +132,15 @@ function UnlinkedHint({ platform }: { platform: string }) {
     <div className="rounded-lg border border-border/40 bg-background/40 px-4 py-3 flex items-center gap-2 text-xs text-muted-foreground">
       <Link2 className="h-3.5 w-3.5 shrink-0" />
       Link your {platform} account below to see your leaderboard stats.
+    </div>
+  )
+}
+
+function StatsUnavailableHint() {
+  return (
+    <div className="rounded-lg border border-amber-500/25 bg-background/40 px-4 py-3 flex items-center gap-2 text-xs text-amber-400">
+      <Link2 className="h-3.5 w-3.5 shrink-0" />
+      Live stats are temporarily unavailable — this is not your real wager or rank. Try refreshing shortly.
     </div>
   )
 }
