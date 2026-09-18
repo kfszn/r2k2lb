@@ -137,7 +137,14 @@ export function MilestoneTierRow({ tier, discordUrl, isLast, reached }: Mileston
   const tracking = reached !== undefined
   const isUnlocked = reached === true
   const isLocked = reached === false
-  const isClaimed = tier.claimed === true
+  // A tier can only ever show as "Claimed" if the wager requirement was
+  // actually reached. Paid amounts are tracked as a running cumulative total
+  // across tiers, so an overpayment (e.g. a claim approved while a live
+  // wager figure was temporarily wrong) can make the raw claimed-total math
+  // cross a higher tier's threshold than the player has legitimately hit.
+  // Gating on `isUnlocked` here prevents that from ever rendering as
+  // "Claimed" over a tier that's still genuinely locked.
+  const isClaimed = tier.claimed === true && isUnlocked
 
   return (
     <div

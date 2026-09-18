@@ -52,6 +52,10 @@ export async function GET(request: NextRequest) {
       },
       // @ts-ignore — node-fetch agent type vs built-in fetch
       agent: proxyAgent,
+      // Hard timeout so a stalled proxy/upstream connection always settles
+      // into a visible error instead of hanging indefinitely — see the
+      // matching comment in app/api/roobet/affiliates/route.ts.
+      signal: AbortSignal.timeout(10_000),
     });
 
     const text = await response.text();
@@ -85,12 +89,13 @@ export async function GET(request: NextRequest) {
       headers: { "Cache-Control": "no-store, max-age=0" },
     });
   } catch (error) {
+    const isTimeout = error instanceof Error && error.name === "TimeoutError";
     const message =
       error instanceof Error ? error.message : "Unknown network error";
 
     return NextResponse.json(
-      { error: "Failed to reach LuxDrop API", detail: message },
-      { status: 503 }
+      { error: isTimeout ? "LuxDrop API timed out" : "Failed to reach LuxDrop API", detail: message },
+      { status: isTimeout ? 504 : 503 }
     );
   }
 }

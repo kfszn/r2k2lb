@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import useSWR from 'swr'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter } from 'lucide-react'
+import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2 } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -55,6 +55,71 @@ const STATUS_STYLES: Record<Status, string> = {
   pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
   approved: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
   paid: 'bg-green-500/10 text-green-500 border-green-500/20',
+}
+
+function RewardsSummary({ claims }: { claims: Claim[] }) {
+  const summary = useMemo(() => {
+    const paid = claims.filter((c) => c.status === 'paid')
+    const now = new Date()
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+
+    const totalPaid = paid.reduce((sum, c) => sum + c.amount, 0)
+    const monthPaid = paid
+      .filter((c) => new Date(c.created_at) >= monthStart)
+      .reduce((sum, c) => sum + c.amount, 0)
+    const pendingTotal = claims
+      .filter((c) => c.status === 'pending' || c.status === 'approved')
+      .reduce((sum, c) => sum + c.amount, 0)
+
+    const byCategory = (Object.keys(CATEGORY_LABELS) as Category[]).map((cat) => ({
+      category: cat,
+      label: CATEGORY_LABELS[cat],
+      total: paid.filter((c) => c.category === cat).reduce((sum, c) => sum + c.amount, 0),
+    })).filter((row) => row.total > 0)
+      .sort((a, b) => b.total - a.total)
+
+    return { totalPaid, monthPaid, pendingTotal, byCategory }
+  }, [claims])
+
+  const monthLabel = new Date().toLocaleDateString('en-US', { month: 'long' })
+
+  return (
+    <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-4">
+      <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+        <Wallet2 className="h-4 w-4 text-primary" />
+        Total Rewards Paid
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">All Time</p>
+          <p className="text-lg font-bold text-emerald-400 mt-1">${summary.totalPaid.toLocaleString()}</p>
+        </div>
+        <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{monthLabel}</p>
+          <p className="text-lg font-bold text-emerald-400 mt-1">${summary.monthPaid.toLocaleString()}</p>
+        </div>
+        <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Pending/Approved</p>
+          <p className="text-lg font-bold text-yellow-500 mt-1">${summary.pendingTotal.toLocaleString()}</p>
+        </div>
+      </div>
+
+      {summary.byCategory.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">By Category (Paid)</p>
+          <div className="space-y-1">
+            {summary.byCategory.map((row) => (
+              <div key={row.category} className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">{row.label}</span>
+                <span className="font-mono font-medium text-foreground">${row.total.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function PayoutAddressRow({ label, address }: { label: string; address: string | null }) {
@@ -281,6 +346,8 @@ export function RewardClaimsManager() {
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {data && claims.length > 0 && <RewardsSummary claims={claims} />}
+
         {showForm && (
           <div className="rounded-xl border border-border/50 bg-muted/20 p-5 space-y-4">
             <div className="flex items-center justify-between">
