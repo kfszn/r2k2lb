@@ -26,7 +26,7 @@ interface AdminUser {
 }
 
 type Platform = 'roobet' | 'luxdrop'
-type Category = 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle'
+type Category = 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard'
 type Status = 'pending' | 'approved' | 'paid'
 
 interface Claim {
@@ -49,6 +49,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
   deposit_bonus: 'Deposit Bonuses',
   giveaway: 'Giveaways',
   raffle: 'Raffle',
+  leaderboard: 'Leaderboard',
 }
 
 const STATUS_STYLES: Record<Status, string> = {
@@ -108,11 +109,11 @@ function RewardsSummary({ claims }: { claims: Claim[] }) {
       {summary.byCategory.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">By Category (Paid)</p>
-          <div className="space-y-1">
+          <div className="grid grid-cols-2 gap-2">
             {summary.byCategory.map((row) => (
-              <div key={row.category} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">{row.label}</span>
-                <span className="font-mono font-medium text-foreground">${row.total.toLocaleString()}</span>
+              <div key={row.category} className="rounded-lg border border-border/40 bg-card/40 p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide truncate">{row.label}</p>
+                <p className="text-sm font-bold text-foreground mt-1">${row.total.toLocaleString()}</p>
               </div>
             ))}
           </div>
