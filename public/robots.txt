@@ -5,4 +5,4 @@ Disallow: /auth/login
 Disallow: /auth/signup
 Disallow: /account
 
-Sitemap: https://r2k2.io/sitemap.xml
+Sitemap: https://r2k2.gg/sitemap.xml

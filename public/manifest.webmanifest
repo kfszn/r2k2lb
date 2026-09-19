@@ -1,0 +1,21 @@
+{
+  "name": "R2K2 — Leaderboards, Rewards & Exclusive Perks",
+  "short_name": "R2K2",
+  "description": "Compete on Roobet, LuxDrop, and Kick leaderboards, earn R2Koins from wagers, play 50/50 draws, enter raffles, and redeem points in the shop. Use code R2K2.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "icons": [
+    {
+      "src": "/assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
