@@ -138,13 +138,13 @@ export default function PageLoader() {
           <span
             key={`hollow-${phraseIndex}`}
             aria-hidden="true"
-            className="loader-phrase-hollow absolute inset-0 block whitespace-nowrap text-balance text-sm font-bold uppercase tracking-wider sm:text-base"
+            className="loader-phrase-hollow absolute inset-0 block whitespace-nowrap text-balance font-sans text-sm font-bold sm:text-base"
           >
             {LOADER_PHRASES[phraseIndex]}
           </span>
           <span
             key={`fill-${phraseIndex}`}
-            className="loader-phrase-fill absolute inset-0 block whitespace-nowrap text-balance text-sm font-bold uppercase tracking-wider sm:text-base"
+            className="loader-phrase-fill absolute inset-0 block whitespace-nowrap text-balance font-sans text-sm font-bold sm:text-base"
           >
             {LOADER_PHRASES[phraseIndex]}
           </span>
