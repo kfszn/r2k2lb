@@ -5,11 +5,15 @@ import { usePathname } from 'next/navigation'
 
 const MIN_DISPLAY = 650 // minimum time the loader stays on screen (ms)
 const FADE_MS = 300 // fade-out transition duration (ms)
+const PHRASE_MS = 2100 // how long each loading phrase displays before cycling (ms)
+
+const LOADER_PHRASES = ['The Best User Experience', 'The Best Rewards On Roobet', 'For The Players']
 
 export default function PageLoader() {
   const pathname = usePathname()
   const [visible, setVisible] = useState(true)
   const [fadeOut, setFadeOut] = useState(false)
+  const [phraseIndex, setPhraseIndex] = useState(0)
 
   const shownAt = useRef<number>(Date.now())
   const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -99,6 +103,15 @@ export default function PageLoader() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
+  // Cycle the loading phrase while the loader is visible.
+  useEffect(() => {
+    if (!visible) return
+    const interval = setInterval(() => {
+      setPhraseIndex((i) => (i + 1) % LOADER_PHRASES.length)
+    }, PHRASE_MS)
+    return () => clearInterval(interval)
+  }, [visible])
+
   if (!visible) return null
 
   return (
@@ -117,9 +130,26 @@ export default function PageLoader() {
             alt="R2K2 Logo"
             loading="eager"
             decoding="async"
-            className="h-24 w-24 object-contain drop-shadow-[0_0_25px_rgba(59,130,246,0.45)]"
+            className="logo-glow h-24 w-24 object-contain"
           />
         </div>
+
+        <div className="relative h-6 w-72 max-w-[85vw] text-center sm:w-96">
+          <span
+            key={`hollow-${phraseIndex}`}
+            aria-hidden="true"
+            className="loader-phrase-hollow absolute inset-0 block whitespace-nowrap text-balance text-sm font-bold uppercase tracking-wider sm:text-base"
+          >
+            {LOADER_PHRASES[phraseIndex]}
+          </span>
+          <span
+            key={`fill-${phraseIndex}`}
+            className="loader-phrase-fill absolute inset-0 block whitespace-nowrap text-balance text-sm font-bold uppercase tracking-wider sm:text-base"
+          >
+            {LOADER_PHRASES[phraseIndex]}
+          </span>
+        </div>
+
         <div className="flex gap-1.5">
           <span className="dot-pulse" style={{ animationDelay: '0ms' }} />
           <span className="dot-pulse" style={{ animationDelay: '150ms' }} />

@@ -1,5 +1,5 @@
 import React from "react"
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { BracketProvider } from '@/lib/bracket-context'
@@ -16,7 +16,16 @@ export const metadata: Metadata = {
   ...defaultMetadata,
   generator: 'Next.js',
   applicationName: 'R2K2',
+  manifest: '/manifest.webmanifest',
   keywords: ['r2k2', 'leaderboard', 'roobet', 'luxdrop', 'kick', 'r2koins', 'raffle', 'fifty fifty', 'slots', 'giveaway', 'wager', 'tournament', 'rewards shop', 'provably fair games'],
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0a0e1a',
 }
 
 export default function RootLayout({

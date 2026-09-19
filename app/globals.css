@@ -188,6 +188,16 @@
   animation: logo-bounce 0.9s ease-in-out infinite;
 }
 
+/* Layered rim glow that hugs the logo's own silhouette instead of one
+   large blurred box that reads as a square around the whole icon. */
+.logo-glow {
+  filter:
+    drop-shadow(0 0 1px rgba(59, 130, 246, 0.9))
+    drop-shadow(0 0 3px rgba(59, 130, 246, 0.7))
+    drop-shadow(0 0 7px rgba(59, 130, 246, 0.5))
+    drop-shadow(0 0 12px rgba(59, 130, 246, 0.3));
+}
+
 .dot-pulse {
   display: inline-block;
   width: 7px;
@@ -195,6 +205,27 @@
   border-radius: 50%;
   background-color: oklch(0.65 0.2 250);
   animation: dot-pulse 1.2s ease-in-out infinite;
+}
+
+/* Loading screen phrase — hollow outline text that fills in like a progress bar */
+@keyframes loader-phrase-fill {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  70%,
+  100% {
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+.loader-phrase-hollow {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(96, 165, 250, 0.55);
+}
+
+.loader-phrase-fill {
+  color: oklch(0.65 0.2 250);
+  animation: loader-phrase-fill 2.1s ease-out forwards;
 }
 
 /* Entrance animations */
