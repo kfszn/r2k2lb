@@ -216,7 +216,7 @@
 
 .loader-phrase-fill {
   color: oklch(0.65 0.2 250);
-  animation: loader-phrase-fill 2.6s ease-out forwards;
+  animation: loader-phrase-fill 1.4s ease-out forwards;
 }
 
 /* Entrance animations */

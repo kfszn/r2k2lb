@@ -3,17 +3,25 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 
-const MIN_DISPLAY = 2600 // minimum time the loader stays on screen (ms) — long enough to cycle phrases
+const MIN_DISPLAY = 1400 // minimum time the loader stays on screen (ms)
 const FADE_MS = 300 // fade-out transition duration (ms)
-const PHRASE_MS = 2600 // how long each loading phrase displays before cycling (ms)
 
 const LOADER_PHRASES = ['The Best User Experience', 'The Best Rewards On Roobet', 'For The Players']
+
+function randomPhraseIndex(exclude?: number) {
+  if (LOADER_PHRASES.length <= 1) return 0
+  let next = Math.floor(Math.random() * LOADER_PHRASES.length)
+  if (next === exclude) {
+    next = (next + 1) % LOADER_PHRASES.length
+  }
+  return next
+}
 
 export default function PageLoader() {
   const pathname = usePathname()
   const [visible, setVisible] = useState(true)
   const [fadeOut, setFadeOut] = useState(false)
-  const [phraseIndex, setPhraseIndex] = useState(0)
+  const [phraseIndex, setPhraseIndex] = useState(() => randomPhraseIndex())
 
   const shownAt = useRef<number>(Date.now())
   const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -30,6 +38,7 @@ export default function PageLoader() {
     shownAt.current = Date.now()
     setFadeOut(false)
     setVisible(true)
+    setPhraseIndex((prev) => randomPhraseIndex(prev))
   }, [])
 
   // Hide the loader, respecting the minimum display time
@@ -102,15 +111,6 @@ export default function PageLoader() {
     return clearTimers
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
-
-  // Cycle the loading phrase while the loader is visible.
-  useEffect(() => {
-    if (!visible) return
-    const interval = setInterval(() => {
-      setPhraseIndex((i) => (i + 1) % LOADER_PHRASES.length)
-    }, PHRASE_MS)
-    return () => clearInterval(interval)
-  }, [visible])
 
   if (!visible) return null
 
