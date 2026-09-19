@@ -3,17 +3,25 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 
-const MIN_DISPLAY = 650 // minimum time the loader stays on screen (ms)
+const MIN_DISPLAY = 1400 // minimum time the loader stays on screen (ms)
 const FADE_MS = 300 // fade-out transition duration (ms)
-const PHRASE_MS = 2100 // how long each loading phrase displays before cycling (ms)
 
 const LOADER_PHRASES = ['The Best User Experience', 'The Best Rewards On Roobet', 'For The Players']
+
+function randomPhraseIndex(exclude?: number) {
+  if (LOADER_PHRASES.length <= 1) return 0
+  let next = Math.floor(Math.random() * LOADER_PHRASES.length)
+  if (next === exclude) {
+    next = (next + 1) % LOADER_PHRASES.length
+  }
+  return next
+}
 
 export default function PageLoader() {
   const pathname = usePathname()
   const [visible, setVisible] = useState(true)
   const [fadeOut, setFadeOut] = useState(false)
-  const [phraseIndex, setPhraseIndex] = useState(0)
+  const [phraseIndex, setPhraseIndex] = useState(() => randomPhraseIndex())
 
   const shownAt = useRef<number>(Date.now())
   const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -30,6 +38,7 @@ export default function PageLoader() {
     shownAt.current = Date.now()
     setFadeOut(false)
     setVisible(true)
+    setPhraseIndex((prev) => randomPhraseIndex(prev))
   }, [])
 
   // Hide the loader, respecting the minimum display time
@@ -103,15 +112,6 @@ export default function PageLoader() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
-  // Cycle the loading phrase while the loader is visible.
-  useEffect(() => {
-    if (!visible) return
-    const interval = setInterval(() => {
-      setPhraseIndex((i) => (i + 1) % LOADER_PHRASES.length)
-    }, PHRASE_MS)
-    return () => clearInterval(interval)
-  }, [visible])
-
   if (!visible) return null
 
   return (
@@ -138,22 +138,16 @@ export default function PageLoader() {
           <span
             key={`hollow-${phraseIndex}`}
             aria-hidden="true"
-            className="loader-phrase-hollow absolute inset-0 block whitespace-nowrap text-balance text-sm font-bold uppercase tracking-wider sm:text-base"
+            className="loader-phrase-hollow absolute inset-0 block whitespace-nowrap text-balance font-sans text-sm font-bold sm:text-base"
           >
             {LOADER_PHRASES[phraseIndex]}
           </span>
           <span
             key={`fill-${phraseIndex}`}
-            className="loader-phrase-fill absolute inset-0 block whitespace-nowrap text-balance text-sm font-bold uppercase tracking-wider sm:text-base"
+            className="loader-phrase-fill absolute inset-0 block whitespace-nowrap text-balance font-sans text-sm font-bold sm:text-base"
           >
             {LOADER_PHRASES[phraseIndex]}
           </span>
-        </div>
-
-        <div className="flex gap-1.5">
-          <span className="dot-pulse" style={{ animationDelay: '0ms' }} />
-          <span className="dot-pulse" style={{ animationDelay: '150ms' }} />
-          <span className="dot-pulse" style={{ animationDelay: '300ms' }} />
         </div>
       </div>
     </div>
