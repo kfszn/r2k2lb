@@ -3,9 +3,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 
-const MIN_DISPLAY = 650 // minimum time the loader stays on screen (ms)
+const MIN_DISPLAY = 2600 // minimum time the loader stays on screen (ms) — long enough to cycle phrases
 const FADE_MS = 300 // fade-out transition duration (ms)
-const PHRASE_MS = 2100 // how long each loading phrase displays before cycling (ms)
+const PHRASE_MS = 2600 // how long each loading phrase displays before cycling (ms)
 
 const LOADER_PHRASES = ['The Best User Experience', 'The Best Rewards On Roobet', 'For The Players']
 
@@ -148,12 +148,6 @@ export default function PageLoader() {
           >
             {LOADER_PHRASES[phraseIndex]}
           </span>
-        </div>
-
-        <div className="flex gap-1.5">
-          <span className="dot-pulse" style={{ animationDelay: '0ms' }} />
-          <span className="dot-pulse" style={{ animationDelay: '150ms' }} />
-          <span className="dot-pulse" style={{ animationDelay: '300ms' }} />
         </div>
       </div>
     </div>
