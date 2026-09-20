@@ -2,6 +2,11 @@ import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
+// Always hit the database fresh — this route backs the admin raffle editor,
+// so a cached/stale response here would show old dates and prizes after a save.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 function createServiceClient() {
   return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
