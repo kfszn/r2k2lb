@@ -3,6 +3,7 @@
 // they see on the leaderboard. We do NOT re-implement upstream fetching here.
 
 import { getCurrentRoobetPeriod } from "@/lib/roobet/period";
+import { CURRENT_LUXDROP_PERIOD } from "@/lib/luxdrop/period";
 
 export type MilestonePlatform = "acebet" | "luxdrop" | "roobet";
 
@@ -31,21 +32,24 @@ function roobetCurrentPeriod(): { start: string; end: string } {
  * milestone progress "resets with the leaderboard".
  *   - "acebet": legacy platform key — app/api/leaderboard/route.js
  *     (DEFAULT_START/END). That route is now Roobet-backed under the hood.
- *   - LuxDrop:  app/leaderboard/luxdrop/page.tsx (CURRENT_START/CURRENT_END)
+ *     There is no single source of truth to import for this legacy window,
+ *     so it remains a hand-maintained constant — update it if that route's
+ *     window ever changes.
+ *   - LuxDrop:  imported directly from lib/luxdrop/period.ts (the same
+ *     single source of truth app/leaderboard/luxdrop/page.tsx reads from),
+ *     so this can never drift out of sync again like it previously did.
  *   - Roobet:   app/leaderboard/roobet/page.tsx (rolling 7-day period)
- *
- * NOTE: these are updated by hand whenever the leaderboard page's dates
- * change — keep them in sync or milestone progress will silently query the
- * wrong period.
  */
-const STATIC_WINDOWS: Record<"acebet" | "luxdrop", { start: string; end: string }> = {
-  acebet: { start: "2026-07-30", end: "2026-08-31" },
-  luxdrop: { start: "2026-08-08", end: "2026-09-06" },
-};
+const ACEBET_WINDOW = { start: "2026-07-30", end: "2026-08-31" };
+
+function luxdropCurrentWindow(): { start: string; end: string } {
+  return { start: CURRENT_LUXDROP_PERIOD.startDate, end: CURRENT_LUXDROP_PERIOD.endDate };
+}
 
 export function getLeaderboardWindow(platform: MilestonePlatform): { start: string; end: string } {
   if (platform === "roobet") return roobetCurrentPeriod();
-  return STATIC_WINDOWS[platform];
+  if (platform === "luxdrop") return luxdropCurrentWindow();
+  return ACEBET_WINDOW;
 }
 
 // Roobet's Wager Rewards page tracks progress on its own rolling 30-day
@@ -80,13 +84,15 @@ export function getMilestoneWindow(
   return getLeaderboardWindow(platform);
 }
 
-// Backward-compatible static snapshot (roobet resolved at import time — prefer
-// getLeaderboardWindow(platform) for anything that needs the live value).
+// Backward-compatible static snapshot (roobet/luxdrop resolved at import
+// time — prefer getLeaderboardWindow(platform) for anything that needs the
+// live value).
 export const LEADERBOARD_WINDOWS: Record<
   MilestonePlatform,
   { start: string; end: string }
 > = {
-  ...STATIC_WINDOWS,
+  acebet: ACEBET_WINDOW,
+  luxdrop: luxdropCurrentWindow(),
   roobet: roobetCurrentPeriod(),
 };
 
