@@ -28,13 +28,15 @@ import {
 // app/api/cron/roobet-weekly-archive and lib/milestones/progress) so the
 // leaderboard, the archive, and milestone tracking can never drift apart.
 // ---------------------------------------------------------------------------
-// Updated distribution — more weight toward the top 4-5 spots, less toward
-// the bottom. Archived weeks keep whatever REWARDS array was live when they
-// were snapshotted (stored per-row in roobet_leaderboard_archive), so this
-// change only affects the current/future live week and never rewrites past
-// payouts.
+// Updated distribution — proper descending payout again, with the bottom
+// spots set to 7th $125, 8th $75, 9th $50, 10th $25 (6th unchanged at $250).
+// The $175 freed up from the old bottom is added across the top 5, so every
+// top-5 position increases vs the original array. Total stays at $5,000.
+// Archived weeks keep whatever REWARDS array was live when they were
+// snapshotted (stored per-row in roobet_leaderboard_archive), so this change
+// only affects the current/future live week and never rewrites past payouts.
 const PRIZE_TOTAL = 5000
-const REWARDS: number[] = [2200, 1200, 700, 500, 350, 20, 15, 8, 4, 3]
+const REWARDS: number[] = [2050, 1050, 625, 425, 325, 250, 125, 75, 50, 25]
 
 function formatDisplay(start: string, end: string): string {
   const s = new Date(start + 'T00:00:00Z')
