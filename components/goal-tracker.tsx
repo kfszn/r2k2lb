@@ -1,14 +1,30 @@
-import { Target } from 'lucide-react'
+import { Target, TrendingUp } from 'lucide-react'
 
 interface GoalTrackerProps {
   current: number
-  goal: number
+  // Omit goal entirely to render a plain running-total tracker with no
+  // target/progress bar (e.g. while a permanent goal number is still TBD).
+  goal?: number
   formatMoney: (amount: number) => string
   label?: string
   className?: string
 }
 
 export function GoalTracker({ current, goal, formatMoney, label = 'Wager Goal', className = '' }: GoalTrackerProps) {
+  if (goal == null) {
+    return (
+      <div className={`rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl px-5 py-4 ${className}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">{label}</span>
+          </div>
+          <span className="text-sm font-bold tabular-nums">{formatMoney(current)}</span>
+        </div>
+      </div>
+    )
+  }
+
   const pct = Math.min((current / goal) * 100, 100)
   const reached = current >= goal
   const remaining = Math.max(goal - current, 0)

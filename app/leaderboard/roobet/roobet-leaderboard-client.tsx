@@ -28,8 +28,13 @@ import {
 // app/api/cron/roobet-weekly-archive and lib/milestones/progress) so the
 // leaderboard, the archive, and milestone tracking can never drift apart.
 // ---------------------------------------------------------------------------
+// Updated distribution — more weight toward the top 4-5 spots, less toward
+// the bottom. Archived weeks keep whatever REWARDS array was live when they
+// were snapshotted (stored per-row in roobet_leaderboard_archive), so this
+// change only affects the current/future live week and never rewrites past
+// payouts.
 const PRIZE_TOTAL = 5000
-const REWARDS: number[] = [2000, 1000, 600, 400, 300, 250, 200, 150, 75, 25]
+const REWARDS: number[] = [2200, 1200, 700, 500, 350, 20, 15, 8, 4, 3]
 
 function formatDisplay(start: string, end: string): string {
   const s = new Date(start + 'T00:00:00Z')
@@ -220,14 +225,13 @@ export default function RoobetLeaderboardClient({ initialPeriod }: { initialPeri
 
   const totalWagered = entries.reduce((sum, e) => sum + getEntryWagered(e), 0)
 
-  // Goal tracking — the weekly goal is this week's weighted-wager total toward
-  // $500K; the monthly goal ($2M) is the sum of every weekly leaderboard that
-  // belongs to the current month. A week is attributed to the month it ends
-  // (pays out) in, so September's weeks (I, II, III, IIII) roll up together.
-  // This is the first weekly leaderboard, so there's no prior history — the
-  // monthly total equals this live week now and grows as each week archives.
-  const WEEKLY_GOAL = 500_000
-  const MONTHLY_GOAL = 2_000_000
+  // Wager tracking — the weekly tracker is this week's weighted-wager total;
+  // the monthly tracker is the sum of every weekly leaderboard that belongs
+  // to the current month. A week is attributed to the month it ends (pays
+  // out) in, so September's weeks (I, II, III, IIII) roll up together.
+  // No fixed goal for now — these are just running totals, not progress
+  // toward a target. (Re-add a `goal` prop on GoalTracker below to bring
+  // targets back later.)
   const currentMonthKey = CURRENT_END.slice(0, 7) // e.g. "2026-09"
   const archivedPeriodTotal = (p: ArchivedPeriod) =>
     normalizeEntries(p.entries).reduce((sum, e) => sum + getEntryWagered(e), 0)
@@ -330,15 +334,13 @@ export default function RoobetLeaderboardClient({ initialPeriod }: { initialPeri
               <div className="max-w-4xl mx-auto mt-3 grid gap-3 md:grid-cols-2">
                 <GoalTracker
                   current={totalWagered}
-                  goal={WEEKLY_GOAL}
                   formatMoney={formatMoney}
-                  label="Weekly Wager Goal"
+                  label="Weekly Wager Tracker"
                 />
                 <GoalTracker
                   current={monthlyTotal}
-                  goal={MONTHLY_GOAL}
                   formatMoney={formatMoney}
-                  label="Monthly Wager Goal"
+                  label="Monthly Wager Tracker"
                 />
               </div>
             )}
