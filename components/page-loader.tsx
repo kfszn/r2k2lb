@@ -21,7 +21,10 @@ export default function PageLoader() {
   const pathname = usePathname()
   const [visible, setVisible] = useState(true)
   const [fadeOut, setFadeOut] = useState(false)
-  const [phraseIndex, setPhraseIndex] = useState(() => randomPhraseIndex())
+  // Start at a fixed index so server and client render the same phrase on first
+  // paint (Math.random() during the initializer would differ between SSR and
+  // hydration and trigger a hydration mismatch). Randomize only after mount.
+  const [phraseIndex, setPhraseIndex] = useState(0)
 
   const shownAt = useRef<number>(Date.now())
   const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -51,6 +54,13 @@ export default function PageLoader() {
       setFadeOut(true)
       removeTimer.current = setTimeout(() => setVisible(false), FADE_MS)
     }, wait)
+  }, [])
+
+  // Pick a random phrase for the initial load, but only after mount so the
+  // server-rendered markup and the client's first render agree.
+  useEffect(() => {
+    setPhraseIndex((prev) => randomPhraseIndex(prev))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Detect navigation START via link clicks + browser back/forward.
