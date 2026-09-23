@@ -676,7 +676,12 @@ export default function RoobetLeaderboardClient({ initialPeriod }: { initialPeri
                       return (
                         <div className="space-y-2">
                           {matches.map((entry) => {
-                            const rank = entries.findIndex(e => getEntryId(e) === getEntryId(entry)) + 1
+                            // Use reference equality against the same `entries` array `entry`
+                            // came from — getEntryId() falls back to Math.random() when an
+                            // entry has neither userId nor id, so comparing ids here would
+                            // compare two different random numbers and never match, always
+                            // yielding rank 0 ("#0") and a "TBD" prize.
+                            const rank = entries.indexOf(entry) + 1
                             return (
                               <div key={getEntryId(entry)} className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/20 px-4 py-3">
                                 <div className="flex items-center gap-3">
