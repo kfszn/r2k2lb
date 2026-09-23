@@ -122,7 +122,9 @@ export function LossbackManagement() {
     try {
       const monthlyWagersNum = parseFloat(monthlyWagers)
       const netLossNum = parseFloat(netLoss)
-      
+      const LOSSBACK_MONTHLY_CAP = 500
+      const claimAmount = Math.min(Math.abs(netLossNum) * 0.1, LOSSBACK_MONTHLY_CAP)
+
       const { error } = await supabase
         .from('lossback_claims')
         .insert({
@@ -131,7 +133,7 @@ export function LossbackManagement() {
           net_loss: netLossNum,
           tier: 1,
           percentage: 10,
-          claim_amount: Math.abs(netLossNum) * 0.1,
+          claim_amount: claimAmount,
           status: 'pending',
           claim_date: new Date().toISOString(),
         })
@@ -394,7 +396,7 @@ export function LossbackManagement() {
                       <div>
                         <p className="text-xs text-muted-foreground font-semibold uppercase">Loss-back</p>
                         <p className="text-green-600 font-bold text-lg">${claim.claimAmount.toFixed(2)}</p>
-                        <p className="text-xs text-muted-foreground">Max $250/month</p>
+                        <p className="text-xs text-muted-foreground">Max $500/month</p>
                       </div>
 
                       <div className="pt-2 border-t border-border/30">

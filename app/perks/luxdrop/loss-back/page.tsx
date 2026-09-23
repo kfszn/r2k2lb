@@ -26,7 +26,7 @@ export default function LuxdropLossBackPage() {
               <h1 className="text-4xl font-bold">Loss-back</h1>
             </div>
             <p className="text-lg text-muted-foreground">
-              Get a flat 10% of your monthly {SPONSOR} losses back — no maximum cap
+              Get a flat 10% of your monthly {SPONSOR} losses back — up to $500 per player per month
             </p>
           </div>
 
@@ -41,8 +41,8 @@ export default function LuxdropLossBackPage() {
                   <h3 className="font-semibold text-lg">Loss-back Percentage</h3>
                   <p className="text-3xl font-bold text-primary">10%</p>
                   <p className="text-sm text-muted-foreground">
-                    Earn a flat 10% loss-back on every claim with no maximum cap. Manually claimed via ticket with
-                    verified PnL.
+                    Earn a flat 10% loss-back on every claim, capped at $500 per player per month. Manually claimed
+                    via ticket with verified PnL.
                   </p>
                   <div className="pt-4 space-y-2 text-sm">
                     <p className="flex items-center gap-2">
@@ -51,7 +51,7 @@ export default function LuxdropLossBackPage() {
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
-                      No maximum cap
+                      Capped at $500 per player per month
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
@@ -68,7 +68,7 @@ export default function LuxdropLossBackPage() {
                     </li>
                     <li>
                       <span className="font-medium">Monthly Cap:</span>
-                      <span className="text-primary font-bold ml-2">No cap</span>
+                      <span className="text-primary font-bold ml-2">$500 per player</span>
                     </li>
                     <li>
                       <span className="font-medium">Frequency:</span>
@@ -139,7 +139,8 @@ export default function LuxdropLossBackPage() {
                   <div>
                     <p className="font-medium">Receive Your Loss-back Credit</p>
                     <p className="text-sm text-muted-foreground">
-                      Staff applies a flat 10% loss-back on your verified net loss — no maximum cap
+                      Staff applies a flat 10% loss-back on your verified net loss, capped at $500 per player per
+                      month
                     </p>
                   </div>
                 </div>
@@ -160,7 +161,7 @@ export default function LuxdropLossBackPage() {
               </div>
               <div className="p-3 bg-secondary/20 rounded-lg">
                 <p className="text-sm">
-                  <span className="font-medium">Rate:</span> Flat 10% (no cap)
+                  <span className="font-medium">Rate:</span> Flat 10% (capped at $500/month)
                 </p>
               </div>
               <div className="p-3 bg-primary/20 rounded-lg border border-primary/30">
@@ -180,8 +181,8 @@ export default function LuxdropLossBackPage() {
               <div>
                 <p className="font-semibold mb-1">Flat Loss-back Rate</p>
                 <p className="text-muted-foreground">
-                  All claims earn a flat 10% loss-back with no maximum cap. This amount comes from R2K2&apos;s pocket, not
-                  the casino.
+                  All claims earn a flat 10% loss-back, capped at $500 per player per month. This amount comes from
+                  R2K2&apos;s pocket, not the casino.
                 </p>
               </div>
               <div>
