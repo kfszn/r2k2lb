@@ -69,7 +69,8 @@ export default async function RoobetWagerRewardsPage() {
           </div>
 
           {/* Personal progress + tier table — Wager Rewards runs on its own
-              30-day cycle, independent of the weekly leaderboard resets. */}
+              monthly cycle (made up of that month's ~4 weekly leaderboards),
+              independent of the weekly leaderboard's own weekly reset. */}
           <MilestoneTracker
             platform="roobet"
             sponsor={SPONSOR}
@@ -95,9 +96,11 @@ export default async function RoobetWagerRewardsPage() {
             </p>
             <p className="text-sm text-muted-foreground">
               Wager Rewards run on their own{' '}
-              <span className="text-foreground font-medium">30-day cycle</span> — separate from the weekly {SPONSOR}
+              <span className="text-foreground font-medium">monthly cycle</span> — separate from the weekly {SPONSOR}
               leaderboard, so your progress accumulates across all of that month&apos;s weekly leaderboards instead of
-              resetting every 7 days. Open a ticket in Discord before the cycle ends to claim.
+              resetting every 7 days. Open a ticket in Discord before the month ends to claim — unclaimed progress
+              does not roll over, so any wager beyond your last claim expires and resets to zero at the start of the
+              next month.
             </p>
           </div>
 

@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { fetchPlatformWagerRangeTotal } from '@/lib/r2koins/platforms'
-import { getCurrentRoobetPeriod, getCurrentRoobetMonthStartISO } from '@/lib/roobet/period'
+import { getCurrentRoobetPeriod, getCurrentRoobetMonthStartISO, getCurrentRoobetRewardsGroupLabel } from '@/lib/roobet/period'
 import { CURRENT_LUXDROP_PERIOD } from '@/lib/luxdrop/period'
 
 // Never cache — claim history and live wager progress must always be fresh.
@@ -22,8 +22,11 @@ interface TierRow {
 
 interface PlatformProgress {
   username: string
+  /** This cycle's (calendar month, for Roobet) weighted wager total — the amount eligible for claim. */
   wagerTotal: number | null
   wagerTotalError: boolean
+  /** Every weighted wager this player has ever recorded on this platform. */
+  allTimeWager: number | null
   tiers: TierRow[]
   currentTier: TierRow | null
   nextTier: TierRow | null
@@ -39,17 +42,17 @@ async function buildPlatformProgress(
   platform: 'roobet' | 'luxdrop',
   username: string,
   tiers: TierRow[],
-  allTimeReward: number
+  allTimeReward: number,
+  allTimeWager: number | null
 ): Promise<PlatformProgress> {
   let startISO: string
   let endISO: string
   let periodLabel: string
 
   if (platform === 'roobet') {
-    const period = getCurrentRoobetPeriod()
     startISO = getCurrentRoobetMonthStartISO()
-    endISO = period.endISO
-    periodLabel = `${period.endDate.slice(0, 7)} monthly wager`
+    endISO = getCurrentRoobetPeriod().endISO
+    periodLabel = `${getCurrentRoobetRewardsGroupLabel()} monthly wager`
   } else {
     startISO = `${CURRENT_LUXDROP_PERIOD.startDate}T00:00:00.000Z`
     endISO = CURRENT_LUXDROP_PERIOD.endISO
@@ -83,6 +86,7 @@ async function buildPlatformProgress(
     username,
     wagerTotal,
     wagerTotalError,
+    allTimeWager,
     tiers: platformTiers,
     currentTier,
     nextTier,
@@ -197,14 +201,14 @@ export async function GET() {
   const progressPromises: Promise<void>[] = []
   if (roobetUsername) {
     progressPromises.push(
-      buildPlatformProgress('roobet', roobetUsername, tiers, allTimeRewardByPlatform.roobet).then((p) => {
+      buildPlatformProgress('roobet', roobetUsername, tiers, allTimeRewardByPlatform.roobet, allTimeWagerByPlatform.roobet).then((p) => {
         progress.roobet = p
       })
     )
   }
   if (luxdropUsername) {
     progressPromises.push(
-      buildPlatformProgress('luxdrop', luxdropUsername, tiers, allTimeRewardByPlatform.luxdrop).then((p) => {
+      buildPlatformProgress('luxdrop', luxdropUsername, tiers, allTimeRewardByPlatform.luxdrop, allTimeWagerByPlatform.luxdrop).then((p) => {
         progress.luxdrop = p
       })
     )
