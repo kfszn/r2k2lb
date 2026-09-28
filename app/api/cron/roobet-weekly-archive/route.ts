@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { addDaysToDateString, getFirstRoobetPeriod, getPreviousRoobetPeriod, ROOBET_PERIOD_DAYS } from "@/lib/roobet/period";
+import { getPreviousRoobetPeriod, getRoobetPeriodLabel } from "@/lib/roobet/period";
 import { ROOBET_PRIZE_TOTAL, ROOBET_REWARDS, roobetPrizeForRank } from "@/lib/roobet/leaderboard-rewards";
 import { getEntryName, normalizeRoobetEntries, sortByWeightedWager } from "@/lib/roobet/rank";
 
@@ -23,43 +23,6 @@ function getSupabase() {
 // archive/payout step never disagree on numbers.
 const PRIZE_TOTAL = ROOBET_PRIZE_TOTAL;
 const REWARDS: number[] = ROOBET_REWARDS;
-
-const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"];
-
-function monthLabel(dateStr: string): string {
-  return new Date(dateStr + "T00:00:00Z").toLocaleString("en-US", { month: "long", timeZone: "UTC" });
-}
-
-// Given a period's (ET) END date, compute its Roman-numeral index within
-// its calendar month (I, II, III, ... resets each month). Periods are
-// attributed to the month they END in / pay out in — the same convention
-// used by lib/roobet/period.ts's monthly-total helper — NOT the month they
-// start in, since a period can start in one month and pay out in the next
-// (e.g. Aug 28 - Sep 6 counts as a September period). Walks the same
-// fixed-length cadence used everywhere else (periods are contiguous: the
-// next period starts at the exact instant the previous one ends), seeded
-// from the first period's actual boundaries so its one-off length doesn't
-// throw off the month-relative count.
-function romanIndexForPeriod(periodEnd: string, firstPeriodStart: string, firstPeriodEnd: string): number {
-  let cursorEnd = firstPeriodEnd;
-  let indexInMonth = 0;
-  let lastMonth = monthLabel(cursorEnd);
-
-  while (cursorEnd < periodEnd) {
-    const month = monthLabel(cursorEnd);
-    if (month !== lastMonth) {
-      indexInMonth = 0;
-      lastMonth = month;
-    }
-    indexInMonth++;
-    cursorEnd = addDaysToDateString(cursorEnd, ROOBET_PERIOD_DAYS);
-  }
-  // one more increment for the period we stopped on
-  const month = monthLabel(cursorEnd);
-  if (month !== lastMonth) indexInMonth = 0;
-  indexInMonth++;
-  return indexInMonth;
-}
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -106,12 +69,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // The very first period's own start/end date anchor the month-relative
-  // Roman-numeral count for every period after it.
-  const firstPeriod = getFirstRoobetPeriod();
-  const romanIndex = romanIndexForPeriod(periodEnd, firstPeriod.startDate, firstPeriod.endDate);
-
-  const label = `${monthLabel(periodEnd)} ${ROMAN[romanIndex - 1] ?? romanIndex}`;
+  const label = getRoobetPeriodLabel(periodEnd);
 
   const { error: insertError } = await supabase.from("roobet_leaderboard_archive").insert({
     label,

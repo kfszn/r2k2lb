@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { fetchPlatformWagerRangeTotal } from '@/lib/r2koins/platforms'
-import { getCurrentRoobetPeriod, getCurrentRoobetMonthStartISO } from '@/lib/roobet/period'
+import { getCurrentRoobetPeriod, getCurrentRoobetMonthStartISO, getCurrentRoobetRewardsGroupLabel } from '@/lib/roobet/period'
 import { CURRENT_LUXDROP_PERIOD } from '@/lib/luxdrop/period'
 
 // Never cache — claim history and live wager progress must always be fresh.
@@ -50,10 +50,9 @@ async function buildPlatformProgress(
   let periodLabel: string
 
   if (platform === 'roobet') {
-    const period = getCurrentRoobetPeriod()
     startISO = getCurrentRoobetMonthStartISO()
-    endISO = period.endISO
-    periodLabel = `${period.endDate.slice(0, 7)} monthly wager`
+    endISO = getCurrentRoobetPeriod().endISO
+    periodLabel = `${getCurrentRoobetRewardsGroupLabel()} monthly wager`
   } else {
     startISO = `${CURRENT_LUXDROP_PERIOD.startDate}T00:00:00.000Z`
     endISO = CURRENT_LUXDROP_PERIOD.endISO

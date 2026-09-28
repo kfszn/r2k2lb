@@ -138,32 +138,86 @@ export function getCurrentRoobetPeriod(now: Date = new Date()): RoobetPeriod {
   return period
 }
 
+// ── Sequential "4 weekly periods = one labeled month" grouping ──────────────
+//
+// Reward eligibility and display labels ("September I"..."September IV",
+// "October I"...) are NOT tied to which real calendar month a period's dates
+// happen to fall in. They're tied to a simple counter: every 4 sequential
+// weekly periods form one labeled group, and the label's month name advances
+// by exactly one calendar month per group, starting from the first group's
+// name (the calendar month the very first tracked period ended in). This
+// keeps every group exactly 4 periods long even though real months don't
+// divide evenly into 7-day weeks — a real calendar month can span parts of
+// 4 OR 5 weekly periods depending on where its boundaries fall, which would
+// otherwise produce a "V" for that month while others stay at "IV". Grouping
+// by a fixed sequential count instead means the printed month name can drift
+// away from the period's true calendar date over time — that drift is
+// expected and intentional, not a bug.
+const ROOBET_PERIOD_LABEL_ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"]
+const ROOBET_PERIODS_PER_GROUP = 4
+
+// 1-based sequential index of the period ending on `endDate` — period 1 is
+// the very first tracked period (FIRST_PERIOD_END_DATE_ET), and every period
+// after it is exactly ROOBET_PERIOD_DAYS later, so the index is just a day
+// count divided by the period length.
+function getPeriodIndexForEndDate(endDate: string): number {
+  if (endDate === FIRST_PERIOD_END_DATE_ET) return 1
+  const daysDiff = Math.round(
+    (new Date(endDate + 'T00:00:00Z').getTime() - new Date(FIRST_PERIOD_END_DATE_ET + 'T00:00:00Z').getTime()) / 86_400_000
+  )
+  return 1 + daysDiff / ROOBET_PERIOD_DAYS
+}
+
+// The calendar month name for a given group index (0 = the first group,
+// i.e. the calendar month the very first period ended in), advancing one
+// real calendar month per group regardless of any period's actual date.
+function groupMonthName(groupIndex: number): string {
+  const base = new Date(FIRST_PERIOD_END_DATE_ET + 'T00:00:00Z')
+  const d = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + groupIndex, 1))
+  return d.toLocaleString('en-US', { month: 'long', timeZone: 'UTC' })
+}
+
+/** Display label ("September I", "October IV", ...) for the period ending on `endDate`. */
+export function getRoobetPeriodLabel(endDate: string): string {
+  const periodIndex = getPeriodIndexForEndDate(endDate)
+  const groupIndex = Math.floor((periodIndex - 1) / ROOBET_PERIODS_PER_GROUP)
+  const indexInGroup = ((periodIndex - 1) % ROOBET_PERIODS_PER_GROUP) + 1
+  return `${groupMonthName(groupIndex)} ${ROOBET_PERIOD_LABEL_ROMAN[indexInGroup - 1] ?? indexInGroup}`
+}
+
+/** Display label for the currently live period ("October I", ...). */
+export function getCurrentRoobetPeriodLabel(now: Date = new Date()): string {
+  return getRoobetPeriodLabel(getCurrentRoobetPeriod(now).endDate)
+}
+
+/** Just the current Wager Rewards group's month name ("October"), without the Roman numeral — the label for the whole 4-period cycle. */
+export function getCurrentRoobetRewardsGroupLabel(now: Date = new Date()): string {
+  const periodIndex = getPeriodIndexForEndDate(getCurrentRoobetPeriod(now).endDate)
+  const groupIndex = Math.floor((periodIndex - 1) / ROOBET_PERIODS_PER_GROUP)
+  return groupMonthName(groupIndex)
+}
+
 /**
- * The UTC instant the current calendar month's wager tracking begins — the
- * start of the earliest weekly period whose end date falls in the same
- * month as the currently live period (mirrors the "attribute a week to the
- * month it pays out in" rule used by the leaderboard's monthly goal). Used
- * to compute a single player's monthly wager total for milestone
- * eligibility, the same way the leaderboard sums monthly totals across
- * archived weeks.
+ * The UTC instant the current Wager Rewards cycle begins — the start of the
+ * FIRST period in the currently-live sequential group of 4 (i.e. the start
+ * of "<Month> I" for whichever labeled group is live right now). Used to
+ * compute a single player's monthly wager total for milestone eligibility,
+ * scoped to the same 4-period group the reward payout labels use — NOT a
+ * real calendar-month boundary (see the grouping note above).
  */
 export function getCurrentRoobetMonthStartISO(now: Date = new Date()): string {
-  let period = getCurrentRoobetPeriod(now)
-  const monthKey = period.endDate.slice(0, 7)
+  const period = getCurrentRoobetPeriod(now)
+  const periodIndex = getPeriodIndexForEndDate(period.endDate)
+  const indexInGroup = ((periodIndex - 1) % ROOBET_PERIODS_PER_GROUP) + 1
+  const groupFirstIndex = periodIndex - (indexInGroup - 1)
 
-  for (;;) {
-    // Walk one period backward. The period immediately before `period`
-    // ends exactly when `period` starts (contiguous 6pm-ET cutovers).
-    const prevEndDate = period.startDate
-    if (prevEndDate.slice(0, 7) !== monthKey) return period.startISO
-    // Reconstruct the previous period from its end date.
-    const prevStartDate = addDaysToDateString(prevEndDate, -ROOBET_PERIOD_DAYS)
-    const prevStartISO =
-      prevStartDate === FIRST_PERIOD_START_DATE_ET ? FIRST_PERIOD_START_ISO : nyWallClockToUtc(prevStartDate, ROOBET_CUTOFF_HOUR_ET).toISOString()
-    const prev = periodFromEndDate(prevStartISO, prevEndDate)
-    if (prev.endDate.slice(0, 7) !== monthKey) return period.startISO
-    period = prev
-  }
+  if (groupFirstIndex === 1) return FIRST_PERIOD_START_ISO
+
+  const groupFirstEndDate = addDaysToDateString(FIRST_PERIOD_END_DATE_ET, (groupFirstIndex - 1) * ROOBET_PERIOD_DAYS)
+  const groupFirstStartDate = addDaysToDateString(groupFirstEndDate, -ROOBET_PERIOD_DAYS)
+  return groupFirstStartDate === FIRST_PERIOD_START_DATE_ET
+    ? FIRST_PERIOD_START_ISO
+    : nyWallClockToUtc(groupFirstStartDate, ROOBET_CUTOFF_HOUR_ET).toISOString()
 }
 
 /** The most recently fully-completed period (end <= now), or null if the first period hasn't ended yet. */
