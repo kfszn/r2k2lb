@@ -2,7 +2,7 @@
 // the public leaderboards use, so a user's tracked wager always matches what
 // they see on the leaderboard. We do NOT re-implement upstream fetching here.
 
-import { getCurrentRoobetPeriod } from "@/lib/roobet/period";
+import { getCurrentRoobetPeriod, getCurrentRoobetMonthStartISO } from "@/lib/roobet/period";
 import { CURRENT_LUXDROP_PERIOD } from "@/lib/luxdrop/period";
 
 export type MilestonePlatform = "acebet" | "luxdrop" | "roobet";
@@ -12,11 +12,6 @@ export type MilestonePlatform = "acebet" | "luxdrop" | "roobet";
 // (shared with app/leaderboard/roobet and app/api/cron/roobet-weekly-archive)
 // so milestone progress resets in lockstep with the public leaderboard,
 // down to the exact cutover instant.
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + "T00:00:00Z");
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
 
 // Returns the current Roobet period as exact UTC ISO instants (not
 // date-only strings) — /api/roobet/affiliates accepts full ISO timestamps,
@@ -52,23 +47,21 @@ export function getLeaderboardWindow(platform: MilestonePlatform): { start: stri
   return ACEBET_WINDOW;
 }
 
-// Roobet's Wager Rewards page tracks progress on its own rolling 30-day
-// cycle — separate from the weekly leaderboard — so a player's tier progress
-// accumulates across all ~4 weekly leaderboard periods in that span instead
-// of resetting every 7 days. Anchored on the same start date as the
-// leaderboard for simplicity; the two cycles run independently after that.
-const ROOBET_REWARDS_ANCHOR = "2026-08-28";
-const ROOBET_REWARDS_CYCLE_DAYS = 30;
-
+// Roobet's Wager Rewards page tracks progress on a MONTHLY cycle made up of
+// that calendar month's ~4 weekly leaderboard periods — separate from the
+// weekly leaderboard reset, but still anchored to real calendar months
+// (not an arbitrary rolling window). This reuses
+// getCurrentRoobetMonthStartISO() — the exact same "attribute a week to the
+// month its leaderboard payout falls in" boundary /api/account/rewards uses
+// for its "this month" wager total — so the two can never drift out of sync
+// the way a hand-rolled anchor date previously did. Progress toward a tier
+// that isn't claimed before the month rolls over does NOT carry into the
+// next month: this window resets at the start of each calendar month, so
+// both the wager total and each tier's "claimed" check (which is scoped to
+// this same window in getMilestoneTiers) start over from zero.
 function roobetRewardsPeriod(): { start: string; end: string } {
-  const today = new Date().toISOString().slice(0, 10);
-  let start = ROOBET_REWARDS_ANCHOR;
-  let end = addDays(start, ROOBET_REWARDS_CYCLE_DAYS - 1);
-  while (addDays(end, 1) <= today) {
-    start = addDays(end, 1);
-    end = addDays(start, ROOBET_REWARDS_CYCLE_DAYS - 1);
-  }
-  return { start, end };
+  const period = getCurrentRoobetPeriod();
+  return { start: getCurrentRoobetMonthStartISO(), end: period.endISO };
 }
 
 export type MilestoneCycle = "leaderboard" | "rewards";

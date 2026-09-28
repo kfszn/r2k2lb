@@ -33,6 +33,7 @@ interface PlatformProgress {
   username: string
   wagerTotal: number | null
   wagerTotalError: boolean
+  allTimeWager: number | null
   tiers: Tier[]
   currentTier: Tier | null
   nextTier: Tier | null
@@ -87,7 +88,7 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
     )
   }
 
-  const { wagerTotal, currentTier, nextTier, amountToNextTier, periodLabel, currentPeriodReward, allTimeReward } = progress
+  const { wagerTotal, allTimeWager, currentTier, nextTier, amountToNextTier, periodLabel, currentPeriodReward, allTimeReward } = progress
   const rangeStart = currentTier?.wager_threshold ?? 0
   const rangeEnd = nextTier?.wager_threshold ?? Math.max(rangeStart, wagerTotal)
   const pct = rangeEnd > rangeStart ? Math.min(100, ((wagerTotal - rangeStart) / (rangeEnd - rangeStart)) * 100) : 100
@@ -99,8 +100,19 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
         <span className="text-xs text-muted-foreground">{periodLabel}</span>
       </div>
 
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-md border border-primary/25 bg-primary/5 px-3 py-2 space-y-0.5">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">This Month Weighted Wager</p>
+          <p className="text-lg font-bold text-primary">{formatMoney(wagerTotal)}</p>
+          <p className="text-[10px] text-muted-foreground">Eligible for claim</p>
+        </div>
+        <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2 space-y-0.5">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">All-Time Weighted Wager</p>
+          <p className="text-lg font-bold text-foreground">{allTimeWager !== null ? formatMoney(allTimeWager) : '—'}</p>
+        </div>
+      </div>
+
       <div className="flex items-baseline justify-between">
-        <span className="text-2xl font-bold text-foreground">{formatMoney(wagerTotal)}</span>
         {currentTier && (
           <Badge variant="outline" className="text-xs">
             {currentTier.tier_name} unlocked
@@ -117,12 +129,12 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
           {formatMoney(amountToNextTier ?? 0)} more to unlock <span className="text-foreground">{nextTier.tier_name}</span> ({formatMoney(nextTier.reward_amount)})
         </p>
       ) : (
-        <p className="text-xs text-muted-foreground">All available tiers unlocked for this period.</p>
+        <p className="text-xs text-muted-foreground">All available tiers unlocked for this month.</p>
       )}
 
       <div className="grid grid-cols-2 gap-2 border-t border-border/30 pt-3">
         <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">This Period Claimed</p>
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">This Month Claimed</p>
           <p className="text-lg font-bold text-foreground">{formatMoney(currentPeriodReward)}</p>
         </div>
         <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2">
@@ -130,6 +142,10 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
           <p className="text-lg font-bold text-foreground">{formatMoney(allTimeReward)}</p>
         </div>
       </div>
+
+      <p className="text-[10px] text-muted-foreground italic">
+        Unclaimed wager progress does not carry over — it expires and resets to zero at the start of each new month.
+      </p>
     </div>
   )
 }

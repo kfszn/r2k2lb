@@ -22,8 +22,11 @@ interface TierRow {
 
 interface PlatformProgress {
   username: string
+  /** This cycle's (calendar month, for Roobet) weighted wager total — the amount eligible for claim. */
   wagerTotal: number | null
   wagerTotalError: boolean
+  /** Every weighted wager this player has ever recorded on this platform. */
+  allTimeWager: number | null
   tiers: TierRow[]
   currentTier: TierRow | null
   nextTier: TierRow | null
@@ -39,7 +42,8 @@ async function buildPlatformProgress(
   platform: 'roobet' | 'luxdrop',
   username: string,
   tiers: TierRow[],
-  allTimeReward: number
+  allTimeReward: number,
+  allTimeWager: number | null
 ): Promise<PlatformProgress> {
   let startISO: string
   let endISO: string
@@ -83,6 +87,7 @@ async function buildPlatformProgress(
     username,
     wagerTotal,
     wagerTotalError,
+    allTimeWager,
     tiers: platformTiers,
     currentTier,
     nextTier,
@@ -197,14 +202,14 @@ export async function GET() {
   const progressPromises: Promise<void>[] = []
   if (roobetUsername) {
     progressPromises.push(
-      buildPlatformProgress('roobet', roobetUsername, tiers, allTimeRewardByPlatform.roobet).then((p) => {
+      buildPlatformProgress('roobet', roobetUsername, tiers, allTimeRewardByPlatform.roobet, allTimeWagerByPlatform.roobet).then((p) => {
         progress.roobet = p
       })
     )
   }
   if (luxdropUsername) {
     progressPromises.push(
-      buildPlatformProgress('luxdrop', luxdropUsername, tiers, allTimeRewardByPlatform.luxdrop).then((p) => {
+      buildPlatformProgress('luxdrop', luxdropUsername, tiers, allTimeRewardByPlatform.luxdrop, allTimeWagerByPlatform.luxdrop).then((p) => {
         progress.luxdrop = p
       })
     )

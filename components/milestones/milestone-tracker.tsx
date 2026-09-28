@@ -343,8 +343,9 @@ function MilestoneStatusCard({
         <p className="mt-4 text-xs text-muted-foreground">
           {cycle === 'rewards' ? (
             <>
-              Progress resets on this 30-day cycle&apos;s end date,{' '}
-              <span className="text-foreground font-medium">{resetDate}</span>.
+              Progress resets for the new month on{' '}
+              <span className="text-foreground font-medium">{resetDate}</span> — unclaimed wager
+              beyond your last claim does not carry over.
             </>
           ) : (
             <>
