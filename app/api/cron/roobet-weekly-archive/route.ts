@@ -1,8 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { getPreviousRoobetPeriod, getRoobetPeriodLabel } from "@/lib/roobet/period";
-import { ROOBET_PRIZE_TOTAL, ROOBET_REWARDS, roobetPrizeForRank } from "@/lib/roobet/leaderboard-rewards";
-import { getEntryName, normalizeRoobetEntries, sortByWeightedWager } from "@/lib/roobet/rank";
+import { ROOBET_PRIZE_TOTAL, ROOBET_REWARDS } from "@/lib/roobet/leaderboard-rewards";
+import { normalizeRoobetEntries } from "@/lib/roobet/rank";
+import { createLeaderboardClaimsForPeriod } from "@/lib/roobet/leaderboard-claims";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -84,55 +85,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
-  // Automatically post leaderboard prizes to reward_claims for every ranked
-  // player who has this platform linked, so payouts show up in their
-  // account's Rewards & Claims panel without any manual entry. Idempotent
-  // per (platform, username, category, period_label) — safe if this cron
-  // ever reruns for the same already-archived period.
-  // Rank with the SAME shared weighted-wager sort the public leaderboard and
-  // account stat card use, so the username attached to each rank here always
-  // matches the placement players actually see. Previously this sorted by raw
-  // wager, which produced a different order and mis-labeled payouts.
-  const rankedEntries = sortByWeightedWager(normalizeRoobetEntries(entries))
-    .map((e) => ({ username: getEntryName(e) }))
-    .filter((e) => e.username && e.username !== "Unknown")
-    .slice(0, REWARDS.length);
-
-  const claimErrors: string[] = [];
-  for (let i = 0; i < rankedEntries.length; i++) {
-    const rank = i + 1;
-    const prize = roobetPrizeForRank(rank);
-    if (prize <= 0) continue;
-    const { username } = rankedEntries[i];
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("roobet_username")
-      .ilike("roobet_username", username)
-      .maybeSingle();
-    if (!profile) continue;
-
-    const { data: existingClaim } = await supabase
-      .from("reward_claims")
-      .select("id")
-      .eq("platform", "roobet")
-      .ilike("username", username)
-      .eq("category", "leaderboard")
-      .eq("period_label", label)
-      .maybeSingle();
-    if (existingClaim) continue;
-
-    const { error: claimError } = await supabase.from("reward_claims").insert({
-      platform: "roobet",
-      username,
-      category: "leaderboard",
-      title: `Weekly Leaderboard — Rank #${rank}`,
-      amount: prize,
-      status: "pending",
-      period_label: label,
-    });
-    if (claimError) claimErrors.push(`${username}: ${claimError.message}`);
-  }
+  // Automatically post leaderboard prizes to reward_claims for every ranked,
+  // paid-position player — keyed by username, not by an existing profile —
+  // so payouts show up in a player's account Rewards & Claims panel as soon
+  // as they link that username, even if that happens well after this period
+  // was archived. Idempotent per (platform, username, category,
+  // period_label) — safe if this cron ever reruns for the same
+  // already-archived period.
+  //
+  // Ranks with the SAME shared weighted-wager sort the public leaderboard
+  // and account stat card use, so the username attached to each rank here
+  // always matches the placement players actually see.
+  const { created, skipped } = await createLeaderboardClaimsForPeriod(supabase, entries, label);
 
   return NextResponse.json({
     message: "Archived Roobet leaderboard period",
@@ -140,6 +104,7 @@ export async function GET(request: NextRequest) {
     periodStart,
     periodEnd,
     entryCount: entries.length,
-    claimErrors: claimErrors.length > 0 ? claimErrors : undefined,
+    claimsCreated: created,
+    claimsSkipped: skipped,
   });
 }
