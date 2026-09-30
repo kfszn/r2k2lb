@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 export type Platform = 'roobet' | 'luxdrop'
 
-const REFERRAL_RATE = 0.05
+const REFERRAL_RATE = 0.1
 const REFERRAL_CAP_PER_REFERRAL = 200
 
 /** Plain calendar month (UTC) — independent of Roobet's custom weekly-group cycle. */
@@ -32,11 +32,11 @@ function usernameColumn(platform: Platform) {
 
 /**
  * Sums, per referred player, that single player's wager-milestone rewards
- * (approved/paid) this calendar month on `platform`, applies the $200/mo
- * cap PER REFERRED PLAYER, then sums the capped contributions across every
- * player the referrer has referred. The returned totalPayout is NOT capped
- * again at the referrer level — a referrer with 3 active referrals can earn
- * up to $600/mo from a single platform.
+ * (approved/paid) this calendar month on `platform`, takes 10% of that,
+ * applies the $200/mo cap PER REFERRED PLAYER, then sums the capped
+ * contributions across every player the referrer has referred. The returned
+ * totalPayout is NOT capped again at the referrer level — a referrer with 3
+ * active referrals can earn up to $600/mo from a single platform.
  */
 export async function computeReferralPayout(
   admin: SupabaseClient,

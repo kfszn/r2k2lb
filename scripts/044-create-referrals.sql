@@ -1,5 +1,5 @@
 -- Referral program: admins link Referrer -> Referred Player. Payouts are
--- computed monthly (5% of the referred player's claimed wager-milestone
+-- computed monthly (10% of the referred player's claimed wager-milestone
 -- rewards, capped at $200/mo per referred player per platform) and posted
 -- as ordinary reward_claims rows (category = 'referral').
 

@@ -255,7 +255,7 @@ export function RewardClaimsManager() {
     }
   }
 
-  // Referral eligibility lookup — 5% of each referred player's claimed
+  // Referral eligibility lookup — 10% of each referred player's claimed
   // wager-milestone rewards this month, capped at $200/mo per referred
   // player, minus what's already been posted this month.
   const [referralEligibility, setReferralEligibility] = useState<{
@@ -559,7 +559,7 @@ export function RewardClaimsManager() {
                       ))
                     )}
                     <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
-                      <span className="text-muted-foreground">Total payout (5%, $200 cap/referral)</span>
+                      <span className="text-muted-foreground">Total payout (10%, $200 cap/referral)</span>
                       <span className="font-mono">${referralEligibility.totalPayout.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center justify-between text-xs">

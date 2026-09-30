@@ -151,7 +151,7 @@ export function ReferralsManager() {
             <p className="font-semibold text-sm">Link a Referral</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Referrer (earns 5%)</Label>
+                <Label>Referrer (earns 10%)</Label>
                 <Select value={referrerId || undefined} onValueChange={setReferrerId}>
                   <SelectTrigger><SelectValue placeholder="Select referrer" /></SelectTrigger>
                   <SelectContent>
@@ -232,7 +232,7 @@ export function ReferralsManager() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-xs text-muted-foreground">
-            Computes 5% of each referred player&apos;s claimed wager-milestone rewards this calendar month, capped at $200 per referred
+            Computes 10% of each referred player&apos;s claimed wager-milestone rewards this calendar month, capped at $200 per referred
             player per platform, and posts it as a pending referral claim under the referrer&apos;s linked username. Safe to re-run — it
             tops up rather than double-paying.
           </p>

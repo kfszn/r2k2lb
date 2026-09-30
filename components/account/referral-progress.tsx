@@ -81,7 +81,7 @@ export function ReferralProgress() {
       <div className="rounded-lg border border-border/40 bg-background/40 p-4 flex items-start gap-3">
         <Users2 className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
         <p className="text-sm text-muted-foreground">
-          Ask an admin to link a referral to start earning 5% of your referrals&apos; wager rewards, up to $200/mo per referral per
+          Ask an admin to link a referral to start earning 10% of your referrals&apos; wager rewards, up to $200/mo per referral per
           platform.
         </p>
       </div>
@@ -93,7 +93,7 @@ export function ReferralProgress() {
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        5% of each referred player&apos;s claimed wager rewards, capped at $200/mo per referral per platform · {periodLabel}
+        10% of each referred player&apos;s claimed wager rewards, capped at $200/mo per referral per platform · {periodLabel}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
         {platforms.roobet && <PlatformReferralCard label="Roobet" data={platforms.roobet} />}
