@@ -13,6 +13,8 @@ interface ReferredBreakdown {
 
 interface PlatformReferrals {
   total: number
+  totalReferrals: number
+  commissionPercent: number
   breakdown: ReferredBreakdown[]
 }
 
@@ -48,9 +50,20 @@ function ReferredPlayerBar({ row }: { row: ReferredBreakdown }) {
 function PlatformReferralCard({ label, data }: { label: string; data: PlatformReferrals }) {
   return (
     <div className="rounded-lg border border-border/40 bg-background/40 p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">{label}</span>
-        <span className="text-sm font-bold text-emerald-400">{formatMoney(data.total)}</span>
+      <span className="text-sm font-medium">{label}</span>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-md bg-muted/40 px-2 py-2 text-center">
+          <p className="text-[11px] text-muted-foreground">Total Referrals</p>
+          <p className="text-sm font-bold">{data.totalReferrals}</p>
+        </div>
+        <div className="rounded-md bg-muted/40 px-2 py-2 text-center">
+          <p className="text-[11px] text-muted-foreground">Total Earned</p>
+          <p className="text-sm font-bold text-emerald-400">{formatMoney(data.total)}</p>
+        </div>
+        <div className="rounded-md bg-muted/40 px-2 py-2 text-center">
+          <p className="text-[11px] text-muted-foreground">Commission</p>
+          <p className="text-sm font-bold">{data.commissionPercent}%</p>
+        </div>
       </div>
       {data.breakdown.length === 0 ? (
         <p className="text-xs text-muted-foreground">No referred activity yet this month.</p>
