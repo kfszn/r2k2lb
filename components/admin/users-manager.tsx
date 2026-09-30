@@ -26,8 +26,9 @@ import {
 import {
   Users, Search, Plus, Minus, Loader2, Link2, Check, X,
   Unlink, RefreshCw, ChevronDown, ChevronUp, Coins, Wallet,
-  Pencil, Trash2, AlertCircle, CheckCircle2, ShieldCheck, UserCog,
+  Pencil, Trash2, AlertCircle, CheckCircle2, ShieldCheck, UserCog, Users2,
 } from 'lucide-react'
+import { ReferralsManager } from './referrals-manager'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -110,6 +111,10 @@ export function UsersManager() {
           <Link2 className="h-4 w-4" />
           Platform Links
         </TabsTrigger>
+        <TabsTrigger value="referrals" className="gap-2">
+          <Users2 className="h-4 w-4" />
+          Referrals
+        </TabsTrigger>
         <TabsTrigger value="rates" className="gap-2">
           <Coins className="h-4 w-4" />
           Conversion Rates
@@ -128,6 +133,9 @@ export function UsersManager() {
       </TabsContent>
       <TabsContent value="links">
         <LinksTab />
+      </TabsContent>
+      <TabsContent value="referrals">
+        <ReferralsManager />
       </TabsContent>
       <TabsContent value="rates">
         <RatesTab />

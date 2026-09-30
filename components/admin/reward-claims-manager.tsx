@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2 } from 'lucide-react'
+import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2, Users } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -26,7 +26,7 @@ interface AdminUser {
 }
 
 type Platform = 'roobet' | 'luxdrop'
-type Category = 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard'
+type Category = 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard' | 'referral'
 type Status = 'pending' | 'approved' | 'paid'
 
 interface Claim {
@@ -50,6 +50,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
   giveaway: 'Giveaways',
   raffle: 'Raffle',
   leaderboard: 'Leaderboard',
+  referral: 'Referral',
 }
 
 const STATUS_STYLES: Record<Status, string> = {
@@ -254,6 +255,40 @@ export function RewardClaimsManager() {
     }
   }
 
+  // Referral eligibility lookup — 5% of each referred player's claimed
+  // wager-milestone rewards this month, capped at $200/mo per referred
+  // player, minus what's already been posted this month.
+  const [referralEligibility, setReferralEligibility] = useState<{
+    breakdown: { referredUsername: string; rawEarnings: number; cappedContribution: number }[]
+    totalPayout: number
+    alreadyPosted: number
+    available: number
+    periodLabel: string
+  } | null>(null)
+  const [referralEligibilityLoading, setReferralEligibilityLoading] = useState(false)
+  const [referralEligibilityError, setReferralEligibilityError] = useState<string | null>(null)
+
+  const lookupReferralEligibility = async (username: string, platform: Platform, category: Category) => {
+    if (category !== 'referral' || !username.trim()) {
+      setReferralEligibility(null)
+      setReferralEligibilityError(null)
+      return
+    }
+    setReferralEligibilityLoading(true)
+    setReferralEligibilityError(null)
+    try {
+      const res = await fetch(`/api/admin/referral-eligibility?username=${encodeURIComponent(username.trim())}&platform=${platform}`)
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Lookup failed')
+      setReferralEligibility(json)
+    } catch (err: unknown) {
+      setReferralEligibility(null)
+      setReferralEligibilityError(err instanceof Error ? err.message : 'Lookup failed')
+    } finally {
+      setReferralEligibilityLoading(false)
+    }
+  }
+
   const resetForm = () => {
     setForm(EMPTY_FORM)
     setEditingId(null)
@@ -262,6 +297,8 @@ export function RewardClaimsManager() {
     setPayoutAddresses(null)
     setWagerEligibility(null)
     setWagerEligibilityError(null)
+    setReferralEligibility(null)
+    setReferralEligibilityError(null)
     setUsernameManual(false)
   }
 
@@ -282,6 +319,7 @@ export function RewardClaimsManager() {
     setUsernameManual(true)
     lookupPayoutAddress(c.username, c.platform)
     lookupWagerEligibility(c.username, c.platform, c.category)
+    lookupReferralEligibility(c.username, c.platform, c.category)
   }
 
   const handleSave = async () => {
@@ -481,6 +519,61 @@ export function RewardClaimsManager() {
                           <button
                             type="button"
                             onClick={() => setForm((f) => ({ ...f, amount: wagerEligibility.available }))}
+                            className="text-[11px] font-medium text-primary hover:underline"
+                          >
+                            Use amount
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {form.category === 'referral' && form.username.trim() && (
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Users className="h-3.5 w-3.5" />
+                  Referral Payout Eligibility ({referralEligibility?.periodLabel ?? 'this month'})
+                </div>
+                {referralEligibilityLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Checking eligibility...
+                  </div>
+                ) : referralEligibilityError ? (
+                  <p className="text-xs text-destructive">{referralEligibilityError}</p>
+                ) : referralEligibility ? (
+                  <div className="space-y-1.5">
+                    {referralEligibility.breakdown.length === 0 ? (
+                      <p className="text-xs text-muted-foreground italic">No referred players with rewards this month.</p>
+                    ) : (
+                      referralEligibility.breakdown.map((row) => (
+                        <div key={row.referredUsername} className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">{row.referredUsername}</span>
+                          <span className="font-mono">
+                            ${row.rawEarnings.toLocaleString()} → <span className="text-foreground">${row.cappedContribution.toLocaleString()}</span>
+                            {row.rawEarnings * 0.05 > row.cappedContribution && <span className="text-yellow-500"> (capped)</span>}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
+                      <span className="text-muted-foreground">Total payout (5%, $200 cap/referral)</span>
+                      <span className="font-mono">${referralEligibility.totalPayout.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Already posted this month</span>
+                      <span className="font-mono">${referralEligibility.alreadyPosted.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-border/40">
+                      <span className="text-xs font-semibold text-foreground">Available now</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-emerald-400">${referralEligibility.available.toLocaleString()}</span>
+                        {referralEligibility.available > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, amount: referralEligibility.available, period_label: f.period_label || referralEligibility.periodLabel }))}
                             className="text-[11px] font-medium text-primary hover:underline"
                           >
                             Use amount
