@@ -5,14 +5,16 @@ import useSWR from 'swr'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Gift, Trophy, AlertCircle } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Gift, Trophy, AlertCircle, Target, Users2, History } from 'lucide-react'
+import { ReferralProgress } from './referral-progress'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 interface Claim {
   id: string
   platform: 'roobet' | 'luxdrop'
-  category: 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard'
+  category: 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard' | 'referral'
   title: string
   amount: number
   status: 'pending' | 'approved' | 'paid'
@@ -56,6 +58,7 @@ const CATEGORY_LABELS: Record<Claim['category'], string> = {
   giveaway: 'Giveaway',
   raffle: 'Raffle',
   leaderboard: 'Leaderboard Prize',
+  referral: 'Referral Bonus',
 }
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as Claim['category'][]
@@ -168,70 +171,90 @@ export function RewardsPanel() {
           Rewards
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-5">
-        {hasAnyPlatform ? (
-          <div className="space-y-3">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Wager Milestones</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {progress.roobet && <PlatformMilestoneProgress platform="roobet" progress={progress.roobet} />}
-              {progress.luxdrop && <PlatformMilestoneProgress platform="luxdrop" progress={progress.luxdrop} />}
+      <CardContent>
+        <Tabs defaultValue="milestones" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="milestones" className="gap-1.5 text-xs">
+              <Target className="h-3.5 w-3.5" />
+              Milestones
+            </TabsTrigger>
+            <TabsTrigger value="referrals" className="gap-1.5 text-xs">
+              <Users2 className="h-3.5 w-3.5" />
+              Referrals
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-1.5 text-xs">
+              <History className="h-3.5 w-3.5" />
+              History
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="milestones" className="space-y-3 mt-0">
+            {hasAnyPlatform ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {progress.roobet && <PlatformMilestoneProgress platform="roobet" progress={progress.roobet} />}
+                {progress.luxdrop && <PlatformMilestoneProgress platform="luxdrop" progress={progress.luxdrop} />}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Link your Roobet or LuxDrop account above to track live wager milestone progress.
+              </p>
+            )}
+          </TabsContent>
+
+          <TabsContent value="referrals" className="mt-0">
+            <ReferralProgress />
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-3 mt-0">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Claim History</p>
+              <Select value={activeCategory} onValueChange={(v) => setActiveCategory(v as Claim['category'] | 'all')}>
+                <SelectTrigger size="sm" className="w-[150px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {CATEGORY_LABELS[cat]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Link your Roobet or LuxDrop account above to track live wager milestone progress.
-          </p>
-        )}
 
-        <div className="space-y-3 border-t border-border/30 pt-4">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Claim History</p>
-            <Select value={activeCategory} onValueChange={(v) => setActiveCategory(v as Claim['category'] | 'all')}>
-              <SelectTrigger size="sm" className="w-[150px] text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {CATEGORY_LABELS[cat]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {filteredClaims.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-2">No claims recorded yet.</p>
-          ) : (
-            <ul className="divide-y divide-border/30">
-              {filteredClaims.map((claim) => (
-                <li key={claim.id} className="py-3 flex items-start justify-between gap-3">
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Trophy className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="text-sm font-medium">{claim.title}</span>
-                      <Badge variant="outline" className="text-[10px] capitalize">{claim.platform}</Badge>
+            {filteredClaims.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">No claims recorded yet.</p>
+            ) : (
+              <ul className="divide-y divide-border/30">
+                {filteredClaims.map((claim) => (
+                  <li key={claim.id} className="py-3 flex items-start justify-between gap-3">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Trophy className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="text-sm font-medium">{claim.title}</span>
+                        <Badge variant="outline" className="text-[10px] capitalize">{claim.platform}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {CATEGORY_LABELS[claim.category]}
+                        {claim.period_label ? ` · ${claim.period_label}` : ''}
+                        {' · '}
+                        {new Date(claim.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                      {claim.notes && <p className="text-xs text-muted-foreground italic">{claim.notes}</p>}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {CATEGORY_LABELS[claim.category]}
-                      {claim.period_label ? ` · ${claim.period_label}` : ''}
-                      {' · '}
-                      {new Date(claim.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </p>
-                    {claim.notes && <p className="text-xs text-muted-foreground italic">{claim.notes}</p>}
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    <span className="text-sm font-semibold text-foreground">{formatMoney(claim.amount)}</span>
-                    <span className={`text-[10px] rounded-full px-2 py-0.5 font-medium border ${STATUS_STYLES[claim.status]}`}>
-                      {STATUS_LABELS[claim.status]}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <span className="text-sm font-semibold text-foreground">{formatMoney(claim.amount)}</span>
+                      <span className={`text-[10px] rounded-full px-2 py-0.5 font-medium border ${STATUS_STYLES[claim.status]}`}>
+                        {STATUS_LABELS[claim.status]}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   )
