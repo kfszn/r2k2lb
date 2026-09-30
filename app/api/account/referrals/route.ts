@@ -53,7 +53,10 @@ export async function GET() {
     })
   }
 
-  const platforms: Record<Platform, { totalPayout: number; breakdown: { username: string; rawEarnings: number; cappedContribution: number }[] } | null> = {
+  const platforms: Record<
+    Platform,
+    { totalPayout: number; totalReferrals: number; commissionPercent: number; breakdown: { username: string; rawEarnings: number; cappedContribution: number }[] } | null
+  > = {
     roobet: null,
     luxdrop: null,
   }
@@ -61,9 +64,10 @@ export async function GET() {
   await Promise.all(
     PLATFORMS.map(async (platform) => {
       const result = await computeReferralPayout(admin, session.user.id, platform)
-      if (result.breakdown.length === 0) return
       platforms[platform] = {
         totalPayout: result.totalPayout,
+        totalReferrals: result.breakdown.length,
+        commissionPercent: 10,
         breakdown: result.breakdown.map((row) => ({
           username: mask(row.referredUsername),
           rawEarnings: row.rawEarnings,
