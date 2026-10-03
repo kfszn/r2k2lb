@@ -6,10 +6,14 @@ function getSupabase() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 }
 
+// The admin panel is served inside a cross-site iframe in the v0 preview, so the
+// session cookie must be SameSite=None + Secure (like Supabase's own auth cookies)
+// or the browser silently drops it on the very next request — which looks like an
+// instant login -> logout loop.
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'none' as const,
+  secure: true,
   path: '/',
   maxAge: 60 * 60 * 12,
 }
