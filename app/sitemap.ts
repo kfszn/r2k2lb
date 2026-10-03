@@ -72,12 +72,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
-      url: '/perks/roobet/rank-up-match',
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
       url: '/perks/roobet/challenges',
       changeFrequency: 'monthly' as const,
       priority: 0.7,

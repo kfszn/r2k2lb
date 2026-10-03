@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { getAdminSession } from '@/lib/staff-auth'
 
 function getSupabase() {
   return createClient(
@@ -8,7 +9,10 @@ function getSupabase() {
   )
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const session = getAdminSession(request)
+  if (!session) return NextResponse.json({ error: 'Admin session required.' }, { status: 401 })
+
   const supabase = getSupabase()
 
   const { data, error } = await supabase

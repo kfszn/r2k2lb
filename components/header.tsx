@@ -128,13 +128,6 @@ function Header() {
                 Wager Rewards
               </Link>
               <Link
-                href="/perks/roobet/rank-up-match"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center justify-between gap-2"
-              >
-                Rank Up Match
-                <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
-              </Link>
-              <Link
                 href="/perks/roobet/challenges"
                 className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
@@ -304,10 +297,6 @@ function Header() {
                       <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
                       <Link href="/perks/roobet/wager-rewards" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Wager Rewards
-                      </Link>
-                      <Link href="/perks/roobet/rank-up-match" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
-                        Rank Up Match
-                        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
                       </Link>
                       <Link href="/perks/roobet/challenges" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Challenges
