@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import useSWR from "swr";
 import { useActiveTournament } from "@/hooks/use-tournament-realtime";
 import { Header } from "@/components/header";
 import { GiveawayCounter } from "@/components/giveaway-counter";
@@ -44,18 +43,17 @@ type AdminSession = { role: AdminRole; username: string };
 
 type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards" | "challenges" | "rewards" | "staff-access";
 
-const sessionFetcher = (url: string) =>
-  fetch(url).then(async (res) => {
-    if (!res.ok) return { session: null };
-    return res.json();
-  });
-
 export default function AdminPage() {
-  const { data: sessionData, isLoading: sessionLoading, mutate: mutateSession } = useSWR<{ session: AdminSession | null }>(
-    "/api/admin/session",
-    sessionFetcher
-  );
-  const session = sessionData?.session ?? null;
+  // Admin access must be re-authenticated on every visit — the session cookie
+  // exists only so logged-in-this-pageview API calls can be authorized, it's
+  // never used to auto-restore a login across reloads or new tabs.
+  const [session, setSession] = useState<AdminSession | null>(null);
+
+  // Always start a fresh visit logged out, even if a session cookie from an
+  // earlier visit is still valid, by clearing it on mount.
+  useEffect(() => {
+    fetch("/api/admin/session", { method: "DELETE" });
+  }, []);
 
   const [loginType, setLoginType] = useState<AdminRole>("owner");
   const [usernameInput, setUsernameInput] = useState("");
@@ -97,7 +95,7 @@ export default function AdminPage() {
         setPasswordInput("");
         return;
       }
-      mutateSession({ session: json.session });
+      setSession(json.session);
       setCurrentView(json.session.role === "staff" ? "rewards" : "dashboard");
     } finally {
       setLoggingIn(false);
@@ -106,12 +104,12 @@ export default function AdminPage() {
 
   const handleLogout = async () => {
     await fetch("/api/admin/session", { method: "DELETE" });
-    mutateSession({ session: null });
+    setSession(null);
     setUsernameInput("");
     setPasswordInput("");
   };
 
-  if (sessionLoading || isLoading) {
+  if (isLoading) {
     return (
       <main className="min-h-screen bg-background">
         <GiveawayCounter />
