@@ -208,17 +208,6 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/perks/roobet/wager-rewards`,
   },
-  perksRoobetRankUpMatch: {
-    title: 'Roobet Rank Up Match — R2K2',
-    description:
-      'R2K2 matches your Roobet rank ups. Play under code R2K2 and get rewarded every time you level up.',
-    keywords: [
-      'Roobet rank up match',
-      'Roobet rank rewards',
-      'R2K2 Roobet perks',
-    ],
-    canonical: `${baseUrl}/perks/roobet/rank-up-match`,
-  },
   account: {
     title: 'My Account — R2K2 Dashboard',
     description:
