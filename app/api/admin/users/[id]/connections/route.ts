@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { getAdminSession } from '@/lib/staff-auth'
 
 function getSupabase() {
   return createClient(
@@ -28,6 +29,9 @@ async function logAction(supabase: ReturnType<typeof getSupabase>, {
 
 // PATCH — admin links/updates a connection on a profile
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = getAdminSession(req)
+  if (!session) return NextResponse.json({ error: 'Admin session required.' }, { status: 401 })
+
   const { id } = await params
   const supabase = getSupabase()
 
@@ -97,6 +101,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 // DELETE — admin unlinks a provider from a profile
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = getAdminSession(req)
+  if (!session) return NextResponse.json({ error: 'Admin session required.' }, { status: 401 })
+
   const { id } = await params
   const supabase = getSupabase()
 

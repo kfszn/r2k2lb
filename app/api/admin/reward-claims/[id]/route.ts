@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getAdminSession } from '@/lib/staff-auth'
 
 function getSupabase() {
   return createClient(
@@ -8,13 +9,25 @@ function getSupabase() {
   )
 }
 
-// PATCH — update a reward claim
+// PATCH — update a reward claim. Staff may only change `status` (marking a
+// claim pending/approved/paid) — editing the rest of an existing claim is
+// owner-only.
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = getAdminSession(request)
+  if (!session) return NextResponse.json({ error: 'Admin session required.' }, { status: 401 })
+
   const { id } = await params
   const body = await request.json()
+
+  if (session.role === 'staff') {
+    const keys = Object.keys(body)
+    if (keys.length !== 1 || keys[0] !== 'status') {
+      return NextResponse.json({ error: 'Staff can only update a claim\u2019s status.' }, { status: 403 })
+    }
+  }
 
   const supabase = getSupabase()
   const { data, error } = await supabase
@@ -28,11 +41,17 @@ export async function PATCH(
   return NextResponse.json({ claim: data })
 }
 
-// DELETE — delete a reward claim
+// DELETE — delete a reward claim (owner only)
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = getAdminSession(request)
+  if (!session) return NextResponse.json({ error: 'Admin session required.' }, { status: 401 })
+  if (session.role !== 'owner') {
+    return NextResponse.json({ error: 'Owner access required.' }, { status: 403 })
+  }
+
   const { id } = await params
   const supabase = getSupabase()
 

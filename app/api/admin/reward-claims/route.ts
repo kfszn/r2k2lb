@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getAdminSession } from '@/lib/staff-auth'
 
 function getSupabase() {
   return createClient(
@@ -20,8 +21,11 @@ export async function GET() {
   return NextResponse.json({ claims: data })
 }
 
-// POST — create a reward claim
+// POST — create a reward claim (owner or staff)
 export async function POST(request: NextRequest) {
+  const session = getAdminSession(request)
+  if (!session) return NextResponse.json({ error: 'Admin session required.' }, { status: 401 })
+
   const body = await request.json()
   const { platform, username, category, title, amount, status, period_label, notes } = body
 

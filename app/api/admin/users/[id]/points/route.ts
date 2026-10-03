@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { getAdminSession } from '@/lib/staff-auth'
 
 function getSupabase() {
   return createClient(
@@ -12,6 +13,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = getAdminSession(req)
+  if (!session) return NextResponse.json({ error: 'Admin session required.' }, { status: 401 })
+
   const supabase = getSupabase()
   const { id } = await params
   const body = await req.json()

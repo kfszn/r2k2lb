@@ -167,7 +167,9 @@ const EMPTY_FORM = {
   notes: '',
 }
 
-export function RewardClaimsManager() {
+export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staff' }) {
+  const canEditOrDelete = role === 'owner'
+
   const { data, mutate } = useSWR<{ claims: Claim[] }>('/api/admin/reward-claims', fetcher)
   const claims = data?.claims ?? []
 
@@ -735,25 +737,27 @@ export function RewardClaimsManager() {
                       <SelectItem value="paid">Paid</SelectItem>
                     </SelectContent>
                   </Select>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                      onClick={() => openEdit(c)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDelete(c.id)}
-                      disabled={deleting === c.id}
-                    >
-                      {deleting === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                    </Button>
-                  </div>
+                  {canEditOrDelete && (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={() => openEdit(c)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDelete(c.id)}
+                        disabled={deleting === c.id}
+                      >
+                        {deleting === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

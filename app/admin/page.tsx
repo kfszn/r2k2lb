@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import useSWR from "swr";
 import { useActiveTournament } from "@/hooks/use-tournament-realtime";
 import { Header } from "@/components/header";
 import { GiveawayCounter } from "@/components/giveaway-counter";
@@ -14,7 +15,7 @@ import { EntrantsDialog } from "@/components/admin/entrants-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Settings, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3, Flame, Zap, Gift } from "lucide-react";
+import { Loader2, Trophy, Users, Settings, Lock, Gamepad2, Ticket, ArrowRight, LineChart, ListOrdered, BarChart3, Flame, Zap, Gift, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { AdminNav, type AdminNavView } from "@/components/admin/admin-nav";
 import { Input } from "@/components/ui/input";
@@ -36,33 +37,81 @@ import { GamesManager } from "@/components/admin/games-manager";
 import { LeaderboardManager } from "@/components/admin/leaderboard-manager";
 
 import { RoobetChallengesManager } from "@/components/admin/roobet-challenges-manager";
+import { StaffAccountsManager } from "@/components/admin/staff-accounts-manager";
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
+type AdminRole = "owner" | "staff";
+type AdminSession = { role: AdminRole; username: string };
 
-type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards" | "challenges" | "rewards";
+type AdminView = "dashboard" | "tournament" | "website" | "tournament-detail" | "stream-games" | "raffle" | "shop" | "users" | "games" | "leaderboards" | "challenges" | "rewards" | "staff-access";
+
+const sessionFetcher = (url: string) =>
+  fetch(url).then(async (res) => {
+    if (!res.ok) return { session: null };
+    return res.json();
+  });
 
 export default function AdminPage() {
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const { data: sessionData, isLoading: sessionLoading, mutate: mutateSession } = useSWR<{ session: AdminSession | null }>(
+    "/api/admin/session",
+    sessionFetcher
+  );
+  const session = sessionData?.session ?? null;
+
+  const [loginType, setLoginType] = useState<AdminRole>("owner");
+  const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
   const [currentView, setCurrentView] = useState<AdminView>("dashboard");
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
   const { tournament, isLoading, refresh } = useActiveTournament();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEntrantsDialog, setShowEntrantsDialog] = useState(false);
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  // Staff logins can only ever land on Rewards or Users — if a staff session
+  // restores on a view they're not allowed to see (e.g. stale state from an
+  // owner session), snap them back to Rewards.
+  useEffect(() => {
+    if (session?.role === "staff" && currentView !== "rewards" && currentView !== "users") {
+      setCurrentView("rewards");
+    }
+  }, [session?.role, currentView]);
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === ADMIN_PASSWORD) {
-      setIsAuthorized(true);
-      setPasswordError("");
-    } else {
-      setPasswordError("Incorrect password");
-      setPasswordInput("");
+    setLoggingIn(true);
+    setPasswordError("");
+    try {
+      const res = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          loginType === "staff"
+            ? { type: "staff", username: usernameInput, password: passwordInput }
+            : { password: passwordInput }
+        ),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setPasswordError(json.error || "Incorrect password");
+        setPasswordInput("");
+        return;
+      }
+      mutateSession({ session: json.session });
+      setCurrentView(json.session.role === "staff" ? "rewards" : "dashboard");
+    } finally {
+      setLoggingIn(false);
     }
   };
 
-  if (isLoading) {
+  const handleLogout = async () => {
+    await fetch("/api/admin/session", { method: "DELETE" });
+    mutateSession({ session: null });
+    setUsernameInput("");
+    setPasswordInput("");
+  };
+
+  if (sessionLoading || isLoading) {
     return (
       <main className="min-h-screen bg-background">
         <GiveawayCounter />
@@ -77,7 +126,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!isAuthorized) {
+  if (!session) {
     return (
       <main className="min-h-screen bg-background">
         <GiveawayCounter />
@@ -91,27 +140,68 @@ export default function AdminPage() {
                 </div>
               </div>
               <CardTitle className="text-2xl">Admin Access</CardTitle>
-              <p className="text-sm text-muted-foreground">Enter the admin password to continue</p>
+              <p className="text-sm text-muted-foreground">
+                {loginType === "owner" ? "Enter the admin password to continue" : "Sign in with your staff login"}
+              </p>
             </CardHeader>
             <CardContent>
+              <div className="mb-4 grid grid-cols-2 gap-1 rounded-lg border border-border/40 bg-muted/30 p-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginType("owner");
+                    setPasswordError("");
+                  }}
+                  className={`rounded-md py-1.5 text-sm font-semibold transition-colors ${
+                    loginType === "owner" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  Owner
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginType("staff");
+                    setPasswordError("");
+                  }}
+                  className={`rounded-md py-1.5 text-sm font-semibold transition-colors ${
+                    loginType === "staff" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  Staff
+                </button>
+              </div>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-2">
+                  {loginType === "staff" && (
+                    <Input
+                      placeholder="Username"
+                      value={usernameInput}
+                      onChange={(e) => {
+                        setUsernameInput(e.target.value);
+                        setPasswordError("");
+                      }}
+                      autoFocus
+                      autoComplete="username"
+                    />
+                  )}
                   <Input
                     type="password"
-                    placeholder="Enter password"
+                    placeholder={loginType === "owner" ? "Enter password" : "Password"}
                     value={passwordInput}
                     onChange={(e) => {
                       setPasswordInput(e.target.value);
                       setPasswordError("");
                     }}
-                    autoFocus
+                    autoFocus={loginType === "owner"}
+                    autoComplete="current-password"
                   />
                   {passwordError && (
                     <p className="text-sm text-destructive">{passwordError}</p>
                   )}
                 </div>
-                <Button type="submit" className="w-full">
-                  Unlock Admin Panel
+                <Button type="submit" className="w-full" disabled={loggingIn}>
+                  {loggingIn ? "Checking..." : "Unlock Admin Panel"}
                 </Button>
               </form>
             </CardContent>
@@ -120,6 +210,8 @@ export default function AdminPage() {
       </main>
     );
   }
+
+  const role = session.role;
 
   // Dashboard View
   if (currentView === "dashboard") {
@@ -137,6 +229,7 @@ export default function AdminPage() {
       { view: "challenges", title: "Challenges", description: "Create and manage Roobet challenges — add images, set prize amounts, and toggle visibility", icon: <Flame className="h-6 w-6" /> },
       { view: "rewards", title: "Rewards", description: "Track wager milestones, lossback, tournament, deposit bonus, giveaway, and raffle claims for Roobet and LuxDrop players", icon: <Gift className="h-6 w-6" /> },
       { view: "users", title: "Users", description: "Manage accounts, R2Koin balances, platform links, conversion rates, and email verification", icon: <Users className="h-6 w-6" /> },
+      { view: "staff-access", title: "Staff Access", description: "Create and manage limited staff logins that can only access Rewards and Users", icon: <ShieldCheck className="h-6 w-6" /> },
       { view: "games", title: "Games Analytics", description: "View bet history, house profit, and per-game stats for Blackjack, Keno, and Plinko", icon: <BarChart3 className="h-6 w-6" /> },
       { view: "leaderboards", title: "Leaderboard Manager", description: "Create and manage leaderboards for Roobet and Kick with custom prize structures", icon: <ListOrdered className="h-6 w-6" /> },
       { href: "/admin/fifty-fifty", title: "50/50 Raffle", description: "Open rounds, view live stats, trigger draws, and review round history", icon: <Ticket className="h-6 w-6" /> },
@@ -166,7 +259,7 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="dashboard" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="dashboard" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <div className="mb-8">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Control Center</p>
             <h1 className="mt-1 text-3xl font-bold tracking-tight">Admin Dashboard</h1>
@@ -196,7 +289,7 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="tournament" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="tournament" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Tournament Management</h1>
 
           <TournamentSelector 
@@ -243,7 +336,7 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="stream-games" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="stream-games" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Stream Games</h1>
 
           <StreamGamesManager />
@@ -259,7 +352,7 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="website" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="website" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Affiliate Analytics</h1>
 
           <Tabs defaultValue="wager" className="w-full">
@@ -304,7 +397,7 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="shop" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="shop" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Rewards Shop</h1>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
@@ -325,7 +418,7 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="challenges" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="challenges" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Challenges</h1>
           <div className="space-y-8">
             <RoobetChallengesManager />
@@ -342,13 +435,17 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="rewards" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="rewards" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Rewards</h1>
           <div className="space-y-8">
-              <RewardClaimsManager />
-              <LuxdropFinalizeAction />
-              <RoobetBackfillClaimsAction />
-              <WagerMilestoneTiersManager />
+              <RewardClaimsManager role={role} />
+              {role === "owner" && (
+                <>
+                  <LuxdropFinalizeAction />
+                  <RoobetBackfillClaimsAction />
+                  <WagerMilestoneTiersManager />
+                </>
+              )}
           </div>
         </div>
       </main>
@@ -362,9 +459,24 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="users" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="users" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Users</h1>
           <UsersManager />
+        </div>
+      </main>
+    );
+  }
+
+  // Staff Access View (owner only)
+  if (currentView === "staff-access" && role === "owner") {
+    return (
+      <main className="min-h-screen bg-background">
+        <GiveawayCounter />
+        <Header />
+        <div className="container mx-auto px-4 py-6">
+          <AdminNav current="staff-access" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
+          <h1 className="text-3xl font-bold tracking-tight mb-6">Staff Access</h1>
+          <StaffAccountsManager />
         </div>
       </main>
     );
@@ -377,7 +489,7 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="games" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="games" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Games Analytics</h1>
           <GamesManager />
         </div>
@@ -392,7 +504,7 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="leaderboards" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="leaderboards" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Leaderboard Manager</h1>
           <LeaderboardManager />
         </div>
@@ -407,7 +519,7 @@ export default function AdminPage() {
         <GiveawayCounter />
         <Header />
         <div className="container mx-auto px-4 py-6">
-          <AdminNav current="raffle" onNavigate={(v) => setCurrentView(v as AdminView)} />
+          <AdminNav current="raffle" onNavigate={(v) => setCurrentView(v as AdminView)} role={role} username={session.username} onLogout={handleLogout} />
           <h1 className="text-3xl font-bold tracking-tight mb-6">Weekly Raffle Management</h1>
           <RaffleManager />
         </div>
