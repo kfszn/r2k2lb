@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2, Users } from 'lucide-react'
+import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2, Users, Search } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -119,6 +119,95 @@ function RewardsSummary({ claims }: { claims: Claim[] }) {
             ))}
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+function PlayerLookup({ claims }: { claims: Claim[] }) {
+  const [query, setQuery] = useState('')
+  const trimmed = query.trim()
+
+  const result = useMemo(() => {
+    if (!trimmed) return null
+    const needle = trimmed.toLowerCase()
+    const matches = claims
+      .filter((c) => c.username.toLowerCase() === needle)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+    const paid = matches.filter((c) => c.status === 'paid').reduce((sum, c) => sum + c.amount, 0)
+    const pending = matches.filter((c) => c.status === 'pending').reduce((sum, c) => sum + c.amount, 0)
+    const approved = matches.filter((c) => c.status === 'approved').reduce((sum, c) => sum + c.amount, 0)
+    const total = matches.reduce((sum, c) => sum + c.amount, 0)
+
+    return { matches, paid, pending, approved, total }
+  }, [claims, trimmed])
+
+  return (
+    <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-4">
+      <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+        <Search className="h-4 w-4 text-primary" />
+        Player Lookup
+      </div>
+
+      <Input
+        placeholder="Enter a username (roobet or luxdrop)"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+
+      {trimmed && result && (
+        result.matches.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No reward claims found for &ldquo;{trimmed}&rdquo;.</p>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Paid</p>
+                <p className="text-lg font-bold text-emerald-400 mt-1">${result.paid.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Approved</p>
+                <p className="text-lg font-bold text-blue-400 mt-1">${result.approved.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Pending</p>
+                <p className="text-lg font-bold text-yellow-500 mt-1">${result.pending.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">All Claims</p>
+                <p className="text-lg font-bold text-foreground mt-1">${result.total.toLocaleString()}</p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                {result.matches.length} claim{result.matches.length === 1 ? '' : 's'}
+              </p>
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {result.matches.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-card/40 px-3 py-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs font-semibold text-foreground truncate">{c.title}</p>
+                        <Badge variant="outline" className="text-[9px] capitalize">{c.platform}</Badge>
+                        <Badge variant="secondary" className="text-[9px]">{CATEGORY_LABELS[c.category]}</Badge>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        {c.period_label ? `${c.period_label} · ` : ''}
+                        {new Date(c.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-sm font-semibold text-foreground">${c.amount.toLocaleString()}</span>
+                      <Badge className={`text-[9px] border ${STATUS_STYLES[c.status]}`} variant="outline">{c.status}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
       )}
     </div>
   )
@@ -388,6 +477,8 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
 
       <CardContent className="space-y-6">
         {data && claims.length > 0 && <RewardsSummary claims={claims} />}
+
+        {data && <PlayerLookup claims={claims} />}
 
         {showForm && (
           <div className="rounded-xl border border-border/50 bg-muted/20 p-5 space-y-4">
