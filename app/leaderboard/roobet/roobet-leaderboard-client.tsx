@@ -21,22 +21,19 @@ import {
   sortByWeightedWager,
   type RoobetLeaderboardEntry,
 } from '@/lib/roobet/rank'
+import { ROOBET_PRIZE_TOTAL, ROOBET_REWARDS } from '@/lib/roobet/leaderboard-rewards'
 
 // ---------------------------------------------------------------------------
 // Config — rolling 7-day periods that cut over at exactly 6:00 PM Eastern.
 // Period boundaries themselves live in lib/roobet/period.ts (shared with
 // app/api/cron/roobet-weekly-archive and lib/milestones/progress) so the
 // leaderboard, the archive, and milestone tracking can never drift apart.
+// Prize amounts live in lib/roobet/leaderboard-rewards so this page always
+// shows the exact numbers the archive cron actually pays out — no local
+// copy to drift out of sync.
 // ---------------------------------------------------------------------------
-// Updated distribution — proper descending payout again, with the bottom
-// spots set to 7th $125, 8th $75, 9th $50, 10th $25 (6th unchanged at $250).
-// The $175 freed up from the old bottom is added across the top 5, so every
-// top-5 position increases vs the original array. Total stays at $5,000.
-// Archived weeks keep whatever REWARDS array was live when they were
-// snapshotted (stored per-row in roobet_leaderboard_archive), so this change
-// only affects the current/future live week and never rewrites past payouts.
-const PRIZE_TOTAL = 5000
-const REWARDS: number[] = [2050, 1050, 625, 425, 325, 250, 125, 75, 50, 25]
+const PRIZE_TOTAL = ROOBET_PRIZE_TOTAL
+const REWARDS: number[] = ROOBET_REWARDS
 
 function formatDisplay(start: string, end: string): string {
   const s = new Date(start + 'T00:00:00Z')
