@@ -97,16 +97,17 @@ export function RaffleView({
       let users: EligibleUser[] = [];
 
       if (isMultiplier) {
-        // Highest Multi Raffle (Roobet only): qualify on highest single-bet
-        // multiplier during the period, gated by that bet's own stake size.
+        // Highest Multi Raffle (Roobet only): the day-by-day endpoint checks each
+        // day independently, so a tiny-stake hit on one day can't hide a
+        // qualifying hit on another. Must match the admin panel's source.
         const res = await fetch(
-          `/api/roobet/affiliates?startDate=${cfgData.start_date}&endDate=${cfgData.end_date}`,
+          `/api/roobet/multiplier-eligibility?startDate=${cfgData.start_date}&endDate=${cfgData.end_date}&threshold=${cfgData.multiplier_threshold || 200}&minBetSize=${cfgData.min_bet_size || 1}`,
           { cache: 'no-store' },
         );
         if (res.ok) {
           const json = await res.json();
           users = parseMultiplierEligibility(
-            normalizeEntries(json),
+            json?.users || [],
             cfgData.multiplier_threshold || 200,
             cfgData.min_bet_size || 1,
           );
