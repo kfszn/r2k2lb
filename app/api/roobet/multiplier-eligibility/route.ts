@@ -5,6 +5,7 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 // Never cache — this feeds the live raffle draw, always pull fresh data.
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+export const maxDuration = 60;
 
 const proxyAgent = process.env.PROXY_URL
   ? new HttpsProxyAgent(process.env.PROXY_URL)
@@ -64,34 +65,48 @@ function normalizeEntries(raw: unknown): any[] {
   return [];
 }
 
-async function fetchDay(dayISO: string) {
+const MAX_ATTEMPTS = 3;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// A day that fails after every retry is reported as failed instead of being
+// treated as "no hits", so a rate limit or timeout can never silently drop
+// qualifying players from the draw.
+async function fetchDay(
+  dayISO: string,
+): Promise<{ day: string; rows: any[]; failed: boolean }> {
   const upstream = new URL(ROOBET_ENDPOINT);
   upstream.searchParams.set("userId", ROOBET_AFFILIATE_USER_ID);
   upstream.searchParams.set("startDate", `${dayISO}T00:00:00.000Z`);
   upstream.searchParams.set("endDate", `${dayISO}T23:59:59.999Z`);
 
-  try {
-    const r = await fetch(upstream.toString(), {
-      headers: {
-        Authorization: `Bearer ${ROOBET_API_KEY}`,
-        Accept: "application/json",
-      },
-      // @ts-ignore — node-fetch agent type vs built-in fetch
-      agent: proxyAgent,
-      signal: AbortSignal.timeout(10_000),
-    });
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const r = await fetch(upstream.toString(), {
+        headers: {
+          Authorization: `Bearer ${ROOBET_API_KEY}`,
+          Accept: "application/json",
+        },
+        // @ts-ignore — node-fetch agent type vs built-in fetch
+        agent: proxyAgent,
+        signal: AbortSignal.timeout(10_000),
+      });
 
-    if (!r.ok) {
-      console.log(`[v0] multiplier-eligibility ${dayISO}: not ok (${r.status})`);
-      return { day: dayISO, rows: [] as any[] };
+      if (r.ok) {
+        const json = await r.json().catch(() => null);
+        return { day: dayISO, rows: normalizeEntries(json), failed: false };
+      }
+      console.log(`[v0] multiplier-eligibility ${dayISO}: not ok (${r.status}) attempt ${attempt}`);
+    } catch (err) {
+      console.log(
+        `[v0] multiplier-eligibility ${dayISO}: error attempt ${attempt}`,
+        err instanceof Error ? err.message : err,
+      );
     }
-
-    const json = await r.json().catch(() => null);
-    return { day: dayISO, rows: normalizeEntries(json) };
-  } catch (err) {
-    console.log(`[v0] multiplier-eligibility ${dayISO}: error`, err instanceof Error ? err.message : err);
-    return { day: dayISO, rows: [] as any[] };
+    if (attempt < MAX_ATTEMPTS) await sleep(500 * attempt);
   }
+
+  return { day: dayISO, rows: [], failed: true };
 }
 
 export async function GET(request: NextRequest) {
@@ -134,7 +149,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const dayResults: { day: string; rows: any[] }[] = [];
+  const dayResults: { day: string; rows: any[]; failed: boolean }[] = [];
   for (let i = 0; i < days.length; i += CONCURRENCY) {
     const batch = days.slice(i, i + CONCURRENCY);
     dayResults.push(...(await Promise.all(batch.map(fetchDay))));
@@ -179,8 +194,10 @@ export async function GET(request: NextRequest) {
     },
   }));
 
+  const failedDays = dayResults.filter((d) => d.failed).map((d) => d.day);
+
   return NextResponse.json(
-    { users, days: days.length, start, end },
+    { users, days: days.length, start, end, failedDays },
     { headers: { "Cache-Control": "no-store, max-age=0" } },
   );
 }
