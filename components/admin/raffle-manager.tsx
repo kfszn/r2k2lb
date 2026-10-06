@@ -125,19 +125,22 @@ function RaffleAdminTab({
       if (isMultiplier) {
         // Highest Multi Raffle: qualify once the player's highest single-bet
         // multiplier during the period clears the threshold, with the
-        // qualifying bet's stake meeting the min bet size.
+        // qualifying bet's stake meeting the min bet size. Roobet's aggregate
+        // stats endpoint only reports ONE highest-multiplier bet for the
+        // whole queried range, so checking the full range in one call can
+        // miss a player entirely if their single biggest hit happens to be a
+        // tiny stake — even though they also cleared the threshold on a
+        // bigger bet another day. The day-by-day eligibility endpoint checks
+        // each day independently so that case can't hide a qualifying player.
         const res = await fetch(
-          `/api/roobet/affiliates?startDate=${config.start_date}&endDate=${config.end_date}`,
+          `/api/roobet/multiplier-eligibility?startDate=${config.start_date}&endDate=${config.end_date}&threshold=${config.multiplier_threshold || 200}&minBetSize=${config.min_bet_size || 1}`,
           { cache: 'no-store' },
         );
         if (res.ok) {
           const json = await res.json();
-          const rows = Array.isArray(json)
-            ? json
-            : json?.users || json?.data || json?.affiliates || json?.results || json?.leaderboard || json?.entries || [];
           users.push(
             ...parseMultiplierEligibility(
-              rows,
+              json?.users || [],
               config.multiplier_threshold || 200,
               config.min_bet_size || 1,
             ),
