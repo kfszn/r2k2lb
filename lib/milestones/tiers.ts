@@ -6,6 +6,8 @@
 import { createClient } from "@/lib/supabase/server";
 import type { MilestoneTier } from "@/components/milestones/milestone-tier-row";
 import { getMilestoneWindow, type MilestoneCycle } from "@/lib/milestones/progress";
+import { computeEligible, getRateCutoverISO, cutoverFallsInWindow } from "@/lib/milestones/rate-cutover";
+import { fetchPlatformWagerRangeTotal } from "@/lib/r2koins/platforms";
 
 export type TierPlatform = "roobet" | "luxdrop";
 
@@ -45,8 +47,19 @@ export async function getMilestoneTiers(
   if (error || !data) return [];
 
   let claimedTotal = 0;
+  let wagerAtCutover = 0;
   if (username) {
     const window = getMilestoneWindow(platform, cycle);
+
+    // If the payout rate changed mid-cycle, a tier's true payout for this
+    // player blends the frozen legacy rate (up to their wager at the cutover)
+    // with the new rate, so "claimed" must be judged against that blend.
+    const cutoverISO = await getRateCutoverISO(supabase, platform);
+    if (cutoverFallsInWindow(cutoverISO, window.start, window.end)) {
+      const atCutover = await fetchPlatformWagerRangeTotal(platform, username, toStartISO(window.start), cutoverISO);
+      wagerAtCutover = typeof atCutover === "number" ? atCutover : 0;
+    }
+
     const { data: claims } = await supabase
       .from("reward_claims")
       .select("amount, status")
@@ -70,7 +83,9 @@ export async function getMilestoneTiers(
       wager: Number(row.wager_threshold),
       payout,
       claimable: row.claimable_amount != null ? Number(row.claimable_amount) : undefined,
-      claimed: username ? claimedTotal >= payout : undefined,
+      claimed: username
+        ? claimedTotal >= computeEligible(data, Number(row.wager_threshold), wagerAtCutover) - 0.005
+        : undefined,
     };
   });
 }
