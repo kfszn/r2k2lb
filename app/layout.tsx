@@ -7,6 +7,7 @@ import { defaultMetadata } from '@/lib/seo-metadata'
 import Footer from '@/components/footer'
 import FloatingBackground from '@/components/floating-background'
 import PageLoader from '@/components/page-loader'
+import AgeGate from '@/components/age-gate'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -37,6 +38,7 @@ export default function RootLayout({
     <html lang="en" className="bg-background">
       <body className="font-sans antialiased flex flex-col min-h-screen relative">
         <PageLoader />
+        <AgeGate />
         <FloatingBackground />
         <BracketProvider>
           {children}
