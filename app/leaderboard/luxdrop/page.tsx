@@ -27,7 +27,7 @@ import { LUXDROP_PRIZE_TOTAL, LUXDROP_REWARDS } from '@/lib/luxdrop/leaderboard-
 const CURRENT_START = CURRENT_LUXDROP_PERIOD.startDate
 const CURRENT_END = CURRENT_LUXDROP_PERIOD.endDate
 const CURRENT_END_ISO = CURRENT_LUXDROP_PERIOD.endISO
-const CURRENT_DISPLAY = 'Oct 8 – Nov 7, 2026'
+const CURRENT_DISPLAY = 'Oct 7 – Nov 6, 2026'
 const WAGER_GOAL = 45000
 
 // Top 10 prize breakdown for the current period — shared with
