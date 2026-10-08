@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { fetchPlatformWagerRangeTotal } from '@/lib/r2koins/platforms'
 import { getCurrentRoobetPeriod, getCurrentRoobetMonthStartISO, getCurrentRoobetRewardsGroupLabel } from '@/lib/roobet/period'
 import { CURRENT_LUXDROP_PERIOD } from '@/lib/luxdrop/period'
+import { computeEligible, getRateCutoverISO, cutoverFallsInWindow } from '@/lib/milestones/rate-cutover'
 
 // Never cache — claim history and live wager progress must always be fresh.
 export const dynamic = 'force-dynamic'
@@ -82,6 +83,18 @@ async function buildPlatformProgress(
 
   const amountToNextTier = wagerTotal !== null && nextTier ? Math.max(0, nextTier.wager_threshold - wagerTotal) : null
 
+  // Blend frozen legacy payouts with the new rate when the rate changed mid-cycle.
+  let wagerAtCutover = 0
+  const adminClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  const cutoverISO = await getRateCutoverISO(adminClient, platform)
+  if (cutoverFallsInWindow(cutoverISO, startISO, endISO)) {
+    const atCutover = await fetchPlatformWagerRangeTotal(platform, username, startISO, cutoverISO)
+    wagerAtCutover = typeof atCutover === 'number' ? atCutover : 0
+  }
+  const currentPeriodReward = currentTier
+    ? computeEligible(platformTiers, Number(currentTier.wager_threshold), wagerAtCutover)
+    : 0
+
   return {
     username,
     wagerTotal,
@@ -92,7 +105,7 @@ async function buildPlatformProgress(
     nextTier,
     amountToNextTier,
     periodLabel,
-    currentPeriodReward: currentTier?.reward_amount ?? 0,
+    currentPeriodReward,
     allTimeReward,
   }
 }

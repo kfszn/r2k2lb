@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getMilestoneWindow, fetchWindowedWager } from '@/lib/milestones/progress'
+import { computeEligible, getRateCutoverISO, cutoverFallsInWindow } from '@/lib/milestones/rate-cutover'
 
 // GET — given a platform + username, compute how much Wager Milestone money
 // they're currently eligible for vs. how much they've already been paid, so
@@ -24,11 +25,17 @@ export async function GET(req: NextRequest) {
 
   const window = getMilestoneWindow(platform, 'rewards')
 
-  const [wagerResult, tiersRes, claimsRes] = await Promise.all([
+  const cutoverISO = await getRateCutoverISO(admin, platform)
+  const measureCutover = cutoverFallsInWindow(cutoverISO, window.start, window.end)
+
+  const [wagerResult, cutoverWagerResult, tiersRes, claimsRes] = await Promise.all([
     fetchWindowedWager(platform, { username }, req.nextUrl.origin, window),
+    measureCutover
+      ? fetchWindowedWager(platform, { username }, req.nextUrl.origin, { start: window.start, end: cutoverISO! })
+      : Promise.resolve(0 as number | 'not_found' | null),
     admin
       .from('wager_milestone_tiers')
-      .select('tier_name, wager_threshold, reward_amount, sort_order')
+      .select('tier_name, wager_threshold, reward_amount, legacy_reward_amount, sort_order')
       .eq('platform', platform)
       .eq('active', true)
       .order('sort_order', { ascending: true }),
@@ -43,55 +50,27 @@ export async function GET(req: NextRequest) {
       .lte('created_at', window.end.includes('T') ? window.end : `${window.end}T23:59:59.999Z`),
   ])
 
-  if (wagerResult === null) {
+  if (wagerResult === null || cutoverWagerResult === null) {
     return NextResponse.json({ error: 'Could not fetch live wager data right now. Try again shortly.' }, { status: 502 })
   }
+  const wagerAtCutover = cutoverWagerResult === 'not_found' ? 0 : cutoverWagerResult
 
   const wagered = wagerResult === 'not_found' ? 0 : wagerResult
   const tiers = tiersRes.data ?? []
   const claimedTotal = (claimsRes.data ?? []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
 
-  // Tiers are checkpoints on a continuous reward curve (e.g. $50 per $10,000
-  // wagered), NOT discrete steps that only pay out once fully crossed. A
-  // player between two checkpoints — e.g. $193k wagered, between the $150k
-  // ($750) and $200k ($1,000) checkpoints — should be credited the linearly
-  // interpolated amount ($965), not snapped down to the last checkpoint they
-  // fully cleared ($750). Below the first checkpoint we interpolate from the
-  // origin (0, 0); above the last checkpoint we extrapolate using the slope
-  // of the final segment so the curve keeps scaling past the top tier.
-  let eligibleTotal = 0
+  // Tiers are checkpoints on a continuous reward curve, NOT discrete steps.
+  // computeEligible interpolates between checkpoints and, when a rate change
+  // happened mid-cycle, pays the frozen legacy rate up to the cutover wager
+  // and the new rate only on wager after it (see lib/milestones/rate-cutover).
+  const eligibleTotal = computeEligible(tiers, wagered, wagerAtCutover)
+
   let tierLabel: string | null = null
-  if (tiers.length > 0) {
-    const points = [{ wager_threshold: 0, reward_amount: 0, tier_name: null as string | null }, ...tiers]
-
-    let lower = points[0]
-    let upper = points[points.length - 1]
-    for (let i = 0; i < points.length - 1; i++) {
-      if (wagered >= Number(points[i].wager_threshold)) {
-        lower = points[i]
-        upper = points[i + 1]
-      }
-    }
-
-    const lowerWager = Number(lower.wager_threshold)
-    const upperWager = Number(upper.wager_threshold)
-    const lowerReward = Number(lower.reward_amount)
-    const upperReward = Number(upper.reward_amount)
-
-    if (upperWager > lowerWager) {
-      const rate = (upperReward - lowerReward) / (upperWager - lowerWager)
-      eligibleTotal = Math.max(0, lowerReward + (wagered - lowerWager) * rate)
-    } else {
-      eligibleTotal = lowerReward
-    }
-
-    // Label shows the highest checkpoint actually reached.
-    for (const t of tiers) {
-      if (wagered >= Number(t.wager_threshold)) tierLabel = t.tier_name
-    }
+  for (const t of tiers) {
+    if (wagered >= Number(t.wager_threshold)) tierLabel = t.tier_name
   }
 
   const available = Math.max(0, eligibleTotal - claimedTotal)
 
-  return NextResponse.json({ wagered, eligibleTotal, claimedTotal, available, tierLabel })
+  return NextResponse.json({ wagered, eligibleTotal, claimedTotal, available, tierLabel, wagerAtCutover, cutoverAt: measureCutover ? cutoverISO : null })
 }

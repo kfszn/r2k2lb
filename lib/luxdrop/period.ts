@@ -15,7 +15,7 @@ export interface LuxdropPeriod {
 }
 
 export const CURRENT_LUXDROP_PERIOD: LuxdropPeriod = {
-  startDate: '2026-09-05',
-  endDate: '2026-10-06',
-  endISO: '2026-10-06T22:00:00Z',
+  startDate: '2026-10-06',
+  endDate: '2026-11-06',
+  endISO: '2026-11-06T23:00:00Z',
 }
