@@ -1,4 +1,4 @@
--- Monthly welcome bonus: $50 redeemable once per cycle after $1,000 wagered.
+-- Monthly welcome bonus: $20 redeemable once per cycle after $1,000 wagered.
 ALTER TABLE public.reward_claims DROP CONSTRAINT IF EXISTS reward_claims_category_check;
 ALTER TABLE public.reward_claims ADD CONSTRAINT reward_claims_category_check
   CHECK (category IN ('wager_milestone', 'lossback', 'tournament', 'deposit_bonus', 'giveaway', 'raffle', 'leaderboard', 'referral', 'welcome_bonus'));

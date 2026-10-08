@@ -8,7 +8,7 @@ import {
 
 export const WELCOME_BONUS_PLATFORM = 'roobet' as const
 export const WELCOME_BONUS_WAGER_REQUIRED = 1000
-export const WELCOME_BONUS_AMOUNT = 50
+export const WELCOME_BONUS_AMOUNT = 20
 
 export interface WelcomeBonusStatus {
   platform: typeof WELCOME_BONUS_PLATFORM
