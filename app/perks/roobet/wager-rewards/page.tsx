@@ -42,7 +42,7 @@ export default async function RoobetWagerRewardsPage() {
   }
 
   // Tiers are admin-editable — see wager_milestone_tiers in /admin's Rewards
-  // tab. $50 per $10,000 weighted wagered is the current default shape;
+  // tab. $75 per $10,000 weighted wagered is the current default shape;
   // claimable = this tier's payout minus the previous tier's payout (delta
   // paid out). Rewards do not stack — the difference from your last claim
   // is what gets paid.
@@ -62,7 +62,7 @@ export default async function RoobetWagerRewardsPage() {
               <h1 className="text-3xl font-bold tracking-tight">Wager Rewards</h1>
             </div>
             <p className="text-muted-foreground">
-              Earn <span className="text-foreground font-medium">$50 per $10,000 weighted wagered</span> on {SPONSOR} with code{' '}
+              Earn <span className="text-foreground font-medium">$75 per $10,000 weighted wagered</span> on {SPONSOR} with code{' '}
               <span className="text-primary font-mono font-bold">R2K2</span>. Hit a milestone, open a Discord ticket to
               claim your reward.
             </p>
