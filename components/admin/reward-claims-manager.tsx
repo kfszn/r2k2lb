@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2, Users, Search } from 'lucide-react'
+import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2, Users, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -26,7 +26,7 @@ interface AdminUser {
 }
 
 type Platform = 'roobet' | 'luxdrop'
-type Category = 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard' | 'referral'
+type Category = 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard' | 'referral' | 'welcome_bonus'
 type Status = 'pending' | 'approved' | 'paid'
 
 interface Claim {
@@ -51,7 +51,21 @@ const CATEGORY_LABELS: Record<Category, string> = {
   raffle: 'Raffle',
   leaderboard: 'Leaderboard',
   referral: 'Referral',
+  welcome_bonus: 'Welcome Bonus',
 }
+
+type SortKey = 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'amount_desc' | 'amount_asc'
+
+const SORT_LABELS: Record<SortKey, string> = {
+  newest: 'Newest first',
+  oldest: 'Oldest first',
+  name_asc: 'Name A to Z',
+  name_desc: 'Name Z to A',
+  amount_desc: 'Amount high to low',
+  amount_asc: 'Amount low to high',
+}
+
+const PAGE_SIZE = 20
 
 const STATUS_STYLES: Record<Status, string> = {
   pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
@@ -274,6 +288,11 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all')
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<Status | 'all'>('all')
+  const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all')
+  const [sortKey, setSortKey] = useState<SortKey>('newest')
+  const [page, setPage] = useState(1)
   const [usernameManual, setUsernameManual] = useState(false)
 
   const usernameOptions = (() => {
@@ -458,7 +477,39 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
     mutate()
   }
 
-  const filteredClaims = categoryFilter === 'all' ? claims : claims.filter((c) => c.category === categoryFilter)
+  const filteredClaims = useMemo(() => {
+    const needle = search.trim().toLowerCase()
+    const rows = claims.filter((c) => {
+      if (categoryFilter !== 'all' && c.category !== categoryFilter) return false
+      if (statusFilter !== 'all' && c.status !== statusFilter) return false
+      if (platformFilter !== 'all' && c.platform !== platformFilter) return false
+      if (needle && !c.username.toLowerCase().includes(needle) && !c.title.toLowerCase().includes(needle)) return false
+      return true
+    })
+    const time = (c: Claim) => new Date(c.created_at).getTime()
+    const sorters: Record<SortKey, (a: Claim, b: Claim) => number> = {
+      newest: (a, b) => time(b) - time(a),
+      oldest: (a, b) => time(a) - time(b),
+      name_asc: (a, b) => a.username.localeCompare(b.username, undefined, { sensitivity: 'base' }) || time(b) - time(a),
+      name_desc: (a, b) => b.username.localeCompare(a.username, undefined, { sensitivity: 'base' }) || time(b) - time(a),
+      amount_desc: (a, b) => b.amount - a.amount,
+      amount_asc: (a, b) => a.amount - b.amount,
+    }
+    return rows.sort(sorters[sortKey])
+  }, [claims, search, categoryFilter, statusFilter, platformFilter, sortKey])
+
+  const totalPages = Math.max(1, Math.ceil(filteredClaims.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageClaims = filteredClaims.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const filtersActive = search.trim() !== '' || categoryFilter !== 'all' || statusFilter !== 'all' || platformFilter !== 'all'
+
+  const clearFilters = () => {
+    setSearch('')
+    setCategoryFilter('all')
+    setStatusFilter('all')
+    setPlatformFilter('all')
+    setPage(1)
+  }
 
   return (
     <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
@@ -761,10 +812,51 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
           </div>
         )}
 
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              type="search"
+              placeholder="Search by player name or title"
+              aria-label="Search claims by player name or title"
+              className="pl-9 h-11 text-base"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as Status | 'all'); setPage(1) }}>
+              <SelectTrigger className="h-10 text-xs w-full" aria-label="Filter by status"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={platformFilter} onValueChange={(v) => { setPlatformFilter(v as Platform | 'all'); setPage(1) }}>
+              <SelectTrigger className="h-10 text-xs w-full" aria-label="Filter by platform"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All platforms</SelectItem>
+                <SelectItem value="roobet">Roobet</SelectItem>
+                <SelectItem value="luxdrop">LuxDrop</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortKey} onValueChange={(v) => { setSortKey(v as SortKey); setPage(1) }}>
+              <SelectTrigger className="h-10 text-xs w-full" aria-label="Sort claims"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
+                  <SelectItem key={key} value={key}>{SORT_LABELS[key]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
           <button
             type="button"
-            onClick={() => setCategoryFilter('all')}
+            onClick={() => { setCategoryFilter('all'); setPage(1) }}
             className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
               categoryFilter === 'all'
                 ? 'bg-primary text-primary-foreground border-primary'
@@ -777,7 +869,7 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
             <button
               key={cat}
               type="button"
-              onClick={() => setCategoryFilter(cat)}
+              onClick={() => { setCategoryFilter(cat); setPage(1) }}
               className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                 categoryFilter === cat
                   ? 'bg-primary text-primary-foreground border-primary'
@@ -794,12 +886,23 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : filteredClaims.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground text-sm">
-            No claims yet. Click &ldquo;Add Claim&rdquo; to create one.
+          <div className="text-center py-10 text-muted-foreground text-sm space-y-2">
+            {filtersActive ? (
+              <>
+                <p>No claims match your filters.</p>
+                <Button variant="outline" size="sm" onClick={clearFilters}>Clear filters</Button>
+              </>
+            ) : (
+              <p>No claims yet. Click &ldquo;Add Claim&rdquo; to create one.</p>
+            )}
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredClaims.map((c) => (
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide" aria-live="polite">
+              {filteredClaims.length} claim{filteredClaims.length === 1 ? '' : 's'}
+              {filtersActive && ` of ${claims.length}`}
+            </p>
+            {pageClaims.map((c) => (
               <div key={c.id} className="flex items-start gap-4 rounded-xl border border-border/40 bg-card/40 p-4">
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -852,6 +955,34 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
                 </div>
               </div>
             ))}
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10"
+                  onClick={() => setPage(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Prev
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10"
+                  onClick={() => setPage(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
