@@ -27,7 +27,7 @@ import { LUXDROP_PRIZE_TOTAL, LUXDROP_REWARDS } from '@/lib/luxdrop/leaderboard-
 const CURRENT_START = CURRENT_LUXDROP_PERIOD.startDate
 const CURRENT_END = CURRENT_LUXDROP_PERIOD.endDate
 const CURRENT_END_ISO = CURRENT_LUXDROP_PERIOD.endISO
-const CURRENT_DISPLAY = 'Sep 6 – Oct 6, 2026'
+const CURRENT_DISPLAY = 'Oct 8 – Nov 7, 2026'
 const WAGER_GOAL = 45000
 
 // Top 10 prize breakdown for the current period — shared with
@@ -52,6 +52,14 @@ interface PeriodConfig {
 
 // Previous leaderboard periods
 const PREVIOUS_PERIODS: PeriodConfig[] = [
+  {
+    label: 'September',
+    start_at: '2026-09-05',
+    end_at: '2026-10-06',
+    display: 'Sep 6 – Oct 6, 2026',
+    rewards: [600, 300, 180, 105, 75, 60, 60, 45, 45, 30],
+    total: 1500,
+  },
   {
     label: 'August',
     start_at: '2026-08-08',
