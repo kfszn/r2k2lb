@@ -198,7 +198,7 @@ export const pageMetadata = {
   perksRoobetWagerRewards: {
     title: 'Roobet Wager Rewards — Weighted Wager Tier Bonuses',
     description:
-      'Earn tier-based rewards on Roobet with code R2K2 — $150 per $100,000 weighted wagered. The more you wager, the bigger your reward. Claim your bonus.',
+      'Earn tier-based rewards on Roobet with code R2K2 — $75 per $10,000 weighted wagered. The more you wager, the bigger your reward. Claim your bonus.',
     keywords: [
       'Roobet wager rewards',
       'Roobet tier rewards',
