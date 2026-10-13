@@ -15,7 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2, Users, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2, Users, Search, ChevronLeft, ChevronRight, List } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -227,6 +234,138 @@ function PlayerLookup({ claims }: { claims: Claim[] }) {
   )
 }
 
+interface PlayerGroup {
+  key: string
+  username: string
+  platforms: Platform[]
+  count: number
+  paid: number
+  open: number
+  latest: number
+}
+
+function PlayerDetailDialog({
+  playerKey,
+  claims,
+  onClose,
+  onStatusChange,
+}: {
+  playerKey: string | null
+  claims: Claim[]
+  onClose: () => void
+  onStatusChange: (claim: Claim, status: Status) => void
+}) {
+  const detail = useMemo(() => {
+    if (!playerKey) return null
+    const rows = claims
+      .filter((c) => c.username.toLowerCase() === playerKey)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    if (rows.length === 0) return null
+
+    const sumBy = (status: Status) =>
+      rows.filter((c) => c.status === status).reduce((sum, c) => sum + c.amount, 0)
+
+    const byCategory = (Object.keys(CATEGORY_LABELS) as Category[])
+      .map((cat) => ({
+        category: cat,
+        label: CATEGORY_LABELS[cat],
+        total: rows.filter((c) => c.category === cat && c.status === 'paid').reduce((sum, c) => sum + c.amount, 0),
+      }))
+      .filter((row) => row.total > 0)
+      .sort((a, b) => b.total - a.total)
+
+    return {
+      rows,
+      username: rows[0].username,
+      platforms: Array.from(new Set(rows.map((c) => c.platform))),
+      paid: sumBy('paid'),
+      approved: sumBy('approved'),
+      pending: sumBy('pending'),
+      byCategory,
+    }
+  }, [claims, playerKey])
+
+  return (
+    <Dialog open={playerKey !== null} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col gap-4 overflow-hidden">
+        {detail && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 flex-wrap">
+                {detail.username}
+                {detail.platforms.map((p) => (
+                  <Badge key={p} variant="outline" className="text-[10px] capitalize">{p}</Badge>
+                ))}
+              </DialogTitle>
+              <DialogDescription>
+                All-time rewards across {detail.rows.length} claim{detail.rows.length === 1 ? '' : 's'}.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Paid all time</p>
+                <p className="text-lg font-bold text-emerald-400 mt-1">${detail.paid.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Approved</p>
+                <p className="text-lg font-bold text-blue-400 mt-1">${detail.approved.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Pending</p>
+                <p className="text-lg font-bold text-yellow-500 mt-1">${detail.pending.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {detail.byCategory.length > 0 && (
+              <div className="flex gap-1.5 flex-wrap">
+                {detail.byCategory.map((row) => (
+                  <Badge key={row.category} variant="secondary" className="text-[10px] font-medium">
+                    {row.label} ${row.total.toLocaleString()}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-2 overflow-y-auto pr-1 min-h-0">
+              {detail.rows.map((c) => (
+                <div key={c.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-card/40 px-3 py-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-xs font-semibold text-foreground truncate">{c.title}</p>
+                      <Badge variant="secondary" className="text-[9px]">{CATEGORY_LABELS[c.category]}</Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      {c.period_label ? `${c.period_label} · ` : ''}
+                      {new Date(c.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-sm font-semibold text-foreground">${c.amount.toLocaleString()}</span>
+                    <Select value={c.status} onValueChange={(v) => onStatusChange(c, v as Status)}>
+                      <SelectTrigger
+                        className={`h-7 text-[10px] w-24 border ${STATUS_STYLES[c.status]}`}
+                        aria-label={`Status for ${c.title}`}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function PayoutAddressRow({ label, address }: { label: string; address: string | null }) {
   const [copied, setCopied] = useState(false)
 
@@ -293,6 +432,8 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all')
   const [sortKey, setSortKey] = useState<SortKey>('newest')
   const [page, setPage] = useState(1)
+  const [view, setView] = useState<'players' | 'claims'>('players')
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
   const [usernameManual, setUsernameManual] = useState(false)
 
   const usernameOptions = (() => {
@@ -498,9 +639,50 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
     return rows.sort(sorters[sortKey])
   }, [claims, search, categoryFilter, statusFilter, platformFilter, sortKey])
 
-  const totalPages = Math.max(1, Math.ceil(filteredClaims.length / PAGE_SIZE))
+  const playerGroups = useMemo(() => {
+    const groups = new Map<string, PlayerGroup & { latestName: number }>()
+    for (const c of filteredClaims) {
+      const key = c.username.toLowerCase()
+      const created = new Date(c.created_at).getTime()
+      const group = groups.get(key) ?? {
+        key,
+        username: c.username,
+        platforms: [] as Platform[],
+        count: 0,
+        paid: 0,
+        open: 0,
+        latest: 0,
+        latestName: 0,
+      }
+      if (!group.platforms.includes(c.platform)) group.platforms.push(c.platform)
+      group.count += 1
+      if (c.status === 'paid') group.paid += c.amount
+      else group.open += c.amount
+      group.latest = Math.max(group.latest, created)
+      if (created >= group.latestName) {
+        group.latestName = created
+        group.username = c.username
+      }
+      groups.set(key, group)
+    }
+    const byName = (a: PlayerGroup, b: PlayerGroup) => a.username.localeCompare(b.username, undefined, { sensitivity: 'base' })
+    const sorters: Record<SortKey, (a: PlayerGroup, b: PlayerGroup) => number> = {
+      newest: (a, b) => b.latest - a.latest,
+      oldest: (a, b) => a.latest - b.latest,
+      name_asc: byName,
+      name_desc: (a, b) => byName(b, a),
+      amount_desc: (a, b) => b.paid + b.open - (a.paid + a.open),
+      amount_asc: (a, b) => a.paid + a.open - (b.paid + b.open),
+    }
+    return Array.from(groups.values()).sort(sorters[sortKey])
+  }, [filteredClaims, sortKey])
+
+  const listLength = view === 'players' ? playerGroups.length : filteredClaims.length
+  const totalPages = Math.max(1, Math.ceil(listLength / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
-  const pageClaims = filteredClaims.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const pageStart = (currentPage - 1) * PAGE_SIZE
+  const pageClaims = filteredClaims.slice(pageStart, pageStart + PAGE_SIZE)
+  const pageGroups = playerGroups.slice(pageStart, pageStart + PAGE_SIZE)
   const filtersActive = search.trim() !== '' || categoryFilter !== 'all' || statusFilter !== 'all' || platformFilter !== 'all'
 
   const clearFilters = () => {
@@ -898,11 +1080,66 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide" aria-live="polite">
-              {filteredClaims.length} claim{filteredClaims.length === 1 ? '' : 's'}
-              {filtersActive && ` of ${claims.length}`}
-            </p>
-            {pageClaims.map((c) => (
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide" aria-live="polite">
+                {view === 'players' && `${playerGroups.length} player${playerGroups.length === 1 ? '' : 's'} · `}
+                {filteredClaims.length} claim{filteredClaims.length === 1 ? '' : 's'}
+                {filtersActive && ` of ${claims.length}`}
+              </p>
+              <div role="group" aria-label="List view" className="inline-flex rounded-lg border border-border/40 p-0.5">
+                {([
+                  { id: 'players', label: 'By player', icon: Users },
+                  { id: 'claims', label: 'All claims', icon: List },
+                ] as const).map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-pressed={view === id}
+                    onClick={() => { setView(id); setPage(1) }}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                      view === id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {view === 'players' && pageGroups.map((g) => (
+              <button
+                key={g.key}
+                type="button"
+                onClick={() => setSelectedPlayer(g.key)}
+                className="flex w-full items-center gap-3 rounded-xl border border-border/40 bg-card/40 p-4 text-left transition-colors hover:bg-card/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-sm text-foreground truncate">{g.username}</p>
+                    {g.platforms.map((p) => (
+                      <Badge key={p} variant="outline" className="text-[10px] capitalize">{p}</Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {g.count} claim{g.count === 1 ? '' : 's'} · last {new Date(g.latest).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-semibold text-emerald-400">
+                    ${g.paid.toLocaleString()} <span className="text-[10px] font-normal text-muted-foreground">paid</span>
+                  </p>
+                  {g.open > 0 && (
+                    <p className="text-[11px] text-yellow-500">${g.open.toLocaleString()} open</p>
+                  )}
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
+              </button>
+            ))}
+
+            {view === 'claims' && pageClaims.map((c) => (
               <div key={c.id} className="flex items-start gap-4 rounded-xl border border-border/40 bg-card/40 p-4">
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -911,7 +1148,13 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
                     <Badge variant="secondary" className="text-[10px]">{CATEGORY_LABELS[c.category]}</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {c.username}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPlayer(c.username.toLowerCase())}
+                      className="font-medium text-foreground underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none"
+                    >
+                      {c.username}
+                    </button>
                     {c.period_label ? ` · ${c.period_label}` : ''}
                     {' · '}
                     {new Date(c.created_at).toLocaleDateString()}
@@ -986,6 +1229,13 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
           </div>
         )}
       </CardContent>
+
+      <PlayerDetailDialog
+        playerKey={selectedPlayer}
+        claims={claims}
+        onClose={() => setSelectedPlayer(null)}
+        onStatusChange={handleStatusChange}
+      />
     </Card>
   )
 }
