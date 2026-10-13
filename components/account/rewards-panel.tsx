@@ -8,13 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Gift, Trophy, AlertCircle, Target, Users2, History } from 'lucide-react'
 import { ReferralProgress } from './referral-progress'
+import { WelcomeBonusCard } from './welcome-bonus-card'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 interface Claim {
   id: string
   platform: 'roobet' | 'luxdrop'
-  category: 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard' | 'referral'
+  category: 'wager_milestone' | 'lossback' | 'tournament' | 'deposit_bonus' | 'giveaway' | 'raffle' | 'leaderboard' | 'referral' | 'welcome_bonus'
   title: string
   amount: number
   status: 'pending' | 'approved' | 'paid'
@@ -59,6 +60,7 @@ const CATEGORY_LABELS: Record<Claim['category'], string> = {
   raffle: 'Raffle',
   leaderboard: 'Leaderboard Prize',
   referral: 'Referral Bonus',
+  welcome_bonus: 'Welcome Bonus',
 }
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as Claim['category'][]
@@ -189,6 +191,7 @@ export function RewardsPanel() {
           </TabsList>
 
           <TabsContent value="milestones" className="space-y-3 mt-0">
+            {progress.roobet && <WelcomeBonusCard />}
             {hasAnyPlatform ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {progress.roobet && <PlatformMilestoneProgress platform="roobet" progress={progress.roobet} />}
