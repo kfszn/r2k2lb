@@ -294,9 +294,9 @@ export const pageMetadata = {
     canonical: `${baseUrl}/perks/luxdrop/loss-back`,
   },
   perksLuxdropWagerMilestones: {
-    title: 'LuxDrop Wager Milestones — Coming Soon | R2K2',
+    title: 'LuxDrop Wager Milestones | R2K2',
     description:
-      'LuxDrop wager milestone rewards with code R2K2 are coming soon. Check back for tiered bonuses based on your total wager volume.',
+      'Earn tiered LuxDrop wager milestone rewards with code R2K2. Hit a milestone based on your total wager volume and claim your bonus.',
     keywords: [
       'LuxDrop wager milestones',
       'LuxDrop wager rewards',
