@@ -107,7 +107,7 @@ export default function Footer() {
 
         <div className="mt-8 pt-6 border-t border-border/20 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground/60">
           <p>&copy; {new Date().getFullYear()} R2K2. All rights reserved.</p>
-          <p>Not affiliated with Roobet. Gamble responsibly. 18+.</p>
+          <p>18+ Warning: Gambling involves risk. Please gamble responsibly.</p>
         </div>
       </div>
     </footer>

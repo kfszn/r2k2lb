@@ -161,10 +161,9 @@ function Header() {
               </div>
               <Link
                 href="/perks/luxdrop/wager-milestones"
-                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors flex items-center justify-between gap-2"
+                className="block px-4 py-2 text-sm font-medium hover:text-primary hover:bg-secondary/50 transition-colors"
               >
                 Wager Milestones
-                <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
               </Link>
               <Link
                 href="/perks/luxdrop/first-deposit"
@@ -324,9 +323,8 @@ function Header() {
                       </Link>
                       <div className="h-px bg-border/20 my-1" />
                       <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider text-center">Code Perks</p>
-                      <Link href="/perks/luxdrop/wager-milestones" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center flex items-center justify-center gap-1.5" onClick={closeMobile}>
+                      <Link href="/perks/luxdrop/wager-milestones" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         Wager Milestones
-                        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">Soon</span>
                       </Link>
                       <Link href="/perks/luxdrop/first-deposit" className="text-sm font-medium hover:text-primary transition-colors py-2 text-center" onClick={closeMobile}>
                         First Time Deposit Bonus
