@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 
-export const metadata: Metadata = {
-  title: 'Kick Chatter Leaderboard | R2K2',
-  description: 'Top Kick chatters ranked by R2Koins earned from messages and emotes.',
-}
+export const metadata: Metadata = generatePageMetadata('kick')
 
 export default function KickLeaderboardLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>
