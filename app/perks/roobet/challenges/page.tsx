@@ -3,12 +3,9 @@ import { createClient } from '@supabase/supabase-js'
 import { Header } from '@/components/header'
 import { GiveawayCounter } from '@/components/giveaway-counter'
 import { ChallengesClient } from './challenges-client'
+import { generatePageMetadata } from '@/lib/seo-metadata'
 
-export const metadata: Metadata = {
-  title: 'Challenges | Roobet — R2K2',
-  description:
-    'Complete Roobet challenges and win prizes. Hit specific multipliers, land big wins, and claim your reward through Discord.',
-}
+export const metadata: Metadata = generatePageMetadata('perksRoobetChallenges')
 
 export const revalidate = 60
 

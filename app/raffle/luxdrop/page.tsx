@@ -1,6 +1,10 @@
+import type { Metadata } from 'next';
 import { GiveawayCounter } from '@/components/giveaway-counter';
 import { Header } from '@/components/header';
 import { RaffleView } from '@/components/raffle/raffle-view';
+import { generatePageMetadata } from '@/lib/seo-metadata';
+
+export const metadata: Metadata = generatePageMetadata('raffleLuxdrop');
 
 export default function LuxdropRafflePage() {
   return (

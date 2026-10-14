@@ -114,7 +114,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/leaderboard/roobet`,
   },
   kick: {
-    title: 'Kick Leaderboard — Top Chatters & Subscribers | R2K2',
+    title: 'Kick Leaderboard — Top Chatters & Subscribers',
     description:
       'See the top Kick chatters and subscribers on the R2K2 Kick leaderboard. Earn points by watching and chatting live, then redeem them in the rewards shop.',
     keywords: [
@@ -128,7 +128,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/leaderboard/kick`,
   },
   tournament: {
-    title: 'Live Slot Bracket Tournaments — R2K2',
+    title: 'Live Slot Bracket Tournaments',
     description:
       'Join live slot bracket tournaments on R2K2. Real-time bracket battles, a winners circle, and exclusive cash prizes. Sign up and compete now.',
     keywords: [
@@ -142,7 +142,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/tournament`,
   },
   wagerRaces: {
-    title: 'Wager Races — Milestone Rewards on R2K2',
+    title: 'Wager Races — Milestone Rewards',
     description:
       'Compete in R2K2 wager races on Roobet. Hit milestones to unlock exclusive cash rewards. Check active and upcoming races.',
     keywords: [
@@ -155,7 +155,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/wager-races`,
   },
   raffle: {
-    title: 'R2K2 Raffle — Earn Tickets & Win Prizes',
+    title: 'Raffle — Earn Tickets & Win Prizes',
     description:
       'Enter the R2K2 raffle using your points. Spin the wheel for a chance to win exclusive prizes. View past winners and upcoming draws.',
     keywords: [
@@ -209,7 +209,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/perks/roobet/wager-rewards`,
   },
   account: {
-    title: 'My Account — R2K2 Dashboard',
+    title: 'My Account Dashboard',
     description:
       'Manage your R2K2 account. View your points balance, linked Kick username, redemption history, and leaderboard rankings.',
     keywords: [
@@ -222,7 +222,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/account`,
   },
   login: {
-    title: 'Login — R2K2',
+    title: 'Login',
     description:
       'Log in to your R2K2 account to check your points, enter raffles, and manage your profile.',
     keywords: ['R2K2 login', 'sign in R2K2', 'R2K2 account'],
@@ -242,7 +242,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/auth/signup`,
   },
   fiftyFifty: {
-    title: '50/50 Draw — Buy Tickets & Win | R2K2',
+    title: '50/50 Draw — Buy Tickets & Win',
     description:
       'Enter the R2K2 50/50 draw using your points. Buy tickets for a chance to win half the pot. A new draw runs every round — the more tickets you hold, the better your odds.',
     keywords: [
@@ -256,7 +256,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/fifty-fifty`,
   },
   wagerBonus: {
-    title: 'Wager Bonus Info — R2K2 Rewards Program',
+    title: 'Wager Bonus Info — Rewards Program',
     description:
       'Understand the R2K2 wager bonus program on Roobet. Learn how wager-based rewards are earned and claimed.',
     keywords: [
@@ -281,7 +281,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/perks/luxdrop/first-deposit`,
   },
   perksLuxdropLossBack: {
-    title: 'LuxDrop Loss Back — 10% R2K2 Exclusive Cashback',
+    title: 'LuxDrop Loss Back — 10% Exclusive Cashback',
     description:
       'Get a flat 10% loss back on LuxDrop with code R2K2. No maximum cap. Recover a percentage of your monthly losses via ticket.',
     keywords: [
@@ -294,7 +294,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/perks/luxdrop/loss-back`,
   },
   perksLuxdropWagerMilestones: {
-    title: 'LuxDrop Wager Milestones | R2K2',
+    title: 'LuxDrop Wager Milestones',
     description:
       'Earn tiered LuxDrop wager milestone rewards with code R2K2. Hit a milestone based on your total wager volume and claim your bonus.',
     keywords: [
@@ -305,22 +305,10 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/perks/luxdrop/wager-milestones`,
   },
-  perksRoobetWagerRewards: {
-    title: 'Roobet Wager Rewards — Coming Soon | R2K2',
-    description:
-      'Roobet wager reward tiers with code R2K2 are coming soon. Check back for tiered bonuses based on your total wager volume.',
-    keywords: [
-      'Roobet wager rewards',
-      'Roobet wager tiers',
-      'Roobet bonus',
-      'R2K2 Roobet rewards',
-    ],
-    canonical: `${baseUrl}/perks/roobet/wager-rewards`,
-  },
   perksRoobetChallenges: {
-    title: 'Roobet Challenges — Coming Soon | R2K2',
+    title: 'Roobet Challenges — Win Prizes with Code R2K2',
     description:
-      'Roobet challenges with code R2K2 are coming soon. Complete challenges to unlock exclusive rewards.',
+      'Complete Roobet challenges and win prizes. Hit specific multipliers, land big wins, and claim your reward through Discord.',
     keywords: [
       'Roobet challenges',
       'Roobet R2K2 challenges',
@@ -329,17 +317,29 @@ export const pageMetadata = {
     ],
     canonical: `${baseUrl}/perks/roobet/challenges`,
   },
-  perksRoobetRewardMatch: {
-    title: 'Roobet Reward Match — Coming Soon | R2K2',
+  raffleLuxdrop: {
+    title: 'LuxDrop Raffle — Enter & Win Prizes',
     description:
-      'Roobet reward match offer with code R2K2 is coming soon. Check back for deposit match details.',
+      'Enter the R2K2 LuxDrop raffle for a chance to win exclusive prizes. View past winners and upcoming draws.',
     keywords: [
-      'Roobet reward match',
-      'Roobet deposit match',
-      'Roobet bonus',
-      'R2K2 Roobet rewards',
+      'LuxDrop raffle',
+      'LuxDrop giveaway',
+      'R2K2 raffle',
+      'LuxDrop R2K2',
     ],
-    canonical: `${baseUrl}/perks/roobet/reward-match`,
+    canonical: `${baseUrl}/raffle/luxdrop`,
+  },
+  gamesLimbo: {
+    title: 'Limbo — Provably Fair',
+    description:
+      'Play provably fair Limbo using R2K2 points. Pick your target multiplier, place your bet, and verify the results.',
+    keywords: [
+      'R2K2 limbo',
+      'provably fair limbo',
+      'play limbo points',
+      'R2K2 games',
+    ],
+    canonical: `${baseUrl}/games/limbo`,
   },
   games: {
     title: 'Provably Fair Games — Play with R2K2 Points',
@@ -357,7 +357,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/games`,
   },
   gamesBlackjack: {
-    title: 'Blackjack — Provably Fair | R2K2',
+    title: 'Blackjack — Provably Fair',
     description:
       'Play provably fair Blackjack using R2K2 points. Fully verifiable results, instant payouts, and real-time gameplay.',
     keywords: [
@@ -369,7 +369,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/games/blackjack`,
   },
   gamesKeno: {
-    title: 'Keno — Provably Fair | R2K2',
+    title: 'Keno — Provably Fair',
     description:
       'Play provably fair Keno using your R2K2 points. Pick your numbers, place your bet, and verify the results on-chain.',
     keywords: [
@@ -381,7 +381,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/games/keno`,
   },
   gamesPlinko: {
-    title: 'Plinko — Provably Fair | R2K2',
+    title: 'Plinko — Provably Fair',
     description:
       'Play provably fair Plinko using R2K2 points. Drop the ball and watch it bounce to your payout. Fully verifiable results.',
     keywords: [
@@ -393,7 +393,7 @@ export const pageMetadata = {
     canonical: `${baseUrl}/games/plinko`,
   },
   gamesFairness: {
-    title: 'Provably Fair Verification — R2K2 Games',
+    title: 'Provably Fair Verification',
     description:
       'Verify the fairness of every R2K2 game result. Learn how our provably fair system works using server seeds, client seeds, and cryptographic hashing.',
     keywords: [
@@ -409,19 +409,23 @@ export const pageMetadata = {
 
 export function generatePageMetadata(pageKey: keyof typeof pageMetadata): Metadata {
   const pageMeta = pageMetadata[pageKey]
+  // Set the full title explicitly: the root template is not reliably applied to pages
+  // nested under a layout that also defines a title. The home title already leads with the brand.
+  const isHome = pageKey === 'home'
+  const fullTitle = isHome ? pageMeta.title : `${pageMeta.title} | ${brandName}`
 
   return {
-    title: pageMeta.title,
+    title: { absolute: fullTitle },
     description: pageMeta.description,
     keywords: pageMeta.keywords,
     alternates: {
       canonical: pageMeta.canonical,
     },
     openGraph: {
-      title: pageMeta.title,
+      title: fullTitle,
       description: pageMeta.description,
       url: pageMeta.canonical,
-      siteName: 'R2K2',
+      siteName: brandName,
       type: 'website',
       locale: 'en_US',
     },
@@ -429,7 +433,7 @@ export function generatePageMetadata(pageKey: keyof typeof pageMetadata): Metada
       card: 'summary_large_image',
       site: '@r2ktwo',
       creator: '@r2ktwo',
-      title: pageMeta.title,
+      title: fullTitle,
       description: pageMeta.description,
     },
   }

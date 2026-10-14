@@ -1,5 +1,9 @@
+import type { Metadata } from 'next'
 import RoobetLeaderboardClient from './roobet-leaderboard-client'
 import { getCurrentRoobetPeriod } from '@/lib/roobet/period'
+import { generatePageMetadata } from '@/lib/seo-metadata'
+
+export const metadata: Metadata = generatePageMetadata('roobet')
 
 // Compute the period once on the server and pass the serialized value into the
 // client component. Computing it independently at module scope on both sides

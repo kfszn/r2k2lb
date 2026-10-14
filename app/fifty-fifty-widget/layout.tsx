@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: '50/50 Overlay — r2k2.gg',
+  title: '50/50 Overlay',
   robots: 'noindex',
 }
 
