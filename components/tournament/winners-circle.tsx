@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Trophy, Crown, Medal } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { createClient } from "@/lib/supabase/client";
+import { maskName } from "@/lib/mask-name";
 
 interface Winner {
   roobet_username: string | null;
@@ -131,7 +132,7 @@ export function WinnersCircle() {
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="flex-shrink-0">{icon}</div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-foreground truncate">{name}</p>
+                      <p className="text-xs font-semibold text-foreground truncate">{maskName(name)}</p>
                       <p className="text-[11px] text-muted-foreground/60 truncate">
                         {winner.tournament_name}
                       </p>

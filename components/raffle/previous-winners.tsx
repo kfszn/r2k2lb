@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { maskName } from '@/lib/mask-name';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface Winner {
@@ -38,7 +39,7 @@ export function PreviousWinners({ winners }: PreviousWinnersProps) {
               {winners.map((winner) => (
                 <TableRow key={winner.id}>
                   <TableCell>{new Date(winner.won_date).toLocaleDateString()}</TableCell>
-                  <TableCell className="font-medium">{winner.username}</TableCell>
+                  <TableCell className="font-medium">{maskName(winner.username)}</TableCell>
                   <TableCell className="text-green-500 font-semibold">${winner.prize_amount.toFixed(2)}</TableCell>
                   <TableCell>{winner.raffle_type}</TableCell>
                 </TableRow>

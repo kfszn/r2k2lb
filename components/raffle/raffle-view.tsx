@@ -511,7 +511,7 @@ export function RaffleView({
                     <div className="w-8 h-8 rounded-full bg-chart-4/10 border border-chart-4/20 flex items-center justify-center shrink-0">
                       <Trophy className="w-3.5 h-3.5 text-chart-4" />
                     </div>
-                    <span className="text-sm font-medium text-foreground truncate">{w.username}</span>
+                    <span className="text-sm font-medium text-foreground truncate">{maskName(w.username)}</span>
                   </div>
                   <span className="text-sm text-muted-foreground text-center">
                     {new Date(w.won_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
