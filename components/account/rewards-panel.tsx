@@ -42,7 +42,9 @@ interface PlatformProgress {
   nextTier: Tier | null
   amountToNextTier: number | null
   periodLabel: string
-  currentPeriodReward: number
+  monthEligible: number
+  monthClaimed: number
+  monthAvailable: number
   allTimeReward: number
 }
 
@@ -93,7 +95,7 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
     )
   }
 
-  const { wagerTotal, allTimeWager, currentTier, nextTier, amountToNextTier, periodLabel, currentPeriodReward, allTimeReward } = progress
+  const { wagerTotal, allTimeWager, currentTier, nextTier, amountToNextTier, periodLabel, monthClaimed, monthAvailable, allTimeReward } = progress
   const rangeStart = currentTier?.wager_threshold ?? 0
   const rangeEnd = nextTier?.wager_threshold ?? Math.max(rangeStart, wagerTotal)
   const pct = rangeEnd > rangeStart ? Math.min(100, ((wagerTotal - rangeStart) / (rangeEnd - rangeStart)) * 100) : 100
@@ -139,12 +141,16 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
 
       <div className="grid grid-cols-2 gap-2 border-t border-border/30 pt-3">
         <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">This Month Claimed</p>
-          <p className="text-lg font-bold text-foreground">{formatMoney(currentPeriodReward)}</p>
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Current Month Claim</p>
+          <p className="text-lg font-bold text-foreground tabular-nums">{formatMoney(monthClaimed)}</p>
         </div>
-        <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2">
+        <div className="rounded-md border border-emerald-500/25 bg-emerald-500/5 px-3 py-2">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Currently Available</p>
+          <p className="text-lg font-bold text-emerald-400 tabular-nums">{formatMoney(monthAvailable)}</p>
+        </div>
+        <div className="col-span-2 flex items-center justify-between rounded-md border border-border/40 bg-muted/30 px-3 py-2">
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">All Time Claimed</p>
-          <p className="text-lg font-bold text-foreground">{formatMoney(allTimeReward)}</p>
+          <p className="text-sm font-bold text-foreground tabular-nums">{formatMoney(allTimeReward)}</p>
         </div>
       </div>
 
