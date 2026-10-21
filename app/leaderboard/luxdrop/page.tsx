@@ -14,7 +14,11 @@ import {
   TableHeader,
   PrizePool,
 } from '@/components/leaderboard/leaderboard-ui'
-import { CURRENT_LUXDROP_PERIOD } from '@/lib/luxdrop/period'
+import {
+  CURRENT_LUXDROP_PERIOD,
+  LUXDROP_PREVIOUS_PERIODS,
+  type LuxdropPastPeriod,
+} from '@/lib/luxdrop/period'
 import { LUXDROP_PRIZE_TOTAL, LUXDROP_REWARDS } from '@/lib/luxdrop/leaderboard-rewards'
 
 // ---------------------------------------------------------------------------
@@ -40,43 +44,12 @@ const REWARD_LABELS: (string | null)[] = REWARDS.map(
   (amt) => `$${amt.toLocaleString()}`
 )
 
-interface PeriodConfig {
-  label: string
-  start_at: string
-  end_at: string
-  display: string
-  rewards: number[]
+interface PeriodConfig extends LuxdropPastPeriod {
   labels?: (string | null)[]
-  total: number
 }
 
-// Previous leaderboard periods
-const PREVIOUS_PERIODS: PeriodConfig[] = [
-  {
-    label: 'September',
-    start_at: '2026-09-05',
-    end_at: '2026-10-06',
-    display: 'Sep 6 – Oct 6, 2026',
-    rewards: [600, 300, 180, 105, 75, 60, 60, 45, 45, 30],
-    total: 1500,
-  },
-  {
-    label: 'August',
-    start_at: '2026-08-08',
-    end_at: '2026-09-06',
-    display: 'Aug 9 – Sep 6, 2026',
-    rewards: [1000, 500, 300, 175, 125, 100, 100, 75, 75, 50],
-    total: 2500,
-  },
-  {
-    label: 'July',
-    start_at: '2026-07-07',
-    end_at: '2026-08-08',
-    display: 'Jul 8 – Aug 8, 2026',
-    rewards: [1000, 500, 300, 175, 125, 100, 100, 75, 75, 50],
-    total: 2500,
-  },
-]
+// Previous leaderboard periods — shared with the account page's history selector.
+const PREVIOUS_PERIODS: PeriodConfig[] = LUXDROP_PREVIOUS_PERIODS
 
 // ---------------------------------------------------------------------------
 // Types — LuxDrop API returns the array directly or wrapped

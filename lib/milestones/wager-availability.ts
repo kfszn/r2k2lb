@@ -21,6 +21,21 @@ export interface WagerAvailability {
   cutoverAt: string | null
 }
 
+// The live wager comes from an internal call to the affiliate route, which can
+// fail transiently (cold start, upstream hiccup). One retry keeps that from
+// turning the whole lookup into an error with no numbers.
+async function fetchWagerWithRetry(
+  platform: 'roobet' | 'luxdrop',
+  username: string,
+  origin: string,
+  win: { start: string; end: string }
+) {
+  const first = await fetchWindowedWager(platform, { username }, origin, win)
+  if (first !== null) return first
+  await new Promise((resolve) => setTimeout(resolve, 800))
+  return fetchWindowedWager(platform, { username }, origin, win)
+}
+
 export async function computeWagerAvailability(
   admin: AdminReader,
   platform: 'roobet' | 'luxdrop',
@@ -33,9 +48,9 @@ export async function computeWagerAvailability(
   const measureCutover = cutoverFallsInWindow(cutoverISO, window.start, window.end)
 
   const [wagerResult, cutoverWagerResult, tiersRes, claimsRes] = await Promise.all([
-    fetchWindowedWager(platform, { username }, origin, window),
+    fetchWagerWithRetry(platform, username, origin, window),
     measureCutover
-      ? fetchWindowedWager(platform, { username }, origin, { start: window.start, end: cutoverISO! })
+      ? fetchWagerWithRetry(platform, username, origin, { start: window.start, end: cutoverISO! })
       : Promise.resolve(0 as number | 'not_found' | null),
     admin
       .from('wager_milestone_tiers')
