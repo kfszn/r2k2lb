@@ -1,11 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { fetchPlatformWagerRangeTotal } from '@/lib/r2koins/platforms'
-import { getCurrentRoobetPeriod, getCurrentRoobetMonthStartISO, getCurrentRoobetRewardsGroupLabel } from '@/lib/roobet/period'
-import { CURRENT_LUXDROP_PERIOD } from '@/lib/luxdrop/period'
-import { computeEligible, getRateCutoverISO, cutoverFallsInWindow } from '@/lib/milestones/rate-cutover'
+import { getCurrentRoobetRewardsGroupLabel } from '@/lib/roobet/period'
+import { computeWagerAvailability } from '@/lib/milestones/wager-availability'
 
 // Never cache — claim history and live wager progress must always be fresh.
 export const dynamic = 'force-dynamic'
@@ -33,8 +32,12 @@ interface PlatformProgress {
   nextTier: TierRow | null
   amountToNextTier: number | null
   periodLabel: string
-  /** Cumulative reward unlocked this cycle (current tier's payout, or 0). */
-  currentPeriodReward: number
+  /** Total wager-milestone money the player has earned so far this cycle (same math as the admin lookup). */
+  monthEligible: number
+  /** Approved + paid wager-milestone claims posted this cycle ("Current Month Claim"). */
+  monthClaimed: number
+  /** What can still be claimed right now ("Currently Available"): eligible minus claimed. */
+  monthAvailable: number
   /** Sum of all paid/approved wager-milestone claims ever recorded for this platform. */
   allTimeReward: number
 }
@@ -44,25 +47,18 @@ async function buildPlatformProgress(
   username: string,
   tiers: TierRow[],
   allTimeReward: number,
-  allTimeWager: number | null
+  allTimeWager: number | null,
+  admin: SupabaseClient,
+  origin: string
 ): Promise<PlatformProgress> {
-  let startISO: string
-  let endISO: string
-  let periodLabel: string
+  const periodLabel =
+    platform === 'roobet' ? `${getCurrentRoobetRewardsGroupLabel()} monthly wager` : 'Current LuxDrop leaderboard'
 
-  if (platform === 'roobet') {
-    startISO = getCurrentRoobetMonthStartISO()
-    endISO = getCurrentRoobetPeriod().endISO
-    periodLabel = `${getCurrentRoobetRewardsGroupLabel()} monthly wager`
-  } else {
-    startISO = `${CURRENT_LUXDROP_PERIOD.startDate}T00:00:00.000Z`
-    endISO = CURRENT_LUXDROP_PERIOD.endISO
-    periodLabel = 'Current LuxDrop leaderboard'
-  }
-
-  const result = await fetchPlatformWagerRangeTotal(platform, username, startISO, endISO)
-  const wagerTotal = result === 'not_found' ? 0 : result === null ? null : result
-  const wagerTotalError = result === null
+  // Same helper the admin eligibility lookup uses, so wager, window, eligible
+  // and claimed amounts always match what the admin sees when posting a claim.
+  const availability = await computeWagerAvailability(admin, platform, username, origin)
+  const wagerTotal = availability ? availability.wagered : null
+  const wagerTotalError = availability === null
 
   const platformTiers = tiers
     .filter((t) => t.platform === platform && t.active)
@@ -83,18 +79,6 @@ async function buildPlatformProgress(
 
   const amountToNextTier = wagerTotal !== null && nextTier ? Math.max(0, nextTier.wager_threshold - wagerTotal) : null
 
-  // Blend frozen legacy payouts with the new rate when the rate changed mid-cycle.
-  let wagerAtCutover = 0
-  const adminClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
-  const cutoverISO = await getRateCutoverISO(adminClient, platform)
-  if (cutoverFallsInWindow(cutoverISO, startISO, endISO)) {
-    const atCutover = await fetchPlatformWagerRangeTotal(platform, username, startISO, cutoverISO)
-    wagerAtCutover = typeof atCutover === 'number' ? atCutover : 0
-  }
-  const currentPeriodReward = currentTier
-    ? computeEligible(platformTiers, Number(currentTier.wager_threshold), wagerAtCutover)
-    : 0
-
   return {
     username,
     wagerTotal,
@@ -105,12 +89,14 @@ async function buildPlatformProgress(
     nextTier,
     amountToNextTier,
     periodLabel,
-    currentPeriodReward,
+    monthEligible: availability?.eligibleTotal ?? 0,
+    monthClaimed: availability?.claimedTotal ?? 0,
+    monthAvailable: availability?.available ?? 0,
     allTimeReward,
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -165,11 +151,12 @@ export async function GET() {
     claims = claimsData ?? []
   }
 
-  // Sum every wager-milestone claim ever recorded per platform — this is
-  // the "all time" reward total shown next to the current cycle's progress.
+  // Sum every approved/paid wager-milestone claim ever recorded per platform
+  // — the "all time" total. Pending claims are excluded, matching how the
+  // admin eligibility lookup counts what has actually been claimed.
   const allTimeRewardByPlatform: Record<'roobet' | 'luxdrop', number> = { roobet: 0, luxdrop: 0 }
-  for (const claim of claims as { platform: 'roobet' | 'luxdrop'; category: string; amount: number }[]) {
-    if (claim.category === 'wager_milestone') {
+  for (const claim of claims as { platform: 'roobet' | 'luxdrop'; category: string; status: string; amount: number }[]) {
+    if (claim.category === 'wager_milestone' && (claim.status === 'approved' || claim.status === 'paid')) {
       allTimeRewardByPlatform[claim.platform] += Number(claim.amount) || 0
     }
   }
@@ -214,14 +201,14 @@ export async function GET() {
   const progressPromises: Promise<void>[] = []
   if (roobetUsername) {
     progressPromises.push(
-      buildPlatformProgress('roobet', roobetUsername, tiers, allTimeRewardByPlatform.roobet, allTimeWagerByPlatform.roobet).then((p) => {
+      buildPlatformProgress('roobet', roobetUsername, tiers, allTimeRewardByPlatform.roobet, allTimeWagerByPlatform.roobet, admin, req.nextUrl.origin).then((p) => {
         progress.roobet = p
       })
     )
   }
   if (luxdropUsername) {
     progressPromises.push(
-      buildPlatformProgress('luxdrop', luxdropUsername, tiers, allTimeRewardByPlatform.luxdrop, allTimeWagerByPlatform.luxdrop).then((p) => {
+      buildPlatformProgress('luxdrop', luxdropUsername, tiers, allTimeRewardByPlatform.luxdrop, allTimeWagerByPlatform.luxdrop, admin, req.nextUrl.origin).then((p) => {
         progress.luxdrop = p
       })
     )
