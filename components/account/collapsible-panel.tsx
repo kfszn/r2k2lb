@@ -64,7 +64,7 @@ export function CollapsiblePanel({
       onOpenChange={setOpen}
       className={`rounded-xl border ${styles.border} bg-card/50 backdrop-blur-sm overflow-hidden`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
         <div className="flex items-center gap-2.5 min-w-0">
           <span className={styles.icon}>{icon}</span>
           <span className="text-sm font-semibold text-foreground">{title}</span>
@@ -80,7 +80,7 @@ export function CollapsiblePanel({
           </button>
         </CollapsibleTrigger>
       </div>
-      <CollapsibleContent className="border-t border-border/30 px-5 py-5 space-y-4">
+      <CollapsibleContent className="border-t border-border/30 px-3 py-3 space-y-3 sm:px-5 sm:py-5 sm:space-y-4">
         {children}
       </CollapsibleContent>
     </Collapsible>

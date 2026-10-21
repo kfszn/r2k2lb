@@ -27,9 +27,10 @@ interface SummaryStatProps {
   value: string
   icon: React.ReactNode
   tone: 'muted' | 'primary' | 'green' | 'blue' | 'amber'
+  className?: string
 }
 
-function SummaryStat({ label, value, icon, tone }: SummaryStatProps) {
+function SummaryStat({ label, value, icon, tone, className }: SummaryStatProps) {
   const toneMap = {
     muted: 'border-border/40 text-foreground',
     primary: 'border-primary/25 text-primary',
@@ -39,12 +40,12 @@ function SummaryStat({ label, value, icon, tone }: SummaryStatProps) {
   }[tone]
 
   return (
-    <div className={`rounded-lg border ${toneMap} bg-background/40 px-4 py-3 space-y-1`}>
+    <div className={`min-w-0 rounded-lg border ${toneMap} bg-background/40 px-2.5 py-2 sm:px-4 sm:py-3 space-y-0.5 sm:space-y-1 ${className ?? ''}`}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-        <span className="opacity-60 shrink-0">{icon}</span>
+        <p className="text-[10px] font-semibold uppercase leading-tight text-muted-foreground">{label}</p>
+        <span className="opacity-60 shrink-0 [&>svg]:h-3.5 [&>svg]:w-3.5 sm:[&>svg]:h-4 sm:[&>svg]:w-4">{icon}</span>
       </div>
-      <p className="text-lg font-bold tabular-nums truncate">{value}</p>
+      <p className="text-base sm:text-lg font-bold tabular-nums truncate">{value}</p>
     </div>
   )
 }
@@ -92,7 +93,7 @@ export function RewardsSummary() {
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">All Rewards</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <SummaryStat label="All-Time Wager" value={formatMoney(allTimeWager)} icon={<TrendingUp className="h-4 w-4" />} tone="muted" />
+          <SummaryStat label="All-Time Wager" value={formatMoney(allTimeWager)} icon={<TrendingUp className="h-4 w-4" />} tone="muted" className="col-span-2 sm:col-span-1" />
           <SummaryStat label="Earned" value={formatMoney(aggregates.earned)} icon={<Wallet className="h-4 w-4" />} tone="primary" />
           <SummaryStat label="Paid Out" value={formatMoney(aggregates.paidOut)} icon={<CheckCircle2 className="h-4 w-4" />} tone="green" />
           <SummaryStat label="Approved" value={formatMoney(aggregates.claimable)} icon={<BadgeCheck className="h-4 w-4" />} tone="blue" />

@@ -101,61 +101,66 @@ function PlatformMilestoneProgress({ platform, progress }: { platform: 'roobet' 
   const pct = rangeEnd > rangeStart ? Math.min(100, ((wagerTotal - rangeStart) / (rangeEnd - rangeStart)) * 100) : 100
 
   return (
-    <div className="rounded-lg border border-border/40 bg-background/40 p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">{label}</span>
-        <span className="text-xs text-muted-foreground">{periodLabel}</span>
+    <div className="rounded-lg border border-border/40 bg-background/40 p-3 sm:p-4 space-y-2.5 sm:space-y-3">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-sm font-semibold">{label}</span>
+        <span className="text-[11px] sm:text-xs text-muted-foreground truncate">{periodLabel}</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-md border border-primary/25 bg-primary/5 px-3 py-2 space-y-0.5">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">This Month Weighted Wager</p>
-          <p className="text-lg font-bold text-primary">{formatMoney(wagerTotal)}</p>
-          <p className="text-[10px] text-muted-foreground">Eligible for claim</p>
-        </div>
-        <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2 space-y-0.5">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">All-Time Weighted Wager</p>
-          <p className="text-lg font-bold text-foreground">{allTimeWager !== null ? formatMoney(allTimeWager) : '—'}</p>
+      <div className="space-y-1">
+        <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Weighted wager</p>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="min-w-0 rounded-md border border-primary/25 bg-primary/5 px-2.5 py-1.5">
+            <p className="text-[10px] font-medium uppercase leading-tight text-muted-foreground">This Month</p>
+            <p className="text-base sm:text-lg font-bold text-primary tabular-nums truncate">{formatMoney(wagerTotal)}</p>
+          </div>
+          <div className="min-w-0 rounded-md border border-border/40 bg-muted/30 px-2.5 py-1.5">
+            <p className="text-[10px] font-medium uppercase leading-tight text-muted-foreground">All-Time</p>
+            <p className="text-base sm:text-lg font-bold text-foreground tabular-nums truncate">{allTimeWager !== null ? formatMoney(allTimeWager) : '—'}</p>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-baseline justify-between">
-        {currentTier && (
-          <Badge variant="outline" className="text-xs">
-            {currentTier.tier_name} unlocked
-          </Badge>
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between gap-2">
+          {currentTier ? (
+            <Badge variant="outline" className="text-[11px] sm:text-xs">
+              {currentTier.tier_name} unlocked
+            </Badge>
+          ) : (
+            <span className="text-[11px] text-muted-foreground">No tier unlocked yet</span>
+          )}
+          <span className="text-[11px] text-muted-foreground tabular-nums">{Math.round(pct)}%</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+        </div>
+        {nextTier ? (
+          <p className="text-[11px] sm:text-xs leading-snug text-muted-foreground">
+            {formatMoney(amountToNextTier ?? 0)} more to unlock <span className="text-foreground">{nextTier.tier_name}</span> ({formatMoney(nextTier.reward_amount)})
+          </p>
+        ) : (
+          <p className="text-[11px] sm:text-xs text-muted-foreground">All available tiers unlocked for this month.</p>
         )}
       </div>
 
-      <div className="h-2 rounded-full bg-muted overflow-hidden">
-        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
-      </div>
-
-      {nextTier ? (
-        <p className="text-xs text-muted-foreground">
-          {formatMoney(amountToNextTier ?? 0)} more to unlock <span className="text-foreground">{nextTier.tier_name}</span> ({formatMoney(nextTier.reward_amount)})
-        </p>
-      ) : (
-        <p className="text-xs text-muted-foreground">All available tiers unlocked for this month.</p>
-      )}
-
-      <div className="grid grid-cols-2 gap-2 border-t border-border/30 pt-3">
-        <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Current Month Claim</p>
-          <p className="text-lg font-bold text-foreground tabular-nums">{formatMoney(monthClaimed)}</p>
+      <div className="grid grid-cols-2 gap-2 border-t border-border/30 pt-2.5 sm:pt-3">
+        <div className="min-w-0 rounded-md border border-border/40 bg-muted/30 px-2.5 py-1.5">
+          <p className="text-[10px] font-medium uppercase leading-tight text-muted-foreground">Current Month Claim</p>
+          <p className="text-base sm:text-lg font-bold text-foreground tabular-nums truncate">{formatMoney(monthClaimed)}</p>
         </div>
-        <div className="rounded-md border border-emerald-500/25 bg-emerald-500/5 px-3 py-2">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Currently Available</p>
-          <p className="text-lg font-bold text-emerald-400 tabular-nums">{formatMoney(monthAvailable)}</p>
+        <div className="min-w-0 rounded-md border border-emerald-500/25 bg-emerald-500/5 px-2.5 py-1.5">
+          <p className="text-[10px] font-medium uppercase leading-tight text-muted-foreground">Currently Available</p>
+          <p className="text-base sm:text-lg font-bold text-emerald-400 tabular-nums truncate">{formatMoney(monthAvailable)}</p>
         </div>
-        <div className="col-span-2 flex items-center justify-between rounded-md border border-border/40 bg-muted/30 px-3 py-2">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">All Time Claimed</p>
+        <div className="col-span-2 flex items-center justify-between gap-2 rounded-md border border-border/40 bg-muted/30 px-2.5 py-1.5">
+          <p className="text-[10px] font-medium uppercase text-muted-foreground">All Time Claimed</p>
           <p className="text-sm font-bold text-foreground tabular-nums">{formatMoney(allTimeReward)}</p>
         </div>
       </div>
 
-      <p className="text-[10px] text-muted-foreground italic">
-        Unclaimed wager progress does not carry over — it expires and resets to zero at the start of each new month.
+      <p className="text-[10px] leading-snug text-muted-foreground italic">
+        Unclaimed wager progress expires and resets to zero at the start of each new month.
       </p>
     </div>
   )
@@ -172,15 +177,15 @@ export function RewardsPanel() {
   const filteredClaims = activeCategory === 'all' ? claims : claims.filter((c) => c.category === activeCategory)
 
   return (
-    <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
-      <CardHeader>
+    <Card className="gap-0 rounded-none border-0 bg-transparent py-0 shadow-none sm:gap-6 sm:rounded-xl sm:border sm:border-border/40 sm:bg-card/50 sm:py-6 sm:backdrop-blur-sm">
+      <CardHeader className="hidden sm:grid">
         <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-widest text-muted-foreground font-semibold">
           <Gift className="h-4 w-4 text-primary" />
           Rewards
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="milestones" className="space-y-4">
+      <CardContent className="px-0 sm:px-6">
+        <Tabs defaultValue="milestones" className="space-y-3 sm:space-y-4">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="milestones" className="gap-1.5 text-xs">
               <Target className="h-3.5 w-3.5" />
