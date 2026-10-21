@@ -146,6 +146,7 @@ async function computeLeaderboard({ start_at, end_at }) {
       // Roobet returns dollars — convert to penny-equivalent units to match
       // the legacy contract every consumer of this route expects.
       const wageredDollars = getEntryWagered(r);
+      const rawWageredDollars = Number(r.wagered ?? r.wagerAmount ?? r.totalWagered ?? 0) || 0;
       return {
         userId: r.userId ?? r.id ?? null,
         name: r.username ?? r.name ?? null,
@@ -156,6 +157,7 @@ async function computeLeaderboard({ start_at, end_at }) {
         isPrivate: Boolean(r.isPrivate),
         premiumUntil: r.premiumUntil ?? null,
         wagered: Math.round(wageredDollars * 100),
+        rawWagered: Math.round(rawWageredDollars * 100),
         deposited: Math.round((Number(r.deposited) || 0) * 100),
         earned: Math.round((Number(r.earned) || 0) * 100),
         xp: Number(r.xp ?? 0),

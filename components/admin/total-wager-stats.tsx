@@ -15,6 +15,7 @@ import {
 
 interface WagerStats {
   totalWagered: number
+  totalRawWagered: number
   totalDeposits: number
   totalEarnings: number
   activeMembers: number
@@ -23,12 +24,13 @@ interface WagerStats {
 interface LeaderboardEntry {
   name: string
   wagered: number
+  rawWagered: number
   deposited: number
   earned: number
   active: boolean
 }
 
-type SortField = 'name' | 'wagered' | 'deposited' | 'active' | 'earned'
+type SortField = 'name' | 'wagered' | 'rawWagered' | 'deposited' | 'active' | 'earned'
 type SortDirection = 'asc' | 'desc'
 type Source = 'roobet'
 
@@ -88,7 +90,7 @@ export function TotalWagerStats() {
       const start = new Date(startDate).toISOString().split('T')[0]
 
       let leaderboardData: any[]
-      let formatted: LeaderboardEntry[]
+      let formatted: LeaderboardEntry[] = []
 
       if (source === 'roobet') {
         const end = new Date(endDate).toISOString().split('T')[0]
@@ -101,6 +103,7 @@ export function TotalWagerStats() {
         formatted = leaderboardData.map((p: any) => ({
           name: p.name || 'Unknown',
           wagered: p.wagered || 0,
+          rawWagered: p.rawWagered ?? p.wagered ?? 0,
           deposited: p.deposited || 0,
           earned: p.earned || 0,
           active: p.active || false,
@@ -108,11 +111,12 @@ export function TotalWagerStats() {
       }
 
       const totalWagered = formatted.reduce((sum, p) => sum + p.wagered, 0)
+      const totalRawWagered = formatted.reduce((sum, p) => sum + p.rawWagered, 0)
       const totalDeposits = formatted.reduce((sum, p) => sum + p.deposited, 0)
       const totalEarnings = formatted.reduce((sum, p) => sum + p.earned, 0)
       const activeMembers = formatted.length
 
-      setStats({ totalWagered, totalDeposits, totalEarnings, activeMembers })
+      setStats({ totalWagered, totalRawWagered, totalDeposits, totalEarnings, activeMembers })
       setLeaderboard(formatted)
     } catch (err) {
       console.error('[v0] Error fetching wager stats:', err)
@@ -188,13 +192,22 @@ export function TotalWagerStats() {
 
       {stats && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Wagered</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Weighted Wagered</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">${(stats.totalWagered / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Raw Wagered</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">${(stats.totalRawWagered / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               </CardContent>
             </Card>
 
@@ -253,7 +266,15 @@ export function TotalWagerStats() {
                             onClick={() => handleSort('wagered')}
                             className="flex items-center justify-end gap-2 ml-auto hover:text-foreground/80"
                           >
-                            Wagered <SortIcon field="wagered" />
+                            Weighted <SortIcon field="wagered" />
+                          </button>
+                        </th>
+                        <th className="text-right py-3 px-4 font-semibold">
+                          <button
+                            onClick={() => handleSort('rawWagered')}
+                            className="flex items-center justify-end gap-2 ml-auto hover:text-foreground/80"
+                          >
+                            Raw <SortIcon field="rawWagered" />
                           </button>
                         </th>
                         {source === 'roobet' && (
@@ -291,6 +312,7 @@ export function TotalWagerStats() {
                         <tr key={idx} className="border-b border-border/50 hover:bg-muted/50">
                           <td className="py-3 px-4 text-foreground">{entry.name}</td>
                           <td className="py-3 px-4 text-right text-green-500">${(entry.wagered / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td className="py-3 px-4 text-right">${(entry.rawWagered / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                           {source === 'roobet' && (
                             <>
                               <td className="py-3 px-4 text-right text-green-500">${(entry.deposited / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
