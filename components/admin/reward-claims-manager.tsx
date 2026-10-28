@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2, Users, Search, ChevronLeft, ChevronRight, List } from 'lucide-react'
+import { Plus, Loader2, Trash2, Pencil, X, Check, Gift, Wallet, Copy, TrendingUp, ListFilter, Wallet2, Users, Search, ChevronLeft, ChevronRight, List, StickyNote } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -244,14 +244,103 @@ interface PlayerGroup {
   latest: number
 }
 
+interface PlayerNotesResponse {
+  notes?: string
+  updatedAt?: string | null
+  error?: string
+}
+
+function PlayerNotes({ username }: { username: string }) {
+  const { data, mutate, isLoading } = useSWR<PlayerNotesResponse>(
+    `/api/admin/player-notes?username=${encodeURIComponent(username)}`,
+    fetcher,
+    { revalidateOnFocus: false }
+  )
+  const [draft, setDraft] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const saved = data?.notes ?? ''
+  const value = draft ?? saved
+  const dirty = draft !== null && draft !== saved
+
+  const handleSave = async () => {
+    setSaving(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/player-notes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, notes: value }),
+      })
+      const json: PlayerNotesResponse = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Save failed')
+      await mutate(json, false)
+      setDraft(null)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Save failed')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <StickyNote className="h-3.5 w-3.5" />
+          Private Notes
+          <span className="text-[10px] font-normal text-muted-foreground/70">(only you can see this)</span>
+        </div>
+        {data?.updatedAt && !dirty && (
+          <span className="text-[10px] text-muted-foreground/70">
+            Saved {new Date(data.updatedAt).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+
+      {data?.error ? (
+        <p className="text-xs text-destructive">{data.error}</p>
+      ) : (
+        <>
+          <Textarea
+            value={value}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={isLoading ? 'Loading notes...' : 'Personalized deals, agreed bonuses, reminders...'}
+            disabled={isLoading}
+            maxLength={5000}
+            rows={4}
+            className="text-sm resize-y"
+            aria-label={`Private notes for ${username}`}
+          />
+          {error && <p className="text-xs text-destructive">{error}</p>}
+          <div className="flex items-center justify-end gap-2">
+            {dirty && (
+              <Button type="button" variant="ghost" size="sm" onClick={() => setDraft(null)} disabled={saving}>
+                Discard
+              </Button>
+            )}
+            <Button type="button" size="sm" onClick={handleSave} disabled={!dirty || saving}>
+              {saving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1.5" />}
+              Save notes
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function PlayerDetailDialog({
   playerKey,
   claims,
+  canViewNotes,
   onClose,
   onStatusChange,
 }: {
   playerKey: string | null
   claims: Claim[]
+  canViewNotes: boolean
   onClose: () => void
   onStatusChange: (claim: Claim, status: Status) => void
 }) {
@@ -326,6 +415,8 @@ function PlayerDetailDialog({
                 ))}
               </div>
             )}
+
+            {canViewNotes && <PlayerNotes key={detail.username.toLowerCase()} username={detail.username} />}
 
             <div className="space-y-2 overflow-y-auto pr-1 min-h-0">
               {detail.rows.map((c) => (
@@ -1233,6 +1324,7 @@ export function RewardClaimsManager({ role = 'owner' }: { role?: 'owner' | 'staf
       <PlayerDetailDialog
         playerKey={selectedPlayer}
         claims={claims}
+        canViewNotes={canEditOrDelete}
         onClose={() => setSelectedPlayer(null)}
         onStatusChange={handleStatusChange}
       />
