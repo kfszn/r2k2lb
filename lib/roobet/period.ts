@@ -14,6 +14,20 @@
 export const ROOBET_CUTOFF_HOUR_ET = 18 // 6:00 PM Eastern
 export const ROOBET_PERIOD_DAYS = 7
 
+// Extra days added to specific periods, keyed by the period's 1-based
+// sequential index (period 1 = the first tracked period ending 2026-09-06).
+// Used to make up time lost to 4×7 = 28-day reward cycles drifting behind the
+// calendar-based deal length. Every later period chains from the extended
+// end date, so adding an entry here shifts all future cutovers accordingly.
+//   9: November I — first period of the new 60-day deal, extended Sun Nov 1 → Mon Nov 2.
+export const ROOBET_PERIOD_EXTRA_DAYS: Readonly<Record<number, number>> = {
+  9: 1,
+}
+
+function periodLengthDays(index: number): number {
+  return ROOBET_PERIOD_DAYS + (ROOBET_PERIOD_EXTRA_DAYS[index] ?? 0)
+}
+
 // The instant the very first tracked period began (a literal UTC timestamp —
 // it predates this 6pm-ET-cutover model, so it isn't itself aligned to 6pm
 // ET; its ET calendar date is tracked separately below so the historical
@@ -24,12 +38,6 @@ const FIRST_PERIOD_START_DATE_ET = '2026-08-28'
 // Every subsequent period is exactly ROOBET_PERIOD_DAYS later, also cutting
 // over at ROOBET_CUTOFF_HOUR_ET ET.
 const FIRST_PERIOD_END_DATE_ET = '2026-09-06'
-
-// The live leaderboard was reset at 6:00 PM ET on September 6, 2026.
-// The archived first period ends at the same cutoff, and the live period
-// continues from that cutoff through September 13 at 6:00 PM ET.
-const LIVE_PERIOD_START_DATE_ET = '2026-09-06'
-const LIVE_PERIOD_END_DATE_ET = '2026-09-13'
 
 export interface RoobetPeriod {
   /** ET calendar date the period starts on (for display/labeling only) */
@@ -118,24 +126,26 @@ export function getFirstRoobetPeriod(): RoobetPeriod {
   return periodFromEndDate(FIRST_PERIOD_START_ISO, FIRST_PERIOD_END_DATE_ET)
 }
 
+// Walks every period in order from the first one, applying any
+// ROOBET_PERIOD_EXTRA_DAYS extensions. Callers must break out of the loop.
+// Period 2 starts at the live reset (Sep 6, 6pm ET), which is exactly the
+// first period's end, so a single chain covers the whole history.
+function* iterateRoobetPeriods(): Generator<{ index: number; period: RoobetPeriod }> {
+  let index = 1
+  let period = periodFromEndDate(FIRST_PERIOD_START_ISO, FIRST_PERIOD_END_DATE_ET)
+  for (;;) {
+    yield { index, period }
+    index += 1
+    period = periodFromEndDate(period.endISO, addDaysToDateString(period.endDate, periodLengthDays(index)))
+  }
+}
+
 /** The period in progress right now (start <= now < end). */
 export function getCurrentRoobetPeriod(now: Date = new Date()): RoobetPeriod {
-  const liveStart = nyWallClockToUtc(LIVE_PERIOD_START_DATE_ET, ROOBET_CUTOFF_HOUR_ET)
-  if (now.getTime() >= liveStart.getTime()) {
-    let period = periodFromEndDate(liveStart.toISOString(), LIVE_PERIOD_END_DATE_ET)
-    while (new Date(period.endISO).getTime() <= now.getTime()) {
-      const nextEndDate = addDaysToDateString(period.endDate, ROOBET_PERIOD_DAYS)
-      period = periodFromEndDate(period.endISO, nextEndDate)
-    }
-    return period
+  for (const { period } of iterateRoobetPeriods()) {
+    if (new Date(period.endISO).getTime() > now.getTime()) return period
   }
-
-  let period = periodFromEndDate(FIRST_PERIOD_START_ISO, FIRST_PERIOD_END_DATE_ET)
-  while (new Date(period.endISO).getTime() <= now.getTime()) {
-    const nextEndDate = addDaysToDateString(period.endDate, ROOBET_PERIOD_DAYS)
-    period = periodFromEndDate(period.endISO, nextEndDate)
-  }
-  return period
+  throw new Error('unreachable')
 }
 
 // ── Sequential "4 weekly periods = one labeled month" grouping ──────────────
@@ -161,7 +171,11 @@ const ROOBET_PERIODS_PER_GROUP = 4
 // after it is exactly ROOBET_PERIOD_DAYS later, so the index is just a day
 // count divided by the period length.
 function getPeriodIndexForEndDate(endDate: string): number {
-  if (endDate === FIRST_PERIOD_END_DATE_ET) return 1
+  for (const { index, period } of iterateRoobetPeriods()) {
+    if (period.endDate === endDate) return index
+    if (period.endDate > endDate) break
+  }
+  // Not a real period end date (shouldn't happen) — fall back to plain 7-day math.
   const daysDiff = Math.round(
     (new Date(endDate + 'T00:00:00Z').getTime() - new Date(FIRST_PERIOD_END_DATE_ET + 'T00:00:00Z').getTime()) / 86_400_000
   )
@@ -211,24 +225,18 @@ export function getCurrentRoobetMonthStartISO(now: Date = new Date()): string {
   const indexInGroup = ((periodIndex - 1) % ROOBET_PERIODS_PER_GROUP) + 1
   const groupFirstIndex = periodIndex - (indexInGroup - 1)
 
-  if (groupFirstIndex === 1) return FIRST_PERIOD_START_ISO
-
-  const groupFirstEndDate = addDaysToDateString(FIRST_PERIOD_END_DATE_ET, (groupFirstIndex - 1) * ROOBET_PERIOD_DAYS)
-  const groupFirstStartDate = addDaysToDateString(groupFirstEndDate, -ROOBET_PERIOD_DAYS)
-  return groupFirstStartDate === FIRST_PERIOD_START_DATE_ET
-    ? FIRST_PERIOD_START_ISO
-    : nyWallClockToUtc(groupFirstStartDate, ROOBET_CUTOFF_HOUR_ET).toISOString()
+  for (const { index, period: p } of iterateRoobetPeriods()) {
+    if (index === groupFirstIndex) return p.startISO
+  }
+  throw new Error('unreachable')
 }
 
 /** The most recently fully-completed period (end <= now), or null if the first period hasn't ended yet. */
 export function getPreviousRoobetPeriod(now: Date = new Date()): RoobetPeriod | null {
-  let period = periodFromEndDate(FIRST_PERIOD_START_ISO, FIRST_PERIOD_END_DATE_ET)
-  if (new Date(period.endISO).getTime() > now.getTime()) return null
-
-  for (;;) {
-    const nextEndDate = addDaysToDateString(period.endDate, ROOBET_PERIOD_DAYS)
-    const next = periodFromEndDate(period.endISO, nextEndDate)
-    if (new Date(next.endISO).getTime() > now.getTime()) return period
-    period = next
+  let previous: RoobetPeriod | null = null
+  for (const { period } of iterateRoobetPeriods()) {
+    if (new Date(period.endISO).getTime() > now.getTime()) return previous
+    previous = period
   }
+  return previous
 }
