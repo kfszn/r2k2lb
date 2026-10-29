@@ -19,9 +19,15 @@ export const ROOBET_PERIOD_DAYS = 7
 // Used to make up time lost to 4×7 = 28-day reward cycles drifting behind the
 // calendar-based deal length. Every later period chains from the extended
 // end date, so adding an entry here shifts all future cutovers accordingly.
-//   9: November I — first period of the new 60-day deal, extended Sun Nov 1 → Mon Nov 2.
+// The 4 days already lost are made up as +2 now, then +1 at the end of each
+// of the next two 4-week cycles:
+//   9:  November I  — first period of the new 60-day deal, Sun Nov 1 → Tue Nov 3.
+//   12: November IV — last week of the November cycle (+1).
+//   16: December IV — last week of the December cycle (+1).
 export const ROOBET_PERIOD_EXTRA_DAYS: Readonly<Record<number, number>> = {
-  9: 1,
+  9: 2,
+  12: 1,
+  16: 1,
 }
 
 function periodLengthDays(index: number): number {
