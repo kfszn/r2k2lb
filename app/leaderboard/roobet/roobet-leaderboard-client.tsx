@@ -82,16 +82,14 @@ function normalizeEntries(raw: unknown): RoobetEntry[] {
 function getEntryId(e: RoobetEntry): string {
   return String(e.userId ?? e.id ?? Math.random())
 }
+// Rank badges are served from our own origin: loading ~40 icons straight from
+// Roobet's CDN gets some of them throttled in visitors' browsers, which made
+// those players fall back to initials.
 function getEntryAvatar(e: RoobetEntry): string | null {
   const rankImage = e.rankLevelImage ?? null
-  // Roobet's API returns a broken filename for the rank-0 (unranked) icon —
-  // ".../levelcons/image0.png" 404s — but the real asset exists in the same
-  // directory under a corrected filename: ".../levelcons/level0.png".
-  // Remap just that one broken case so unranked players still get their
-  // real rank badge instead of falling back to a generic/initials avatar.
-  if (rankImage && e.rankLevel === 0) {
-    return rankImage.replace(/\/image0\.png(?=$|[?#])/, '/level0.png')
-  }
+  const iconFile = rankImage?.match(/\/levelcons\/([a-z]+\d*\.png)(?=$|[?#])/i)?.[1]
+  if (iconFile) return `/api/roobet/rank-icon/${iconFile.toLowerCase()}`
+  if (typeof e.rankLevel === 'number' && e.rankLevel === 0) return '/api/roobet/rank-icon/level0.png'
   return rankImage ?? e.avatar ?? null
 }
 
@@ -216,6 +214,7 @@ export default function RoobetLeaderboardClient({ initialPeriod }: { initialPeri
   // avatar-less player collapsing into the same generic fallback icon.
   const getAvatarUrl = (avatar: string | null): string => {
     if (!avatar) return ''
+    if (avatar.startsWith('/api/roobet/rank-icon/')) return avatar
     if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
       return avatar.split('#')[0]
     }
