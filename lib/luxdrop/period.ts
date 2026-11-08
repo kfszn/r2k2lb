@@ -15,13 +15,13 @@ export interface LuxdropPeriod {
 }
 
 export const CURRENT_LUXDROP_PERIOD: LuxdropPeriod = {
-  startDate: '2026-10-06',
-  endDate: '2026-11-06',
-  endISO: '2026-11-06T23:00:00Z',
+  startDate: '2026-11-06',
+  endDate: '2026-12-06',
+  endISO: '2026-12-06T23:00:00Z',
 }
 
 /** Month label for the live period, matching how finished months are named below. */
-export const CURRENT_LUXDROP_LABEL = 'October'
+export const CURRENT_LUXDROP_LABEL = 'November'
 
 export interface LuxdropPastPeriod {
   label: string
@@ -36,6 +36,14 @@ export interface LuxdropPastPeriod {
 // page's "Previous Leaderboards" dropdown and the account page's history
 // selector both read this list so a month only has to be added once.
 export const LUXDROP_PREVIOUS_PERIODS: LuxdropPastPeriod[] = [
+  {
+    label: 'October',
+    start_at: '2026-10-06',
+    end_at: '2026-11-06',
+    display: 'Oct 6 – Nov 6, 2026',
+    rewards: [600, 300, 180, 105, 75, 60, 60, 45, 45, 30],
+    total: 1500,
+  },
   {
     label: 'September',
     start_at: '2026-09-05',
