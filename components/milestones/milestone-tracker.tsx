@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import useSWR from 'swr'
-import { Loader2, LogIn, Link2, AlertTriangle, Trophy, Target, ChevronDown, Lock, ListChecks } from 'lucide-react'
-import { MilestoneTierRow, type MilestoneTier } from './milestone-tier-row'
+import { Loader2, LogIn, Link2, AlertTriangle, Lock, TrendingUp } from 'lucide-react'
+import type { MilestoneTier } from './milestone-tier-row'
+import { MilestoneTierCard, compact } from './milestone-tier-card'
 
 type Progress = {
   authenticated: boolean
@@ -48,7 +48,6 @@ export function MilestoneTracker({ platform, sponsor, tiers, discordUrl, cycle =
     fetcher,
     { revalidateOnFocus: false }
   )
-  const [expanded, setExpanded] = useState(false)
 
   // Whether we have a real wager number to drive per-tier unlocked state.
   const hasWager =
@@ -78,72 +77,28 @@ export function MilestoneTracker({ platform, sponsor, tiers, discordUrl, cycle =
         resetDate={resetDate}
       />
 
-      {/* ── Tier list — collapsed summary by default, expands on demand ── */}
-      <div className="rounded-2xl border border-border/50 bg-gradient-to-b from-card/70 to-card/30 overflow-hidden shadow-[0_0_50px_-24px_rgba(0,0,0,0.7)]">
-        {hasWager ? (
-          <>
-            {/* Collapsed summary — always visible; toggles the full tier list below */}
-            <button
-              type="button"
-              onClick={() => setExpanded((v) => !v)}
-              aria-expanded={expanded}
-              className="flex w-full items-center gap-4 px-4 py-4 text-left transition-colors hover:bg-muted/20 sm:px-5"
+      {hasWager ? (
+        <section aria-labelledby="milestone-tiers-heading" className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between gap-2">
+            <h2
+              id="milestone-tiers-heading"
+              className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"
             >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 ring-1 ring-blue-400/30">
-                <ListChecks className="h-5 w-5 text-blue-300" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-foreground">
-                  {reachedTiers.length} of {sorted.length} milestones unlocked
-                </p>
-                <p className="truncate text-sm text-muted-foreground">
-                  {nextTier ? (
-                    <>
-                      Next: <span className="text-foreground font-medium">{nextTier.label}</span> —{' '}
-                      <span className="text-emerald-400 font-medium">
-                        +{fmt(nextTier.claimable ?? nextTier.wager)}
-                      </span>{' '}
-                      at {fmt(nextTier.wager)} wagered
-                    </>
-                  ) : (
-                    <span className="text-emerald-400 font-medium">All milestones unlocked — max tier reached</span>
-                  )}
-                </p>
-              </div>
-              <span className="hidden shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:inline">
-                {expanded ? 'Hide Tiers' : 'View All Tiers'}
-              </span>
-              <ChevronDown
-                className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
-              />
-            </button>
-
-            {expanded && (
-              <div className="border-t border-border/50">
-                <div className="hidden items-center gap-4 px-5 py-3 border-b border-border/50 bg-muted/20 sm:flex">
-                  <div className="w-14 shrink-0" />
-                  <p className="w-28 shrink-0 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tier</p>
-                  <p className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Wager Required</p>
-                  <p className="w-28 shrink-0 text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Reward</p>
-                  <div className="shrink-0 ml-2 w-[130px]" />
-                </div>
-                <div className="flex items-center px-4 py-2.5 border-b border-border/50 bg-muted/20 sm:hidden">
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Milestone Tiers</p>
-                </div>
-
-                {sorted.map((tier, i) => (
-                  <MilestoneTierRow
-                    key={tier.tier}
-                    tier={tier}
-                    discordUrl={discordUrl}
-                    isLast={i === sorted.length - 1}
-                    reached={wagered >= tier.wager}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        ) : (
+              Milestone Tiers
+            </h2>
+            <p className="text-xs tabular-nums text-muted-foreground">
+              {reachedTiers.length} of {sorted.length} reached
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
+            {sorted.map((tier) => (
+              <MilestoneTierCard key={tier.tier} tier={tier} wagered={wagered} discordUrl={discordUrl} />
+            ))}
+          </div>
+        </section>
+      ) : (
+      <div className="rounded-2xl border border-border/50 bg-gradient-to-b from-card/70 to-card/30 overflow-hidden shadow-[0_0_50px_-24px_rgba(0,0,0,0.7)]">
+        {(
           // Not signed in / not linked yet — tiers stay hidden behind a locked summary.
           <div className="flex items-center gap-4 px-4 py-4 sm:px-5">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted/40 ring-1 ring-border/50">
@@ -158,6 +113,7 @@ export function MilestoneTracker({ platform, sponsor, tiers, discordUrl, cycle =
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }
@@ -286,57 +242,52 @@ function MilestoneStatusCard({
     ? Math.min(100, Math.max(0, (wagered / nextTier.wager) * 100))
     : 100
   const remaining = nextTier ? Math.max(0, nextTier.wager - wagered) : 0
+  const cycleLabel = data.window
+    ? `${fmtDate(data.window.start).replace(/, \d{4}$/, '')} – ${fmtDate(data.window.end).replace(/, \d{4}$/, '')}`
+    : null
 
   return (
     <div className={base}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 ring-1 ring-blue-400/30">
-            <Target className="h-5 w-5 text-blue-300" />
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Your Progress</p>
-            <p className="text-sm font-semibold text-foreground">
-              Linked as <span className="text-blue-300">{data.username}</span>
-            </p>
-          </div>
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 ring-1 ring-blue-400/30">
+          <TrendingUp className="h-5 w-5 text-blue-300" aria-hidden="true" />
         </div>
-        <div className="text-right">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Wagered This Cycle</p>
-          <p className="text-2xl sm:text-3xl font-black tabular-nums text-emerald-400 leading-tight [text-shadow:0_0_22px_rgba(52,211,153,0.35)]">
-            {fmt(wagered)}
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <p className="truncate text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            @{data.username}
+            {cycleLabel ? ` · ${cycleLabel}` : ''}
+          </p>
+          <p className="flex flex-wrap items-baseline gap-x-2">
+            <span className="text-3xl font-black leading-none tabular-nums text-foreground sm:text-4xl">
+              {fmt(wagered)}
+            </span>
+            <span className="text-sm text-muted-foreground">wagered this cycle</span>
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {nextTier ? (
+              <>
+                Next: <span className="font-semibold text-blue-300">{fmt(nextTier.wager)}</span> —{' '}
+                {compact(remaining)} to go
+              </>
+            ) : (
+              <span className="font-semibold text-emerald-400">All milestones reached</span>
+            )}
           </p>
         </div>
       </div>
 
-      {/* Current tier + progress bar */}
-      <div className="mt-5 space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 font-semibold text-foreground">
-            {currentTier ? (
-              <>
-                <Trophy className="h-3.5 w-3.5 text-yellow-300" />
-                {currentTier.label} unlocked
-              </>
-            ) : (
-              <span className="text-muted-foreground">No tier reached yet</span>
-            )}
-          </span>
-          {nextTier ? (
-            <span className="text-muted-foreground">
-              {fmt(remaining)} to <span className="text-foreground font-semibold">{nextTier.label}</span>
-            </span>
-          ) : (
-            <span className="text-emerald-400 font-semibold">Max tier reached</span>
-          )}
-        </div>
-
-        <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted/40">
-          <div
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300 shadow-[0_0_16px_-2px_rgba(52,211,153,0.7)] transition-[width] duration-700"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
+      <div
+        className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted/40"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(pct)}
+        aria-label="Progress to next milestone"
+      >
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-[width] duration-700"
+          style={{ width: `${pct}%` }}
+        />
       </div>
 
       {resetDate && (
