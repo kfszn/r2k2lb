@@ -77,43 +77,37 @@ export function MilestoneTracker({ platform, sponsor, tiers, discordUrl, cycle =
         resetDate={resetDate}
       />
 
-      {hasWager ? (
-        <section aria-labelledby="milestone-tiers-heading" className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between gap-2">
-            <h2
-              id="milestone-tiers-heading"
-              className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"
-            >
-              Milestone Tiers
-            </h2>
-            <p className="text-xs tabular-nums text-muted-foreground">
-              {reachedTiers.length} of {sorted.length} reached
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
-            {sorted.map((tier) => (
-              <MilestoneTierCard key={tier.tier} tier={tier} wagered={wagered} discordUrl={discordUrl} />
-            ))}
-          </div>
-        </section>
-      ) : (
-      <div className="rounded-2xl border border-border/50 bg-gradient-to-b from-card/70 to-card/30 overflow-hidden shadow-[0_0_50px_-24px_rgba(0,0,0,0.7)]">
-        {(
-          // Not signed in / not linked yet — tiers stay hidden behind a locked summary.
-          <div className="flex items-center gap-4 px-4 py-4 sm:px-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted/40 ring-1 ring-border/50">
-              <Lock className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-foreground">{sorted.length} milestone tiers available</p>
-              <p className="text-sm text-muted-foreground">
-                Sign in and link your {sponsor} account above to view tier details and track your progress.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-      )}
+      <section aria-labelledby="milestone-tiers-heading" className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2
+            id="milestone-tiers-heading"
+            className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"
+          >
+            Milestone Tiers
+          </h2>
+          <p className="flex items-center gap-1 text-xs tabular-nums text-muted-foreground">
+            {hasWager ? (
+              `${reachedTiers.length} of ${sorted.length} reached`
+            ) : (
+              <>
+                <Lock className="h-3 w-3" aria-hidden="true" />
+                Sign in &amp; link to track
+              </>
+            )}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
+          {sorted.map((tier) => (
+            <MilestoneTierCard
+              key={tier.tier}
+              tier={tier}
+              wagered={wagered}
+              discordUrl={discordUrl}
+              tracking={hasWager}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   )
 }
