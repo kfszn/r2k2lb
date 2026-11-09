@@ -18,9 +18,11 @@ interface MilestoneTierCardProps {
   tier: MilestoneTier
   wagered: number
   discordUrl: string
+  /** When false (signed out / not linked), only the tier and reward are shown. */
+  tracking?: boolean
 }
 
-export function MilestoneTierCard({ tier, wagered, discordUrl }: MilestoneTierCardProps) {
+export function MilestoneTierCard({ tier, wagered, discordUrl, tracking = true }: MilestoneTierCardProps) {
   const reached = wagered >= tier.wager
   // A tier can only show "Claimed" once its wager requirement is genuinely met,
   // so an over-approved running total never marks a locked tier as claimed.
@@ -49,6 +51,8 @@ export function MilestoneTierCard({ tier, wagered, discordUrl }: MilestoneTierCa
         )}
       </div>
 
+      {tracking && (
+      <>
       <div className="flex flex-col gap-1.5">
         <div
           className="h-1.5 w-full overflow-hidden rounded-full bg-muted/50"
@@ -93,6 +97,8 @@ export function MilestoneTierCard({ tier, wagered, discordUrl }: MilestoneTierCa
           <Lock className="h-3.5 w-3.5" aria-hidden="true" />
           Keep Wagering
         </div>
+      )}
+      </>
       )}
     </article>
   )
