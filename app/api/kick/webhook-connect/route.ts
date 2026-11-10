@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
       subscriptions,
       next_steps: [
         `In the Kick developer dashboard, enable webhooks for your app and set the webhook URL to ${webhookUrl}`,
-        'Set RAILWAY_BOT_URL so the bot can reply in chat',
+        'Authorize the chat bot from Admin > Stream Games > Kick Bot so it can reply in chat',
         'Add ?slug=<your channel slug> to this URL to subscribe your channel to chat messages',
       ],
     })

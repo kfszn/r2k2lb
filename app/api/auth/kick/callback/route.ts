@@ -126,6 +126,11 @@ export async function GET(req: NextRequest) {
       kick_user_id: kickId,
       kick_username: botName,
       updated_at: new Date().toISOString(),
+      last_refresh_at: new Date().toISOString(),
+      last_refresh_error: null,
+      last_refresh_error_at: null,
+      needs_reauth: false,
+      refresh_lock_until: null,
     })
 
     if (botError) {
