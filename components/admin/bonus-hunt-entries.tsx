@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { mutate } from 'swr'
-import { ArrowDown, ArrowUp, ImageIcon, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ImageIcon, Plus, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -281,6 +281,15 @@ function EntryRow({
           aria-label={`Move ${entry.game} down`}
         >
           <ArrowDown className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => void patch({ pending: true })}
+          aria-label={`Move ${entry.game} back to pending`}
+          title="Move back to pending"
+        >
+          <Undo2 className="size-4" />
         </Button>
         <Button variant="ghost" size="icon" onClick={remove} aria-label={`Delete ${entry.game}`}>
           <Trash2 className="size-4 text-destructive" />
