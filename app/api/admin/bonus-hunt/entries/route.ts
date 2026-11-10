@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminSession } from '@/lib/staff-auth'
 import { normalizeSlotName, parseMoney } from '@/lib/hunt/normalize'
-import { findCurrentHunt, findSlotImages, getHuntDb, nextPosition, type HuntDb } from '@/lib/hunt/server'
+import { findSlotImages, getHuntDb, nextPosition, resolveHunt, type HuntDb } from '@/lib/hunt/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   }
 
   const db = getHuntDb()
-  const hunt = await findCurrentHunt(db)
+  const hunt = await resolveHunt(db, body.huntId)
   if (!hunt) return fail('Start a hunt first.', 409)
 
   const known = (await findSlotImages(db, [game])).get(normalizeSlotName(game))
@@ -136,12 +136,12 @@ export async function DELETE(request: NextRequest) {
 // Reorder: the client sends the full list of entry ids in the new order.
 export async function PUT(request: NextRequest) {
   if (!getAdminSession(request)) return fail('Unauthorized', 401)
-  const body = (await request.json().catch(() => null)) as { ids?: unknown } | null
+  const body = (await request.json().catch(() => null)) as { ids?: unknown; huntId?: unknown } | null
   const ids = Array.isArray(body?.ids) ? (body.ids as unknown[]).filter((v): v is string => typeof v === 'string') : []
   if (ids.length === 0) return fail('Invalid request body', 400)
 
   const db = getHuntDb()
-  const hunt = await findCurrentHunt(db)
+  const hunt = await resolveHunt(db, body?.huntId)
   if (!hunt) return fail('No hunt found.', 409)
 
   const { data } = await db.from('bonus_hunt_entries').select('id').eq('hunt_id', hunt.id)

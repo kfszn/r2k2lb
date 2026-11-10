@@ -1,18 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminSession } from '@/lib/staff-auth'
 import { parseMoney } from '@/lib/hunt/normalize'
-import { findCurrentHunt, findLiveHunt, getHuntDb, loadEntries, loadSettings, toHuntSummary } from '@/lib/hunt/server'
+import { findLiveHunt, getHuntDb, loadEntries, loadSettings, resolveHunt, toHuntSummary } from '@/lib/hunt/server'
+import { isCurrency, DEFAULT_CURRENCY } from '@/lib/hunt/currency'
 import { computeHuntStats } from '@/lib/hunt/stats'
 
 export const dynamic = 'force-dynamic'
 
 const fail = (error: string, status: number) => NextResponse.json({ error }, { status })
 
+function cleanName(value: unknown) {
+  if (typeof value !== 'string') return null
+  return value.trim().replace(/\s+/g, ' ').slice(0, 60) || null
+}
+
 export async function GET(request: NextRequest) {
   if (!getAdminSession(request)) return fail('Unauthorized', 401)
 
   const db = getHuntDb()
-  const [settings, hunt] = await Promise.all([loadSettings(db), findCurrentHunt(db)])
+  const [settings, hunt] = await Promise.all([loadSettings(db), resolveHunt(db, request.nextUrl.searchParams.get('hunt'))])
   const entries = hunt ? await loadEntries(db, hunt.id) : []
   const stats = hunt ? computeHuntStats(hunt.startBalance, entries) : null
 
@@ -41,7 +47,14 @@ export async function POST(request: NextRequest) {
 
       const { data, error } = await db
         .from('bonus_hunts')
-        .insert({ number, start_balance: startBalance, status: 'live', started_at: new Date().toISOString() })
+        .insert({
+          number,
+          name: cleanName(body.name),
+          currency: isCurrency(body.currency) ? body.currency : DEFAULT_CURRENCY,
+          start_balance: startBalance,
+          status: 'live',
+          started_at: new Date().toISOString(),
+        })
         .select('*')
         .single()
       if (error) return fail(error.code === '23505' ? `Hunt #${number} already exists.` : error.message, 400)
@@ -60,9 +73,32 @@ export async function POST(request: NextRequest) {
 
     case 'balance': {
       const startBalance = parseMoney(body.startBalance)
-      const hunt = await findCurrentHunt(db)
+      const hunt = await resolveHunt(db, body.huntId)
       if (startBalance === null || !hunt) return fail('Enter a valid start balance.', 400)
       await db.from('bonus_hunts').update({ start_balance: startBalance }).eq('id', hunt.id)
+      return NextResponse.json({ ok: true })
+    }
+
+    case 'details': {
+      const hunt = await resolveHunt(db, body.huntId)
+      if (!hunt) return fail('Hunt not found.', 404)
+      const patch: Record<string, unknown> = {}
+      if (body.name !== undefined) patch.name = cleanName(body.name)
+      if (body.currency !== undefined) {
+        if (!isCurrency(body.currency)) return fail('Pick CAD, USD or NZD.', 400)
+        patch.currency = body.currency
+      }
+      const { error } = await db.from('bonus_hunts').update(patch).eq('id', hunt.id)
+      if (error) return fail(error.message, 500)
+      return NextResponse.json({ ok: true })
+    }
+
+    case 'delete': {
+      const hunt = await resolveHunt(db, body.huntId)
+      if (!hunt) return fail('Hunt not found.', 404)
+      if (hunt.status === 'live') return fail('End the hunt before deleting it.', 409)
+      const { error } = await db.from('bonus_hunts').delete().eq('id', hunt.id)
+      if (error) return fail(error.message, 500)
       return NextResponse.json({ ok: true })
     }
 

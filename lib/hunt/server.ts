@@ -1,7 +1,18 @@
 import 'server-only'
 import { createClient } from '@supabase/supabase-js'
 import { normalizeSlotName } from '@/lib/hunt/normalize'
-import type { EntryStatus, HuntEntry, HuntSettings, HuntStatus, HuntSummary } from '@/lib/hunt/stats'
+import { currencyOrDefault, type Currency } from '@/lib/hunt/currency'
+import type {
+  EntryStatus,
+  HuntEntry,
+  HuntOverview,
+  HuntSettings,
+  HuntStatus,
+  HuntSummary,
+  OverviewHighlight,
+  OverviewHunt,
+  OverviewPeriod,
+} from '@/lib/hunt/stats'
 
 export function getHuntDb() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -12,10 +23,13 @@ export type HuntDb = ReturnType<typeof getHuntDb>
 interface HuntRow {
   id: string
   number: number
+  name: string | null
+  currency: string | null
   status: HuntStatus
   start_balance: number | string
   started_at: string | null
   ended_at: string | null
+  created_at: string
 }
 
 interface EntryRow {
@@ -34,10 +48,146 @@ export function toHuntSummary(row: HuntRow): HuntSummary {
   return {
     id: row.id,
     number: row.number,
+    name: row.name,
+    currency: currencyOrDefault(row.currency),
     status: row.status,
     startBalance: Number(row.start_balance),
     startedAt: row.started_at,
     endedAt: row.ended_at,
+    createdAt: row.created_at,
+  }
+}
+
+export async function findHuntById(db: HuntDb, id: string): Promise<HuntSummary | null> {
+  const { data } = await db.from('bonus_hunts').select('*').eq('id', id).maybeSingle()
+  return data ? toHuntSummary(data as HuntRow) : null
+}
+
+// An explicit hunt id wins; otherwise fall back to the live (or latest) hunt.
+export async function resolveHunt(db: HuntDb, id: unknown): Promise<HuntSummary | null> {
+  return typeof id === 'string' && id ? findHuntById(db, id) : findCurrentHunt(db)
+}
+
+interface OverviewEntryRow {
+  hunt_id: string
+  game_name: string
+  game_image_url: string | null
+  bet_size: number | string
+  payout: number | string | null
+  status: EntryStatus
+}
+
+async function loadOverviewEntries(db: HuntDb, huntIds: string[]) {
+  const rows: OverviewEntryRow[] = []
+  for (let i = 0; i < huntIds.length; i += 100) {
+    const ids = huntIds.slice(i, i + 100)
+    for (let from = 0; ; from += 1000) {
+      const { data } = await db
+        .from('bonus_hunt_entries')
+        .select('hunt_id, game_name, game_image_url, bet_size, payout, status')
+        .in('hunt_id', ids)
+        .order('id')
+        .range(from, from + 999)
+      const page = (data ?? []) as OverviewEntryRow[]
+      rows.push(...page)
+      if (page.length < 1000) break
+    }
+  }
+  return rows
+}
+
+const PERIOD_DAYS: Record<Exclude<OverviewPeriod, 'all'>, number> = { '30d': 30, '7d': 7 }
+
+// All-time style statistics for one currency. Currencies are never mixed because there is no conversion.
+export async function loadOverview(db: HuntDb, currency: Currency, period: OverviewPeriod): Promise<HuntOverview> {
+  let query = db.from('bonus_hunts').select('*').eq('currency', currency).order('number', { ascending: false })
+  if (period !== 'all') {
+    query = query.gte('created_at', new Date(Date.now() - PERIOD_DAYS[period] * 86_400_000).toISOString())
+  }
+  const huntRows = ((await query).data ?? []) as HuntRow[]
+  const entryRows = await loadOverviewEntries(
+    db,
+    huntRows.map((row) => row.id)
+  )
+
+  const byHunt = new Map<string, OverviewEntryRow[]>()
+  for (const row of entryRows) byHunt.set(row.hunt_id, [...(byHunt.get(row.hunt_id) ?? []), row])
+
+  const hunts: OverviewHunt[] = huntRows.map((row) => {
+    const entries = byHunt.get(row.id) ?? []
+    const opened = entries.filter((e) => e.status === 'opened' && e.payout !== null)
+    const winnings = opened.reduce((sum, e) => sum + Number(e.payout), 0)
+    const startBalance = Number(row.start_balance)
+    const finished = row.status === 'ended' || (entries.length > 0 && opened.length === entries.length)
+    const pnl = finished ? winnings - startBalance : null
+    return {
+      id: row.id,
+      number: row.number,
+      name: row.name,
+      status: row.status,
+      currency,
+      date: row.started_at ?? row.created_at,
+      startBalance,
+      bonuses: entries.length,
+      opened: opened.length,
+      winnings,
+      pnl,
+      pnlPercent: pnl !== null && startBalance > 0 ? (pnl / startBalance) * 100 : null,
+    }
+  })
+
+  const finishedHunts = hunts.filter((h) => h.pnl !== null)
+  const numberById = new Map(huntRows.map((row) => [row.id, row.number]))
+
+  const highlight = (pick: (e: OverviewEntryRow) => number, better: (a: number, b: number) => boolean) => {
+    let best: { row: OverviewEntryRow; value: number } | null = null
+    for (const row of entryRows) {
+      if (row.status !== 'opened' || row.payout === null) continue
+      const value = pick(row)
+      if (!Number.isFinite(value)) continue
+      if (!best || better(value, best.value)) best = { row, value }
+    }
+    return best
+  }
+  const multiplier = (e: OverviewEntryRow) => (Number(e.bet_size) > 0 ? Number(e.payout) / Number(e.bet_size) : NaN)
+
+  const picks = {
+    highestWin: highlight((e) => Number(e.payout), (a, b) => a > b),
+    highestMulti: highlight(multiplier, (a, b) => a > b),
+    lowestMulti: highlight(multiplier, (a, b) => a < b),
+  }
+
+  const images = await findSlotImages(
+    db,
+    Object.values(picks).flatMap((p) => (p ? [p.row.game_name] : []))
+  )
+  const toHighlight = (pick: { row: OverviewEntryRow; value: number } | null): OverviewHighlight | null => {
+    if (!pick) return null
+    const known = images.get(normalizeSlotName(pick.row.game_name))
+    return {
+      game: known?.displayName ?? pick.row.game_name,
+      imageUrl: known?.imageUrl ?? pick.row.game_image_url ?? null,
+      value: pick.value,
+      huntNumber: numberById.get(pick.row.hunt_id) ?? 0,
+    }
+  }
+
+  const totalCost = finishedHunts.reduce((sum, h) => sum + h.startBalance, 0)
+  const winnings = finishedHunts.reduce((sum, h) => sum + h.winnings, 0)
+
+  return {
+    currency,
+    period,
+    hunts,
+    stats: {
+      huntCount: hunts.length,
+      totalCost,
+      winnings,
+      pnl: winnings - totalCost,
+      highestWin: toHighlight(picks.highestWin),
+      highestMulti: toHighlight(picks.highestMulti),
+      lowestMulti: toHighlight(picks.lowestMulti),
+    },
   }
 }
 

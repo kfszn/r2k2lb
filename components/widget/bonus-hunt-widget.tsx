@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import useSWR from 'swr'
 import { AnimatedNumber } from '@/components/widget/animated-number'
+import { currencyOrDefault, moneyFormatter, type Currency } from '@/lib/hunt/currency'
 
 interface WidgetEntry {
   position: number
@@ -14,7 +15,7 @@ interface WidgetEntry {
 }
 
 interface WidgetData {
-  hunt: { number: number; status: 'draft' | 'live' | 'ended' } | null
+  hunt: { number: number; name?: string | null; currency?: string; status: 'draft' | 'live' | 'ended' } | null
   stats?: {
     start: number
     winnings: number
@@ -31,8 +32,6 @@ interface WidgetData {
 
 const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then((res) => res.json() as Promise<WidgetData>)
 
-const money = (value: number) =>
-  `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const multiple = (value: number) => `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x`
 const count = (value: number) => Math.round(value).toString()
 
@@ -92,7 +91,16 @@ function GameThumb({ game, imageUrl }: { game: string; imageUrl: string | null }
   )
 }
 
-function EntryTable({ entries, nextPosition }: { entries: WidgetEntry[]; nextPosition: number | null }) {
+function EntryTable({
+  entries,
+  nextPosition,
+  currency,
+}: {
+  entries: WidgetEntry[]
+  nextPosition: number | null
+  currency: Currency
+}) {
+  const money = moneyFormatter(currency)
   const scroller = useRef<HTMLDivElement>(null)
 
   // Long hunts auto-scroll: follow the next bonus while one is pending, otherwise sweep top to bottom.
@@ -186,6 +194,8 @@ export function BonusHuntWidget() {
   }
 
   const { hunt, stats, entries = [] } = data
+  const currency = currencyOrDefault(hunt.currency)
+  const money = moneyFormatter(currency)
 
   return (
     <div className="hunt-widget flex w-full max-w-[30rem] flex-col gap-2 rounded-xl border border-[var(--hunt-line)] bg-[var(--hunt-surface)] p-3 font-sans text-[var(--hunt-text)] shadow-2xl">
@@ -237,7 +247,7 @@ export function BonusHuntWidget() {
         />
       </div>
 
-      <EntryTable entries={entries} nextPosition={stats.nextPosition} />
+      <EntryTable entries={entries} nextPosition={stats.nextPosition} currency={currency} />
     </div>
   )
 }

@@ -17,7 +17,7 @@ export async function GET() {
 
   return NextResponse.json(
     {
-      hunt: { number: hunt.number, status: hunt.status },
+      hunt: { number: hunt.number, name: hunt.name, currency: hunt.currency, status: hunt.status },
       stats: {
         start: stats.start,
         winnings: stats.winnings,

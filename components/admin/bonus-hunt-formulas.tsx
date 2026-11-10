@@ -1,10 +1,10 @@
+import { moneyFormatter, type Currency } from '@/lib/hunt/currency'
 import type { HuntStats } from '@/lib/hunt/stats'
 
-const money = (value: number) =>
-  `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const multiple = (value: number | null) => (value === null ? '—' : `${value.toFixed(2)}x`)
 
-export function BonusHuntFormulas({ stats }: { stats: HuntStats }) {
+export function BonusHuntFormulas({ stats, currency }: { stats: HuntStats; currency: Currency }) {
+  const money = moneyFormatter(currency)
   const rows = [
     {
       label: 'Winnings',

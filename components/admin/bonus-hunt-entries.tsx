@@ -19,6 +19,7 @@ interface EntriesProps {
   entries: HuntEntry[]
   nextPosition: number | null
   huntId: string | null
+  currency: string
   onRefresh: () => void
   onError: Report
 }
@@ -104,10 +105,12 @@ function EntryRow({
   index,
   total,
   isNext,
+  currency,
   onMove,
   onRefresh,
   onError,
 }: {
+  currency: string
   entry: HuntEntry
   index: number
   total: number
@@ -194,7 +197,7 @@ function EntryRow({
           onBlur={commit('betSize', betText)}
           onKeyDown={onEnter}
           inputMode="decimal"
-          placeholder="Bet $"
+          placeholder={`Bet ${currency}`}
           aria-label="Bet size"
           className="lg:w-24"
         />
@@ -204,7 +207,7 @@ function EntryRow({
           onBlur={commit('payout', payoutText)}
           onKeyDown={onEnter}
           inputMode="decimal"
-          placeholder="Payout $"
+          placeholder={`Payout ${currency}`}
           aria-label="Payout"
           className="lg:w-28"
         />
@@ -251,7 +254,12 @@ function EntryRow({
   )
 }
 
-function AddEntryForm({ onRefresh, onError }: Pick<EntriesProps, 'onRefresh' | 'onError'>) {
+function AddEntryForm({
+  huntId,
+  currency,
+  onRefresh,
+  onError,
+}: Pick<EntriesProps, 'onRefresh' | 'onError' | 'currency'> & { huntId: string }) {
   const { data } = useKnownSlots()
   const [game, setGame] = useState('')
   const [bet, setBet] = useState('')
@@ -261,7 +269,7 @@ function AddEntryForm({ onRefresh, onError }: Pick<EntriesProps, 'onRefresh' | '
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     setBusy(true)
-    const result = await huntRequest('POST', ENTRIES_URL, { game, betSize: bet, payout })
+    const result = await huntRequest('POST', ENTRIES_URL, { game, betSize: bet, payout, huntId })
     setBusy(false)
     if (!result.ok) return onError(result.error ?? 'Could not add the bonus.')
     onError(null)
@@ -291,7 +299,7 @@ function AddEntryForm({ onRefresh, onError }: Pick<EntriesProps, 'onRefresh' | '
         value={bet}
         onChange={(event) => setBet(event.target.value)}
         inputMode="decimal"
-        placeholder="Bet $"
+        placeholder={`Bet ${currency}`}
         aria-label="Bet size"
         className="sm:w-28"
       />
@@ -299,7 +307,7 @@ function AddEntryForm({ onRefresh, onError }: Pick<EntriesProps, 'onRefresh' | '
         value={payout}
         onChange={(event) => setPayout(event.target.value)}
         inputMode="decimal"
-        placeholder="Payout $ (optional)"
+        placeholder={`Payout ${currency} (optional)`}
         aria-label="Payout"
         className="sm:w-40"
       />
@@ -311,13 +319,13 @@ function AddEntryForm({ onRefresh, onError }: Pick<EntriesProps, 'onRefresh' | '
   )
 }
 
-export function BonusHuntEntries({ entries, nextPosition, huntId, onRefresh, onError }: EntriesProps) {
+export function BonusHuntEntries({ entries, nextPosition, huntId, currency, onRefresh, onError }: EntriesProps) {
   async function move(from: number, to: number) {
     if (to < 0 || to >= entries.length) return
     const ids = entries.map((entry) => entry.id)
     const [moved] = ids.splice(from, 1)
     ids.splice(to, 0, moved)
-    const result = await huntRequest('PUT', ENTRIES_URL, { ids })
+    const result = await huntRequest('PUT', ENTRIES_URL, { ids, huntId })
     onError(result.ok ? null : (result.error ?? 'Could not reorder.'))
     onRefresh()
   }
@@ -337,6 +345,7 @@ export function BonusHuntEntries({ entries, nextPosition, huntId, onRefresh, onE
               index={index}
               total={entries.length}
               isNext={entry.position === nextPosition}
+              currency={currency}
               onMove={move}
               onRefresh={onRefresh}
               onError={onError}
@@ -344,7 +353,7 @@ export function BonusHuntEntries({ entries, nextPosition, huntId, onRefresh, onE
           ))}
         </ul>
       )}
-      {huntId && <AddEntryForm onRefresh={onRefresh} onError={onError} />}
+      {huntId && <AddEntryForm huntId={huntId} currency={currency} onRefresh={onRefresh} onError={onError} />}
     </div>
   )
 }

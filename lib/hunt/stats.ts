@@ -1,3 +1,5 @@
+import type { Currency } from '@/lib/hunt/currency'
+
 export type HuntStatus = 'draft' | 'live' | 'ended'
 export type EntryStatus = 'called' | 'bought' | 'opened'
 
@@ -16,10 +18,53 @@ export interface HuntEntry {
 export interface HuntSummary {
   id: string
   number: number
+  name: string | null
+  currency: Currency
   status: HuntStatus
   startBalance: number
   startedAt: string | null
   endedAt: string | null
+  createdAt: string
+}
+
+export type OverviewPeriod = 'all' | '30d' | '7d'
+
+export interface OverviewHunt {
+  id: string
+  number: number
+  name: string | null
+  status: HuntStatus
+  currency: Currency
+  date: string
+  startBalance: number
+  bonuses: number
+  opened: number
+  winnings: number
+  // Null while the hunt is still being played, so a half-opened hunt never shows a fake loss.
+  pnl: number | null
+  pnlPercent: number | null
+}
+
+export interface OverviewHighlight {
+  game: string
+  imageUrl: string | null
+  value: number
+  huntNumber: number
+}
+
+export interface HuntOverview {
+  currency: Currency
+  period: OverviewPeriod
+  hunts: OverviewHunt[]
+  stats: {
+    huntCount: number
+    totalCost: number
+    winnings: number
+    pnl: number
+    highestWin: OverviewHighlight | null
+    highestMulti: OverviewHighlight | null
+    lowestMulti: OverviewHighlight | null
+  }
 }
 
 export interface HuntSettings {

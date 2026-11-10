@@ -1,7 +1,8 @@
 'use client'
 
 import useSWR from 'swr'
-import type { HuntEntry, HuntSettings, HuntStats, HuntSummary } from '@/lib/hunt/stats'
+import type { Currency } from '@/lib/hunt/currency'
+import type { HuntEntry, HuntOverview, HuntSettings, HuntStats, HuntSummary, OverviewPeriod } from '@/lib/hunt/stats'
 
 export interface AdminHuntState {
   settings: HuntSettings
@@ -23,8 +24,16 @@ async function fetcher<T>(url: string): Promise<T> {
 }
 
 // Polls so calls added from chat show up without a refresh.
-export function useBonusHunt() {
-  return useSWR<AdminHuntState>('/api/admin/bonus-hunt', fetcher, { refreshInterval: 4000, keepPreviousData: true })
+export function useBonusHunt(huntId?: string | null) {
+  const url = huntId ? `/api/admin/bonus-hunt?hunt=${encodeURIComponent(huntId)}` : '/api/admin/bonus-hunt'
+  return useSWR<AdminHuntState>(url, fetcher, { refreshInterval: 4000, keepPreviousData: true })
+}
+
+export function useHuntOverview(currency: Currency, period: OverviewPeriod) {
+  return useSWR<HuntOverview>(`/api/admin/bonus-hunt/overview?currency=${currency}&period=${period}`, fetcher, {
+    refreshInterval: 8000,
+    keepPreviousData: true,
+  })
 }
 
 export function useKnownSlots() {
@@ -35,15 +44,15 @@ export async function huntRequest(
   method: 'POST' | 'PATCH' | 'PUT' | 'DELETE',
   url: string,
   body?: Record<string, unknown>
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; data?: Record<string, unknown> }> {
   try {
     const res = await fetch(url, {
       method,
       headers: body ? { 'Content-Type': 'application/json' } : undefined,
       body: body ? JSON.stringify(body) : undefined,
     })
-    const data = (await res.json().catch(() => ({}))) as { error?: string }
-    return res.ok ? { ok: true } : { ok: false, error: data.error ?? 'Request failed.' }
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown> & { error?: string }
+    return res.ok ? { ok: true, data } : { ok: false, error: data.error ?? 'Request failed.' }
   } catch {
     return { ok: false, error: 'Network error, try again.' }
   }
