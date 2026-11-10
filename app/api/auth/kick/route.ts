@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import crypto from 'crypto'
+import { getAdminSession } from '@/lib/staff-auth'
+
+const BOT_SCOPES = 'user:read channel:read chat:write events:subscribe'
 
 // Kick OAuth PKCE flow — initiates the authorization redirect
-// Supports two modes:
+// Supports three modes:
 //   ?mode=link  — user is logged in and wants to link their Kick account
 //   ?mode=login — user is not logged in; Kick acts as the login method
+//   ?mode=bot   — owner authorizes the chat bot account (admin session required)
 // Required env vars: KICK_CLIENT_ID, KICK_REDIRECT_URI
 export async function GET(req: NextRequest) {
   const cookieStore = await cookies()
@@ -31,6 +35,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login', req.url))
   }
 
+  // Bot mode stores chat credentials, so only the owner admin session may start it
+  if (mode === 'bot' && getAdminSession(req)?.role !== 'owner') {
+    return NextResponse.redirect(new URL('/admin?view=stream-games&kick_bot_error=not_admin', req.url))
+  }
+
   // Generate PKCE code verifier + challenge
   const codeVerifier = crypto.randomBytes(64).toString('base64url')
   const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url')
@@ -42,7 +51,7 @@ export async function GET(req: NextRequest) {
       client_id: clientId,
       redirect_uri: redirectUri,
       response_type: 'code',
-      scope: 'user:read',
+      scope: mode === 'bot' ? BOT_SCOPES : 'user:read',
       state,
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
@@ -56,7 +65,7 @@ export async function GET(req: NextRequest) {
   res.cookies.set('kick_oauth_mode', mode, cookieOpts)
 
   // Only store the user id when linking an existing account
-  if (session) {
+  if (session && mode !== 'bot') {
     res.cookies.set('kick_oauth_user_id', session.user.id, cookieOpts)
   }
 
