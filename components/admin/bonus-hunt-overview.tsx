@@ -5,10 +5,9 @@ import { Coins, Crosshair, HandCoins, Plus, TrendingDown, TrendingUp } from 'luc
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CreateHuntDialog } from '@/components/admin/bonus-hunt-create-dialog'
-import { CURRENCIES, formatMoney, type Currency } from '@/lib/hunt/currency'
-import type { OverviewHighlight, OverviewHunt, OverviewPeriod } from '@/lib/hunt/stats'
+import { DEFAULT_CURRENCY, formatMoney, type Currency } from '@/lib/hunt/currency'
+import type { CurrencyTotals, OverviewHighlight, OverviewHunt, OverviewPeriod } from '@/lib/hunt/stats'
 import { useHuntOverview } from '@/lib/hunt/use-bonus-hunt'
 
 const PERIODS: { value: OverviewPeriod; label: string }[] = [
@@ -19,46 +18,70 @@ const PERIODS: { value: OverviewPeriod; label: string }[] = [
 
 const tone = (value: number) => (value < 0 ? 'text-destructive' : value > 0 ? 'text-emerald-400' : 'text-foreground')
 
-function StatCard({ icon: Icon, label, value, valueClass }: { icon: typeof Coins; label: string; value: string; valueClass?: string }) {
+interface StatLine {
+  currency?: Currency
+  text: string
+  className?: string
+}
+
+// One line per currency in use, so mixed-currency hunts are never summed together.
+function StatCard({ icon: Icon, label, lines }: { icon: typeof Coins; label: string; lines: StatLine[] }) {
   return (
     <div className="flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-4">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
         <Icon className="size-5" aria-hidden="true" />
       </span>
       <div className="flex min-w-0 flex-col">
-        <span className={`truncate text-xl font-bold tabular-nums ${valueClass ?? 'text-foreground'}`}>{value}</span>
+        {lines.length === 0 ? (
+          <span className="text-xl font-bold text-foreground">—</span>
+        ) : (
+          lines.map((line) => (
+            <span key={line.currency ?? line.text} className="flex items-baseline gap-2">
+              <span className={`truncate font-bold tabular-nums ${lines.length > 1 ? 'text-base' : 'text-xl'} ${line.className ?? 'text-foreground'}`}>
+                {line.text}
+              </span>
+              {lines.length > 1 && line.currency && <span className="text-xs text-muted-foreground">{line.currency}</span>}
+            </span>
+          ))
+        )}
         <span className="text-sm text-muted-foreground">{label}</span>
       </div>
     </div>
   )
 }
 
-function HighlightCard({ label, highlight, format }: { label: string; highlight: OverviewHighlight | null; format: (v: number) => string }) {
+function Thumb({ highlight }: { highlight: OverviewHighlight }) {
+  return highlight.imageUrl ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={highlight.imageUrl} alt="" referrerPolicy="no-referrer" className="size-14 shrink-0 rounded-lg object-cover" />
+  ) : (
+    <span
+      aria-hidden="true"
+      className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-muted text-xl font-bold uppercase text-muted-foreground"
+    >
+      {highlight.game.charAt(0)}
+    </span>
+  )
+}
+
+function HighlightCard({ label, items }: { label: string; items: { highlight: OverviewHighlight; value: string }[] }) {
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-      {highlight?.imageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={highlight.imageUrl} alt="" referrerPolicy="no-referrer" className="size-16 shrink-0 rounded-lg object-cover" />
+    <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      {items.length === 0 ? (
+        <span className="text-sm text-muted-foreground">No opened bonuses yet</span>
       ) : (
-        <span
-          aria-hidden="true"
-          className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-muted text-xl font-bold uppercase text-muted-foreground"
-        >
-          {highlight?.game.charAt(0) ?? '–'}
-        </span>
+        items.map(({ highlight, value }) => (
+          <div key={`${highlight.currency}-${highlight.game}`} className="flex items-center gap-4">
+            <Thumb highlight={highlight} />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate font-semibold text-foreground">{highlight.game}</span>
+              <span className="text-sm text-muted-foreground">Hunt #{highlight.huntNumber}</span>
+            </div>
+            <span className="shrink-0 text-lg font-bold tabular-nums text-foreground">{value}</span>
+          </div>
+        ))
       )}
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-sm text-muted-foreground">{label}</span>
-        {highlight ? (
-          <>
-            <span className="truncate font-semibold text-foreground">{highlight.game}</span>
-            <span className="text-sm text-muted-foreground">Hunt #{highlight.huntNumber}</span>
-          </>
-        ) : (
-          <span className="text-sm text-muted-foreground">No opened bonuses yet</span>
-        )}
-      </div>
-      {highlight && <span className="shrink-0 text-lg font-bold tabular-nums text-foreground">{format(highlight.value)}</span>}
     </div>
   )
 }
@@ -106,14 +129,18 @@ function ActivityRow({ hunt, onOpen }: { hunt: OverviewHunt; onOpen: (id: string
 }
 
 export function BonusHuntOverview({ onOpen }: { onOpen: (id: string) => void }) {
-  const [currency, setCurrency] = useState<Currency>('CAD')
   const [period, setPeriod] = useState<OverviewPeriod>('all')
   const [createOpen, setCreateOpen] = useState(false)
-  const { data, error, isLoading, mutate } = useHuntOverview(currency, period)
+  const { data, error, isLoading, mutate } = useHuntOverview(period)
 
-  const money = (value: number) => formatMoney(value, currency)
   const multi = (value: number) => `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x`
   const stats = data?.stats
+  const totalLines = (pick: (t: CurrencyTotals) => number, colored = false, signed = false): StatLine[] =>
+    (stats?.totals ?? []).map((t) => ({
+      currency: t.currency,
+      text: formatMoney(pick(t), t.currency, { signed }),
+      className: colored ? tone(pick(t)) : undefined,
+    }))
 
   return (
     <div className="flex flex-col gap-8">
@@ -123,15 +150,6 @@ export function BonusHuntOverview({ onOpen }: { onOpen: (id: string) => void }) 
             Statistics
           </h2>
           <div className="flex flex-wrap items-center gap-2">
-            <Tabs value={currency} onValueChange={(value) => setCurrency(value as Currency)}>
-              <TabsList aria-label="Currency">
-                {CURRENCIES.map((code) => (
-                  <TabsTrigger key={code} value={code}>
-                    {code}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
             <Select value={period} onValueChange={(value) => setPeriod(value as OverviewPeriod)}>
               <SelectTrigger className="w-40" aria-label="Time period">
                 <SelectValue />
@@ -154,20 +172,28 @@ export function BonusHuntOverview({ onOpen }: { onOpen: (id: string) => void }) 
         ) : (
           <>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard icon={Crosshair} label="Bonus Hunts" value={stats ? String(stats.huntCount) : '—'} />
-              <StatCard icon={Coins} label="Total Cost" value={stats ? money(stats.totalCost) : '—'} />
-              <StatCard icon={HandCoins} label="Winnings" value={stats ? money(stats.winnings) : '—'} />
+              <StatCard icon={Crosshair} label="Bonus Hunts" lines={stats ? [{ text: String(stats.huntCount) }] : []} />
+              <StatCard icon={Coins} label="Total Cost" lines={totalLines((t) => t.totalCost)} />
+              <StatCard icon={HandCoins} label="Winnings" lines={totalLines((t) => t.winnings)} />
               <StatCard
-                icon={stats && stats.pnl < 0 ? TrendingDown : TrendingUp}
+                icon={stats && stats.totals.some((t) => t.pnl < 0) ? TrendingDown : TrendingUp}
                 label="PnL"
-                value={stats ? formatMoney(stats.pnl, currency, { signed: true }) : '—'}
-                valueClass={stats ? tone(stats.pnl) : undefined}
+                lines={totalLines((t) => t.pnl, true, true)}
               />
             </div>
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-              <HighlightCard label="Highest Win" highlight={stats?.highestWin ?? null} format={money} />
-              <HighlightCard label="Highest Multi" highlight={stats?.highestMulti ?? null} format={multi} />
-              <HighlightCard label="Lowest Multi" highlight={stats?.lowestMulti ?? null} format={multi} />
+              <HighlightCard
+                label="Highest Win"
+                items={(stats?.highestWins ?? []).map((h) => ({ highlight: h, value: formatMoney(h.value, h.currency) }))}
+              />
+              <HighlightCard
+                label="Highest Multi"
+                items={stats?.highestMulti ? [{ highlight: stats.highestMulti, value: multi(stats.highestMulti.value) }] : []}
+              />
+              <HighlightCard
+                label="Lowest Multi"
+                items={stats?.lowestMulti ? [{ highlight: stats.lowestMulti, value: multi(stats.lowestMulti.value) }] : []}
+              />
             </div>
           </>
         )}
@@ -202,7 +228,7 @@ export function BonusHuntOverview({ onOpen }: { onOpen: (id: string) => void }) 
           </table>
           {data && data.hunts.length === 0 && (
             <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-              No {currency} hunts for this period yet. Create one to get started.
+              No hunts for this period yet. Create one to get started.
             </p>
           )}
           {isLoading && !data && <p className="px-4 py-10 text-center text-sm text-muted-foreground">Loading hunts…</p>}
@@ -212,9 +238,8 @@ export function BonusHuntOverview({ onOpen }: { onOpen: (id: string) => void }) 
       <CreateHuntDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        defaultCurrency={currency}
+        defaultCurrency={DEFAULT_CURRENCY}
         onCreated={async (hunt) => {
-          setCurrency(hunt.currency)
           await mutate()
           onOpen(hunt.id)
         }}

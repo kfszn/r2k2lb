@@ -1,8 +1,9 @@
 import 'server-only'
 import { createClient } from '@supabase/supabase-js'
 import { normalizeSlotName } from '@/lib/hunt/normalize'
-import { currencyOrDefault, type Currency } from '@/lib/hunt/currency'
+import { CURRENCIES, DEFAULT_CURRENCY, currencyOrDefault, type Currency } from '@/lib/hunt/currency'
 import type {
+  CurrencyTotals,
   EntryKind,
   EntryStatus,
   HuntEntry,
@@ -100,9 +101,9 @@ async function loadOverviewEntries(db: HuntDb, huntIds: string[]) {
 
 const PERIOD_DAYS: Record<Exclude<OverviewPeriod, 'all'>, number> = { '30d': 30, '7d': 7 }
 
-// All-time style statistics for one currency. Currencies are never mixed because there is no conversion.
-export async function loadOverview(db: HuntDb, currency: Currency, period: OverviewPeriod): Promise<HuntOverview> {
-  let query = db.from('bonus_hunts').select('*').eq('currency', currency).order('number', { ascending: false })
+// Every hunt in one list; money totals are kept per currency because there is no conversion.
+export async function loadOverview(db: HuntDb, period: OverviewPeriod): Promise<HuntOverview> {
+  let query = db.from('bonus_hunts').select('*').order('number', { ascending: false })
   if (period !== 'all') {
     query = query.gte('created_at', new Date(Date.now() - PERIOD_DAYS[period] * 86_400_000).toISOString())
   }
@@ -127,7 +128,7 @@ export async function loadOverview(db: HuntDb, currency: Currency, period: Overv
       number: row.number,
       name: row.name,
       status: row.status,
-      currency,
+      currency: currencyOrDefault(row.currency),
       date: row.started_at ?? row.created_at,
       startBalance,
       bonuses: entries.length,
@@ -140,11 +141,17 @@ export async function loadOverview(db: HuntDb, currency: Currency, period: Overv
 
   const finishedHunts = hunts.filter((h) => h.pnl !== null)
   const numberById = new Map(huntRows.map((row) => [row.id, row.number]))
+  const currencyById = new Map(hunts.map((h) => [h.id, h.currency]))
 
-  const highlight = (pick: (e: OverviewEntryRow) => number, better: (a: number, b: number) => boolean) => {
+  const highlight = (
+    pick: (e: OverviewEntryRow) => number,
+    better: (a: number, b: number) => boolean,
+    only?: Currency
+  ) => {
     let best: { row: OverviewEntryRow; value: number } | null = null
     for (const row of entryRows) {
       if (row.status !== 'opened' || row.payout === null) continue
+      if (only && currencyById.get(row.hunt_id) !== only) continue
       const value = pick(row)
       if (!Number.isFinite(value)) continue
       if (!best || better(value, best.value)) best = { row, value }
@@ -153,15 +160,19 @@ export async function loadOverview(db: HuntDb, currency: Currency, period: Overv
   }
   const multiplier = (e: OverviewEntryRow) => (Number(e.bet_size) > 0 ? Number(e.payout) / Number(e.bet_size) : NaN)
 
+  const usedCurrencies = CURRENCIES.filter((code) => hunts.some((h) => h.currency === code))
   const picks = {
-    highestWin: highlight((e) => Number(e.payout), (a, b) => a > b),
+    highestWins: usedCurrencies.flatMap((code) => {
+      const best = highlight((e) => Number(e.payout), (a, b) => a > b, code)
+      return best ? [best] : []
+    }),
     highestMulti: highlight(multiplier, (a, b) => a > b),
     lowestMulti: highlight(multiplier, (a, b) => a < b),
   }
 
   const images = await findSlotImages(
     db,
-    Object.values(picks).flatMap((p) => (p ? [p.row.game_name] : []))
+    [...picks.highestWins, picks.highestMulti, picks.lowestMulti].flatMap((p) => (p ? [p.row.game_name] : []))
   )
   const toHighlight = (pick: { row: OverviewEntryRow; value: number } | null): OverviewHighlight | null => {
     if (!pick) return null
@@ -171,22 +182,24 @@ export async function loadOverview(db: HuntDb, currency: Currency, period: Overv
       imageUrl: known?.imageUrl ?? pick.row.game_image_url ?? null,
       value: pick.value,
       huntNumber: numberById.get(pick.row.hunt_id) ?? 0,
+      currency: currencyById.get(pick.row.hunt_id) ?? DEFAULT_CURRENCY,
     }
   }
 
-  const totalCost = finishedHunts.reduce((sum, h) => sum + h.startBalance, 0)
-  const winnings = finishedHunts.reduce((sum, h) => sum + h.winnings, 0)
+  const totals: CurrencyTotals[] = usedCurrencies.map((code) => {
+    const finished = finishedHunts.filter((h) => h.currency === code)
+    const totalCost = finished.reduce((sum, h) => sum + h.startBalance, 0)
+    const winnings = finished.reduce((sum, h) => sum + h.winnings, 0)
+    return { currency: code, totalCost, winnings, pnl: winnings - totalCost }
+  })
 
   return {
-    currency,
     period,
     hunts,
     stats: {
       huntCount: hunts.length,
-      totalCost,
-      winnings,
-      pnl: winnings - totalCost,
-      highestWin: toHighlight(picks.highestWin),
+      totals,
+      highestWins: picks.highestWins.flatMap((p) => toHighlight(p) ?? []),
       highestMulti: toHighlight(picks.highestMulti),
       lowestMulti: toHighlight(picks.lowestMulti),
     },

@@ -58,18 +58,25 @@ export interface OverviewHighlight {
   imageUrl: string | null
   value: number
   huntNumber: number
+  currency: Currency
+}
+
+// Money is only ever summed within one currency, since there is no conversion.
+export interface CurrencyTotals {
+  currency: Currency
+  totalCost: number
+  winnings: number
+  pnl: number
 }
 
 export interface HuntOverview {
-  currency: Currency
   period: OverviewPeriod
   hunts: OverviewHunt[]
   stats: {
     huntCount: number
-    totalCost: number
-    winnings: number
-    pnl: number
-    highestWin: OverviewHighlight | null
+    totals: CurrencyTotals[]
+    // One biggest payout per currency; multipliers are currency-independent so they stay single.
+    highestWins: OverviewHighlight[]
     highestMulti: OverviewHighlight | null
     lowestMulti: OverviewHighlight | null
   }

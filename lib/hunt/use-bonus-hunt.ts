@@ -1,7 +1,6 @@
 'use client'
 
 import useSWR from 'swr'
-import type { Currency } from '@/lib/hunt/currency'
 import type { HuntEntry, HuntOverview, HuntSettings, HuntStats, HuntSummary, OverviewPeriod } from '@/lib/hunt/stats'
 
 export interface AdminHuntState {
@@ -29,8 +28,8 @@ export function useBonusHunt(huntId?: string | null) {
   return useSWR<AdminHuntState>(url, fetcher, { refreshInterval: 4000, keepPreviousData: true })
 }
 
-export function useHuntOverview(currency: Currency, period: OverviewPeriod) {
-  return useSWR<HuntOverview>(`/api/admin/bonus-hunt/overview?currency=${currency}&period=${period}`, fetcher, {
+export function useHuntOverview(period: OverviewPeriod) {
+  return useSWR<HuntOverview>(`/api/admin/bonus-hunt/overview?period=${period}`, fetcher, {
     refreshInterval: 8000,
     keepPreviousData: true,
   })
