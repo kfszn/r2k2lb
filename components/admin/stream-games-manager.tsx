@@ -8,6 +8,7 @@ import { BonusHunts } from '@/components/admin/bonus-hunts';
 import { SlotCalls } from '@/components/admin/slot-calls';
 import { Predictions } from '@/components/admin/predictions';
 import { Giveaway } from '@/components/admin/giveaway';
+import { KickBotStatus } from '@/components/admin/kick-bot-status';
 import { Scale, Gift, Phone, ArrowLeft, Brain, PartyPopper } from 'lucide-react';
 
 type GameType = 'menu' | 'control-balance' | 'bonus-hunts' | 'slot-calls' | 'predictions' | 'giveaway';
@@ -62,22 +63,25 @@ export function StreamGamesManager() {
   if (selectedGame === 'giveaway') return <div className="space-y-4">{back}<Giveaway /></div>;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {GAMES.map((game) => (
-        <Card
-          key={game.id}
-          className="cursor-pointer transition-all border-border/60 hover:border-primary/40 hover:bg-muted/20 hover:shadow-sm"
-          onClick={() => setSelectedGame(game.id)}
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3 mb-2">
-              {game.icon}
-              <CardTitle className="text-base">{game.label}</CardTitle>
-            </div>
-            <CardDescription className="text-xs leading-relaxed">{game.description}</CardDescription>
-          </CardHeader>
-        </Card>
-      ))}
+    <div className="space-y-6">
+      <KickBotStatus />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {GAMES.map((game) => (
+          <Card
+            key={game.id}
+            className="cursor-pointer transition-all border-border/60 hover:border-primary/40 hover:bg-muted/20 hover:shadow-sm"
+            onClick={() => setSelectedGame(game.id)}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3 mb-2">
+                {game.icon}
+                <CardTitle className="text-base">{game.label}</CardTitle>
+              </div>
+              <CardDescription className="text-xs leading-relaxed">{game.description}</CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

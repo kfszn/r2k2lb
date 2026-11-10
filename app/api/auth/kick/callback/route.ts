@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getAdminSession } from '@/lib/staff-auth'
 
 // Kick OAuth PKCE callback — exchanges code for token, fetches Kick profile,
 // then either links the Kick account to an existing user (mode=link)
@@ -23,14 +24,23 @@ export async function GET(req: NextRequest) {
     return res
   }
 
+  const failRedirect = (code: string) => {
+    if (mode === 'bot') {
+      return NextResponse.redirect(`${siteUrl}/admin?view=stream-games&kick_bot_error=${code}`)
+    }
+    const dest = mode === 'link' ? '/account' : '/auth/login'
+    return NextResponse.redirect(`${siteUrl}${dest}?kick_error=${code}`)
+  }
+
   // Validate state (CSRF guard)
   if (!state || !cookieState || state !== cookieState) {
-    const dest = mode === 'link' ? '/account' : '/auth/login'
-    return clearCookies(NextResponse.redirect(`${siteUrl}${dest}?kick_error=invalid_state`))
+    return clearCookies(failRedirect('invalid_state'))
   }
   if (!code || !codeVerifier) {
-    const dest = mode === 'link' ? '/account' : '/auth/login'
-    return clearCookies(NextResponse.redirect(`${siteUrl}${dest}?kick_error=missing_params`))
+    return clearCookies(failRedirect('missing_params'))
+  }
+  if (mode === 'bot' && getAdminSession(req)?.role !== 'owner') {
+    return clearCookies(failRedirect('not_admin'))
   }
 
   const clientId    = process.env.KICK_CLIENT_ID!
@@ -39,6 +49,7 @@ export async function GET(req: NextRequest) {
 
   // 1. Exchange code for access token
   let accessToken: string
+  let tokenPayload: { refresh_token?: string; expires_in?: number; scope?: string }
   try {
     const tokenRes = await fetch('https://id.kick.com/oauth/token', {
       method: 'POST',
@@ -55,10 +66,10 @@ export async function GET(req: NextRequest) {
     if (!tokenRes.ok) throw new Error(`Token exchange failed: ${tokenRes.status}`)
     const tokenData = await tokenRes.json()
     accessToken = tokenData.access_token
+    tokenPayload = tokenData
   } catch (err) {
     console.error('[kick/callback] token exchange error:', err)
-    const dest = mode === 'link' ? '/account' : '/auth/login'
-    return clearCookies(NextResponse.redirect(`${siteUrl}${dest}?kick_error=token_exchange_failed`))
+    return clearCookies(failRedirect('token_exchange_failed'))
   }
 
   // 2. Fetch Kick user profile
@@ -76,8 +87,7 @@ export async function GET(req: NextRequest) {
     kickUser = Array.isArray(dataPayload) ? dataPayload[0] : (dataPayload ?? profileData)
   } catch (err) {
     console.error('[kick/callback] profile fetch error:', err)
-    const dest = mode === 'link' ? '/account' : '/auth/login'
-    return clearCookies(NextResponse.redirect(`${siteUrl}${dest}?kick_error=profile_fetch_failed`))
+    return clearCookies(failRedirect('profile_fetch_failed'))
   }
 
   console.log('[kick] kickUser object keys:', Object.keys(kickUser ?? {}))
@@ -97,6 +107,36 @@ export async function GET(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
+  // ── BOT MODE ───────────────────────────────────────────────────────────────
+  // Saves the chat bot's tokens (service role only) instead of touching any profile.
+  if (mode === 'bot') {
+    if (!tokenPayload.refresh_token) {
+      console.error('[kick/callback] bot authorization returned no refresh_token')
+      return clearCookies(failRedirect('no_refresh_token'))
+    }
+
+    const botName = kickUsernameRaw ? String(kickUsernameRaw) : kickId
+    const { error: botError } = await supabase.from('kick_bot_tokens').upsert({
+      id: 'bot',
+      access_token: accessToken,
+      refresh_token: tokenPayload.refresh_token,
+      expires_at: new Date(Date.now() + (tokenPayload.expires_in ?? 3600) * 1000).toISOString(),
+      scopes: tokenPayload.scope ?? null,
+      kick_user_id: kickId,
+      kick_username: botName,
+      updated_at: new Date().toISOString(),
+    })
+
+    if (botError) {
+      console.error('[kick/callback] bot token save error:', botError.message)
+      return clearCookies(failRedirect('db_error'))
+    }
+
+    return clearCookies(
+      NextResponse.redirect(`${siteUrl}/admin?view=stream-games&kick_bot=success&account=${encodeURIComponent(botName)}`)
+    )
+  }
 
   // ── LINK MODE ──────────────────────────────────────────────────────────────
   if (mode === 'link') {

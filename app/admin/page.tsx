@@ -61,6 +61,14 @@ export default function AdminPage() {
   const [passwordError, setPasswordError] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
   const [currentView, setCurrentView] = useState<AdminView>("dashboard");
+
+  // The Kick bot authorization redirects back here; the admin page logs out on load,
+  // so remember the target view until the owner signs in again.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("view") === "stream-games") {
+      setCurrentView("stream-games");
+    }
+  }, []);
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
   const { tournament, isLoading, refresh } = useActiveTournament();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
