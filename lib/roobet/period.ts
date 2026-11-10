@@ -237,6 +237,23 @@ export function getCurrentRoobetMonthStartISO(now: Date = new Date()): string {
   throw new Error('unreachable')
 }
 
+/**
+ * The UTC instant the current Wager Rewards cycle ends — the end of the LAST
+ * (4th) period in the currently-live sequential group, i.e. when "<Month> IV"
+ * finishes. Milestone progress resets here, not at each weekly cutover.
+ */
+export function getCurrentRoobetMonthEndISO(now: Date = new Date()): string {
+  const period = getCurrentRoobetPeriod(now)
+  const periodIndex = getPeriodIndexForEndDate(period.endDate)
+  const indexInGroup = ((periodIndex - 1) % ROOBET_PERIODS_PER_GROUP) + 1
+  const groupLastIndex = periodIndex + (ROOBET_PERIODS_PER_GROUP - indexInGroup)
+
+  for (const { index, period: p } of iterateRoobetPeriods()) {
+    if (index === groupLastIndex) return p.endISO
+  }
+  throw new Error('unreachable')
+}
+
 /** The most recently fully-completed period (end <= now), or null if the first period hasn't ended yet. */
 export function getPreviousRoobetPeriod(now: Date = new Date()): RoobetPeriod | null {
   let previous: RoobetPeriod | null = null
