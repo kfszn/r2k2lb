@@ -5,6 +5,7 @@ import useSWR from 'swr'
 import { Loader2, LogIn, Link2, AlertTriangle, Lock, TrendingUp } from 'lucide-react'
 import type { MilestoneTier } from './milestone-tier-row'
 import { MilestoneTierCard, compact } from './milestone-tier-card'
+import { getCurrentRoobetRewardsGroupLabel } from '@/lib/roobet/period'
 
 type Progress = {
   authenticated: boolean
@@ -296,9 +297,11 @@ function MilestoneStatusCard({
         <p className="mt-4 text-xs text-muted-foreground">
           {cycle === 'rewards' ? (
             <>
-              Progress resets for the new month on{' '}
-              <span className="text-foreground font-medium">{resetDate}</span> — unclaimed wager
-              beyond your last claim does not carry over.
+              Progress resets after the{' '}
+              <span className="text-foreground font-medium">
+                {getCurrentRoobetRewardsGroupLabel()} IV
+              </span>{' '}
+              leaderboard — unclaimed wager beyond your last claim does not carry over.
             </>
           ) : (
             <>
