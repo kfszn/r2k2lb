@@ -20,6 +20,7 @@ export interface HuntEntry {
   calledBy: string | null
   status: EntryStatus
   kind: EntryKind
+  pending: boolean
   createdAt: string
 }
 

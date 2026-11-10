@@ -44,6 +44,7 @@ interface EntryRow {
   called_by: string | null
   status: EntryStatus
   kind: EntryKind | null
+  pending: boolean | null
   created_at: string
 }
 
@@ -89,6 +90,7 @@ async function loadOverviewEntries(db: HuntDb, huntIds: string[]) {
         .from('bonus_hunt_entries')
         .select('hunt_id, game_name, game_image_url, bet_size, payout, status')
         .in('hunt_id', ids)
+        .eq('pending', false)
         .order('id')
         .range(from, from + 999)
       const page = (data ?? []) as OverviewEntryRow[]
@@ -278,6 +280,7 @@ export async function loadEntries(db: HuntDb, huntId: string): Promise<HuntEntry
     calledBy: row.called_by,
     status: row.status,
     kind: row.kind ?? 'regular',
+    pending: row.pending === true,
     createdAt: row.created_at,
   }))
 }

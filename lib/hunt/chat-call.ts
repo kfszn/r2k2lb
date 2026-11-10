@@ -51,6 +51,7 @@ export async function addCallToHunt(username: string, slotInput: string): Promis
     payout: null,
     called_by: username,
     status: 'called',
+    pending: true,
   })
 
   if (error) {
