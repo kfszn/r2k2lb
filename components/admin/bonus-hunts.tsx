@@ -1,22 +1,19 @@
-'use client';
+'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gift } from 'lucide-react';
+import { useState } from 'react'
+import { BonusHuntDetail } from '@/components/admin/bonus-hunt-detail'
+import { BonusHuntOverview } from '@/components/admin/bonus-hunt-overview'
+import { BonusHuntSettings } from '@/components/admin/bonus-hunt-settings'
 
 export function BonusHunts() {
+  const [openHuntId, setOpenHuntId] = useState<string | null>(null)
+
+  if (openHuntId) return <BonusHuntDetail huntId={openHuntId} onBack={() => setOpenHuntId(null)} />
+
   return (
-    <Card className="border-primary/20">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <Gift className="h-6 w-6 text-primary" />
-          <CardTitle>Bonus Hunts</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-center h-64 text-muted-foreground">
-          <p>Bonus Hunts game panel - Coming Soon</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
+    <div className="flex flex-col gap-8">
+      <BonusHuntOverview onOpen={setOpenHuntId} />
+      <BonusHuntSettings />
+    </div>
+  )
 }

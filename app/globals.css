@@ -491,3 +491,14 @@
     animation: none;
   }
 }
+
+/* OBS bonus hunt widget palette: deep purple surfaces, lavender text, amber for money. */
+.hunt-widget {
+  --hunt-surface: oklch(0.2 0.07 295 / 0.94);
+  --hunt-tile: oklch(0.27 0.09 295 / 0.9);
+  --hunt-line: oklch(0.5 0.14 295 / 0.45);
+  --hunt-text: oklch(0.97 0.015 295);
+  --hunt-muted: oklch(0.76 0.06 295);
+  --hunt-gold: oklch(0.84 0.16 85);
+  --hunt-next: oklch(0.45 0.18 305 / 0.55);
+}
