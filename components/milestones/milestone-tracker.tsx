@@ -5,6 +5,7 @@ import useSWR from 'swr'
 import { Loader2, LogIn, Link2, AlertTriangle, Lock, TrendingUp } from 'lucide-react'
 import type { MilestoneTier } from './milestone-tier-row'
 import { MilestoneTierCard, compact } from './milestone-tier-card'
+import { getCurrentRoobetRewardsGroupLabel } from '@/lib/roobet/period'
 
 type Progress = {
   authenticated: boolean
@@ -32,13 +33,18 @@ function fmt(n: number) {
   return '$' + Math.round(n).toLocaleString('en-US')
 }
 
-function fmtDate(iso: string) {
-  const d = new Date(`${iso}T00:00:00Z`)
+function fmtDate(value: string | null | undefined) {
+  if (!value) return null
+  // Date-only values ("2026-11-30") are calendar days; full timestamps are
+  // period cutovers, which happen at 6 PM ET.
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value)
+  const d = new Date(isDateOnly ? `${value}T00:00:00Z` : value)
+  if (Number.isNaN(d.getTime())) return null
   return d.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-    timeZone: 'UTC',
+    timeZone: isDateOnly ? 'UTC' : 'America/New_York',
   })
 }
 
@@ -59,7 +65,7 @@ export function MilestoneTracker({ platform, sponsor, tiers, discordUrl, cycle =
   const currentTier = reachedTiers[reachedTiers.length - 1] ?? null
   const nextTier = sorted.find((t) => wagered < t.wager) ?? null
 
-  const resetDate = data?.window ? fmtDate(data.window.end) : null
+  const resetDate = fmtDate(data?.window?.end)
 
   return (
     <div className="space-y-5">
@@ -236,9 +242,12 @@ function MilestoneStatusCard({
     ? Math.min(100, Math.max(0, (wagered / nextTier.wager) * 100))
     : 100
   const remaining = nextTier ? Math.max(0, nextTier.wager - wagered) : 0
-  const cycleLabel = data.window
-    ? `${fmtDate(data.window.start).replace(/, \d{4}$/, '')} – ${fmtDate(data.window.end).replace(/, \d{4}$/, '')}`
-    : null
+  const cycleStart = fmtDate(data.window?.start)
+  const cycleEnd = fmtDate(data.window?.end)
+  const cycleLabel =
+    cycleStart && cycleEnd
+      ? `${cycleStart.replace(/, \d{4}$/, '')} – ${cycleEnd.replace(/, \d{4}$/, '')}`
+      : null
 
   return (
     <div className={base}>
@@ -288,9 +297,11 @@ function MilestoneStatusCard({
         <p className="mt-4 text-xs text-muted-foreground">
           {cycle === 'rewards' ? (
             <>
-              Progress resets for the new month on{' '}
-              <span className="text-foreground font-medium">{resetDate}</span> — unclaimed wager
-              beyond your last claim does not carry over.
+              Progress resets after the{' '}
+              <span className="text-foreground font-medium">
+                {getCurrentRoobetRewardsGroupLabel()} IV
+              </span>{' '}
+              leaderboard — unclaimed wager beyond your last claim does not carry over.
             </>
           ) : (
             <>

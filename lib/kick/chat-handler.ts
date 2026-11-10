@@ -35,8 +35,18 @@ interface CommandContext {
   api: Api
 }
 
+// Ignore repeat guess replies from the same user inside this window; the guess itself is still saved.
+const GUESS_REPLY_COOLDOWN_MS = 5_000
+
 const lastPointsAward = new Map<string, number>()
 const customCommandLastUsed = new Map<string, number>()
+const lastGuessReply = new Map<string, number>()
+
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  return url && key ? createClient(url, key) : null
+}
 
 function resolveBaseUrl(fallbackOrigin: string) {
   const configured = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || fallbackOrigin
@@ -122,11 +132,11 @@ const commands: Record<string, (ctx: CommandContext) => Promise<string | null>> 
   },
 
   async gtb({ username, args, api }) {
-    return submitGuess('gtb', 'Guess The Balance', '!gtb <balance>', { username, args, api })
+    return submitGuess('gtb', { username, args, api })
   },
 
   async gtm({ username, args, api }) {
-    return submitGuess('gtm', 'Guess The Multi', '!gtm <multiplier>', { username, args, api })
+    return submitGuess('gtm', { username, args, api })
   },
 
   async status({ api }) {
@@ -140,30 +150,77 @@ const commands: Record<string, (ctx: CommandContext) => Promise<string | null>> 
   },
 }
 
+const GUESS_COPY = {
+  gtb: {
+    label: 'GTB',
+    emoji: '💰',
+    example: '1250',
+    format: (guess: number) =>
+      `$${guess.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+  },
+  gtm: {
+    label: 'GTM',
+    emoji: '🎰',
+    example: '45.5',
+    format: (guess: number) => `${formatAmount(guess)}x`,
+  },
+} as const
+
+async function countEntries(type: 'gtb' | 'gtm') {
+  const supabase = getSupabase()
+  if (!supabase) return null
+  const { count, error } = await supabase
+    .from('predictions')
+    .select('id', { count: 'exact', head: true })
+    .eq('type', type)
+  return error ? null : count
+}
+
+// Best effort across serverless instances: the guess is always saved, only the chat reply is skipped.
+function isReplyThrottled(type: string, username: string) {
+  const key = `${type}:${username.toLowerCase()}`
+  const now = Date.now()
+  const throttled = now - (lastGuessReply.get(key) ?? 0) < GUESS_REPLY_COOLDOWN_MS
+  lastGuessReply.set(key, now)
+
+  if (lastGuessReply.size > 5000) {
+    for (const [name, at] of lastGuessReply) {
+      if (now - at > GUESS_REPLY_COOLDOWN_MS) lastGuessReply.delete(name)
+    }
+  }
+  return throttled
+}
+
 async function submitGuess(
   type: 'gtb' | 'gtm',
-  label: string,
-  usage: string,
   { username, args, api }: Pick<CommandContext, 'username' | 'args' | 'api'>
 ) {
+  const copy = GUESS_COPY[type]
   const guess = parseAmount(args[0])
-  if (guess === null) return mention(username, `Usage: ${usage}`)
+  if (guess === null) return `@${username} ❌ Try !${type} ${copy.example} (just the number)`
 
-  const { data } = await api(`/api/bot/predictions/${type}`, { kickUsername: username, guess })
-  if (!data?.success) return mention(username, text(data?.message) || `Could not record your ${label} guess.`)
+  const { status, data } = await api(`/api/bot/predictions/${type}`, { kickUsername: username, guess })
 
-  const prefix = type === 'gtb' ? '$' : ''
-  const suffix = type === 'gtm' ? 'x' : ''
-  const verb = data.updated ? 'updated' : 'recorded'
-  return mention(username, `${label} guess ${verb}: ${prefix}${formatAmount(guess)}${suffix}`)
+  if (status === 403) {
+    return isReplyThrottled(type, username) ? null : `@${username} 🔒 ${copy.label} is closed right now.`
+  }
+  if (!data?.success) {
+    return mention(username, text(data?.message) || `Could not record your ${copy.label} guess.`)
+  }
+  if (isReplyThrottled(type, username)) return null
+
+  const formatted = copy.format(guess)
+  if (data.updated) return `@${username} 🔄 ${copy.label} guess updated! Your new guess: ${formatted}`
+
+  const position = await countEntries(type)
+  const entryNumber = position ? ` You're entry #${position}!` : ''
+  return `@${username} ${copy.emoji} ${copy.label} entry received! Your guess: ${formatted}.${entryNumber} Good luck!`
 }
 
 async function runCustomCommand(name: string, username: string) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) return null
+  const supabase = getSupabase()
+  if (!supabase) return null
 
-  const supabase = createClient(url, key)
   const { data, error } = await supabase
     .from('bot_commands')
     .select('response, cooldown_seconds')

@@ -2,7 +2,11 @@
 // the public leaderboards use, so a user's tracked wager always matches what
 // they see on the leaderboard. We do NOT re-implement upstream fetching here.
 
-import { getCurrentRoobetPeriod, getCurrentRoobetMonthStartISO } from "@/lib/roobet/period";
+import {
+  getCurrentRoobetPeriod,
+  getCurrentRoobetMonthStartISO,
+  getCurrentRoobetMonthEndISO,
+} from "@/lib/roobet/period";
 import { CURRENT_LUXDROP_PERIOD } from "@/lib/luxdrop/period";
 
 export type MilestonePlatform = "acebet" | "luxdrop" | "roobet";
@@ -60,8 +64,7 @@ export function getLeaderboardWindow(platform: MilestonePlatform): { start: stri
 // both the wager total and each tier's "claimed" check (which is scoped to
 // this same window in getMilestoneTiers) start over from zero.
 function roobetRewardsPeriod(): { start: string; end: string } {
-  const period = getCurrentRoobetPeriod();
-  return { start: getCurrentRoobetMonthStartISO(), end: period.endISO };
+  return { start: getCurrentRoobetMonthStartISO(), end: getCurrentRoobetMonthEndISO() };
 }
 
 export type MilestoneCycle = "leaderboard" | "rewards";
