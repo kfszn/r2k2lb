@@ -10,6 +10,7 @@ const POINTS_COOLDOWN_MS = 30_000
 const COMMAND_ALIASES: Record<string, string> = {
   enter: 'entry',
   slot: 'request',
+  r: 'request',
   commands: 'help',
   r2k2: 'help',
 }

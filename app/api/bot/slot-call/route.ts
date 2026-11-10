@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { addCallToHunt } from '@/lib/hunt/chat-call'
 
 const supabaseAdmin = createAdminClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,6 +23,10 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
+
+    // A switched-on bonus hunt takes the call; with no hunt on we fall through to the regular behavior below.
+    const huntResult = await addCallToHunt(kickUsername, String(slotName))
+    if (huntResult) return NextResponse.json(huntResult)
 
     // Check if slot calls are open — use admin client so it always reads regardless of auth session
     const { data: config, error: configError } = await supabaseAdmin
