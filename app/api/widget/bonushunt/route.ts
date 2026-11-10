@@ -12,7 +12,7 @@ export async function GET() {
   const headers = { 'Cache-Control': 'public, s-maxage=1, stale-while-revalidate=2' }
   if (!hunt) return NextResponse.json({ hunt: null }, { headers })
 
-  const entries = await loadEntries(db, hunt.id)
+  const entries = (await loadEntries(db, hunt.id)).filter((entry) => !entry.pending)
   const stats = computeHuntStats(hunt.startBalance, entries)
 
   return NextResponse.json(

@@ -20,7 +20,12 @@ export async function GET(request: NextRequest) {
   const db = getHuntDb()
   const [settings, hunt] = await Promise.all([loadSettings(db), resolveHunt(db, request.nextUrl.searchParams.get('hunt'))])
   const entries = hunt ? await loadEntries(db, hunt.id) : []
-  const stats = hunt ? computeHuntStats(hunt.startBalance, entries) : null
+  const stats = hunt
+    ? computeHuntStats(
+        hunt.startBalance,
+        entries.filter((entry) => !entry.pending)
+      )
+    : null
 
   return NextResponse.json({ settings, hunt, entries, stats })
 }

@@ -20,6 +20,7 @@ async function renumber(db: HuntDb, huntId: string) {
     .from('bonus_hunt_entries')
     .select('id, position')
     .eq('hunt_id', huntId)
+    .order('pending', { ascending: true })
     .order('position', { ascending: true })
     .order('created_at', { ascending: true })
   await Promise.all(
@@ -64,8 +65,10 @@ export async function POST(request: NextRequest) {
     called_by: null,
     kind,
     status: payout === null ? 'called' : 'opened',
+    pending: false,
   })
   if (error) return fail(error.message, 500)
+  await renumber(db, hunt.id)
   return NextResponse.json({ ok: true })
 }
 
@@ -123,8 +126,18 @@ export async function PATCH(request: NextRequest) {
   patch.status = status
   patch.payout = payout
 
+  // Accepting a pending call puts it at the bottom of the bonus list.
+  const accepting = body.pending === false && current.pending === true
+  if (accepting) {
+    patch.pending = false
+    patch.position = await nextPosition(db, current.hunt_id)
+  } else if (body.pending === true && current.pending !== true) {
+    patch.pending = true
+  }
+
   const { error } = await db.from('bonus_hunt_entries').update(patch).eq('id', body.id)
   if (error) return fail(error.message, 500)
+  if (patch.pending !== undefined) await renumber(db, current.hunt_id)
   return NextResponse.json({ ok: true })
 }
 
@@ -154,12 +167,13 @@ export async function PUT(request: NextRequest) {
   const hunt = await resolveHunt(db, body?.huntId)
   if (!hunt) return fail('No hunt found.', 409)
 
-  const { data } = await db.from('bonus_hunt_entries').select('id').eq('hunt_id', hunt.id)
+  const { data } = await db.from('bonus_hunt_entries').select('id').eq('hunt_id', hunt.id).eq('pending', false)
   const existing = new Set((data ?? []).map((row) => row.id))
   if (existing.size !== ids.length || ids.some((id) => !existing.has(id))) {
     return fail('The entry list changed, refresh and try again.', 409)
   }
 
   await Promise.all(ids.map((id, index) => db.from('bonus_hunt_entries').update({ position: index + 1 }).eq('id', id)))
+  await renumber(db, hunt.id)
   return NextResponse.json({ ok: true })
 }

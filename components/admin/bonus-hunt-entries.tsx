@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { mutate } from 'swr'
-import { ArrowDown, ArrowUp, ImageIcon, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ImageIcon, Plus, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -282,6 +282,15 @@ function EntryRow({
         >
           <ArrowDown className="size-4" />
         </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => void patch({ pending: true })}
+          aria-label={`Move ${entry.game} back to pending`}
+          title="Move back to pending"
+        >
+          <Undo2 className="size-4" />
+        </Button>
         <Button variant="ghost" size="icon" onClick={remove} aria-label={`Delete ${entry.game}`}>
           <Trash2 className="size-4 text-destructive" />
         </Button>
@@ -361,10 +370,135 @@ function AddEntryForm({
   )
 }
 
+function PendingRow({
+  entry,
+  currency,
+  onRefresh,
+  onError,
+}: {
+  entry: HuntEntry
+  currency: string
+  onRefresh: () => void
+  onError: Report
+}) {
+  const [bet, setBet] = useState(entry.betSize > 0 ? String(entry.betSize) : '')
+  const [busy, setBusy] = useState(false)
+
+  async function addToHunt() {
+    setBusy(true)
+    const result = await huntRequest('PATCH', ENTRIES_URL, {
+      id: entry.id,
+      pending: false,
+      ...(bet.trim() ? { betSize: bet.trim() } : {}),
+    })
+    setBusy(false)
+    onError(result.ok ? null : (result.error ?? 'Could not add to the hunt.'))
+    onRefresh()
+  }
+
+  async function remove() {
+    const result = await huntRequest('DELETE', `${ENTRIES_URL}?id=${entry.id}`)
+    onError(result.ok ? null : (result.error ?? 'Could not delete.'))
+    onRefresh()
+  }
+
+  return (
+    <li className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 sm:flex-row sm:items-center">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <Thumb entry={entry} />
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-sm font-medium text-foreground">{entry.game}</span>
+          <span className="truncate text-xs text-muted-foreground">
+            {entry.calledBy ? `Called by ${entry.calledBy}` : 'Pending call'}
+          </span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Input
+          value={bet}
+          onChange={(event) => setBet(event.target.value)}
+          onKeyDown={(event) => event.key === 'Enter' && void addToHunt()}
+          inputMode="decimal"
+          placeholder={`Bet ${currency}`}
+          aria-label={`Bet size for ${entry.game}`}
+          className="w-28"
+        />
+        <Button onClick={addToHunt} disabled={busy}>
+          <Plus className="mr-1 size-4" aria-hidden="true" />
+          Add
+        </Button>
+        <Button variant="ghost" size="icon" onClick={remove} aria-label={`Dismiss ${entry.game}`}>
+          <Trash2 className="size-4 text-destructive" />
+        </Button>
+      </div>
+    </li>
+  )
+}
+
+function PendingSection({
+  pending,
+  currency,
+  onRefresh,
+  onError,
+}: {
+  pending: HuntEntry[]
+  currency: string
+  onRefresh: () => void
+  onError: Report
+}) {
+  const [busy, setBusy] = useState(false)
+
+  async function addAll() {
+    setBusy(true)
+    for (const entry of pending) {
+      const result = await huntRequest('PATCH', ENTRIES_URL, { id: entry.id, pending: false })
+      if (!result.ok) {
+        onError(result.error ?? 'Could not add every call.')
+        break
+      }
+      onError(null)
+    }
+    setBusy(false)
+    onRefresh()
+  }
+
+  return (
+    <section aria-labelledby="pending-heading" className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <h3 id="pending-heading" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          Pending calls
+          <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
+            {pending.length}
+          </span>
+        </h3>
+        {pending.length > 1 && (
+          <Button variant="outline" size="sm" onClick={addAll} disabled={busy}>
+            Add all
+          </Button>
+        )}
+      </div>
+      {pending.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-border p-3 text-center text-sm text-muted-foreground">
+          No pending calls. Chat calls wait here until you add them to the hunt.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {pending.map((entry) => (
+            <PendingRow key={entry.id} entry={entry} currency={currency} onRefresh={onRefresh} onError={onError} />
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+
 export function BonusHuntEntries({ entries, nextPosition, huntId, currency, onRefresh, onError }: EntriesProps) {
+  const pending = entries.filter((entry) => entry.pending)
+  const bonuses = entries.filter((entry) => !entry.pending)
+
   async function move(from: number, to: number) {
-    if (to < 0 || to >= entries.length) return
-    const ids = entries.map((entry) => entry.id)
+    if (to < 0 || to >= bonuses.length) return
+    const ids = bonuses.map((entry) => entry.id)
     const [moved] = ids.splice(from, 1)
     ids.splice(to, 0, moved)
     const result = await huntRequest('PUT', ENTRIES_URL, { ids, huntId })
@@ -373,29 +507,39 @@ export function BonusHuntEntries({ entries, nextPosition, huntId, currency, onRe
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {entries.length === 0 ? (
-        <p className="rounded-lg border border-border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
-          No bonuses yet. Chat calls appear here automatically while the hunt is on, or add one below.
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {entries.map((entry, index) => (
-            <EntryRow
-              key={entry.id}
-              entry={entry}
-              index={index}
-              total={entries.length}
-              isNext={entry.position === nextPosition}
-              currency={currency}
-              onMove={move}
-              onRefresh={onRefresh}
-              onError={onError}
-            />
-          ))}
-        </ul>
-      )}
-      {huntId && <AddEntryForm huntId={huntId} currency={currency} onRefresh={onRefresh} onError={onError} />}
+    <div className="flex flex-col gap-4">
+      <PendingSection pending={pending} currency={currency} onRefresh={onRefresh} onError={onError} />
+
+      <section aria-labelledby="bonuses-heading" className="flex flex-col gap-2">
+        <h3 id="bonuses-heading" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          In the hunt
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums text-muted-foreground">
+            {bonuses.length}
+          </span>
+        </h3>
+        {huntId && <AddEntryForm huntId={huntId} currency={currency} onRefresh={onRefresh} onError={onError} />}
+        {bonuses.length === 0 ? (
+          <p className="rounded-lg border border-border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+            No bonuses yet. Add a pending call above, or add a game manually.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {bonuses.map((entry, index) => (
+              <EntryRow
+                key={entry.id}
+                entry={entry}
+                index={index}
+                total={bonuses.length}
+                isNext={entry.position === nextPosition}
+                currency={currency}
+                onMove={move}
+                onRefresh={onRefresh}
+                onError={onError}
+              />
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   )
 }

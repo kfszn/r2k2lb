@@ -74,11 +74,12 @@ export function BonusHuntDetail({ huntId, onBack }: { huntId: string; onBack: ()
 
   const live = hunt.status === 'live'
   const money = (value: number) => formatMoney(value, hunt.currency)
+  const bonuses = entries.filter((entry) => !entry.pending)
 
   if (playing) {
     return (
       <BonusHuntPlay
-        entries={entries}
+        entries={bonuses}
         stats={stats}
         currency={hunt.currency}
         startBalance={hunt.startBalance}
@@ -100,7 +101,7 @@ export function BonusHuntDetail({ huntId, onBack }: { huntId: string; onBack: ()
             <Trophy className="mr-1 size-4" aria-hidden="true" />
             GTB
           </Button>
-          <Button onClick={() => setPlaying(true)} disabled={entries.length === 0}>
+          <Button onClick={() => setPlaying(true)} disabled={bonuses.length === 0}>
             <Play className="mr-1 size-4" aria-hidden="true" />
             Start
           </Button>
@@ -226,7 +227,7 @@ export function BonusHuntDetail({ huntId, onBack }: { huntId: string; onBack: ()
         <CardHeader>
           <CardTitle>Bonuses</CardTitle>
           <CardDescription>
-            Edit a field and click away to save. Setting a payout marks the bonus opened. Click a thumbnail to set the game image.
+            Chat calls wait in Pending until you add them. Edit a field and click away to save. Setting a payout marks the bonus opened. Click a thumbnail to set the game image.
           </CardDescription>
         </CardHeader>
         <CardContent>
