@@ -13,7 +13,10 @@ interface BotStatus {
   expiresAt: string | null;
   scopes: string | null;
   updatedAt: string | null;
-  railwayFallback: boolean;
+  lastRefreshAt: string | null;
+  lastRefreshError: string | null;
+  lastRefreshErrorAt: string | null;
+  needsReauth: boolean;
 }
 
 interface Note {
@@ -37,11 +40,15 @@ const fetcher = async (url: string): Promise<BotStatus> => {
   return res.json();
 };
 
+function formatStamp(iso: string | null) {
+  if (!iso) return 'Never';
+  return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
 function formatExpiry(iso: string | null) {
   if (!iso) return 'Unknown';
-  const date = new Date(iso);
-  const stamp = date.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-  return date.getTime() < Date.now() ? `${stamp} (expired, refreshes on next message)` : stamp;
+  const stamp = formatStamp(iso);
+  return new Date(iso).getTime() < Date.now() ? `${stamp} (expired, refreshes automatically)` : stamp;
 }
 
 export function KickBotStatus() {
@@ -71,7 +78,7 @@ export function KickBotStatus() {
       const res = await fetch('/api/admin/kick-bot/test', { method: 'POST' });
       const body = await res.json().catch(() => ({}));
       if (res.ok) {
-        setNote({ tone: 'success', text: `Test message sent${body.via === 'railway' ? ' through the Railway fallback' : ''}. Check your Kick chat.` });
+        setNote({ tone: 'success', text: 'Test message sent. Check your Kick chat.' });
       } else {
         setNote({ tone: 'error', text: `Test message failed: ${body.error ?? res.status}` });
       }
@@ -93,6 +100,11 @@ export function KickBotStatus() {
           </div>
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          ) : data?.needsReauth ? (
+            <Badge variant="destructive" className="gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              Needs re-authorization
+            </Badge>
           ) : data?.authorized ? (
             <Badge variant="secondary" className="gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
@@ -112,6 +124,25 @@ export function KickBotStatus() {
       <CardContent className="space-y-4">
         {error && <p className="text-sm text-destructive">Could not load bot status. Reload the page and try again.</p>}
 
+        {data?.needsReauth && (
+          <div role="alert" className="flex items-start gap-3 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-3 text-sm text-destructive">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="space-y-1">
+              <p className="font-semibold">Bot needs re-authorization</p>
+              <p className="text-xs leading-relaxed">
+                Kick no longer accepts the saved login, so chat replies are paused. Use the Authorize button below to reconnect it.
+                {data.lastRefreshErrorAt ? ` Last failed ${formatStamp(data.lastRefreshErrorAt)}.` : ''}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {data && !data.needsReauth && data.lastRefreshError && (
+          <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+            The last automatic refresh failed ({formatStamp(data.lastRefreshErrorAt)}). It retries every 30 minutes and on each message.
+          </p>
+        )}
+
         {data && (
           <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             <div>
@@ -122,11 +153,11 @@ export function KickBotStatus() {
               <dt className="text-xs text-muted-foreground">Access token expires</dt>
               <dd className="font-medium">{formatExpiry(data.expiresAt)}</dd>
             </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Last automatic refresh</dt>
+              <dd className="font-medium">{formatStamp(data.lastRefreshAt)}</dd>
+            </div>
           </dl>
-        )}
-
-        {data?.railwayFallback && (
-          <p className="text-xs text-muted-foreground">RAILWAY_BOT_URL is set, so the old Railway bot is used if direct sending fails.</p>
         )}
 
         {note && (
@@ -141,8 +172,8 @@ export function KickBotStatus() {
         )}
 
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button asChild variant={data?.authorized ? 'outline' : 'default'} className="sm:w-auto">
-            <a href="/api/auth/kick?mode=bot">{data?.authorized ? 'Re-authorize bot' : 'Authorize bot'}</a>
+          <Button asChild variant={data?.authorized && !data.needsReauth ? 'outline' : 'default'} className="sm:w-auto">
+            <a href="/api/auth/kick?mode=bot">{data?.authorized && !data.needsReauth ? 'Re-authorize bot' : 'Authorize bot'}</a>
           </Button>
           <Button variant="secondary" onClick={sendTest} disabled={testing || isLoading} className="gap-2 sm:w-auto">
             {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

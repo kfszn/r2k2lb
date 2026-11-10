@@ -17,6 +17,9 @@ export async function GET(request: NextRequest) {
     expiresAt: row?.expires_at ?? null,
     scopes: row?.scopes ?? null,
     updatedAt: row?.updated_at ?? null,
-    railwayFallback: Boolean(process.env.RAILWAY_BOT_URL?.trim()),
+    lastRefreshAt: row?.last_refresh_at ?? null,
+    lastRefreshError: row?.last_refresh_error ?? null,
+    lastRefreshErrorAt: row?.last_refresh_error_at ?? null,
+    needsReauth: Boolean(row?.needs_reauth),
   })
 }
