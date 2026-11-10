@@ -29,14 +29,21 @@ export async function GET() {
         lucky: stats.lucky,
         nextPosition: stats.nextPosition,
       },
-      entries: entries.map((e) => ({
-        position: e.position,
-        game: e.game,
-        imageUrl: e.imageUrl,
-        bet: e.betSize,
-        payout: e.status === 'opened' ? e.payout : null,
-        opened: e.status === 'opened' && e.payout !== null,
-      })),
+      entries: entries.map((e) => {
+        const opened = e.status === 'opened' && e.payout !== null
+        // A hidden bonus keeps its name and image off the public widget until it has been opened.
+        const concealed = e.kind === 'hidden' && !opened
+        return {
+          position: e.position,
+          game: concealed ? 'Hidden Bonus' : e.game,
+          imageUrl: concealed ? null : e.imageUrl,
+          bet: e.betSize,
+          payout: opened ? e.payout : null,
+          opened,
+          kind: e.kind,
+          concealed,
+        }
+      }),
     },
     { headers }
   )

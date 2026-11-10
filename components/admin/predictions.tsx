@@ -40,9 +40,10 @@ interface PredictionCardProps {
   onToggle: (type: string, is_open: boolean) => Promise<void>;
   onResolve: (type: string, actualValue: string) => Promise<void>;
   resolving: boolean;
+  suggested?: { value: number; label: string };
 }
 
-function PredictionCard({ group, onToggle, onResolve, resolving }: PredictionCardProps) {
+function PredictionCard({ group, onToggle, onResolve, resolving, suggested }: PredictionCardProps) {
   const { settings, entries } = group;
   const [actualValue, setActualValue] = useState('');
   const [toggling, setToggling] = useState(false);
@@ -133,6 +134,15 @@ function PredictionCard({ group, onToggle, onResolve, resolving }: PredictionCar
               min="0"
               step={isGTM ? '0.01' : '0.01'}
             />
+            {suggested && (
+              <button
+                type="button"
+                onClick={() => setActualValue(String(suggested.value))}
+                className="mt-1 text-[11px] font-medium text-primary hover:underline"
+              >
+                Use hunt winnings ({suggested.label})
+              </button>
+            )}
           </div>
           <Button
             size="sm"
@@ -149,7 +159,13 @@ function PredictionCard({ group, onToggle, onResolve, resolving }: PredictionCar
   );
 }
 
-export function Predictions() {
+export function Predictions({
+  only,
+  suggestedGtb,
+}: {
+  only?: 'gtb' | 'gtm';
+  suggestedGtb?: { value: number; label: string };
+} = {}) {
   const [gtb, setGtb] = useState<PredictionGroup | null>(null);
   const [gtm, setGtm] = useState<PredictionGroup | null>(null);
   const [loading, setLoading] = useState(true);
@@ -206,15 +222,16 @@ export function Predictions() {
         <div className="py-12 text-center text-xs text-muted-foreground">Loading...</div>
       ) : (
         <div className="flex gap-4 flex-col md:flex-row">
-          {gtb && (
+          {gtb && only !== 'gtm' && (
             <PredictionCard
               group={gtb}
               onToggle={handleToggle}
               onResolve={handleResolve}
               resolving={resolvingType === 'gtb'}
+              suggested={suggestedGtb}
             />
           )}
-          {gtm && (
+          {gtm && only !== 'gtb' && (
             <PredictionCard
               group={gtm}
               onToggle={handleToggle}

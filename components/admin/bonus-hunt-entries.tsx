@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { EntryStatus, HuntEntry } from '@/lib/hunt/stats'
+import { ENTRY_KINDS, type EntryKind, type EntryStatus, type HuntEntry } from '@/lib/hunt/stats'
 import { huntRequest, useKnownSlots } from '@/lib/hunt/use-bonus-hunt'
 
 const ENTRIES_URL = '/api/admin/bonus-hunt/entries'
@@ -22,6 +22,44 @@ interface EntriesProps {
   currency: string
   onRefresh: () => void
   onError: Report
+}
+
+export function KindSelect({
+  value,
+  onChange,
+  className,
+}: {
+  value: EntryKind
+  onChange: (kind: EntryKind) => void
+  className?: string
+}) {
+  return (
+    <Select value={value} onValueChange={(kind) => onChange(kind as EntryKind)}>
+      <SelectTrigger aria-label="Bonus type" className={className}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {ENTRY_KINDS.map((kind) => (
+          <SelectItem key={kind.value} value={kind.value}>
+            {kind.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
+export function KindBadge({ kind }: { kind: EntryKind }) {
+  if (kind === 'regular') return null
+  return (
+    <span
+      className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+        kind === 'super' ? 'border-primary/50 bg-primary/10 text-primary' : 'border-border bg-muted text-muted-foreground'
+      }`}
+    >
+      {kind}
+    </span>
+  )
 }
 
 function Thumb({ entry }: { entry: HuntEntry }) {
@@ -180,8 +218,9 @@ function EntryRow({
             aria-label="Game name"
             maxLength={100}
           />
-          {(entry.calledBy || isNext) && (
-            <span className="truncate text-xs text-muted-foreground">
+          {(entry.calledBy || isNext || entry.kind !== 'regular') && (
+            <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+              <KindBadge kind={entry.kind} />
               {entry.calledBy ? `Called by ${entry.calledBy}` : ''}
               {entry.calledBy && isNext ? ' · ' : ''}
               {isNext ? 'Next to open' : ''}
@@ -211,8 +250,9 @@ function EntryRow({
           aria-label="Payout"
           className="lg:w-28"
         />
+        <KindSelect value={entry.kind} onChange={(kind) => void patch({ kind })} className="lg:w-28" />
         <Select value={entry.status} onValueChange={(status: EntryStatus) => void patch({ status })}>
-          <SelectTrigger aria-label="Status" className="col-span-2 sm:col-span-1 lg:w-28">
+          <SelectTrigger aria-label="Status" className="lg:w-28">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -264,12 +304,13 @@ function AddEntryForm({
   const [game, setGame] = useState('')
   const [bet, setBet] = useState('')
   const [payout, setPayout] = useState('')
+  const [kind, setKind] = useState<EntryKind>('regular')
   const [busy, setBusy] = useState(false)
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     setBusy(true)
-    const result = await huntRequest('POST', ENTRIES_URL, { game, betSize: bet, payout, huntId })
+    const result = await huntRequest('POST', ENTRIES_URL, { game, betSize: bet, payout, huntId, kind })
     setBusy(false)
     if (!result.ok) return onError(result.error ?? 'Could not add the bonus.')
     onError(null)
@@ -311,6 +352,7 @@ function AddEntryForm({
         aria-label="Payout"
         className="sm:w-40"
       />
+      <KindSelect value={kind} onChange={setKind} className="sm:w-28" />
       <Button type="submit" disabled={busy || !game.trim()}>
         <Plus className="mr-1 size-4" aria-hidden="true" />
         Add

@@ -12,6 +12,8 @@ interface WidgetEntry {
   bet: number
   payout: number | null
   opened: boolean
+  kind?: 'regular' | 'super' | 'hidden'
+  concealed?: boolean
 }
 
 interface WidgetData {
@@ -153,6 +155,11 @@ function EntryTable({
                 >
                   {entry.game}
                 </span>
+                {entry.kind === 'super' && (
+                  <span className="shrink-0 rounded border border-[var(--hunt-gold)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--hunt-gold)]">
+                    Super
+                  </span>
+                )}
                 {isNext && (
                   <span className="shrink-0 rounded bg-[var(--hunt-gold)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--hunt-surface)]">
                     Next

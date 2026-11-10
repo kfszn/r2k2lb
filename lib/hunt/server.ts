@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { normalizeSlotName } from '@/lib/hunt/normalize'
 import { currencyOrDefault, type Currency } from '@/lib/hunt/currency'
 import type {
+  EntryKind,
   EntryStatus,
   HuntEntry,
   HuntOverview,
@@ -41,6 +42,7 @@ interface EntryRow {
   payout: number | string | null
   called_by: string | null
   status: EntryStatus
+  kind: EntryKind | null
   created_at: string
 }
 
@@ -262,6 +264,7 @@ export async function loadEntries(db: HuntDb, huntId: string): Promise<HuntEntry
     payout: row.payout === null ? null : Number(row.payout),
     calledBy: row.called_by,
     status: row.status,
+    kind: row.kind ?? 'regular',
     createdAt: row.created_at,
   }))
 }

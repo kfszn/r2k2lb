@@ -1,7 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Play, Trophy } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Predictions } from '@/components/admin/predictions'
+import { BonusHuntPlay } from '@/components/admin/bonus-hunt-play'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -36,6 +39,8 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 export function BonusHuntDetail({ huntId, onBack }: { huntId: string; onBack: () => void }) {
   const { data, error, isLoading, mutate } = useBonusHunt(huntId)
+  const [playing, setPlaying] = useState(false)
+  const [gtbOpen, setGtbOpen] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const [balanceDraft, setBalanceDraft] = useState<string | null>(null)
   const [nameDraft, setNameDraft] = useState<string | null>(null)
@@ -70,12 +75,49 @@ export function BonusHuntDetail({ huntId, onBack }: { huntId: string; onBack: ()
   const live = hunt.status === 'live'
   const money = (value: number) => formatMoney(value, hunt.currency)
 
+  if (playing) {
+    return (
+      <BonusHuntPlay
+        entries={entries}
+        stats={stats}
+        currency={hunt.currency}
+        startBalance={hunt.startBalance}
+        onRefresh={() => void mutate()}
+        onExit={() => setPlaying(false)}
+      />
+    )
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <Button variant="ghost" onClick={onBack} className="self-start">
-        <ArrowLeft className="mr-1 size-4" aria-hidden="true" />
-        All hunts
-      </Button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button variant="ghost" onClick={onBack}>
+          <ArrowLeft className="mr-1 size-4" aria-hidden="true" />
+          All hunts
+        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setGtbOpen(true)}>
+            <Trophy className="mr-1 size-4" aria-hidden="true" />
+            GTB
+          </Button>
+          <Button onClick={() => setPlaying(true)} disabled={entries.length === 0}>
+            <Play className="mr-1 size-4" aria-hidden="true" />
+            Start
+          </Button>
+        </div>
+      </div>
+
+      <Dialog open={gtbOpen} onOpenChange={setGtbOpen}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Guess the Balance</DialogTitle>
+            <DialogDescription>
+              Open or close guessing and resolve the winner for {hunt.name ?? `Hunt #${hunt.number}`}.
+            </DialogDescription>
+          </DialogHeader>
+          <Predictions only="gtb" suggestedGtb={{ value: stats.winnings, label: money(stats.winnings) }} />
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-2">

@@ -2,6 +2,13 @@ import type { Currency } from '@/lib/hunt/currency'
 
 export type HuntStatus = 'draft' | 'live' | 'ended'
 export type EntryStatus = 'called' | 'bought' | 'opened'
+export type EntryKind = 'regular' | 'super' | 'hidden'
+
+export const ENTRY_KINDS: { value: EntryKind; label: string }[] = [
+  { value: 'regular', label: 'Regular' },
+  { value: 'super', label: 'Super' },
+  { value: 'hidden', label: 'Hidden' },
+]
 
 export interface HuntEntry {
   id: string
@@ -12,6 +19,7 @@ export interface HuntEntry {
   payout: number | null
   calledBy: string | null
   status: EntryStatus
+  kind: EntryKind
   createdAt: string
 }
 

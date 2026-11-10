@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 
 const fail = (error: string, status: number) => NextResponse.json({ error }, { status })
 const STATUSES = ['called', 'bought', 'opened']
+const KINDS = ['regular', 'super', 'hidden']
 
 function cleanGame(value: unknown) {
   if (typeof value !== 'string') return null
@@ -44,6 +45,9 @@ export async function POST(request: NextRequest) {
     return fail('Enter a valid payout.', 400)
   }
 
+  const kind = body.kind === undefined ? 'regular' : body.kind
+  if (typeof kind !== 'string' || !KINDS.includes(kind)) return fail('Invalid bonus type.', 400)
+
   const db = getHuntDb()
   const hunt = await resolveHunt(db, body.huntId)
   if (!hunt) return fail('Start a hunt first.', 409)
@@ -58,6 +62,7 @@ export async function POST(request: NextRequest) {
     bet_size: betSize,
     payout,
     called_by: null,
+    kind,
     status: payout === null ? 'called' : 'opened',
   })
   if (error) return fail(error.message, 500)
@@ -81,6 +86,11 @@ export async function PATCH(request: NextRequest) {
     const game = cleanGame(body.game)
     if (!game) return fail('Game name cannot be empty.', 400)
     patch.game_name = game
+  }
+
+  if (body.kind !== undefined) {
+    if (typeof body.kind !== 'string' || !KINDS.includes(body.kind)) return fail('Invalid bonus type.', 400)
+    patch.kind = body.kind
   }
 
   if (body.betSize !== undefined) {
