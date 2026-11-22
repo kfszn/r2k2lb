@@ -1,6 +1,7 @@
 import { createApiClient } from "@/lib/supabase/api";
 import { NextRequest, NextResponse } from "next/server";
 import { fetchRoobetUserList } from "@/lib/r2koins/platforms";
+import { getTournamentRoobetWager } from "@/lib/tournament/roobet-wager";
 
 interface RoobetUser {
   name: string;
@@ -109,6 +110,8 @@ export async function GET(request: NextRequest) {
       return new NextResponse(`@${kickUsername} Entry DENIED - Need $${tournament.min_wager.toLocaleString()} wagered (you have $${roobetUser.wagered.toLocaleString()}).`, { status: 200 });
     }
 
+    const periodWager = (await getTournamentRoobetWager(roobetUser.name || roobetUsername, tournament.wager_timeframe)) ?? 0;
+
     // Register player
     const { error: insertError } = await supabase
       .from("tournament_players")
@@ -118,8 +121,8 @@ export async function GET(request: NextRequest) {
         kick_username: kickUsername,
         display_name: kickUsername,
         status: "registered",
-        roobet_wager: roobetUser.wagered || 0,
-        roobet_active: roobetUser.active || false,
+        roobet_wager: periodWager,
+        roobet_active: periodWager > 0,
       });
 
     if (insertError) {

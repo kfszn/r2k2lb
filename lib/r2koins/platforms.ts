@@ -163,6 +163,10 @@ function normalizeAffiliateEntries(raw: unknown): LuxdropEntry[] | null {
   return null;
 }
 
+export function fetchRoobetEntriesForRange(startISO: string, endISO: string) {
+  return fetchPlatformEntriesForRange("roobet", startISO, endISO);
+}
+
 /**
  * Look up a single user's wager total in DOLLARS on a platform for an
  * explicit date range (e.g. the current month for Roobet, the current
