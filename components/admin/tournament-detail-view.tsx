@@ -304,7 +304,7 @@ export function TournamentDetailView({
               </p>
               <p className="text-xs text-muted-foreground">
                 {wagerPeriod
-                  ? `Wager this period: ${formatPeriodDate(wagerPeriod.startISO)} – ${formatPeriodDate(wagerPeriod.endISO)}`
+                  ? `Wager window: ${formatPeriodDate(wagerPeriod.startISO)} – ${formatPeriodDate(wagerPeriod.endISO)}`
                   : wagersRefreshing
                     ? 'Loading live wagers…'
                     : 'Live wagers unavailable — showing last saved'}

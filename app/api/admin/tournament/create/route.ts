@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         max_players: maxPlayers,
         prize_pool: prizePool || 0,
         min_wager: minWager || 0,
-        wager_timeframe: wagerTimeframe || "all",
+        wager_timeframe: wagerTimeframe || "period",
         require_active: requireActive !== false,
         status: "pending",
       })

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { fetchRoobetUserList } from "@/lib/r2koins/platforms";
-import { getCurrentPeriodRoobetWager } from "@/lib/tournament/roobet-wager";
+import { getTournamentRoobetWager } from "@/lib/tournament/roobet-wager";
 
 async function validateRoobetUser(username: string) {
   try {
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const periodWager = (await getCurrentPeriodRoobetWager(roobetUser?.name || roobetUsername)) ?? 0;
+    const periodWager = (await getTournamentRoobetWager(roobetUser?.name || roobetUsername, tournament.wager_timeframe)) ?? 0;
 
     // Register player with Roobet data
     const { error: playerError } = await supabase

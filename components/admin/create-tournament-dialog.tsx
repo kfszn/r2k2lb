@@ -41,7 +41,7 @@ export function CreateTournamentDialog({
     maxPlayers: "8",
     prizePool: "500",
     minWager: "0",
-    wagerTimeframe: "all",
+    wagerTimeframe: "period",
     requireActive: true,
   });
 
@@ -78,7 +78,7 @@ export function CreateTournamentDialog({
         maxPlayers: "8",
         prizePool: "500",
         minWager: "0",
-        wagerTimeframe: "all",
+        wagerTimeframe: "period",
         requireActive: true,
       });
     } catch (error) {
@@ -201,6 +201,7 @@ export function CreateTournamentDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="period">Current Leaderboard Period</SelectItem>
                     <SelectItem value="7">Last 7 Days</SelectItem>
                     <SelectItem value="14">Last 14 Days</SelectItem>
                     <SelectItem value="30">Last 30 Days</SelectItem>

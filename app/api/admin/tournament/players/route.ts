@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentPeriodRoobetWagerMap } from "@/lib/tournament/roobet-wager";
+import { getTournamentRoobetWagerMap } from "@/lib/tournament/roobet-wager";
 
 export const dynamic = "force-dynamic";
 
 // Returns a tournament's players with each player's live Roobet wager for the
-// current leaderboard period, and persists the refreshed values.
+// tournament's selected wager timeframe, and persists the refreshed values.
 export async function GET(request: NextRequest) {
   const tournamentId = request.nextUrl.searchParams.get("tournamentId");
   if (!tournamentId) {
@@ -22,7 +22,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Failed to load players" }, { status: 500 });
   }
 
-  const live = await getCurrentPeriodRoobetWagerMap();
+  const { data: tournament } = await supabase
+    .from("tournaments")
+    .select("wager_timeframe")
+    .eq("id", tournamentId)
+    .single();
+
+  const live = await getTournamentRoobetWagerMap(tournament?.wager_timeframe);
   if (!live) {
     return NextResponse.json({ players: players ?? [], period: null, live: false });
   }
@@ -47,5 +53,5 @@ export async function GET(request: NextRequest) {
     )
   );
 
-  return NextResponse.json({ players: updated, period: live.period, live: true });
+  return NextResponse.json({ players: updated, period: live.window, live: true });
 }
