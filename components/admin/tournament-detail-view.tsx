@@ -61,9 +61,8 @@ interface TournamentDetailViewProps {
   onBack: () => void;
 }
 
-function formatCurrency(cents: number): string {
-  const dollars = (cents || 0) / 100;
-  return `$${dollars.toLocaleString(undefined, {
+function formatCurrency(dollars: number): string {
+  return `$${(dollars || 0).toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -104,17 +103,31 @@ export function TournamentDetailView({
   const [pendingStatus, setPendingStatus] = useState(tournament.status);
   const [statusLoading, setStatusLoading] = useState(false);
 
-  const { data: players = [], mutate: refreshPlayers } = useSWR(
-    tournament ? `tournament-players-${tournament.id}` : null,
-    async () => {
-      const { data, error } = await supabase
-        .from('tournament_players')
-        .select('*')
-        .eq('tournament_id', tournament.id);
-      if (error) return [];
-      return data || [];
-    }
+  const {
+    data: playersData,
+    mutate: refreshPlayers,
+    isValidating: wagersRefreshing,
+  } = useSWR<{
+    players: TournamentPlayer[];
+    period: { startISO: string; endISO: string } | null;
+    live: boolean;
+  }>(
+    tournament ? `/api/admin/tournament/players?tournamentId=${tournament.id}` : null,
+    async (url: string) => {
+      const res = await fetch(url);
+      if (!res.ok) return { players: [], period: null, live: false };
+      return res.json();
+    },
+    { refreshInterval: 60_000 }
   );
+  const players = playersData?.players ?? [];
+  const wagerPeriod = playersData?.period ?? null;
+  const formatPeriodDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'America/New_York',
+    });
 
   const handleAddPlayer = async () => {
     if (!roobetUsername.trim() && !kickUsername.trim()) {
@@ -285,9 +298,18 @@ export function TournamentDetailView({
         {/* Players tab */}
         <TabsContent value="players" className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">
-              {players.length} entrant{players.length !== 1 ? 's' : ''}
-            </p>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground">
+                {players.length} entrant{players.length !== 1 ? 's' : ''}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {wagerPeriod
+                  ? `Wager this period: ${formatPeriodDate(wagerPeriod.startISO)} – ${formatPeriodDate(wagerPeriod.endISO)}`
+                  : wagersRefreshing
+                    ? 'Loading live wagers…'
+                    : 'Live wagers unavailable — showing last saved'}
+              </p>
+            </div>
             <Button
               size="sm"
               className="h-8 gap-1.5"
@@ -332,7 +354,7 @@ export function TournamentDetailView({
                     </div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                    <div className="text-right hidden sm:block">
+                    <div className="text-right">
                       <p className="text-sm font-medium tabular-nums">
                         {formatCurrency(player.roobet_wager)}
                       </p>
